@@ -70,11 +70,10 @@ class Clatter(WaveformGenerator):
         self.scrape_materials: List[str] = list(Clatter.__SCRAPE_MATERIALS.keys())
         self.speeds: List[float] = rangef(start=0.1, end=5, step=0.1)
         self.durations: List[float] = rangef(start=0.1, end=10, step=0.1)
-        self.random_seed: Optional[int] = None
 
     def get(self, primary_impact_material: str, primary_size: int, primary_mass: float, primary_amp: float, primary_resonance: float,
             secondary_impact_material: str, secondary_size: int, secondary_mass: float, secondary_amp: float, secondary_resonance: float,
-            speed: float, scrape_material: Optional[str], duration: Optional[float]) -> bytes:
+            speed: float, scrape_material: Optional[str], duration: Optional[float], random_seed: Optional[int]) -> bytes:
         # Get the primary object.
         pm = ImpactMaterialData.GetImpactMaterial(Clatter.__IMPACT_MATERIALS[primary_impact_material], primary_size)
         ImpactMaterialData.Load(pm)
@@ -92,10 +91,10 @@ class Clatter(WaveformGenerator):
         ImpactMaterialData.Load(sm)
         secondary = ClatterObjectData(1, sm,  secondary_amp, secondary_resonance, secondary_mass, scrape_mat)
         # Load the random number generator.
-        if self.random_seed is None:
+        if random_seed is None:
             rng = Random()
         else:
-            rng = Random(self.random_seed)
+            rng = Random(random_seed)
         # Generate scrape audio.
         if is_scrape:
             num_events = Scrape.GetNumScrapeEvents(duration)
