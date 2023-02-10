@@ -1,14 +1,13 @@
 from pygame import Surface
-from cacophony.render.draw_rectangle import DrawRectangle
+from cacophony.render.abc_rectangle import AbcRectangle
 
 
-class Rectangle(DrawRectangle):
+class Rectangle(AbcRectangle):
     """
     Draw a filled rectangle.
     """
 
-    def _get_width(self) -> int:
-        return 0
-
-    def _on_create_surface(self, surface: Surface) -> Surface:
+    def _get_surface(self) -> Surface:
+        surface = Surface(self._size)
+        surface.fill(self._color)
         return surface

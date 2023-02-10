@@ -31,9 +31,3 @@ class Renderer:
     def do(self) -> None:
         while not self._done:
             self.render([])
-
-
-r = Renderer()
-from cacophony.render.text import Text
-r.render([Text(text="Hello world", position=(2, 3), color=(200, 0, 200))])
-r.do()

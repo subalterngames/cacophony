@@ -34,3 +34,5 @@ WINDOW_PIXEL_HEIGHT: int = CELL_SIZE[1] * WINDOW_GRID_HEIGHT
 BORDER_PIXEL_WIDTH: int = int(__ui_section["border_width"])
 # The clear (alpha) color.
 CLEAR_COLOR: Tuple[int, int, int] = tuple(loads(__ui_section["clear_color"]))
+# True if the clear color is (0, 0, 0).
+CLEAR_COLOR_IS_BLACK: bool = CLEAR_COLOR == (0, 0, 0)
