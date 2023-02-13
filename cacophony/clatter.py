@@ -5,6 +5,7 @@ from pkg_resources import resource_filename
 from requests import get
 from bs4 import BeautifulSoup
 from cacophony.waveform_generator import WaveformGenerator
+from cacophony.waveform_generator_type import WaveformGeneratorType
 from cacophony.options import zero1, rangef
 
 
@@ -57,19 +58,19 @@ class Clatter(WaveformGenerator):
                                                      "sandpaper": ScrapeMaterial.sandpaper}
 
     def __init__(self):
-        self.primary_impact_materials: List[str] = list(Clatter.__IMPACT_MATERIALS.keys())
-        self.primary_sizes: List[int] = list(range(6))
-        self.primary_masses: List[float] = rangef(start=0.1, end=200, step=0.1)
-        self.primary_amps: List[float] = zero1()
-        self.primary_resonances: List[float] = zero1()
-        self.secondary_impact_materials: List[str] = self.primary_impact_materials[:]
-        self.secondary_sizes: List[int] = self.primary_sizes[:]
-        self.secondary_masses: List[float] = self.primary_masses[:]
-        self.secondary_amps: List[float] = self.primary_amps[:]
-        self.secondary_resonances: List[float] = self.primary_resonances[:]
-        self.scrape_materials: List[str] = list(Clatter.__SCRAPE_MATERIALS.keys())
-        self.speeds: List[float] = rangef(start=0.1, end=5, step=0.1)
-        self.durations: List[float] = rangef(start=0.1, end=10, step=0.1)
+        self.primary_impact_material: List[str] = list(Clatter.__IMPACT_MATERIALS.keys())
+        self.primary_size: List[int] = list(range(6))
+        self.primary_masse: List[float] = rangef(start=0.1, end=200, step=0.1)
+        self.primary_amp: List[float] = zero1()
+        self.primary_resonance: List[float] = zero1()
+        self.secondary_impact_material: List[str] = self.primary_impact_material[:]
+        self.secondary_size: List[int] = self.primary_size[:]
+        self.secondary_mass: List[float] = self.primary_masse[:]
+        self.secondary_amp: List[float] = self.primary_amp[:]
+        self.secondary_resonance: List[float] = self.primary_resonance[:]
+        self.scrape_material: List[str] = list(Clatter.__SCRAPE_MATERIALS.keys())
+        self.speed: List[float] = rangef(start=0.1, end=5, step=0.1)
+        self.duration: List[float] = rangef(start=0.1, end=10, step=0.1)
 
     def get(self, primary_impact_material: str, primary_size: int, primary_mass: float, primary_amp: float, primary_resonance: float,
             secondary_impact_material: str, secondary_size: int, secondary_mass: float, secondary_amp: float, secondary_resonance: float,
@@ -109,3 +110,6 @@ class Clatter(WaveformGenerator):
             impact = Impact(primary, secondary, rng)
             impact.GetAudio(speed)
             return bytes(impact.samples.ToInt16Bytes())
+
+    def get_type(self) -> WaveformGeneratorType:
+        return WaveformGeneratorType.wav

@@ -1,5 +1,5 @@
 from typing import Tuple
-from cacophony.render.rectangle import Rectangle
+from cacophony.render.commands.rectangle import Rectangle
 from cacophony.render.globals import WINDOW_GRID_WIDTH, WINDOW_GRID_HEIGHT
 
 

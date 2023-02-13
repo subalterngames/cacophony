@@ -1,7 +1,7 @@
 from typing import List, Tuple
 import pygame
 from pygame import Surface, Rect
-from cacophony.render.render_command import RenderCommand
+from cacophony.render.commands.command import Command
 from cacophony.render.globals import WINDOW_PIXEL_WIDTH, WINDOW_PIXEL_HEIGHT
 
 
@@ -15,7 +15,7 @@ class Renderer:
             pygame.display.set_mode((WINDOW_PIXEL_WIDTH, WINDOW_PIXEL_HEIGHT))
         self._done: bool = False
 
-    def render(self, commands: List[RenderCommand]) -> None:
+    def render(self, commands: List[Command]) -> None:
         blits: List[Tuple[Surface, Rect]] = list()
         # Do each command.
         for command in commands:

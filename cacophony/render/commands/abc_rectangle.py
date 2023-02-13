@@ -1,6 +1,6 @@
 from typing import Tuple
 from abc import ABC
-from cacophony.render.render_at import RenderAt
+from cacophony.render.commands.render_at import RenderAt
 from cacophony.render.globals import CELL_SIZE
 
 

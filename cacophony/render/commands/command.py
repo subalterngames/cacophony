@@ -3,7 +3,7 @@ from pygame import Surface, Rect
 from abc import ABC, abstractmethod
 
 
-class RenderCommand(ABC):
+class Command(ABC):
     """
     Abstract base class for render commands.
     """

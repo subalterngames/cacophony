@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 from overrides import final
 from pygame import Surface, Rect
-from cacophony.render.render_command import RenderCommand
+from cacophony.render.commands.command import Command
 from cacophony.render.globals import WINDOW_PIXEL_WIDTH, WINDOW_PIXEL_HEIGHT, CELL_SIZE
 
 
-class RenderAt(RenderCommand, ABC):
+class RenderAt(Command, ABC):
     """
     Render at a given position.
     """

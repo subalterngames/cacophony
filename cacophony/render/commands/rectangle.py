@@ -1,5 +1,5 @@
 from pygame import Surface
-from cacophony.render.abc_rectangle import AbcRectangle
+from cacophony.render.commands.abc_rectangle import AbcRectangle
 
 
 class Rectangle(AbcRectangle):

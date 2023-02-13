@@ -1,6 +1,6 @@
 from typing import Tuple
 from pygame import Surface
-from cacophony.render.render_at import RenderAt
+from cacophony.render.commands.render_at import RenderAt
 
 
 class Blit(RenderAt):
