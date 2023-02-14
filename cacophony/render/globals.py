@@ -1,13 +1,14 @@
 from json import loads
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List, Union
 from configparser import ConfigParser, SectionProxy
 from pathlib import Path
 import pygame.font
 from pygame import Surface
 import numpy as np
 from cacophony.paths import USER_DIRECTORY, DATA_DIRECTORY
-from cacophony.render.color import Color
 from cacophony.cardinal_direction import CardinalDirection
+from cacophony.render.color import Color
+from cacophony.render.input_key import InputKey
 
 __parser = ConfigParser()
 __local_config_file = USER_DIRECTORY.joinpath("config.init")
@@ -60,3 +61,9 @@ ARROWS[CardinalDirection.east] = arrow
 ARROWS[CardinalDirection.south] = np.rot90(ARROWS[CardinalDirection.east])
 ARROWS[CardinalDirection.west] = np.rot90(ARROWS[CardinalDirection.south])
 ARROWS[CardinalDirection.north] = np.rot90(ARROWS[CardinalDirection.west])
+# Input.
+__input_section: SectionProxy = __parser["KEYBOARD_INPUT"]
+INPUTS: Dict[Union[str, Tuple[int, int, int]], InputKey] = dict()
+for __k, __i in zip(["up", "down", "left", "right", "next_panel", "previous_panel", "select"],
+                    [InputKey.up, InputKey.down, InputKey.right, InputKey.left, InputKey.next_panel, InputKey.previous_panel, InputKey.select]):
+    INPUTS[__input_section[__k]] = __i
