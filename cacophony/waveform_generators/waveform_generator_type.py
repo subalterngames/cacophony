@@ -2,5 +2,5 @@ from enum import IntEnum
 
 
 class WaveformGeneratorType(IntEnum):
-    wav = 1
+    wav_creator = 1
     notes = 2

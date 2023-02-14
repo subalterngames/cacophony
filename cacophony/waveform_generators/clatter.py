@@ -4,9 +4,9 @@ import clr
 from pkg_resources import resource_filename
 from requests import get
 from bs4 import BeautifulSoup
-from cacophony.waveform_generator import WaveformGenerator
-from cacophony.waveform_generator_type import WaveformGeneratorType
-from cacophony.options import zero1, rangef
+from cacophony.waveform_generators.waveform_generator import WaveformGenerator
+from cacophony.waveform_generators.waveform_generator_type import WaveformGeneratorType
+from cacophony.waveform_generators.options import zero1, rangef
 
 
 def __download_clatter() -> None:
@@ -58,23 +58,85 @@ class Clatter(WaveformGenerator):
                                                      "sandpaper": ScrapeMaterial.sandpaper}
 
     def __init__(self):
+        """
+        (no parameters)
+        """
+
+        """:field
+        A list of possible impact materials for the primary object.
+        """
         self.primary_impact_material: List[str] = list(Clatter.__IMPACT_MATERIALS.keys())
+        """:field
+        A list of possible sizes (0-5) for the primary object.
+        """
         self.primary_size: List[int] = list(range(6))
-        self.primary_masse: List[float] = rangef(start=0.1, end=200, step=0.1)
+        """:field
+        A list of possible mass values for the primary object.
+        """
+        self.primary_mass: List[float] = rangef(start=0.1, end=100, step=0.1)
+        """:field
+        A list of possible amp values (0-1) for the primary object.
+        """
         self.primary_amp: List[float] = zero1()
+        """:field
+        A list of possible resonance values (0-1) for the primary object.
+        """
         self.primary_resonance: List[float] = zero1()
+        """:field
+        A list of possible impact materials for the secondary object.
+        """
         self.secondary_impact_material: List[str] = self.primary_impact_material[:]
+        """:field
+        A list of possible sizes (0-5) for the secondary object.
+        """
         self.secondary_size: List[int] = self.primary_size[:]
-        self.secondary_mass: List[float] = self.primary_masse[:]
+        """:field
+        A list of possible mass values for the secondary object.
+        """
+        self.secondary_mass: List[float] = self.primary_mass[:]
+        """:field
+        A list of possible amp values (0-1) for the secondary object.
+        """
         self.secondary_amp: List[float] = self.primary_amp[:]
+        """:field
+        A list of possible resonance values (0-1) for the secondary object.
+        """
         self.secondary_resonance: List[float] = self.primary_resonance[:]
+        """:field
+        A list of possible scrape materials.
+        """
         self.scrape_material: List[str] = list(Clatter.__SCRAPE_MATERIALS.keys())
+        """:field
+        A list of possible speeds.
+        """
         self.speed: List[float] = rangef(start=0.1, end=5, step=0.1)
+        """:field
+        A list of possible durations.
+        """
         self.duration: List[float] = rangef(start=0.1, end=10, step=0.1)
 
     def get(self, primary_impact_material: str, primary_size: int, primary_mass: float, primary_amp: float, primary_resonance: float,
             secondary_impact_material: str, secondary_size: int, secondary_mass: float, secondary_amp: float, secondary_resonance: float,
             speed: float, scrape_material: Optional[str], duration: Optional[float], random_seed: Optional[int]) -> bytes:
+        """
+        :param primary_impact_material: The primary object's impact material.
+        :param primary_size: The primary object's size (0-5).
+        :param primary_mass: The primary object's mass.
+        :param primary_amp: The primary object's amp (0-1).
+        :param primary_resonance: The primary object's resonance (0-1).
+        :param secondary_impact_material: The secondary object's impact material.
+        :param secondary_size: The secondary object's size (0-5).
+        :param secondary_mass: The secondary object's mass.
+        :param secondary_amp: The secondary object's amp (0-1).
+        :param secondary_resonance: The secondary object's resonance (0-1).
+        :param speed: The speed of the collision.
+        :param scrape_material: The scrape material. If None, this is an impact.
+        :param duration: The duration of the scrape. Ignored if scrape_material == None.
+        :param random_seed: The random seed. If None, the seed is random.
+
+        :return: A waveform bytestring.
+        """
+
         # Get the primary object.
         pm = ImpactMaterialData.GetImpactMaterial(Clatter.__IMPACT_MATERIALS[primary_impact_material], primary_size)
         ImpactMaterialData.Load(pm)
@@ -112,4 +174,4 @@ class Clatter(WaveformGenerator):
             return bytes(impact.samples.ToInt16Bytes())
 
     def get_type(self) -> WaveformGeneratorType:
-        return WaveformGeneratorType.wav
+        return WaveformGeneratorType.wav_creator
