@@ -1,6 +1,6 @@
 from typing import Union, Callable
 from pygame.midi import midi_to_frequency
-from chipnumpy.synthesizer import Synthesizer
+from chipnumpy.synthesizer import Synthesizer as ChipSynth
 from cacophony.synthesizer.chiptune_pcm import ChiptunePCM
 from cacophony.synthesizer.synthesizer import Synthesizer
 from cacophony.music.note import Note
@@ -13,9 +13,12 @@ class Chiptune(Synthesizer):
 
     def __init__(self, pcm: ChiptunePCM):
         self._pcm: ChiptunePCM = ChiptunePCM.sine
+        self._synth: ChipSynth = ChipSynth(seed=0)
         self._generator: Callable[[Union[str, float], float, float], bytes] = self._synth.sine
         self.set(pcm=pcm)
-        self._synth: Synthesizer = Synthesizer(seed=0)
+
+    def get_channels(self) -> int:
+        return 1
 
     def set(self, pcm: ChiptunePCM) -> None:
         """

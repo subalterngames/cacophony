@@ -24,6 +24,9 @@ class SoundFont(Synthesizer):
         self.bank: int = 0
         self.preset: int = 0
 
+    def get_channels(self) -> int:
+        return 2
+
     def load(self, path: Union[str, Path]) -> bool:
         """
         Load a SoundFont.

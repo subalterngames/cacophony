@@ -20,7 +20,15 @@ class Synthesizer(ABC):
             return b''
         # Return a note.
         else:
-            return self._audio(note=note, duration=Synthesizer._get_duration(bpm=bpm, beat=note.duration))
+            return self._audio(note=note, duration=Synthesizer.get_duration(bpm=bpm, beat=note.duration))
+
+    @abstractmethod
+    def get_channels(self) -> int:
+        """
+        :return: The number of audio channels.
+        """
+
+        raise Exception()
 
     @abstractmethod
     def _audio(self, note: Note, duration: float) -> bytes:
@@ -36,7 +44,7 @@ class Synthesizer(ABC):
         raise Exception()
 
     @staticmethod
-    def _get_duration(bpm: int, beat: float) -> float:
+    def get_duration(bpm: int, beat: float) -> float:
         """
         :param bpm: The beats per minute.
         :param beat: The duration in terms of beats.
