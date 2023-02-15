@@ -1,5 +1,5 @@
-from cacophony.soundfont import SoundFont
-from cacophony.render.waveform_generator_args import WaveformGeneratorArgs
+from cacophony.waveform_generators.soundfont import SoundFont
+from cacophony.render.waveform_args_panel import WaveformArgsPanel
 
-r = WaveformGeneratorArgs(SoundFont(), focus=True)
+r = WaveformArgsPanel(SoundFont(), panel_focus=True)
 r.do()

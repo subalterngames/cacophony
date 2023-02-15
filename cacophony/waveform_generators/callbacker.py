@@ -6,9 +6,9 @@ T = TypeVar("T")
 
 
 class Callbacker(Generic[T]):
-    def __init__(self, callback: Callable[[Optional[T]], None]):
-        self.__value: Optional[T] = None
-        self.__callback: Callable[[T], None] = callback
+    def __init__(self, value: T, callback: Callable):
+        self.__value: Optional[T] = value
+        self.__callback: Callable = callback
 
     @final
     def get(self) -> Optional[T]:
@@ -17,5 +17,5 @@ class Callbacker(Generic[T]):
     @final
     def set(self, value: Optional[T]) -> Optional[T]:
         self.__value = value
-        self.__callback(self.__value)
+        self.__callback()
         return self.__value

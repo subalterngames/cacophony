@@ -2,6 +2,7 @@ from typing import List, Dict, Optional
 from sf2_loader.read_sf2.read_sf2 import sf2_loader
 from cacophony.waveform_generators.globals import FRAMERATE, SAMPLE_WIDTH, CHANNELS
 from cacophony.waveform_generators.note_generator import NoteGenerator
+from cacophony.waveform_generators.callbacker import Callbacker
 
 
 class SoundFont(NoteGenerator):
@@ -21,7 +22,7 @@ class SoundFont(NoteGenerator):
         """:field
         The path to the SoundFont file.
         """
-        self.path: str = ""
+        self.path: Callbacker[str] = Callbacker(value="", callback=self.__load_soundfont)
         # If this doesn't match self.path, try to reload the SoundFont file.
         self.__current_path: str = ""
         # The loader.
@@ -75,16 +76,17 @@ class SoundFont(NoteGenerator):
         """
 
         # We already loaded this SoundFont.
-        if self.path == self.__current_path and self.__loader is not None:
+        path = self.path.get()
+        if path == self.__current_path and self.__loader is not None:
             return True
         # Get a cached SoundFont.
-        if self.path in SoundFont.__SOUND_FONTS:
-            self.__loader = SoundFont.__SOUND_FONTS[self.path]
+        if path in SoundFont.__SOUND_FONTS:
+            self.__loader = SoundFont.__SOUND_FONTS[path]
         # Try to load the SoundFont.
         else:
             try:
-                self.__loader = sf2_loader(self.path)
-                SoundFont.__SOUND_FONTS[self.path] = self.__loader
+                self.__loader = sf2_loader(path)
+                SoundFont.__SOUND_FONTS[path] = self.__loader
             except ValueError:
                 return False
         self.__current_path = self.path

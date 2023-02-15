@@ -25,7 +25,10 @@ class NoteGenerator(WaveformGenerator, ABC):
         self.beat: Dict[str, float] = dict()
         for b in beat:
             bs = b.split("/")
-            self.beat[b] = round(float(bs[0]) / float(bs[1]), 3)
+            if len(bs) == 2:
+                self.beat[b] = round(float(bs[0]) / float(bs[1]), 3)
+            else:
+                self.beat[b] = round(float(bs[0]), 3)
         """:field
         A list of possible volumes (0-127).
         """

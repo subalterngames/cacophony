@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from cacophony.cardinal_direction import CardinalDirection
 from cacophony.render.globals import COLORS
 from cacophony.render.color import Color
@@ -13,9 +13,13 @@ class Options(UiField):
     Cycle through a list of options.
     """
 
-    def __init__(self, title: str, font_color: Color, options: list, index: int = 0):
-        super().__init__(title=title, font_color=font_color)
-        self._options: list = options
+    def __init__(self, title: str, options: Union[list, dict], index: int = 0):
+        super().__init__(title=title, key_color=Color.parameter_key)
+        self._options: Union[list, dict] = options
+        if isinstance(self._options, list):
+            self._options_list: list = self._options
+        else:
+            self._options_list = list(self._options.keys())
         self._index: int = index
 
     def select(self) -> None:
@@ -30,11 +34,11 @@ class Options(UiField):
     def left(self) -> None:
         self._index -= 1
         if self._index < 0:
-            self._index = len(self._options) - 1
+            self._index = len(self._options_list) - 1
 
     def right(self) -> None:
         self._index += 1
-        if self._index >= len(self._options):
+        if self._index >= len(self._options_list):
             self._index = 0
 
     def _render(self, position: Tuple[int, int], focus: bool, vertical: bool) -> List[Command]:
