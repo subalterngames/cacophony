@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Union, Callable
 from pygame.midi import midi_to_frequency
 from chipnumpy.synthesizer import Synthesizer as ChipSynth
@@ -19,6 +20,13 @@ class Chiptune(Synthesizer):
 
     def get_channels(self) -> int:
         return 1
+
+    def serialize(self) -> bytes:
+        return bytes([0, self._pcm.value])
+
+    @staticmethod
+    def deserialize(bs: bytes, index: int) -> Chiptune:
+        return Chiptune(pcm=ChiptunePCM(int(bs[index + 1])))
 
     def set(self, pcm: ChiptunePCM) -> None:
         """

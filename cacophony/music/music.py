@@ -1,3 +1,5 @@
+from __future__ import annotations
+from struct import pack
 from typing import List
 from pydub import AudioSegment
 from cacophony.music.track import Track
@@ -31,3 +33,10 @@ class Music:
         for i in range(1, len(self.tracks)):
             a = a.overlay(AudioSegment(self.tracks[i].audio_segment(bpm=self.bpm)))
         return a
+
+    def serialize(self) -> bytes:
+        bs = bytearray()
+        bs.extend(pack(">ii", self.bpm, len(self.tracks)))
+        for track in self.tracks:
+            bs.extend(track.serialize())
+        return bytes(bs)

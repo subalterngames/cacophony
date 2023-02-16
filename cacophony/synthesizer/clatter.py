@@ -1,5 +1,7 @@
+from __future__ import annotations
+from struct import pack
 from itertools import permutations
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 import clr
 from pkg_resources import resource_filename
@@ -49,8 +51,21 @@ class Clatter(Synthesizer):
     __AMPS_AND_RESONANCES: List[tuple] = list(permutations([round(__a, 1) for __a in np.arange(0, 1, step=0.2)], 4))
     __MAX_SPEED: float = 5
 
+    def __init__(self, seed: Optional[int] = None):
+        self.seed: Optional[int] = seed
+
     def get_channels(self) -> int:
         return 1
+
+    def serialize(self) -> bytes:
+        bs = bytearray()
+        bs.extend(bytes([1, 1 if self.seed is not None else 0]))
+        bs.extend(pack(">i", self.seed if self.seed is not None else 0))
+        return bytes(bs)
+
+    @staticmethod
+    def deserialize(bs: bytes, index: int) -> Clatter:
+        return Clatter(seed=int.from_bytes(bs[index + 2: index + 6], "big") if bs[index + 1] == b'\x01' else None)
 
     def _audio(self, note: Note, duration: float) -> bytes:
         # Get the impact materials.
@@ -78,6 +93,10 @@ class Clatter(Synthesizer):
         primary = ClatterObjectData(0, primary_impact_material, primary_amp, primary_resonance, primary_mass)
         secondary = ClatterObjectData(1, secondary_impact_material, secondary_amp, secondary_resonance, secondary_mass)
         # Generate audio.
-        impact = Impact(primary, secondary, Random())
+        if self.seed is None:
+            rng = Random()
+        else:
+            rng = Random(self.seed)
+        impact = Impact(primary, secondary, rng)
         impact.GetAudio(speed)
         return bytes(impact.samples.ToInt16Bytes())

@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import IntEnum
 
 
-class ChiptunePCM(Enum):
+class ChiptunePCM(IntEnum):
     """
     Chiptune PCM data type.
     """

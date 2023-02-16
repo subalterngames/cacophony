@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from overrides import final
 from cacophony.music.note import Note
@@ -30,6 +31,38 @@ class Synthesizer(ABC):
 
         raise Exception()
 
+    @staticmethod
+    def get_duration(bpm: int, beat: float) -> float:
+        """
+        :param bpm: The beats per minute.
+        :param beat: The duration in terms of beats.
+
+        :return: The duration in terms of seconds.
+        """
+
+        return 60.0 / bpm * beat
+
+    @abstractmethod
+    def serialize(self) -> bytes:
+        """
+        :return: A bytestring of the serialization of this synthesizer.
+        """
+
+        raise Exception()
+
+    @staticmethod
+    @abstractmethod
+    def deserialize(bs: bytes, index: int) -> Synthesizer:
+        """
+        :param bs: The save file bytestring.
+
+        :param index: The starting index.
+
+        :return: A synthesizer.
+        """
+
+        raise Exception()
+
     @abstractmethod
     def _audio(self, note: Note, duration: float) -> bytes:
         """
@@ -42,14 +75,3 @@ class Synthesizer(ABC):
         """
 
         raise Exception()
-
-    @staticmethod
-    def get_duration(bpm: int, beat: float) -> float:
-        """
-        :param bpm: The beats per minute.
-        :param beat: The duration in terms of beats.
-
-        :return: The duration in terms of seconds.
-        """
-
-        return 60.0 / bpm * beat
