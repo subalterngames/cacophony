@@ -12,12 +12,15 @@ from cacophony.music.note import Note
 
 bpm = 120
 beat = 1
-# synth = Chiptune(ChiptunePCM.saw)
-# synth = SoundFont(channel=0)
-# synth.load("D:/SoundFonts/ms_basic.sf3")
-# synth.set_instrument(bank=0, preset=57)
-synth = Clatter()
-music = Music(bpm=bpm, tracks=[Track(synthesizer=synth)])
+sf = SoundFont(channel=0)
+sf.load("D:/SoundFonts/ms_basic.sf3")
+sf.set_instrument(bank=0, preset=0)
+synths = [Chiptune(ChiptunePCM.saw),
+          sf,
+          Clatter()]
+synth_index = 0
+knob = 0
+music = Music(bpm=bpm, tracks=[Track(synthesizer=synths[synth_index])])
 pygame.init()
 pygame.display.set_mode((256, 256))
 pygame.mixer.init(allowedchanges=pygame.AUDIO_ALLOW_CHANNELS_CHANGE)
@@ -44,7 +47,7 @@ while not done:
             # Note on.
             if 144 <= event_type <= 159:
                 note = Note(event[0][1], start=t, duration=beat, volume=volume if fixed_volume else event[0][2])
-                a = synth.audio(note=note, bpm=bpm)
+                a = synths[synth_index].audio(note=note, bpm=bpm)
                 sound = pygame.mixer.Sound(a)
                 sound.play()
                 music.tracks[0].notes.append(note)
@@ -56,6 +59,25 @@ while not done:
                 if event[0][1] in note_ons:
                     note_ons.remove(event[0][1])
                     note_off = True
+        # Knobs.
+        for event in events:
+            if event[0][0] == 176:
+                if event[0][1] == 16:
+                    knob += 0.1
+                    if knob < 1:
+                        continue
+                    knob = 0
+                    if event[0][2] == 127:
+                        synth_index -= 1
+                        if synth_index < 0:
+                            synth_index = len(synths) - 1
+                    else:
+                        synth_index += 1
+                        if synth_index >= len(synths):
+                            synth_index = 0
+                    music.tracks[0].synthesizer = synths[synth_index]
+                elif event[0][1] == 20:
+                    print(event)
         # Advance time.
         if note_off and len(note_ons) == 0:
             t += beat

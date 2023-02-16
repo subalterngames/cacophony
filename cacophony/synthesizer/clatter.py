@@ -71,7 +71,7 @@ class Clatter(Synthesizer):
         # Get the impact materials.
         n: int = note.note % len(Clatter.__IMPACT_MATERIALS)
         primary_impact_material: ImpactMaterial = Clatter.__IMPACT_MATERIALS[n]
-        secondary_impact_material: ImpactMaterial = Clatter.__IMPACT_MATERIALS[len(Clatter.__IMPACT_MATERIALS) - n]
+        secondary_impact_material: ImpactMaterial = Clatter.__IMPACT_MATERIALS[(len(Clatter.__IMPACT_MATERIALS) - n) % len(Clatter.__IMPACT_MATERIALS)]
         # Load the impact materials.
         ImpactMaterialData.Load(primary_impact_material)
         ImpactMaterialData.Load(secondary_impact_material)
