@@ -35,8 +35,32 @@ class Music:
         return a
 
     def serialize(self) -> bytes:
+        """
+        :return: A serialize bytestring of the music.
+        """
+
         bs = bytearray()
         bs.extend(pack(">ii", self.bpm, len(self.tracks)))
         for track in self.tracks:
             bs.extend(track.serialize())
         return bytes(bs)
+
+    @staticmethod
+    def deserialize(bs: bytes) -> Music:
+        """
+        :param bs: A serialized bytestring of the music.
+
+        :return: Deserialized music.
+        """
+
+        bpm = int.from_bytes(bs[0: 4], "big")
+        num_tracks = int.from_bytes(bs[4: 8], "big")
+        tracks = []
+        index = 8
+        # Deserialize the tracks.
+        for i in range(num_tracks):
+            tracks.append(Track.deserialize(bs=bs, index=index))
+            # Advance the index.
+            track_length: int = int.from_bytes(bs[index: index + 4], "big")
+            index += track_length
+        return Music(bpm=bpm, tracks=tracks)

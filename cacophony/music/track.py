@@ -70,18 +70,21 @@ class Track:
         :return: A serialized bytestring of this track.
         """
 
-        bs = bytearray()
+        track_bytes = bytearray()
         # Serialize the synthesizer.
         s = self.synthesizer.serialize()
         # Get the length of the serialized synthesizer.
-        bs.extend(pack(">i", len(s)))
+        track_bytes.extend(pack(">i", len(s)))
         # Add the serialized synthesizer.
-        bs.extend(s)
+        track_bytes.extend(s)
         # Get the length of the notes.
-        bs.extend(pack(">i", len(self.notes) * 10))
+        track_bytes.extend(pack(">i", len(self.notes) * 10))
         # Serialize the notes.
         for note in self.notes:
-            bs.extend(note.serialize())
+            track_bytes.extend(note.serialize())
+        bs = bytearray()
+        bs.extend(pack(">i", len(track_bytes)))
+        bs.extend(track_bytes)
         return bytes(bs)
 
     @staticmethod
@@ -94,22 +97,22 @@ class Track:
         """
 
         # Get the synthesizer ID.
-        synth_id: int = int(bs[index + 4])
+        synth_id: int = int(bs[index + 8])
         if synth_id == 0:
-            synthesizer = Chiptune.deserialize(bs=bs, index=index + 4)
+            synthesizer = Chiptune.deserialize(bs=bs, index=index + 8)
         elif synth_id == 1:
-            synthesizer = Clatter.deserialize(bs=bs, index=index + 4)
+            synthesizer = Clatter.deserialize(bs=bs, index=index + 8)
         elif synth_id == 2:
-            synthesizer = SoundFont.deserialize(bs=bs, index=index + 4)
+            synthesizer = SoundFont.deserialize(bs=bs, index=index + 8)
         else:
             raise Exception(f"Unknown synthesizer ID: {synth_id}")
         # Get the length of the synthesizer.
-        synth_length: int = int.from_bytes(bs[index: index + 4], "big")
+        synth_length: int = int.from_bytes(bs[index + 4: index + 8], "big")
         # Get the length of the notes.
-        notes_length = int.from_bytes(bs[index + synth_length: index + synth_length + 4], "big")
+        notes_length = int.from_bytes(bs[index + synth_length + 8: index + synth_length + 12], "big")
         # Get the notes.
         notes: List[Note] = list()
-        for i in range(index + synth_length + 4, index + synth_length + 4 + notes_length, step=10):
+        for i in range(index + synth_length + 12, index + synth_length + 12 + notes_length, 10):
             notes.append(Note.deserialize(bs=bs, index=i))
         # Get the track.
         return Track(synthesizer=synthesizer, notes=notes)
