@@ -1,5 +1,5 @@
 from itertools import permutations
-from typing import Dict, List
+from typing import List
 from pathlib import Path
 import clr
 from pkg_resources import resource_filename
@@ -48,8 +48,6 @@ class Clatter(Synthesizer):
     __MASSES: List[float] = [0.123, 0.261, 1.305, 12.008, 81.325, 183.7]
     __AMPS_AND_RESONANCES: List[tuple] = list(permutations([round(__a, 1) for __a in np.arange(0, 1, step=0.2)], 4))
     __MAX_SPEED: float = 5
-    IMPACT_MATERIALS: Dict[str, ImpactMaterial] = {k.ToString(): k for k in Enum.GetValues(ImpactMaterial)}
-    SCRAPE_MATERIALS: Dict[str, ScrapeMaterial] = {k.ToString(): k for k in Enum.GetValues(ScrapeMaterial)}
 
     def get_channels(self) -> int:
         return 1
