@@ -5,7 +5,7 @@ from sf2_loader.read_sf2.read_sf2 import sf2_loader
 from cacophony.synthesizer.synthesizer import Synthesizer
 from cacophony.music.note import Note
 from cacophony.path_util import get_string_path
-from cacophony.waveform_generators.globals import FRAMERATE
+from cacophony.music.globals import FRAMERATE
 
 
 class SoundFont(Synthesizer):
@@ -39,7 +39,7 @@ class SoundFont(Synthesizer):
         self._loader = sf2_loader(get_string_path(path))
         if self._loader is None:
             return False
-        instruments = self._loader.get_current_instrument()
+        instruments = self._loader.all_instruments()
         # Set the instruments.
         self.instruments.clear()
         for bank in instruments:

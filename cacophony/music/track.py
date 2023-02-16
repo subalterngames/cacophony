@@ -3,7 +3,7 @@ from typing import List
 from pydub import AudioSegment
 from cacophony.music.note import Note
 from cacophony.synthesizer.synthesizer import Synthesizer
-from cacophony.waveform_generators.globals import FRAMERATE, SAMPLE_WIDTH
+from cacophony.music.globals import FRAMERATE, SAMPLE_WIDTH
 
 
 class Track:

@@ -1,0 +1,2 @@
+FRAMERATE: int = 44100
+SAMPLE_WIDTH: int = 2
