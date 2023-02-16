@@ -35,7 +35,7 @@ class SoundFont(Synthesizer):
         bs = bytearray(bytes([2, self.channel, self.bank, self.preset]))
         path = self._path.encode("utf-8")
         # The length of the path.
-        bs.extend(pack(">i", path))
+        bs.extend(pack(">i", len(path)))
         # The path.
         bs.extend(path)
         return bs

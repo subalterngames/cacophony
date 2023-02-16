@@ -82,7 +82,9 @@ while not done:
         if note_off and len(note_ons) == 0:
             t += beat
 # Playback.
+print(len(music.serialize()))
 audio_segment = music.audio()
+print(len(audio_segment.raw_data))
 sound = pygame.mixer.Sound(audio_segment.raw_data)
 sound.play()
 sleep(sound.get_length())
