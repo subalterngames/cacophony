@@ -60,8 +60,7 @@ class Text(RenderAt):
             else:
                 height = len(lines)
             surface = Surface((self._size[0] * CELL_SIZE[0], height * CELL_SIZE[1]))
-            if not CLEAR_COLOR_IS_BLACK:
-                surface.fill(CLEAR_COLOR)
+            surface.fill(self._background_color)
             y = 0
             for i in range(height):
                 text_surface = FONT.render(lines[i], True, self._text_color, self._background_color)
