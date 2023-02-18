@@ -4,7 +4,7 @@ from cacophony.render.commands.abc_rectangle import AbcRectangle
 
 class Rectangle(AbcRectangle):
     """
-    Draw a filled rectangle.
+    Blit a filled rectangle surface.
     """
 
     def _get_surface(self) -> Surface:

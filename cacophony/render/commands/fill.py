@@ -5,7 +5,7 @@ from cacophony.render.globals import WINDOW_GRID_WIDTH, WINDOW_GRID_HEIGHT
 
 class Fill(Rectangle):
     """
-    Fill the screen with a color.
+    Fill the display surface with a color.
     """
 
     def __init__(self, color: Tuple[int, int, int]):

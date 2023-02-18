@@ -1,18 +1,18 @@
 from textwrap import wrap
 from typing import Tuple, Optional, List, Union
-from pygame import Surface
+from pygame import Surface, Rect
 from cacophony.render.commands.render_at import RenderAt
 from cacophony.render.globals import CELL_SIZE, CLEAR_COLOR, CLEAR_COLOR_IS_BLACK, FONT
 
 
 class Text(RenderAt):
     """
-    Add text, which can optionally wrap around a width.
+    Blit text, which can optionally wrap around a width or fit in a box.
     """
 
     def __init__(self, text: str, text_color: Tuple[int, int, int], background_color: Tuple[int, int, int],
                  position: Tuple[int, int], size: Union[int, Tuple[int, int]] = None, truncate_left: bool = True,
-                 pivot: Tuple[float, float] = None, anchor: Tuple[float, float] = None):
+                 pivot: Tuple[float, float] = None, anchor: Tuple[float, float] = None, parent_rect: Rect = None):
         """
         :param text: The text.
         :param text_color: The RGB (0-255) text color.
@@ -22,9 +22,10 @@ class Text(RenderAt):
         :param truncate_left: If `size` is an integer, this handles how to truncate text. If True, text will be rendered from `0` to `size`. If False, text will be rendered from `len(text) - size)` to `len(text)`.
         :param pivot: The pivot as a (x, y) 0-1 tuple. If the pivot is `(0, 0)`, then it is located at the top-left of the surface we're about to render. `(0, 1)` would be bottom-left, etc.
         :param anchor: The anchor as a (x, y) 0-1 tuple. If the anchor is `(0, 0)`, there is no offset. If the anchor is `(1, 0)`, then the position would be offset by the pivot offset plus the width of the screen.
+        :param parent_rect: The parent rect that pivot and anchor are relative to. If None, this defaults to the display surface rect.
         """
 
-        super().__init__(position=position, pivot=pivot, anchor=anchor)
+        super().__init__(position=position, pivot=pivot, anchor=anchor, parent_rect=parent_rect)
         self._text: str = text
         self._size: Optional[Union[int, Tuple[int, int]]] = size
         self._text_color: Tuple[int, int, int] = text_color
