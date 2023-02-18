@@ -1,5 +1,4 @@
 from __future__ import annotations
-from struct import pack
 from itertools import permutations
 from typing import List, Optional
 from pathlib import Path
@@ -7,6 +6,7 @@ import clr
 from pkg_resources import resource_filename
 from requests import get
 from bs4 import BeautifulSoup
+from h5py import Group
 import numpy as np
 from cacophony.music.note import Note
 from cacophony.synthesizer.synthesizer import Synthesizer
@@ -57,15 +57,10 @@ class Clatter(Synthesizer):
     def get_channels(self) -> int:
         return 1
 
-    def serialize(self) -> bytes:
-        bs = bytearray()
-        bs.extend(bytes([1, 1 if self.seed is not None else 0]))
-        bs.extend(pack(">i", self.seed if self.seed is not None else 0))
-        return bytes(bs)
-
     @staticmethod
-    def deserialize(bs: bytes, index: int) -> Clatter:
-        return Clatter(seed=int.from_bytes(bs[index + 2: index + 6], "big") if bs[index + 1] == b'\x01' else None)
+    def deserialize(group: Group) -> Clatter:
+        seed = list(group["seed"])
+        return Clatter(seed=seed[1] if seed[0] > 0 else None)
 
     def _audio(self, note: Note, duration: float) -> bytes:
         # Get the impact materials.
@@ -100,3 +95,7 @@ class Clatter(Synthesizer):
         impact = Impact(primary, secondary, rng)
         impact.GetAudio(speed)
         return bytes(impact.samples.ToInt16Bytes())
+
+    def _serialize(self, group: Group) -> None:
+        has_seed = self.seed is not None
+        group.create_dataset(name="seed", shape=[2], data=[1 if has_seed else 0, self.seed if has_seed else 0], dtype=int)

@@ -1,8 +1,8 @@
 from __future__ import annotations
-from struct import pack
 from pathlib import Path
 from typing import Optional, Dict, Union
 import numpy as np
+from h5py import Group
 from sf2_loader.read_sf2.read_sf2 import sf2_loader
 from cacophony.synthesizer.synthesizer import Synthesizer
 from cacophony.music.note import Note
@@ -30,23 +30,13 @@ class SoundFont(Synthesizer):
     def get_channels(self) -> int:
         return 2
 
-    def serialize(self) -> bytes:
-        # ID, channel, bank, preset.
-        bs = bytearray(bytes([2, self.channel, self.bank, self.preset]))
-        path = self._path.encode("utf-8")
-        # The length of the path.
-        bs.extend(pack(">i", len(path)))
-        # The path.
-        bs.extend(path)
-        return bs
-
     @staticmethod
-    def deserialize(bs: bytes, index: int) -> SoundFont:
-        channel = int(bs[index + 1])
-        bank = int(bs[index + 2])
-        preset = int(bs[index + 3])
-        path_length = int.from_bytes(bs[index + 4: index + 8], "big")
-        path: str = bs[index + 9: index + 9 + path_length].decode("utf-8")
+    def deserialize(group: Group) -> SoundFont:
+        sf: np.ndarray = np.array(group["sf"], dtype=np.uint8)
+        channel = int(sf[0])
+        bank = int(sf[1])
+        preset = int(sf[2])
+        path = str(group["path"])
         s = SoundFont(channel=channel)
         s.load(path=path)
         s.set_instrument(bank=bank, preset=preset)
@@ -102,3 +92,10 @@ class SoundFont(Synthesizer):
         self._loader.synth.noteoff(self.channel, note.note)
         # Return the int16 samples.
         return np.int16(a).tobytes()
+
+    def _serialize(self, group: Group) -> None:
+        # Serialize the data.
+        group.create_dataset(name="sf", shape=[3], data=np.array([self.channel, self.bank, self.preset], dtype=np.uint8),
+                             dtype=np.uint8)
+        # Add the file path.
+        group.attrs["path"] = self._path

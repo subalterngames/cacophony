@@ -1,3 +1,4 @@
+from os.path import getsize
 from typing import List
 from time import sleep
 import pygame.midi
@@ -20,7 +21,7 @@ synths = [Chiptune(ChiptunePCM.saw),
           Clatter()]
 synth_index = 0
 knob = 0
-music = Music(bpm=bpm, tracks=[Track(synthesizer=synths[synth_index])])
+music = Music(bpm=bpm, tracks=[Track(track_id=0, synthesizer=synths[synth_index])])
 pygame.init()
 pygame.display.set_mode((256, 256))
 pygame.mixer.init(allowedchanges=pygame.AUDIO_ALLOW_CHANNELS_CHANGE)
@@ -82,7 +83,9 @@ while not done:
         if note_off and len(note_ons) == 0:
             t += beat
 # Playback.
-print(len(music.serialize()))
+filename = "test.hdf5"
+music.serialize(filename)
+print(getsize(filename))
 audio_segment = music.audio()
 print(len(audio_segment.raw_data))
 sound = pygame.mixer.Sound(audio_segment.raw_data)

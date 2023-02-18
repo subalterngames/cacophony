@@ -1,8 +1,9 @@
 from __future__ import annotations
-from struct import pack
 from io import BytesIO
 from typing import List
 from pydub import AudioSegment
+from h5py import Group
+import numpy as np
 from cacophony.music.note import Note
 from cacophony.synthesizer.synthesizer import Synthesizer
 from cacophony.synthesizer.chiptune import Chiptune
@@ -16,12 +17,14 @@ class Track:
     A track has notes.
     """
 
-    def __init__(self, synthesizer: Synthesizer, notes: List[Note] = None):
+    def __init__(self, track_id: int, synthesizer: Synthesizer, notes: List[Note] = None):
         """
+        :param track_id: The track ID.
         :param synthesizer: The track's synthesizer.
         :param notes: The notes. If None, the list is empty.
         """
 
+        self.track_id: int = track_id
         self.synthesizer: Synthesizer = synthesizer
         if notes is None:
             self.notes: List[Note] = list()
@@ -65,54 +68,53 @@ class Track:
                 audio += audio_segment[-s:]
         return audio
 
-    def serialize(self) -> bytes:
+    def serialize(self, tracks_group: Group) -> None:
         """
-        :return: A serialized bytestring of this track.
+        :param tracks_group: The HDF5 group that this track belongs to.
         """
 
-        track_bytes = bytearray()
+        track_group: Group = tracks_group.create_group(name=str(self.track_id))
         # Serialize the synthesizer.
-        s = self.synthesizer.serialize()
-        # Get the length of the serialized synthesizer.
-        track_bytes.extend(pack(">i", len(s)))
-        # Add the serialized synthesizer.
-        track_bytes.extend(s)
-        # Get the length of the notes.
-        track_bytes.extend(pack(">i", len(self.notes) * 10))
+        self.synthesizer.serialize(track_group=track_group)
         # Serialize the notes.
-        for note in self.notes:
-            track_bytes.extend(note.serialize())
-        bs = bytearray()
-        bs.extend(pack(">i", len(track_bytes)))
-        bs.extend(track_bytes)
-        return bytes(bs)
+        note_bytes: np.ndarray = np.zeros(shape=(len(self.notes), 2), dtype=np.uint8)
+        note_floats: np.ndarray = np.zeros(shape=(len(self.notes), 2), dtype=np.float32)
+        for i, note in enumerate(self.notes):
+            note_bytes[i][0] = note.note
+            note_bytes[i][1] = note.volume
+            note_floats[i][0] = round(note.start, 6)
+            note_floats[i][1] = round(note.duration, 6)
+        track_group.create_dataset(name="note_bytes", data=note_bytes, dtype=np.uint8)
+        track_group.create_dataset(name="note_floats", data=note_floats, dtype=np.float32)
 
     @staticmethod
-    def deserialize(bs: bytes, index: int) -> Track:
+    def deserialize(tracks_group: Group, track_id: str) -> Track:
         """
-        :param bs: The save file bytestring.
-        :param index: The starting index for the serialized track.
+        :param tracks_group: The group of all tracks.
+        :param track_id: The track ID as a string.
 
         :return: A Track.
         """
 
-        # Get the synthesizer ID.
-        synth_id: int = int(bs[index + 8])
-        if synth_id == 0:
-            synthesizer = Chiptune.deserialize(bs=bs, index=index + 8)
-        elif synth_id == 1:
-            synthesizer = Clatter.deserialize(bs=bs, index=index + 8)
-        elif synth_id == 2:
-            synthesizer = SoundFont.deserialize(bs=bs, index=index + 8)
+        track_group: Group = tracks_group[track_id]
+        synthesizer_group: Group = track_group["synthesizer"]
+        synthesizer_type: str = str(synthesizer_group.attrs["type"])
+        if synthesizer_type == "Chiptune":
+            synthesizer = Chiptune.deserialize(synthesizer_group)
+        elif synthesizer_type == "Clatter":
+            synthesizer = Clatter.deserialize(synthesizer_group)
+        elif synthesizer_type == "SoundFont":
+            synthesizer = SoundFont.deserialize(synthesizer_group)
         else:
-            raise Exception(f"Unknown synthesizer ID: {synth_id}")
-        # Get the length of the synthesizer.
-        synth_length: int = int.from_bytes(bs[index + 4: index + 8], "big")
-        # Get the length of the notes.
-        notes_length = int.from_bytes(bs[index + synth_length + 8: index + synth_length + 12], "big")
+            raise Exception(f"Unknown synthesizer type: {synthesizer_type}")
         # Get the notes.
         notes: List[Note] = list()
-        for i in range(index + synth_length + 12, index + synth_length + 12 + notes_length, 10):
-            notes.append(Note.deserialize(bs=bs, index=i))
+        note_bytes: np.ndarray = np.array(track_group["note_bytes"], dtype=np.uint8)
+        note_floats: np.ndarray = np.array(track_group["note_floats"], dtype=np.float32)
+        for i in range(note_bytes.shape[0]):
+            notes.append(Note(note=int(note_bytes[i][0]),
+                              start=round(float(note_floats[i][0]), 6),
+                              duration=round(float(note_floats[i][1]), 6),
+                              volume=int(note_bytes[i][1])))
         # Get the track.
-        return Track(synthesizer=synthesizer, notes=notes)
+        return Track(track_id=int(track_id), synthesizer=synthesizer, notes=notes)

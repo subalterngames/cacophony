@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from overrides import final
+from h5py import Group
 from cacophony.music.note import Note
 
 
@@ -42,21 +43,22 @@ class Synthesizer(ABC):
 
         return 60.0 / bpm * beat
 
-    @abstractmethod
-    def serialize(self) -> bytes:
+    @final
+    def serialize(self, track_group: Group) -> None:
         """
-        :return: A bytestring of the serialization of this synthesizer.
+        :param track_group: The HDF5 group that the synthesizer's group will be serialized to.
         """
 
-        raise Exception()
+        synthesizer_group: Group = track_group.create_group(name="synthesizer")
+        # Remember the name.
+        synthesizer_group.attrs["type"] = self.__class__.__name__
+        self._serialize(group=synthesizer_group)
 
     @staticmethod
     @abstractmethod
-    def deserialize(bs: bytes, index: int) -> Synthesizer:
+    def deserialize(group: Group) -> Synthesizer:
         """
-        :param bs: The save file bytestring.
-
-        :param index: The starting index.
+        :param group: The synthesizer HDF5 group.
 
         :return: A synthesizer.
         """
@@ -72,6 +74,16 @@ class Synthesizer(ABC):
         :param duration: The duration of the note in seconds.
 
         :return: A bytestring of audio samples.
+        """
+
+        raise Exception()
+
+    @abstractmethod
+    def _serialize(self, group: Group) -> None:
+        """
+        Serialize the synthesizer.
+
+        :param group: The synthesizer's HDF5 group.
         """
 
         raise Exception()
