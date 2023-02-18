@@ -1,12 +1,12 @@
 from typing import List, Tuple
-from pygame.display import get_surface
 from pygame import Rect
 from cacophony.render.commands.command import Command
 from cacophony.render.commands.border import Border
 from cacophony.render.commands.rectangle import Rectangle
 from cacophony.render.commands.text import Text
-from cacophony.render.globals import COLORS, CELL_SIZE
+from cacophony.render.globals import COLORS
 from cacophony.render.color import Color
+from cacophony.render.macros.parent_rect import get_parent_rect
 
 
 def panel(position: Tuple[int, int], size: Tuple[int, int], focus: bool, pivot: Tuple[float, float] = None,
@@ -24,16 +24,11 @@ def panel(position: Tuple[int, int], size: Tuple[int, int], focus: bool, pivot: 
     :return: A list of commands to blit a panel.
     """
 
-    if parent_rect is None:
-        parent_rect: Rect = get_surface().get_rect()
-    text_rect: Rect = Rect(position[0] * CELL_SIZE[0],
-                           position[1] * CELL_SIZE[1],
-                           size[0] * CELL_SIZE[0],
-                           size[1] * CELL_SIZE[1])
-    text_rect.x -= int(text_rect.w * pivot[0])
-    text_rect.y -= int(text_rect.h * pivot[1])
-    text_rect.x += parent_rect.x + int(parent_rect.w * anchor[0])
-    text_rect.y += parent_rect.y + int(parent_rect.h * anchor[1])
+    text_rect: Rect = get_parent_rect(position=(0, 0),
+                                      size=size,
+                                      pivot=pivot,
+                                      anchor=anchor,
+                                      grandparent_rect=parent_rect)
     # Blit the panel background.
     commands = [Rectangle(position=position,
                           size=size,
