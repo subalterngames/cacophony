@@ -10,7 +10,8 @@ class AbcRectangle(RenderAt, ABC):
     Abstract base class for drawing rectangles.
     """
 
-    def __init__(self, size: Tuple[int, int], color: Tuple[int, int, int], position: Tuple[int, int], pivot: Tuple[float, float] = None, anchor: Tuple[float, float] = None,
+    def __init__(self, size: Tuple[int, int], color: Tuple[int, int, int], position: Tuple[int, int],
+                 pivot: Tuple[float, float] = None, anchor: Tuple[float, float] = None,
                  parent_rect: Rect = None):
         """
         :param size: The size in grid coordinates.

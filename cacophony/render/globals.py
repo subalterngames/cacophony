@@ -1,5 +1,5 @@
 from json import loads
-from typing import Tuple, Dict, List, Union
+from typing import Tuple, Dict, Union
 from configparser import ConfigParser, SectionProxy
 from pathlib import Path
 import pygame.font
@@ -67,3 +67,8 @@ INPUTS: Dict[Union[str, Tuple[int, int, int]], InputKey] = dict()
 for __k, __i in zip(["up", "down", "left", "right", "next_panel", "previous_panel", "select"],
                     [InputKey.up, InputKey.down, InputKey.right, InputKey.left, InputKey.next_panel, InputKey.previous_panel, InputKey.select]):
     INPUTS[__input_section[__k]] = __i
+# A stippled rectangle.
+STIPPLE_ARRAY: np.ndarray = np.zeros(CELL_SIZE, dtype=np.uint8)
+STIPPLE_ARRAY[::2, 1::2] = 255
+STIPPLE_ARRAY[1::2, 0::2] = 255
+STIPPLE_ARRAY = np.stack((STIPPLE_ARRAY,) * 3, axis=-1)
