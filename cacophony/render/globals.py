@@ -64,9 +64,8 @@ ARROWS[CardinalDirection.north] = np.rot90(ARROWS[CardinalDirection.west])
 # Input.
 __input_section: SectionProxy = __parser["KEYBOARD_INPUT"]
 INPUTS: Dict[Union[str, Tuple[int, int, int]], InputKey] = dict()
-for __k, __i in zip(["up", "down", "left", "right", "next_panel", "previous_panel", "select"],
-                    [InputKey.up, InputKey.down, InputKey.right, InputKey.left, InputKey.next_panel, InputKey.previous_panel, InputKey.select]):
-    INPUTS[__input_section[__k]] = __i
+for __i in InputKey:
+    INPUTS[__input_section[__i.name]] = __i
 # A stippled rectangle.
 STIPPLE_ARRAY: np.ndarray = np.zeros(CELL_SIZE, dtype=np.uint8)
 STIPPLE_ARRAY[::2, 1::2] = 255

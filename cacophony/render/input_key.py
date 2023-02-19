@@ -13,3 +13,4 @@ class InputKey(IntFlag):
     next_panel = 16
     previous_panel = 32
     select = 64
+    play = 128

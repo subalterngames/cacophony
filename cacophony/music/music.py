@@ -33,7 +33,7 @@ class Music:
 
         a: AudioSegment = self.tracks[0].audio_segment(bpm=self.bpm)
         for i in range(1, len(self.tracks)):
-            a = a.overlay(AudioSegment(self.tracks[i].audio_segment(bpm=self.bpm)))
+            a = a.overlay(self.tracks[i].audio_segment(bpm=self.bpm))
         return a
 
     def serialize(self, path: Union[str, Path]) -> None:
