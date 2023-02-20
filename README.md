@@ -69,3 +69,8 @@ Why Cacophony? Doesn't that literally mean *bad sound*? Well, guess what:
 
 1. It's funny.
 2. You're all using stuff named "Ableton" and "Pro Tools" and "Reaper" as if that evokes any emotion at all.
+
+
+## 6. Mascot
+
+Cacophony's mascot is Casey the Transgender Cacodemon. No official artwork of Casey exists because I don't want to be cursed.
