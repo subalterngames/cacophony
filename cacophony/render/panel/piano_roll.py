@@ -48,7 +48,11 @@ class PianoRoll(Panel):
         note_1 = self._note_0 + h
         note_name_x = self._position[0] + 1
         note_y = y0
-        for note_value in range(self._note_0, self._note_0 + h):
+        # Get the range of notes.
+        note_range = list(range(self._note_0, self._note_0 + h))
+        # Reverse the order.
+        note_range.reverse()
+        for note_value in note_range:
             # Blit the note name and the horizontal line.
             commands.extend([Text(text=midi_to_ansi_note(note_value),
                                   text_color=COLORS[Color.piano_roll_note_name_focus if focus else Color.piano_roll_note_name_no_focus],

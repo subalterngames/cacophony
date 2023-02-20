@@ -58,6 +58,8 @@ while True:
         audio_segment = m.tracks[1].audio_segment(bpm=m.bpm)
         sound = pygame.mixer.Sound(audio_segment.raw_data)
         channel.play(sound)
+    elif InputKey.help in result.inputs_pressed:
+        help_text = panel.get_help_text() if track_list_focus else piano_roll.get_help_text()
     # Cycle between panels.
     if InputKey.next_panel in result.inputs_pressed:
         piano_roll_focus = not piano_roll_focus
