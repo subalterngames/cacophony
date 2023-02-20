@@ -66,6 +66,14 @@ class Synthesizer(ABC):
         raise Exception()
 
     @abstractmethod
+    def get_help_text(self) -> str:
+        """
+        :return: Help text for text-to-speech.
+        """
+
+        raise Exception()
+
+    @abstractmethod
     def _audio(self, note: Note, duration: float) -> bytes:
         """
         Synthesize a note.

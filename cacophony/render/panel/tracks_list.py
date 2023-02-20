@@ -28,4 +28,4 @@ class TracksList(ScrollPanel):
 
     def get_widget_help(self) -> str:
         track = self._music.tracks[self.selection_index]
-        return f"Track {track.}"*
+        return f"Track {track.track_id}. {track.synthesizer.get_help_text()}"

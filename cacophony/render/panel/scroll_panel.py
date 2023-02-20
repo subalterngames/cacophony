@@ -56,7 +56,6 @@ class ScrollPanel(Panel):
 
     def _do_result(self, result: RenderResult) -> bool:
         if InputKey.up in result.inputs_pressed:
-
             if self._element_index == 0 and self._page_index > 0:
                 self._page_index -= 1
                 self._element_index = len(self._pages[self._page_index]) - 1

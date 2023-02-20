@@ -10,6 +10,7 @@ from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
 from cacophony.cardinal_direction import CardinalDirection
 from cacophony.music.track import Track
+from cacophony.music.music import Music
 
 
 class PianoRoll(Panel):
@@ -19,9 +20,10 @@ class PianoRoll(Panel):
 
     _NOTE_NAME_WIDTH: int = 3
 
-    def __init__(self, track: Track, selected_note: int, time_0: int, note_0: int):
+    def __init__(self, music: Music, track_index: int, selected_note: int, time_0: int, note_0: int):
         """
-        :param track: The music track.
+        :param music: The music.
+        :param track_index: The track index.
         :param selected_note: The index of the selected note.
         :param time_0: The minimum time in beats to be visualized in this panel.
         :param note_0: The minimum MIDI note value to be visualized in this panel.
@@ -31,7 +33,8 @@ class PianoRoll(Panel):
         super().__init__(title=f"Piano Roll t0={time_0}",
                          position=(layout[0], layout[1]),
                          size=(layout[2], layout[3]))
-        self.track: Track = track
+        self.music: Music = music
+        self.track_index: int = track_index
         self.selected_note: int = selected_note
         self.time_0: int = time_0
         self.note_0: int = note_0
@@ -85,7 +88,7 @@ class PianoRoll(Panel):
                                   anchor=self._anchor,
                                   parent_rect=self._parent_rect)])
             # Blit each note.
-            for i, note in enumerate(self.track.notes):
+            for i, note in enumerate(self.music.tracks[self.track_index].notes):
                 # Ignore notes that are out of range.
                 if note.note != note_value or note.note < self.note_0 or note.note > note_1 or note.start + note.duration <= self.time_0 or note.start > time_1:
                     continue
@@ -107,7 +110,7 @@ class PianoRoll(Panel):
             note_y += 1
         # Add arrows.
         max_time = 0
-        for note in self.track.notes:
+        for note in self.music.tracks[self.track_index].notes:
             note_t1 = note.start + note.duration
             if note_t1 > max_time:
                 max_time = note_t1

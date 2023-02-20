@@ -62,6 +62,9 @@ class Clatter(Synthesizer):
         seed = list(group["seed"])
         return Clatter(seed=seed[1] if seed[0] > 0 else None)
 
+    def get_help_text(self) -> str:
+        return "Clatter."
+
     def _audio(self, note: Note, duration: float) -> bytes:
         # Get the impact materials.
         n: int = note.note % len(Clatter.__IMPACT_MATERIALS)

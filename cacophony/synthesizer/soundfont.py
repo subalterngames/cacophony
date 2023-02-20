@@ -83,6 +83,11 @@ class SoundFont(Synthesizer):
         self._loader.change(channel=self.channel, bank=bank, preset=preset)
         return True
 
+    def get_help_text(self) -> str:
+        if self._loader is None or self._path is None or self.bank not in self.instruments:
+            return "SoundFont. No file loaded."
+        return f"SoundFont {Path(self._path).name}. {self.instruments[self.bank][self.preset]}."
+
     def _audio(self, note: Note, duration: float) -> bytes:
         # Note on event.
         self._loader.synth.noteon(self.channel, note.note, note.volume)

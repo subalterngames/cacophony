@@ -48,6 +48,9 @@ class Chiptune(Synthesizer):
         else:
             raise Exception(f"Undefined: {self._pcm}")
 
+    def get_help_text(self) -> str:
+        return f"Chiptune {self._pcm.name} waveform generator."
+
     def _audio(self, note: Note, duration: float) -> bytes:
         return self._generator(note=midi_to_frequency(note.note),
                                amplitude=note.volume / 127,

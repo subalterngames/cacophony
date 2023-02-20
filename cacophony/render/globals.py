@@ -80,6 +80,6 @@ __piano_roll_rect: Tuple[int, int, int, int] = (__tracks_list_rect[2],
                                                 __main_menu_rect[3],
                                                 WINDOW_GRID_WIDTH - __tracks_list_rect[2],
                                                 __tracks_list_rect[3])
-LAYOUTS: Dict[str, Tuple[int, int, int, int]] = {"MainMenuRenderer": __main_menu_rect,
-                                                 "TracksListRenderer": __tracks_list_rect,
+LAYOUTS: Dict[str, Tuple[int, int, int, int]] = {"MainMenu": __main_menu_rect,
+                                                 "TracksList": __tracks_list_rect,
                                                  "PianoRoll": __piano_roll_rect}
