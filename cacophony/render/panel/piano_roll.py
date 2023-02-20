@@ -30,12 +30,14 @@ class PianoRoll(Panel):
         :param size: The size of the panel in grid coordinates.
         """
 
-        super().__init__(title=f"Piano Roll t0={time_0} [- track roll]", position=position, size=size, pivot=(0, 0), anchor=(0, 0),
+        super().__init__(title=f"Piano Roll t0={time_0}", position=position, size=size, pivot=(0, 0), anchor=(0, 0),
                          parent_rect=None)
         self._track: Track = track
         self._selected_note: int = selected_note
         self._time_0: int = time_0
         self._note_0: int = note_0
+        # The directions in which we can scroll.
+        self.scroll_directions: List[CardinalDirection] = list()
 
     def blit(self, focus: bool) -> List[Command]:
         commands = super().blit(focus=focus)
@@ -95,6 +97,7 @@ class PianoRoll(Panel):
             note_t1 = note.start + note.duration
             if note_t1 > max_time:
                 max_time = note_t1
+        self.scroll_directions.clear()
         if focus:
             arrow_color = COLORS[Color.border_focus]
             mid_x = self._position[0] + self._size[0] // 2
@@ -106,13 +109,15 @@ class PianoRoll(Panel):
                                       pivot=self._pivot,
                                       anchor=self._anchor,
                                       parent_rect=self._parent_rect))
+                self.scroll_directions.append(CardinalDirection.west)
             if time_1 < max_time:
-                commands.append(Arrow(position=(self._position[0] + self._size[0], mid_y),
+                commands.append(Arrow(position=(self._position[0] + self._size[0] - 1, mid_y),
                                       direction=CardinalDirection.east,
                                       color=arrow_color,
                                       pivot=self._pivot,
                                       anchor=self._anchor,
                                       parent_rect=self._parent_rect))
+                self.scroll_directions.append(CardinalDirection.east)
             if self._note_0 > 0:
                 commands.append(Arrow(position=(mid_x, self._position[1]),
                                       direction=CardinalDirection.north,
@@ -120,12 +125,13 @@ class PianoRoll(Panel):
                                       pivot=self._pivot,
                                       anchor=self._anchor,
                                       parent_rect=self._parent_rect))
+                self.scroll_directions.append(CardinalDirection.north)
             if note_1 < 127:
-                commands.append(Arrow(position=(mid_x, self._position[1] + self._size[1]),
+                commands.append(Arrow(position=(mid_x, self._position[1] + self._size[1] - 1),
                                       direction=CardinalDirection.south,
                                       color=arrow_color,
                                       pivot=self._pivot,
                                       anchor=self._anchor,
                                       parent_rect=self._parent_rect))
-
+                self.scroll_directions.append(CardinalDirection.south)
         return commands

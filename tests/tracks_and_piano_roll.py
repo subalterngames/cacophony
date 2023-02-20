@@ -6,6 +6,7 @@ from cacophony.synthesizer.soundfont import SoundFont
 from cacophony.render.renderer import Renderer
 from cacophony.render.panel.scroll_panel import ScrollPanel
 from cacophony.render.panel.piano_roll import PianoRoll
+from cacophony.render.panel.main_menu import MainMenu
 from cacophony.render.ui_element.label import Label
 from cacophony.render.globals import WINDOW_GRID_WIDTH, WINDOW_GRID_HEIGHT
 from cacophony.render.input_key import InputKey
@@ -35,20 +36,22 @@ y = 3
 pivot = (0, 0)
 anchor = (0, 0)
 panel_size = (WINDOW_GRID_WIDTH // 7, WINDOW_GRID_HEIGHT - y)
-panel = ScrollPanel(elements=[Label(text=str(i) + " " + track.synthesizer.__class__.__name__,
+tracks_list = ScrollPanel(elements=[Label(text=str(i) + " " + track.synthesizer.__class__.__name__,
                                     size=panel_size[0] - 2) for i, track in enumerate(m.tracks)],
-                    position=(0, 3),
-                    size=panel_size,
-                    title="Tracks")
+                          position=(0, 3),
+                          size=panel_size,
+                          title="Tracks")
 t0 = 0
 n0 = 50
 piano_roll_position = (panel_size[0], y)
 piano_roll_size = (WINDOW_GRID_WIDTH - piano_roll_position[0], panel_size[1])
 piano_roll = PianoRoll(track=m.tracks[0], selected_note=0, time_0=t0, note_0=n0, position=piano_roll_position, size=piano_roll_size)
-track_list_focus = True
-piano_roll_focus = False
-commands = panel.blit(track_list_focus)
-commands.extend(piano_roll.blit(piano_roll_focus))
+commands = tracks_list.blit(False)
+commands.extend(piano_roll.blit(False))
+main_menu = MainMenu()
+commands.extend(main_menu.blit(True))
+panels = [main_menu, tracks_list, piano_roll]
+focus = 0
 selected_track = 0
 result = r.render(commands)
 channel = pygame.mixer.find_channel()
@@ -58,39 +61,39 @@ while True:
         audio_segment = m.tracks[1].audio_segment(bpm=m.bpm)
         sound = pygame.mixer.Sound(audio_segment.raw_data)
         channel.play(sound)
-    elif InputKey.help in result.inputs_pressed:
-        help_text = panel.get_help_text() if track_list_focus else piano_roll.get_help_text()
     # Cycle between panels.
     if InputKey.next_panel in result.inputs_pressed:
-        piano_roll_focus = not piano_roll_focus
-        track_list_focus = not track_list_focus
-        commands = panel.blit(track_list_focus)
-        commands.extend(piano_roll.blit(piano_roll_focus))
+        focus += 1
+        if focus >= len(panels):
+            focus = 0
+        commands = []
+        for i, panel in enumerate(panels):
+            commands.extend(panel.blit(focus=i == focus))
         result = r.render(commands)
-    # Scroll through tacks.
-    elif track_list_focus:
+    # Scroll through tracks.
+    elif focus == 1:
         if InputKey.up in result.inputs_pressed:
-            st1 = panel.scroll(up=True)
+            st1 = panels[1].scroll(up=True)
         elif InputKey.down in result.inputs_pressed:
-            st1 = panel.scroll(up=False)
+            st1 = panels[1].scroll(up=False)
         else:
             st1 = selected_track
         if st1 != selected_track:
             selected_track = st1
-            piano_roll = PianoRoll(track=m.tracks[selected_track], selected_note=0, time_0=t0, note_0=n0,
-                                   position=piano_roll_position, size=piano_roll_size)
-            commands = panel.blit(track_list_focus)
-            commands.extend(piano_roll.blit(piano_roll_focus))
+            panels[2] = PianoRoll(track=m.tracks[selected_track], selected_note=0, time_0=t0, note_0=n0,
+                                  position=piano_roll_position, size=piano_roll_size)
+            commands = panels[1].blit(True)
+            commands.extend(panels[2].blit(False))
             result = r.render(commands)
         else:
             result = r.render([])
     # Scroll around the piano roll.
-    elif piano_roll_focus:
+    elif focus == 2:
         refresh = False
-        if n0 > 0 and InputKey.up in result.inputs_pressed:
+        if n0 > 0 and InputKey.down in result.inputs_pressed:
             n0 -= 1
             refresh = True
-        elif n0 < 127 and InputKey.down in result.inputs_pressed:
+        elif n0 < 127 and InputKey.up in result.inputs_pressed:
             n0 += 1
             refresh = True
         elif t0 > 0 and InputKey.left in result.inputs_pressed:
@@ -100,10 +103,10 @@ while True:
             t0 += 1
             refresh = True
         if refresh:
-            piano_roll = PianoRoll(track=m.tracks[selected_track], selected_note=0, time_0=t0, note_0=n0,
-                                   position=piano_roll_position, size=piano_roll_size)
-            commands = panel.blit(track_list_focus)
-            commands.extend(piano_roll.blit(piano_roll_focus))
+            panels[2] = PianoRoll(track=m.tracks[selected_track], selected_note=0, time_0=t0, note_0=n0,
+                                  position=piano_roll_position, size=piano_roll_size)
+            commands = panels[1].blit(False)
+            commands.extend(panels[2].blit(True))
             result = r.render(commands)
         else:
             result = r.render([])

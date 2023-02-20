@@ -78,16 +78,16 @@ class Panel:
                      background_color=COLORS[Color.panel_background],
                      parent_rect=self._title_text_rect)]
 
-    def get_help_text(self) -> str:
+    def get_panel_help(self) -> str:
         """
-        :return: Terse help text.
-        """
-
-        return self._title
-
-    def get_verbose_help_text(self) -> str:
-        """
-        :return: Verbose help text.
+        :return: Panel help text.
         """
 
         return self._title
+
+    def get_widget_help(self) -> str:
+        """
+        :return: Help text for the focused widget (if any).
+        """
+
+        return ""
