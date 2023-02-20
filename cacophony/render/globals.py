@@ -72,13 +72,15 @@ __main_menu_rect: Tuple[int, int, int, int] = (0,
                                                0,
                                                WINDOW_GRID_WIDTH,
                                                int(__layout_section["main_menu_height"]))
+__tracks_list_width = __layout_section["tracks_list_width"].split("/")
 __tracks_list_rect: Tuple[int, int, int, int] = (0,
                                                  __main_menu_rect[3],
-                                                 WINDOW_GRID_WIDTH // int(__layout_section["track_list_width_divisor"]),
+                                                 int(WINDOW_GRID_WIDTH * float(__tracks_list_width[0]) / float(__tracks_list_width[1])),
                                                  WINDOW_GRID_HEIGHT - __main_menu_rect[3])
+__piano_roll_width = __layout_section["piano_roll_width"].split("/")
 __piano_roll_rect: Tuple[int, int, int, int] = (__tracks_list_rect[2],
                                                 __main_menu_rect[3],
-                                                WINDOW_GRID_WIDTH - __tracks_list_rect[2],
+                                                int(WINDOW_GRID_WIDTH * float(__piano_roll_width[0]) / float(__piano_roll_width[1])),
                                                 __tracks_list_rect[3])
 LAYOUTS: Dict[str, Tuple[int, int, int, int]] = {"MainMenu": __main_menu_rect,
                                                  "TracksList": __tracks_list_rect,
