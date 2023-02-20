@@ -1,23 +1,17 @@
 from json import loads
-from typing import Tuple, Dict, Union
-from configparser import ConfigParser, SectionProxy
+from typing import Tuple, Dict, Union, List
+from configparser import SectionProxy
 from pathlib import Path
 import pygame.font
 from pygame import Surface
 import numpy as np
-from cacophony.paths import USER_DIRECTORY, DATA_DIRECTORY
+from cacophony.paths import DATA_DIRECTORY
 from cacophony.cardinal_direction import CardinalDirection
 from cacophony.render.color import Color
 from cacophony.render.input_key import InputKey
+from cacophony.config import get
 
-__parser = ConfigParser()
-__local_config_file = USER_DIRECTORY.joinpath("config.init")
-# Read a user-defined config file.
-if __local_config_file.exists():
-    __parser.read(str(__local_config_file))
-# Read the default config file.
-else:
-    __parser.read(str(DATA_DIRECTORY.joinpath("config.ini")))
+__parser = get()
 __ui_section: SectionProxy = __parser["RENDER"]
 # The width of the window in number of grid cells.
 WINDOW_GRID_WIDTH: int = int(__ui_section["window_width"])
@@ -66,8 +60,9 @@ __input_section: SectionProxy = __parser["KEYBOARD_INPUT"]
 INPUTS: Dict[Union[str, Tuple[int, int, int]], InputKey] = dict()
 for __i in InputKey:
     INPUTS[__input_section[__i.name]] = __i
-# A stippled rectangle.
-STIPPLE_ARRAY: np.ndarray = np.zeros(CELL_SIZE, dtype=np.uint8)
-STIPPLE_ARRAY[::2, 1::2] = 255
-STIPPLE_ARRAY[1::2, 0::2] = 255
-STIPPLE_ARRAY = np.stack((STIPPLE_ARRAY,) * 3, axis=-1)
+INPUT_KEYS: Dict[InputKey, List[Union[str, Tuple[int, int, int]]]] = dict()
+for __k in INPUTS:
+    __v = INPUTS[__k]
+    if __v not in INPUT_KEYS:
+        INPUT_KEYS[__v] = list()
+    INPUT_KEYS[__v].append(__k)

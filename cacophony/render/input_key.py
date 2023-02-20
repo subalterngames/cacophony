@@ -14,5 +14,6 @@ class InputKey(IntFlag):
     previous_panel = 32
     select = 64
     play = 128
-    help = 256
-    verbose_help = 512
+    panel_help = 256
+    widget_help = 512
+    app_help = 1024
