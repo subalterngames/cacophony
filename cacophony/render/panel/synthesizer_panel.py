@@ -109,6 +109,7 @@ class SynthesizerPanel(Panel, Generic[T], ABC):
             y += widget.get_size()[1]
         return commands
 
+    @final
     def get_panel_help(self) -> str:
         return self.__get_title() + ". " + tooltip(keys=[InputKey.up, InputKey.down], predicate="scroll", boop="and")
 
