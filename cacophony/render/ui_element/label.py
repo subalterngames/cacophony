@@ -55,7 +55,6 @@ class Label(UiElement):
         # Show the text.
         commands.append(Text(text=self._text,
                              position=(position[0] + 1, position[1] + 1),
-                             size=(self._size[0] - 2, self._size[1] - 2),
                              text_color=color,
                              background_color=COLORS[Color.panel_background],
                              pivot=pivot,
@@ -66,9 +65,3 @@ class Label(UiElement):
     @final
     def get_size(self) -> Tuple[int, int]:
         return self._size
-
-    def get_help_text(self) -> str:
-        return self._text
-
-    def get_verbose_help_text(self) -> str:
-        return self._text

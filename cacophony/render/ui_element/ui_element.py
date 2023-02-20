@@ -34,19 +34,3 @@ class UiElement(ABC):
         """
 
         raise Exception()
-
-    @abstractmethod
-    def get_help_text(self) -> str:
-        """
-        :return: Terse help text.
-        """
-
-        raise Exception()
-
-    @abstractmethod
-    def get_verbose_help_text(self) -> str:
-        """
-        :return: Verbose help text.
-        """
-
-        raise Exception()

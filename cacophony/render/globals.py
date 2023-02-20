@@ -72,16 +72,24 @@ __main_menu_rect: Tuple[int, int, int, int] = (0,
                                                0,
                                                WINDOW_GRID_WIDTH,
                                                int(__layout_section["main_menu_height"]))
-__tracks_list_width = __layout_section["tracks_list_width"].split("/")
+__tracks_list_width_fr = __layout_section["tracks_list_width"].split("/")
+__tracks_list_width: int = int(WINDOW_GRID_WIDTH * float(__tracks_list_width_fr[0]) / float(__tracks_list_width_fr[1]))
 __tracks_list_rect: Tuple[int, int, int, int] = (0,
                                                  __main_menu_rect[3],
-                                                 int(WINDOW_GRID_WIDTH * float(__tracks_list_width[0]) / float(__tracks_list_width[1])),
+                                                 __tracks_list_width,
                                                  WINDOW_GRID_HEIGHT - __main_menu_rect[3])
-__piano_roll_width = __layout_section["piano_roll_width"].split("/")
+__piano_roll_width_fr = __layout_section["piano_roll_width"].split("/")
+__piano_roll_width = int(WINDOW_GRID_WIDTH * float(__piano_roll_width_fr[0]) / float(__piano_roll_width_fr[1]))
 __piano_roll_rect: Tuple[int, int, int, int] = (__tracks_list_rect[2],
                                                 __main_menu_rect[3],
-                                                int(WINDOW_GRID_WIDTH * float(__piano_roll_width[0]) / float(__piano_roll_width[1])),
+                                                __piano_roll_width,
                                                 __tracks_list_rect[3])
+__right_panels_width: int = WINDOW_GRID_WIDTH - (__tracks_list_width + __piano_roll_width)
+__synthesizer_rect: Tuple[int, int, int, int] = (__tracks_list_rect[2],
+                                                 __main_menu_rect[3],
+                                                 __right_panels_width,
+                                                 __tracks_list_rect[3])
 LAYOUTS: Dict[str, Tuple[int, int, int, int]] = {"MainMenu": __main_menu_rect,
                                                  "TracksList": __tracks_list_rect,
-                                                 "PianoRoll": __piano_roll_rect}
+                                                 "PianoRoll": __piano_roll_rect,
+                                                 "SynthesizerPanel": __synthesizer_rect}
