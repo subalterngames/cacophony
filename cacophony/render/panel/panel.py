@@ -1,4 +1,5 @@
 from typing import List, Tuple
+from overrides import final
 from pygame.display import get_surface
 from pygame import Rect
 from cacophony.render.commands.command import Command
@@ -8,6 +9,7 @@ from cacophony.render.commands.text import Text
 from cacophony.render.globals import COLORS
 from cacophony.render.color import Color
 from cacophony.render.macros.parent_rect import get_parent_rect
+from cacophony.render.render_result import RenderResult
 
 
 class Panel:
@@ -46,8 +48,31 @@ class Panel:
                                                       pivot=pivot,
                                                       anchor=anchor,
                                                       grandparent_rect=self._parent_rect)
+        self.initialized: bool = False
 
-    def blit(self, focus: bool) -> List[Command]:
+    @final
+    def render(self, result: RenderResult, focus: bool) -> List[Command]:
+        """
+        Process user input and blit the panel.
+
+        :param result: The [`RenderResult`](render_result.md) from the previous frame.
+        :param focus: If True, the panel has focus.
+
+        :return: A list of commands.
+        """
+
+        rerender = False
+        if not self.initialized:
+            self.initialized = True
+            rerender = True
+        elif focus and self._do_result(result=result):
+            rerender = True
+        if rerender:
+            return self._render_panel(focus=focus)
+        else:
+            return []
+
+    def _render_panel(self, focus: bool) -> List[Command]:
         """
         Blit the panel.
 
@@ -91,3 +116,12 @@ class Panel:
         """
 
         return ""
+
+    def _do_result(self, result: RenderResult) -> bool:
+        """
+        :param result: The `RenderResult` from the previous frame.
+
+        :return: True if the panel needs to be re-rendered.
+        """
+
+        return False

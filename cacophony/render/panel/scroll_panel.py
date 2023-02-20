@@ -6,8 +6,11 @@ from cacophony.render.commands.arrow import Arrow
 from cacophony.render.globals import COLORS
 from cacophony.render.color import Color
 from cacophony.render.panel.panel import Panel
+from cacophony.render.input_key import InputKey
+from cacophony.render.render_result import RenderResult
 from cacophony.render.ui_element.ui_element import UiElement
 from cacophony.render.macros.parent_rect import get_parent_rect
+from cacophony.help_util import tooltip
 from cacophony.cardinal_direction import CardinalDirection
 
 
@@ -49,42 +52,39 @@ class ScrollPanel(Panel):
             self._pages.append(page)
         self._page_index: int = 0
         self._element_index: int = 0
-        self._selection_index: int = 0
+        self.selection_index: int = 0
 
-    @final
-    def scroll(self, up: bool) -> int:
-        """
-        Increment or decrement the selection.
-        :param up: If True, we're scrolling up. If False, we're scrolling down.
+    def _do_result(self, result: RenderResult) -> bool:
+        if InputKey.up in result.inputs_pressed:
 
-        :return: The selection index.
-        """
-
-        if up:
-            # Scroll up a page.
             if self._element_index == 0 and self._page_index > 0:
                 self._page_index -= 1
                 self._element_index = len(self._pages[self._page_index]) - 1
-                self._selection_index -= 1
+                self.selection_index -= 1
+                return True
             # Scroll up an element.
             elif self._element_index > 0:
                 self._element_index -= 1
-                self._selection_index -= 1
-        else:
+                self.selection_index -= 1
+                return True
+        elif InputKey.down in result.inputs_pressed:
             # Scroll down a page.
             if self._element_index == len(self._pages[self._page_index]) - 1 and self._page_index < len(self._pages) - 1:
                 self._page_index += 1
                 self._element_index = 0
-                self._selection_index += 1
+                self.selection_index += 1
+                return True
             # Scroll down an element.
             elif self._element_index < len(self._pages[self._page_index]) - 1:
                 self._element_index += 1
-                self._selection_index += 1
-        return self._selection_index
+                self.selection_index += 1
+                return True
+        return False
 
-    def blit(self, focus: bool) -> List[Command]:
+    @final
+    def _render_panel(self, focus: bool) -> List[Command]:
         # Blit the panel.
-        commands = super().blit(focus=focus)
+        commands = super()._render_panel(focus=focus)
         parent_rect = get_parent_rect(position=(1, 4),
                                       size=self._size,
                                       pivot=self._pivot,
@@ -118,21 +118,5 @@ class ScrollPanel(Panel):
                                   parent_rect=parent_rect))
         return commands
 
-    def get_help_text(self) -> str:
-        """
-        :return: Terse help text.
-        """
-
-        return f"Scroll panel {self._title}. Selection is {self._elements[self._selection_index].get_help_text()}"
-
-    def get_verbose_help_text(self) -> str:
-        """
-        :return: Verbose help text.
-        """
-
-        text = f"{super().get_help_text()}"
-        if self._selection_index > 0:
-            text += "You can scroll up."
-        if self._selection_index < len(self._elements) - 1:
-            text += "You can scroll down."
-        return text
+    def get_panel_help(self) -> str:
+        return tooltip(keys=[InputKey.up, InputKey.down], predicate="scroll", boop="and")

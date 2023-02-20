@@ -25,8 +25,8 @@ class MainMenu(Panel):
             help_texts.append("[" + ", ".join([str(v).capitalize() for v in INPUT_KEYS[help_key]]) + " " + help_key.name.split("_")[0].title() + "]")
         self._help_text: str = "Help: " + " ".join(help_texts)
 
-    def blit(self, focus: bool) -> List[Command]:
-        commands = super().blit(focus=focus)
+    def render(self, focus: bool) -> List[Command]:
+        commands = super().render(focus=focus)
         commands.extend([Rectangle(position=(-2, self._position[1]),
                                    size=(len(self._help_text) + 2, 1),
                                    color=COLORS[Color.panel_background],

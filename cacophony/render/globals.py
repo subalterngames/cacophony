@@ -66,3 +66,20 @@ for __k in INPUTS:
     if __v not in INPUT_KEYS:
         INPUT_KEYS[__v] = list()
     INPUT_KEYS[__v].append(__k)
+# Layout.
+__layout_section: SectionProxy = __parser["LAYOUT"]
+__main_menu_rect: Tuple[int, int, int, int] = (0,
+                                               0,
+                                               WINDOW_GRID_WIDTH,
+                                               int(__layout_section["main_menu_height"]))
+__tracks_list_rect: Tuple[int, int, int, int] = (0,
+                                                 __main_menu_rect[3],
+                                                 WINDOW_GRID_WIDTH // int(__layout_section["track_list_width_divisor"]),
+                                                 WINDOW_GRID_HEIGHT - __main_menu_rect[3])
+__piano_roll_rect: Tuple[int, int, int, int] = (__tracks_list_rect[2],
+                                                __main_menu_rect[3],
+                                                WINDOW_GRID_WIDTH - __tracks_list_rect[2],
+                                                __tracks_list_rect[3])
+LAYOUTS: Dict[str, Tuple[int, int, int, int]] = {"MainMenuRenderer": __main_menu_rect,
+                                                 "TracksListRenderer": __tracks_list_rect,
+                                                 "PianoRoll": __piano_roll_rect}

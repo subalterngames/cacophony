@@ -1,0 +1,1 @@
+required = ["mido", "python-rtmidi"]

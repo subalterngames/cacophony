@@ -65,13 +65,17 @@ class Renderer:
             TextToSpeech.say(self.__app_help_text)
         return result
 
-    def do(self) -> None:
+    def do(self) -> RenderResult:
         """
         Do something! By default, this will call `self.render([])` in a loop until `self._done == True`.
+
+        :return: The [`RenderResult`](render_result.md).
         """
 
+        result = self.render([])
         while not self._done:
-            self.render([])
+            result = self.render([])
+        return result
 
     @staticmethod
     def __get_app_help_text() -> str:

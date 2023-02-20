@@ -47,9 +47,9 @@ piano_roll_position = (panel_size[0], y)
 piano_roll_size = (WINDOW_GRID_WIDTH - piano_roll_position[0], panel_size[1])
 piano_roll = PianoRoll(track=m.tracks[0], selected_note=0, time_0=t0, note_0=n0, position=piano_roll_position, size=piano_roll_size)
 commands = tracks_list.blit(False)
-commands.extend(piano_roll.blit(False))
+commands.extend(piano_roll.render(False))
 main_menu = MainMenu()
-commands.extend(main_menu.blit(True))
+commands.extend(main_menu.render(True))
 panels = [main_menu, tracks_list, piano_roll]
 focus = 0
 selected_track = 0
@@ -82,8 +82,8 @@ while True:
             selected_track = st1
             panels[2] = PianoRoll(track=m.tracks[selected_track], selected_note=0, time_0=t0, note_0=n0,
                                   position=piano_roll_position, size=piano_roll_size)
-            commands = panels[1].blit(True)
-            commands.extend(panels[2].blit(False))
+            commands = panels[1].render(True)
+            commands.extend(panels[2].render(False))
             result = r.render(commands)
         else:
             result = r.render([])
