@@ -22,9 +22,11 @@ class ChiptunePanel(SynthesizerPanel[Chiptune]):
         if self.focus_index == 3:
             if InputKey.left in result.inputs_pressed:
                 self.pcm.cycle(False)
+                self.undo_stack.append((self.pcm.cycle, {"increment": True}))
                 return True
             if InputKey.right in result.inputs_pressed:
                 self.pcm.cycle(True)
+                self.undo_stack.append((self.pcm.cycle, {"increment": False}))
                 return True
         return False
 

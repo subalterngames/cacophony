@@ -19,7 +19,6 @@ class ScrollPanel(Panel):
     A panel with scrollable elements.
     """
 
-
     def __init__(self, elements: List[UiElement], title: str, position: Tuple[int, int],
                  size: Tuple[int, int], pivot: Tuple[float, float] = None, anchor: Tuple[float, float] = None,
                  parent_rect: Rect = None):

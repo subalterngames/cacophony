@@ -18,3 +18,5 @@ class InputKey(IntFlag):
     widget_help = 512
     app_help = 1024
     undo = 2048
+    cancel = 4096
+    open_file = 8192
