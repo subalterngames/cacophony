@@ -19,6 +19,7 @@ class ScrollPanel(Panel):
     A panel with scrollable elements.
     """
 
+
     def __init__(self, elements: List[UiElement], title: str, position: Tuple[int, int],
                  size: Tuple[int, int], pivot: Tuple[float, float] = None, anchor: Tuple[float, float] = None,
                  parent_rect: Rect = None):
@@ -57,26 +58,50 @@ class ScrollPanel(Panel):
     def _do_result(self, result: RenderResult) -> bool:
         if InputKey.up in result.inputs_pressed:
             if self._element_index == 0 and self._page_index > 0:
-                self._page_index -= 1
-                self._element_index = len(self._pages[self._page_index]) - 1
-                self.selection_index -= 1
+                element_index_0 = self._element_index
+                self._scroll(page_index_delta=-1,
+                             element_index=len(self._pages[self._page_index]) - 1,
+                             element_index_delta=False,
+                             selection_index_delta=-1)
+                self.undo_stack.append((self._scroll, {"page_index_delta": 1,
+                                                       "element_index": element_index_0,
+                                                       "element_index_delta": False,
+                                                       "selection_index_delta": 1}))
                 return True
             # Scroll up an element.
             elif self._element_index > 0:
-                self._element_index -= 1
-                self.selection_index -= 1
+                self._scroll(page_index_delta=0,
+                             element_index=-1,
+                             element_index_delta=True,
+                             selection_index_delta=-1)
+                self.undo_stack.append((self._scroll, {"page_index_delta": 0,
+                                                       "element_index": 1,
+                                                       "element_index_delta": True,
+                                                       "selection_index_delta": 1}))
                 return True
         elif InputKey.down in result.inputs_pressed:
             # Scroll down a page.
             if self._element_index == len(self._pages[self._page_index]) - 1 and self._page_index < len(self._pages) - 1:
-                self._page_index += 1
-                self._element_index = 0
-                self.selection_index += 1
+                element_index_0 = self._element_index
+                self._scroll(page_index_delta=1,
+                             element_index=0,
+                             element_index_delta=False,
+                             selection_index_delta=1)
+                self.undo_stack.append((self._scroll, {"page_index_delta": -1,
+                                                       "element_index": element_index_0,
+                                                       "element_index_delta": False,
+                                                       "selection_index_delta": -1}))
                 return True
             # Scroll down an element.
             elif self._element_index < len(self._pages[self._page_index]) - 1:
-                self._element_index += 1
-                self.selection_index += 1
+                self._scroll(page_index_delta=0,
+                             element_index=1,
+                             element_index_delta=True,
+                             selection_index_delta=1)
+                self.undo_stack.append((self._scroll, {"page_index_delta": 0,
+                                                       "element_index": -1,
+                                                       "element_index_delta": True,
+                                                       "selection_index_delta": -1}))
                 return True
         return False
 
@@ -116,6 +141,25 @@ class ScrollPanel(Panel):
                                   anchor=self._anchor,
                                   parent_rect=parent_rect))
         return commands
+
+    @final
+    def _scroll(self, page_index_delta: int, element_index: int, element_index_delta: bool, selection_index_delta: int) -> None:
+        """
+        Scroll. Apply deltas to each index.
+
+        :param page_index_delta: The page index delta.
+        :param element_index: The element index.
+        :param element_index_delta: If True, `element_index` is a delta.
+        :param selection_index_delta: The selection index delta.
+        """
+
+        # Scroll.
+        self._page_index += page_index_delta
+        if element_index_delta:
+            self._element_index += element_index
+        else:
+            self._element_index = element_index
+        self.selection_index += selection_index_delta
 
     def get_panel_help(self) -> str:
         return tooltip(keys=[InputKey.up, InputKey.down], predicate="scroll", boop="and")

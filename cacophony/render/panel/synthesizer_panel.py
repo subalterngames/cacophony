@@ -57,23 +57,28 @@ class SynthesizerPanel(Panel, Generic[T], ABC):
         rerender = False
         # Set the volume boolean.
         if self.focus_index == 0 and InputKey.select in result.inputs_pressed:
-            self.volume_boolean.value = not self.volume_boolean.value
+            self._set_volume_boolean()
+            self.undo_stack.append((self._set_volume_boolean, dict()))
             rerender = True
         # Change the volume.
         elif self.focus_index == 1:
             if InputKey.left in result.inputs_pressed:
                 self.volume.cycle(False)
+                self.undo_stack.append((self.volume.cycle, {"increment": True}))
                 rerender = True
             if InputKey.right in result.inputs_pressed:
                 self.volume.cycle(True)
+                self.undo_stack.append((self.volume.cycle, {"increment": False}))
                 rerender = True
         # Change the beat.
         elif self.focus_index == 2:
             if InputKey.left in result.inputs_pressed:
                 self.beat.cycle(False)
+                self.undo_stack.append((self.beat.cycle, {"increment": True}))
                 rerender = True
             if InputKey.right in result.inputs_pressed:
                 self.beat.cycle(True)
+                self.undo_stack.append((self.beat.cycle, {"increment": False}))
                 rerender = True
         sr = self._do_synthesizer_result(result=result)
         if sr:
@@ -141,6 +146,14 @@ class SynthesizerPanel(Panel, Generic[T], ABC):
         """
 
         raise Exception()
+
+    @final
+    def _set_volume_boolean(self) -> None:
+        """
+        Set the global volume boolean.
+        """
+
+        self.volume_boolean.value = not self.volume_boolean.value
 
     def __get_title(self) -> str:
         return f"{self.track_index} {self.music.tracks[self.track_index].synthesizer.__class__.__name__}"

@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 from overrides import final
 from pygame.display import get_surface
 from pygame import Rect
@@ -49,6 +49,8 @@ class Panel:
                                                       anchor=anchor,
                                                       grandparent_rect=self._parent_rect)
         self.initialized: bool = False
+        # A stack of undo operations. Each element is a tuple: Callbable, kwargs.
+        self.undo_stack: List[Tuple[Callable, dict]] = list()
 
     @final
     def render(self, result: RenderResult, focus: bool) -> List[Command]:

@@ -30,7 +30,7 @@ class Renderer:
         self._done: bool = False
         self._held: List[str] = list()
         self.__app_help_text: str = Renderer.__get_app_help_text()
-        self._undo_redo_visual: List[Tuple[Surface, List[Rect]]] = list()
+        self._undo_stack: List[Tuple[Surface, List[Rect]]] = list()
         self._undoing: bool = False
 
     def render(self, commands: List[Command]) -> RenderResult:
@@ -50,7 +50,7 @@ class Renderer:
         previous_surface = pygame.display.get_surface().convert()
         rects = pygame.display.get_surface().blits(blits, True)
         if len(rects) > 0:
-            self._undo_redo_visual.append((previous_surface, rects))
+            self._undo_stack.append((previous_surface, rects))
         # Update the screen.
         pygame.display.update(rects)
         pressed = []
@@ -69,10 +69,10 @@ class Renderer:
                     self._held.remove(k)
         result = RenderResult(pressed=pressed, held=self._held, midi=[])
         # Undo.
-        if InputKey.undo in result.inputs_held and not self._undoing and len(self._undo_redo_visual) > 0:
+        if InputKey.undo in result.inputs_held and not self._undoing and len(self._undo_stack) > 0:
             self._undoing = True
             # Do a visual undo.
-            surface, rects = self._undo_redo_visual.pop(-1)
+            surface, rects = self._undo_stack.pop(-1)
             pygame.display.get_surface().blits([(surface, rect, rect) for rect in rects], True)
             pygame.display.update(rects)
         # Stop undoing.
@@ -101,7 +101,7 @@ class Renderer:
         Clear the undo-redo history.
         """
 
-        self._undo_redo_visual.clear()
+        self._undo_stack.clear()
         self._undoing = False
 
     @staticmethod
