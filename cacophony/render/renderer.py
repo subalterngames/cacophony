@@ -1,4 +1,5 @@
 from typing import List, Tuple
+from overrides import final
 import pygame
 from pygame import Surface, Rect
 from cacophony.render.commands.command import Command
@@ -29,6 +30,8 @@ class Renderer:
         self._done: bool = False
         self._held: List[str] = list()
         self.__app_help_text: str = Renderer.__get_app_help_text()
+        self._undo_redo_visual: List[Tuple[Surface, List[Rect]]] = list()
+        self._undoing: bool = False
 
     def render(self, commands: List[Command]) -> RenderResult:
         """
@@ -43,7 +46,11 @@ class Renderer:
         # Do each command.
         for command in commands:
             blits.append(command.do())
+        # Get the previous surface.
+        previous_surface = pygame.display.get_surface().convert()
         rects = pygame.display.get_surface().blits(blits, True)
+        if len(rects) > 0:
+            self._undo_redo_visual.append((previous_surface, rects))
         # Update the screen.
         pygame.display.update(rects)
         pressed = []
@@ -61,6 +68,13 @@ class Renderer:
                 if k in self._held:
                     self._held.remove(k)
         result = RenderResult(pressed=pressed, held=self._held, midi=[])
+        # Undo.
+        if InputKey.undo in result.inputs_held and not self._undoing:
+            self._undoing = True
+        # Stop undoing.
+        elif InputKey.undo not in result.inputs_held and self._undoing:
+            self._undoing = False
+        # Get help (seriously).
         if InputKey.app_help in result.inputs_pressed:
             TextToSpeech.say(self.__app_help_text)
         return result
@@ -77,6 +91,15 @@ class Renderer:
             result = self.render([])
         return result
 
+    @final
+    def clear_undo_redo(self) -> None:
+        """
+        Clear the undo-redo history.
+        """
+
+        self._undo_redo_visual.clear()
+        self._undoing = False
+
     @staticmethod
     def __get_app_help_text() -> str:
         """
@@ -87,6 +110,7 @@ class Renderer:
         tooltips = [tooltip(keys=[InputKey.next_panel, InputKey.previous_panel], predicate="cycle through panels.", boop="and"),
                     tooltip(keys=[InputKey.panel_help], predicate="ask me to tell you what the current panel does."),
                     tooltip(keys=[InputKey.widget_help], predicate="ask me to tell you what the current widget does."),
+                    tooltip(keys=[InputKey.undo], predicate="undo."),
                     tooltip(keys=[InputKey.app_help], predicate="ask me to say this message again.")]
         text += " ".join(tooltips)
         return text

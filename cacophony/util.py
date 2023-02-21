@@ -70,7 +70,11 @@ def tooltip(keys: List[InputKey], predicate: str, boop: str = "or") -> str:
             if isinstance(v, str):
                 inputs.append(v)
             elif isinstance(v, tuple):
-                inputs.append(f"MIDI-in {str(v)}")
+                # Midi input.
+                if isinstance(v[0], int):
+                    inputs.append(f"MIDI-in {str(v)}")
+                elif isinstance(v[0], str):
+                    inputs.append(" and ".join(v))
     text = f" {boop} ".join(inputs) + f" to {predicate}"
     if text[-1] not in "?!.":
         text += "."

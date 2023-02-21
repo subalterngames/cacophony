@@ -57,10 +57,15 @@ ARROWS[CardinalDirection.west] = np.rot90(ARROWS[CardinalDirection.south])
 ARROWS[CardinalDirection.north] = np.rot90(ARROWS[CardinalDirection.west])
 # Input.
 __input_section: SectionProxy = __parser["KEYBOARD_INPUT"]
-INPUTS: Dict[Union[str, Tuple[int, int, int]], InputKey] = dict()
+INPUTS: Dict[Union[str, tuple], InputKey] = dict()
 for __i in InputKey:
-    INPUTS[__input_section[__i.name]] = __i
-INPUT_KEYS: Dict[InputKey, List[Union[str, Tuple[int, int, int]]]] = dict()
+    __input_key = __input_section[__i.name]
+    # This is a list.
+    if __input_key[0] == "[" and __input_key[-1] == "]":
+        __input_key = __input_key[1:-1].split(",")
+        __input_key = tuple([__ik.strip() for __ik in __input_key])
+    INPUTS[__input_key] = __i
+INPUT_KEYS: Dict[InputKey, List[Union[str, tuple]]] = dict()
 for __k in INPUTS:
     __v = INPUTS[__k]
     if __v not in INPUT_KEYS:

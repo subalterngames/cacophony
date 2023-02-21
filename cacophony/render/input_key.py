@@ -17,3 +17,4 @@ class InputKey(IntFlag):
     panel_help = 256
     widget_help = 512
     app_help = 1024
+    undo = 2048
