@@ -69,8 +69,12 @@ class Renderer:
                     self._held.remove(k)
         result = RenderResult(pressed=pressed, held=self._held, midi=[])
         # Undo.
-        if InputKey.undo in result.inputs_held and not self._undoing:
+        if InputKey.undo in result.inputs_held and not self._undoing and len(self._undo_redo_visual) > 0:
             self._undoing = True
+            # Do a visual undo.
+            surface, rects = self._undo_redo_visual.pop(-1)
+            pygame.display.get_surface().blits([(surface, rect, rect) for rect in rects], True)
+            pygame.display.update(rects)
         # Stop undoing.
         elif InputKey.undo not in result.inputs_held and self._undoing:
             self._undoing = False
