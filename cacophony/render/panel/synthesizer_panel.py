@@ -16,8 +16,7 @@ from cacophony.render.macros.parent_rect import get_parent_rect
 from cacophony.music.music import Music
 from cacophony.music.note import Note
 from cacophony.synthesizer.synthesizer import Synthesizer
-from cacophony.help_util import tooltip
-from cacophony.midi_util import note_on
+from cacophony.util import tooltip, note_on
 
 
 T = TypeVar("T", bound=Synthesizer)

@@ -10,7 +10,7 @@ from cacophony.render.input_key import InputKey
 from cacophony.render.render_result import RenderResult
 from cacophony.render.ui_element.ui_element import UiElement
 from cacophony.render.macros.parent_rect import get_parent_rect
-from cacophony.help_util import tooltip
+from cacophony.util import tooltip
 from cacophony.cardinal_direction import CardinalDirection
 
 

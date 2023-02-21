@@ -9,7 +9,6 @@ from cacophony.render.panel.panel import Panel
 from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
 from cacophony.cardinal_direction import CardinalDirection
-from cacophony.music.track import Track
 from cacophony.music.music import Music
 
 

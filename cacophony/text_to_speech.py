@@ -2,7 +2,7 @@ from typing import Optional
 import pyttsx3
 import pygame.mixer
 from cacophony.paths import TEMP_DIRECTORY
-from cacophony.config import get
+from cacophony.util import get_config
 
 
 class TextToSpeech:
@@ -38,7 +38,7 @@ class TextToSpeech:
             # Initialize text-to-speech.
             TextToSpeech._ENGINE = pyttsx3.init()
             # Get the voice ID.
-            voice_id: int = int(get()["TEXT_TO_SPEECH"]["voice_id"])
+            voice_id: int = int(get_config()["TEXT_TO_SPEECH"]["voice_id"])
             # Set the voice.
             TextToSpeech._ENGINE.setProperty("voice",
                                              TextToSpeech._ENGINE.getProperty('voices')[voice_id].id)

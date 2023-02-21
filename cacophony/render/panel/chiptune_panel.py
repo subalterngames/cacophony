@@ -5,7 +5,7 @@ from cacophony.render.ui_element.options import Options
 from cacophony.music.music import Music
 from cacophony.synthesizer.chiptune_pcm import ChiptunePCM
 from cacophony.synthesizer.chiptune import Chiptune
-from cacophony.help_util import tooltip
+from cacophony.util import tooltip
 
 
 class ChiptunePanel(SynthesizerPanel[Chiptune]):

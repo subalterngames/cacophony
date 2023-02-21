@@ -6,7 +6,7 @@ from h5py import Group
 from sf2_loader.read_sf2.read_sf2 import sf2_loader
 from cacophony.synthesizer.synthesizer import Synthesizer
 from cacophony.music.note import Note
-from cacophony.path_util import get_string_path
+from cacophony.util import get_string_path
 from cacophony.music.globals import FRAMERATE
 
 

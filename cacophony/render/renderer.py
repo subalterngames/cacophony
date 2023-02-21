@@ -6,7 +6,7 @@ from cacophony.render.globals import WINDOW_PIXEL_WIDTH, WINDOW_PIXEL_HEIGHT
 from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
 from cacophony.text_to_speech import TextToSpeech
-from cacophony.help_util import tooltip
+from cacophony.util import tooltip
 
 
 class Renderer:
@@ -83,7 +83,7 @@ class Renderer:
         :return: The help text for the whole app.
         """
 
-        text = "This is Cacophony. "
+        text = "Hello world. I am Casey the Cacodemon. "
         tooltips = [tooltip(keys=[InputKey.next_panel, InputKey.previous_panel], predicate="cycle through panels.", boop="and"),
                     tooltip(keys=[InputKey.panel_help], predicate="ask me to tell you what the current panel does."),
                     tooltip(keys=[InputKey.widget_help], predicate="ask me to tell you what the current widget does."),

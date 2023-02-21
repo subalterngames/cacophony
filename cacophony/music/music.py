@@ -4,7 +4,7 @@ from pathlib import Path
 from pydub import AudioSegment
 from h5py import File, Group
 from cacophony.music.track import Track
-from cacophony.path_util import get_string_path, get_path
+from cacophony.util import get_string_path, get_path
 
 
 class Music:

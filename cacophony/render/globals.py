@@ -9,9 +9,9 @@ from cacophony.paths import DATA_DIRECTORY
 from cacophony.cardinal_direction import CardinalDirection
 from cacophony.render.color import Color
 from cacophony.render.input_key import InputKey
-from cacophony.config import get
+from cacophony.util import get_config
 
-__parser = get()
+__parser = get_config()
 __ui_section: SectionProxy = __parser["RENDER"]
 # The width of the window in number of grid cells.
 WINDOW_GRID_WIDTH: int = int(__ui_section["window_width"])
