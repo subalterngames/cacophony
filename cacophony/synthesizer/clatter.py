@@ -1,15 +1,15 @@
 from __future__ import annotations
 from itertools import permutations
-from typing import List, Optional
+from typing import List
 from pathlib import Path
 import clr
-from pkg_resources import resource_filename
 from requests import get
 from bs4 import BeautifulSoup
-from h5py import Group
 import numpy as np
 from cacophony.music.note import Note
 from cacophony.synthesizer.synthesizer import Synthesizer
+from cacophony.paths import USER_DIRECTORY
+from cacophony.callbacker.value import Value
 
 
 def __download_clatter() -> None:
@@ -27,7 +27,9 @@ def __download_clatter() -> None:
             return
 
 
-_CLATTER_PATH: Path = Path(resource_filename(__name__, "Clatter.Core.dll")).absolute()
+_CLATTER_PATH: Path = USER_DIRECTORY.joinpath("clatter/Clatter.Core.dll").resolve()
+if not _CLATTER_PATH.parent.exists():
+    _CLATTER_PATH.parent.mkdir(parents=True)
 if not _CLATTER_PATH.exists():
     __download_clatter()
 # Import Clatter.
@@ -51,21 +53,27 @@ class Clatter(Synthesizer):
     __AMPS_AND_RESONANCES: List[tuple] = list(permutations([round(__a, 1) for __a in np.arange(0, 1, step=0.2)], 4))
     __MAX_SPEED: float = 5
 
-    def __init__(self, seed: Optional[int] = None):
-        self.seed: Optional[int] = seed
+    def __init__(self, has_seed: bool = False, seed: int = 0, beat_index: int = 5, gain_index: int = 127, use_volume: bool = True, volume_index: int = 127):
+        """
+        :param has_seed: If True, Clatter will use the `seed` value. If False, the seed is random per sound.
+        :param seed: A user-defined random seed.
+        :param beat_index: The index of the beat.
+        :param gain_index: An index for gain values.
+        :param use_volume: If True, use the value of `volume` for all new notes. If False, use the note's volume value.
+        :param volume_index: An index for volume values.
+        """
+
+        self.has_seed: Value[bool] = Value(value=has_seed)
+        self.seed: Value[int] = Value(value=seed)
+        super().__init__(beat_index=beat_index, gain_index=gain_index, use_volume=use_volume, volume_index=volume_index)
 
     def get_channels(self) -> int:
         return 1
 
-    @staticmethod
-    def deserialize(group: Group) -> Clatter:
-        seed = list(group["seed"])
-        return Clatter(seed=seed[1] if seed[0] > 0 else None)
-
     def get_help_text(self) -> str:
         return "Clatter."
 
-    def _audio(self, note: Note, duration: float) -> bytes:
+    def _audio(self, note: Note, volume: int, duration: float) -> bytes:
         # Get the impact materials.
         n: int = note.note % len(Clatter.__IMPACT_MATERIALS)
         primary_impact_material: ImpactMaterial = Clatter.__IMPACT_MATERIALS[n]
@@ -80,7 +88,7 @@ class Clatter(Synthesizer):
         primary_mass: float = Clatter.__MASSES[primary_size]
         secondary_mass: float = Clatter.__MASSES[secondary_size]
         # Get the amps and resonances.
-        ar = Clatter.__AMPS_AND_RESONANCES[note.volume % len(Clatter.__AMPS_AND_RESONANCES)]
+        ar = Clatter.__AMPS_AND_RESONANCES[volume % len(Clatter.__AMPS_AND_RESONANCES)]
         primary_amp: float = ar[0] + 0.1
         primary_resonance: float = ar[1]
         secondary_amp: float = ar[2] + 0.1
@@ -91,14 +99,10 @@ class Clatter(Synthesizer):
         primary = ClatterObjectData(0, primary_impact_material, primary_amp, primary_resonance, primary_mass)
         secondary = ClatterObjectData(1, secondary_impact_material, secondary_amp, secondary_resonance, secondary_mass)
         # Generate audio.
-        if self.seed is None:
-            rng = Random()
+        if self.has_seed.value:
+            rng = Random(self.seed.value)
         else:
-            rng = Random(self.seed)
+            rng = Random()
         impact = Impact(primary, secondary, rng)
         impact.GetAudio(speed)
         return bytes(impact.samples.ToInt16Bytes())
-
-    def _serialize(self, group: Group) -> None:
-        has_seed = self.seed is not None
-        group.create_dataset(name="seed", shape=[2], data=[1 if has_seed else 0, self.seed if has_seed else 0], dtype=int)

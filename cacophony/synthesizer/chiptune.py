@@ -1,12 +1,11 @@
 from __future__ import annotations
-from typing import Union, Callable
+from typing import Union, Callable, Dict, List
 from pygame.midi import midi_to_frequency
-import numpy as np
-from h5py import Group
 from chipnumpy.synthesizer import Synthesizer as ChipSynth
 from cacophony.synthesizer.chiptune_pcm import ChiptunePCM
 from cacophony.synthesizer.synthesizer import Synthesizer
 from cacophony.music.note import Note
+from cacophony.callbacker.enum_list import EnumList
 
 
 class Chiptune(Synthesizer):
@@ -14,47 +13,31 @@ class Chiptune(Synthesizer):
     A simple chiptune synthesizer.
     """
 
-    def __init__(self, pcm: ChiptunePCM):
-        self._pcm: ChiptunePCM = ChiptunePCM.sine
+    def __init__(self, pcm_index: int, beat_index: int = 5, gain_index: int = 127, use_volume: bool = True, volume_index: int = 127):
+        """
+        :param pcm_index: The index for the PCM type.
+        :param beat_index: The index of the beat.
+        :param gain_index: An index for gain values.
+        :param use_volume: If True, use the value of `volume` for all new notes. If False, use the note's volume value.
+        :param volume_index: An index for volume values.
+        """
+
+        super().__init__(beat_index=beat_index, gain_index=gain_index, use_volume=use_volume, volume_index=volume_index)
+        self.pcm: EnumList[ChiptunePCM] = EnumList(t=ChiptunePCM, index=pcm_index)
         self._synth: ChipSynth = ChipSynth(seed=0)
-        self._generator: Callable[[Union[str, float], float, float], bytes] = self._synth.sine
-        self.set(pcm=pcm)
+        self._generators: Dict[ChiptunePCM, Callable[[Union[str, float], float, float], bytes]] = {ChiptunePCM.noise: self._synth.noise,
+                                                                                                   ChiptunePCM.pulse: self._synth.pulse,
+                                                                                                   ChiptunePCM.sine: self._synth.sine,
+                                                                                                   ChiptunePCM.saw: self._synth.sawtooth,
+                                                                                                   ChiptunePCM.triangle: self._synth.triangle}
 
     def get_channels(self) -> int:
         return 1
 
-    @staticmethod
-    def deserialize(group: Group) -> Chiptune:
-        return Chiptune(pcm=ChiptunePCM(int(group["pcm"][0])))
-
-    def set(self, pcm: ChiptunePCM) -> None:
-        """
-        Set the chiptune generator.
-
-        :param pcm: The PCM type.
-        """
-
-        self._pcm = pcm
-        if self._pcm == ChiptunePCM.sine:
-            self._generator = self._synth.sine
-        elif self._pcm == ChiptunePCM.pulse:
-            self._generator = self._synth.pulse
-        elif self._pcm == ChiptunePCM.triangle:
-            self._generator = self._synth.triangle
-        elif self._pcm == ChiptunePCM.saw:
-            self._generator = self._synth.sawtooth
-        elif self._pcm == ChiptunePCM.noise:
-            self._generator = self._synth.noise
-        else:
-            raise Exception(f"Undefined: {self._pcm}")
-
     def get_help_text(self) -> str:
-        return f"Chiptune {self._pcm.name} waveform generator."
+        return f"Chiptune {self.pcm.get().name} waveform generator."
 
-    def _audio(self, note: Note, duration: float) -> bytes:
-        return self._generator(note=midi_to_frequency(note.note),
-                               amplitude=note.volume / 127,
-                               length=duration)
-
-    def _serialize(self, group: Group) -> None:
-        group.create_dataset(name="pcm", shape=[1], data=[self._pcm.value], dtype=np.uint8)
+    def _audio(self, note: Note, volume: int, duration: float) -> bytes:
+        return self._generators[self.pcm.get()](note=midi_to_frequency(note.note),
+                                                amplitude=volume / 127,
+                                                length=duration)
