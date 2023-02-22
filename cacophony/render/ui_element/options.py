@@ -27,6 +27,8 @@ class Options(UiElement):
         self.options: List[str] = options
         self.index: int = index
         self._max_text_length: int = max([len(o) for o in self.options])
+        if len(title) > self._max_text_length:
+            self._max_text_length = len(title)
         self._size: Tuple[int, int] = (self._max_text_length + 4, 4)
 
     def blit(self, position: Tuple[int, int], panel_focus: bool, element_focus: bool, pivot: Tuple[float, float] = None,
@@ -43,7 +45,7 @@ class Options(UiElement):
         text_x = position[0] + 2
         # Show the title text.
         commands.append(Text(text=self._title,
-                             position=(text_x, text_y),
+                             position=(position[0] + 1, text_y),
                              text_color=color,
                              background_color=COLORS[Color.panel_background],
                              pivot=pivot,
@@ -64,7 +66,7 @@ class Options(UiElement):
                                    pivot=pivot,
                                    anchor=anchor,
                                    parent_rect=parent_rect),
-                             Arrow(position=(position[0] + 1 + self._max_text_length, text_y),
+                             Arrow(position=(position[0] + 2 + self._max_text_length, text_y),
                                    direction=CardinalDirection.east,
                                    color=color,
                                    pivot=pivot,

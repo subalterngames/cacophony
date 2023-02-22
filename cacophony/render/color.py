@@ -18,3 +18,5 @@ class Color(IntEnum):
     piano_roll_note_line_no_focus = 13
     piano_roll_note_name_focus = 14
     piano_roll_note_name_no_focus = 15
+    parameter_boolean_true = 16
+    parameter_boolean_false = 17

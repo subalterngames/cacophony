@@ -3,16 +3,18 @@ from cacophony.music.music import Music
 from cacophony.music.track import Track
 from cacophony.music.note import Note
 from cacophony.synthesizer.soundfont import SoundFont
+from cacophony.synthesizer.chiptune import Chiptune
+from cacophony.synthesizer.chiptune_pcm import ChiptunePCM
 from cacophony.render.renderer import Renderer
 from cacophony.render.panel.tracks_list import TracksList
 from cacophony.render.panel.piano_roll import PianoRoll
 from cacophony.render.panel.main_menu import MainMenu
+from cacophony.render.panel.chiptune_panel import ChiptunePanel
 from cacophony.render.input_key import InputKey
-from cacophony.text_to_speech import TextToSpeech
 
 
 m = Music(bpm=120)
-m.tracks.append(Track(track_id=0, synthesizer=SoundFont(channel=0)))
+m.tracks.append(Track(track_id=0, synthesizer=Chiptune(ChiptunePCM.saw)))
 synth_1 = SoundFont(channel=1)
 synth_1.load("D:/SoundFonts/ms_basic.sf3")
 synth_1.set_instrument(bank=0, preset=2)
@@ -33,7 +35,8 @@ r = Renderer()
 result = r.render([])
 panels = [MainMenu(),
           TracksList(music=m),
-          PianoRoll(music=m, track_index=0, selected_note=-1, note_0=60, time_0=0)]
+          PianoRoll(music=m, track_index=0, selected_note=-1, note_0=60, time_0=0),
+          ChiptunePanel(music=m, track_index=0)]
 focus = 0
 track_index = 0
 channel = pygame.mixer.find_channel()
@@ -50,11 +53,6 @@ while True:
         if focus >= len(panels):
             focus = 0
         panels[focus].initialized = False
-    # Panel help TTS.
-    if InputKey.panel_help in result.inputs_pressed:
-        TextToSpeech.say(text=panels[focus].get_panel_help())
-    if InputKey.widget_help in result.inputs_pressed:
-        TextToSpeech.say(text=panels[focus].get_widget_help())
     # Render.
     commands = panels[0].render(result=result, focus=focus == 0)
     commands.extend(panels[1].render(result=result, focus=focus == 1))
@@ -63,4 +61,5 @@ while True:
         panels[2].track_index = track_index
         panels[2].initialized = False
     commands.extend(panels[2].render(result=result, focus=focus == 2))
+    commands.extend(panels[3].render(result=result, focus=focus == 3))
     result = r.render(commands)

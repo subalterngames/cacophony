@@ -65,10 +65,11 @@ class Panel:
         :return: A list of commands.
         """
 
-        if InputKey.panel_help in result.inputs_pressed:
-            TextToSpeech.say(self.get_panel_help())
-        elif InputKey.widget_help in result.inputs_pressed:
-            TextToSpeech.say(self.get_widget_help())
+        if focus:
+            if InputKey.panel_help in result.inputs_pressed:
+                TextToSpeech.say(self.get_panel_help())
+            elif InputKey.widget_help in result.inputs_pressed:
+                TextToSpeech.say(self.get_widget_help())
         rerender = False
         if not self.initialized:
             self.initialized = True

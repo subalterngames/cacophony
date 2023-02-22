@@ -90,7 +90,7 @@ __piano_roll_rect: Tuple[int, int, int, int] = (__tracks_list_rect[2],
                                                 __piano_roll_width,
                                                 __tracks_list_rect[3])
 __right_panels_width: int = WINDOW_GRID_WIDTH - (__tracks_list_width + __piano_roll_width)
-__synthesizer_rect: Tuple[int, int, int, int] = (__tracks_list_rect[2],
+__synthesizer_rect: Tuple[int, int, int, int] = (WINDOW_GRID_WIDTH - __right_panels_width,
                                                  __main_menu_rect[3],
                                                  __right_panels_width,
                                                  __tracks_list_rect[3])

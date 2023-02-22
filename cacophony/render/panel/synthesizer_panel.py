@@ -44,7 +44,7 @@ class SynthesizerPanel(Panel, Generic[T], ABC):
                                      index=5)
         self.widgets: List[UiElement] = [self.volume_boolean, self.volume, self.beat]
         self.focus_index: int = 0
-        self._parent_rect: Rect = get_parent_rect(position=self._position, size=self._size)
+        self._widgets_rect: Rect = get_parent_rect(position=self._position, size=self._size)
 
     @final
     def _do_result(self, result: RenderResult) -> bool:
@@ -55,6 +55,12 @@ class SynthesizerPanel(Panel, Generic[T], ABC):
                 if note_on(midi_event=result.midi[i]):
                     result.midi[i][2] = volume
         rerender = False
+        if InputKey.up in result.inputs_pressed and self.focus_index > 0:
+            self.focus_index -= 1
+            rerender = True
+        if InputKey.down in result.inputs_pressed and self.focus_index < len(self.widgets) - 1:
+            self.focus_index += 1
+            rerender = True
         # Set the volume boolean.
         if self.focus_index == 0 and InputKey.select in result.inputs_pressed:
             self._set_volume_boolean()
@@ -105,11 +111,11 @@ class SynthesizerPanel(Panel, Generic[T], ABC):
         commands = super()._render_panel(focus=focus)
         y = 1
         x = 1
-        for widget in self.widgets:
+        for i, widget in enumerate(self.widgets):
             commands.extend(widget.blit(position=(x, y),
                                         panel_focus=focus,
-                                        element_focus=self.focus_index == 0,
-                                        parent_rect=self._parent_rect))
+                                        element_focus=self.focus_index == i,
+                                        parent_rect=self._widgets_rect))
             y += widget.get_size()[1]
         return commands
 
