@@ -81,6 +81,8 @@ class Renderer:
         # Get help (seriously).
         if InputKey.app_help in result.inputs_pressed:
             TextToSpeech.say(self.__app_help_text)
+        elif InputKey.stop_tts in result.inputs_pressed:
+            TextToSpeech.stop()
         return result
 
     def do(self) -> RenderResult:
@@ -115,6 +117,7 @@ class Renderer:
                     tooltip(keys=[InputKey.panel_help], predicate="ask me to tell you what the current panel does."),
                     tooltip(keys=[InputKey.widget_help], predicate="ask me to tell you what the current widget does."),
                     tooltip(keys=[InputKey.undo], predicate="undo."),
-                    tooltip(keys=[InputKey.app_help], predicate="ask me to say this message again.")]
+                    tooltip(keys=[InputKey.app_help], predicate="ask me to say this message again."),
+                    tooltip(keys=[InputKey.stop_tts], predicate="tell me to stop talking.")]
         text += " ".join(tooltips)
         return text

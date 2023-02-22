@@ -25,7 +25,7 @@ class MainMenu(Panel):
                          anchor=(0, 0), pivot=(0, 0),
                          parent_rect=None)
         help_texts = []
-        for help_key in [InputKey.panel_help, InputKey.widget_help, InputKey.app_help]:
+        for help_key in [InputKey.panel_help, InputKey.widget_help, InputKey.app_help, InputKey.stop_tts]:
             help_texts.append("[" + ", ".join([str(v).capitalize() for v in INPUT_KEYS[help_key]]) + " " + help_key.name.split("_")[0].title() + "]")
         self._help_text: str = "Help: " + " ".join(help_texts)
 

@@ -20,3 +20,4 @@ class InputKey(IntFlag):
     undo = 2048
     cancel = 4096
     open_file = 8192
+    stop_tts = 16384

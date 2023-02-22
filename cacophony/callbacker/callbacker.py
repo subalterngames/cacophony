@@ -22,5 +22,6 @@ class Callbacker(ABC):
         """
         Invoke the callback.
         """
+
         if self.__has_callback:
             self.__callback()
