@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from overrides import final
 from h5py import Group
 from cacophony.music.note import Note
+from cacophony.util import get_duration
 
 
 class Synthesizer(ABC):
@@ -22,7 +23,7 @@ class Synthesizer(ABC):
             return b''
         # Return a note.
         else:
-            return self._audio(note=note, duration=Synthesizer.get_duration(bpm=bpm, beat=note.duration))
+            return self._audio(note=note, duration=get_duration(bpm=bpm, beat=note.duration))
 
     @abstractmethod
     def get_channels(self) -> int:
@@ -31,17 +32,6 @@ class Synthesizer(ABC):
         """
 
         raise Exception()
-
-    @staticmethod
-    def get_duration(bpm: int, beat: float) -> float:
-        """
-        :param bpm: The beats per minute.
-        :param beat: The duration in terms of beats.
-
-        :return: The duration in terms of seconds.
-        """
-
-        return 60.0 / bpm * beat
 
     @final
     def serialize(self, track_group: Group) -> None:

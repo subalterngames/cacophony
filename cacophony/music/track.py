@@ -10,6 +10,7 @@ from cacophony.synthesizer.chiptune import Chiptune
 from cacophony.synthesizer.clatter import Clatter
 from cacophony.synthesizer.soundfont import SoundFont
 from cacophony.music.globals import FRAMERATE, SAMPLE_WIDTH
+from cacophony.util import get_duration
 
 
 class Track:
@@ -52,8 +53,8 @@ class Track:
                                                   channels=channels,
                                                   frame_rate=FRAMERATE)
             # Get the start time.
-            t0 = self.synthesizer.get_duration(bpm=bpm, beat=note.start)
-            duration = self.synthesizer.get_duration(bpm=bpm, beat=note.duration)
+            t0 = get_duration(bpm=bpm, beat=note.start)
+            duration = get_duration(bpm=bpm, beat=note.duration)
             # Add new audio.
             if t0 >= audio.duration_seconds:
                 audio += audio_segment

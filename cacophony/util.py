@@ -99,3 +99,14 @@ def note_off(midi_event: list) -> bool:
     """
 
     return 128 <= midi_event[0] <= 143
+
+
+def get_duration(bpm: int, beat: float) -> float:
+    """
+    :param bpm: The beats per minute.
+    :param beat: The duration in terms of beats.
+
+    :return: The duration in terms of seconds.
+    """
+
+    return 60.0 / bpm * beat
