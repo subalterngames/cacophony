@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Union, Callable, Dict, List
+from typing import Union, Callable, Dict
 from pygame.midi import midi_to_frequency
 from chipnumpy.synthesizer import Synthesizer as ChipSynth
 from cacophony.synthesizer.chiptune_pcm import ChiptunePCM
@@ -23,7 +23,9 @@ class Chiptune(Synthesizer):
         """
 
         super().__init__(beat_index=beat_index, gain_index=gain_index, use_volume=use_volume, volume_index=volume_index)
-        self.pcm: EnumList[ChiptunePCM] = EnumList(t=ChiptunePCM, index=pcm_index)
+        self.pcm: EnumList[ChiptunePCM] = EnumList(t=ChiptunePCM,
+                                                   tts="Set chiptune PCM type.",
+                                                   index=pcm_index)
         self._synth: ChipSynth = ChipSynth(seed=0)
         self._generators: Dict[ChiptunePCM, Callable[[Union[str, float], float, float], bytes]] = {ChiptunePCM.noise: self._synth.noise,
                                                                                                    ChiptunePCM.pulse: self._synth.pulse,

@@ -6,10 +6,11 @@ from cacophony.render.commands.text import Text
 from cacophony.render.commands.border import Border
 from cacophony.render.color import Color
 from cacophony.render.globals import COLORS
-from cacophony.render.ui_element.ui_element import UiElement
+from cacophony.render.widget.widget import Widget
+from cacophony.render.render_result import RenderResult
 
 
-class Label(UiElement):
+class Label(Widget):
     """
     A text label.
     """
@@ -20,6 +21,7 @@ class Label(UiElement):
         :param size: Either an integer or a tuple value for the size of the element in grid coordinates. If an integer, the text will be one line, truncated to this length (see `overflow`). If a tuple, the text will wrap around the width and won't exceed the height. If None, the text is a single unwrapped line.
         """
 
+        super().__init__()
         self._text: str = text
         # One line, as long as the text is long.
         if size is None:
@@ -65,3 +67,9 @@ class Label(UiElement):
     @final
     def get_size(self) -> Tuple[int, int]:
         return self._size
+
+    def do(self, result: RenderResult) -> bool:
+        return False
+
+    def get_help_text(self) -> str:
+        return self._text

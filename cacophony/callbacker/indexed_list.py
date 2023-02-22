@@ -13,14 +13,15 @@ class IndexedList(Callbacker, Generic[T], ABC):
     A list of values with an index that wraps around the list (i.e. loops back to zero of len(values)).
     """
 
-    def __init__(self, values: List[T], index: int = 0, callback: Callable[[], None] = None):
+    def __init__(self, values: List[T], tts: str, index: int = 0, callback: Callable[[], None] = None):
         """
         :param values: A list of values of type T.
+        :param tts: Text-to-speech text.
         :param index: The current index.
         :param callback: An optional callback that is invoked when `index` is set.
         """
 
-        super().__init__(callback=callback)
+        super().__init__(callback=callback, tts=tts)
         self.values: List[T] = values
         self._index: int = index
 
@@ -64,6 +65,13 @@ class IndexedList(Callbacker, Generic[T], ABC):
         """
 
         return str(self.get())
+
+    def get_strs(self) -> List[str]:
+        """
+        :return: The string representation of every value.
+        """
+
+        return [str(v) for v in self.values]
 
     @final
     def get_index(self, value: T) -> Optional[int]:

@@ -11,7 +11,7 @@ from cacophony.render.commands.blit import Blit
 from cacophony.render.commands.line import Line
 from cacophony.render.commands.text import Text
 from cacophony.render.macros.parent_rect import get_parent_rect
-from cacophony.render.globals import COLORS, WINDOW_GRID_WIDTH, WINDOW_GRID_HEIGHT, SCROLL_DT
+from cacophony.render.globals import COLORS, WINDOW_GRID_WIDTH, WINDOW_GRID_HEIGHT
 from cacophony.render.color import Color
 from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
@@ -49,7 +49,6 @@ class OpenFile(Panel):
         self._page_index: int = 0
         self._element_index: int = 0
         self._pages: List[List[Path]] = self._get_pages()
-        self._scroll_t0 = 0
         # List the system drives.
         if system() == "Windows":
             import win32api

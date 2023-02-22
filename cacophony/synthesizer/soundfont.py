@@ -33,13 +33,13 @@ class SoundFont(Synthesizer):
         self._path: str = ""
         self._loader: Optional[sf2_loader] = None
         # Set the channel.
-        self.channel: IntList = zero_127(index=channel_index)
+        self.channel: IntList = zero_127(index=channel_index, tts="Set the channel.")
         # A dictionary of instrument integer keys and names.
-        self.preset: Dictionary = Dictionary(values=dict())
+        self.preset: Dictionary = Dictionary(values=dict(), tts="Set the instrument.")
         # A list of bank integers.
-        self.bank: IntList = IntList(values=[], callback=self._set_bank)
+        self.bank: IntList = IntList(values=[], callback=self._set_bank, tts="Set the bank.")
         # The path to the file. When this is set, we'll try loading the SoundFont.
-        self.path: Value[str] = Value(value=path, callback=self._set_path)
+        self.path: Value[str] = Value(value=path, callback=self._set_path, tts="Set the sound font file.")
         self._set_path()
         # Set the indices of the bank and preset.
         self.bank.index = bank_index

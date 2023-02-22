@@ -27,10 +27,14 @@ class Synthesizer(ABC):
         :param volume_index: An index for volume values.
         """
 
-        self.beat: EnumList[Beat] = EnumList(t=Beat, index=beat_index)
-        self.gain: IntList = zero_127(index=gain_index)
-        self.use_volume: Value[bool] = Value(value=use_volume)
-        self.volume: IntList = zero_127(index=volume_index)
+        self.beat: EnumList[Beat] = EnumList(t=Beat, index=beat_index, tts="Set the beat for all new notes.")
+        self.gain: IntList = zero_127(index=gain_index, tts="Set the gain for this track.")
+        self.use_volume: Value[bool] = Value(value=use_volume,
+                                             tts="Toggle how volume is set. "
+                                                 "If selected, use the volume value below for all new notes. "
+                                                 "If not selected, use volume values from MIDI input.")
+        self.volume: IntList = zero_127(index=volume_index, tts="Set the volume for all new notes. "
+                                                                "This is ignored if the previous widget isn't selected.")
 
     @final
     def audio(self, note: Note, bpm: int) -> bytes:

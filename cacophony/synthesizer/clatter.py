@@ -63,8 +63,10 @@ class Clatter(Synthesizer):
         :param volume_index: An index for volume values.
         """
 
-        self.has_seed: Value[bool] = Value(value=has_seed)
-        self.seed: Value[int] = Value(value=seed)
+        self.has_seed: Value[bool] = Value(value=has_seed,
+                                           tts="Set whether the same random seed is used every note or whether each sound uses a new random seed.")
+        self.seed: Value[int] = Value(value=seed,
+                                      tts="Set the random seed. This is ignored if the previous widget is not selected.")
         super().__init__(beat_index=beat_index, gain_index=gain_index, use_volume=use_volume, volume_index=volume_index)
 
     def get_channels(self) -> int:

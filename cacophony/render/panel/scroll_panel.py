@@ -8,7 +8,7 @@ from cacophony.render.color import Color
 from cacophony.render.panel.panel import Panel
 from cacophony.render.input_key import InputKey
 from cacophony.render.render_result import RenderResult
-from cacophony.render.ui_element.ui_element import UiElement
+from cacophony.render.widget.widget import Widget
 from cacophony.render.macros.parent_rect import get_parent_rect
 from cacophony.util import tooltip
 from cacophony.cardinal_direction import CardinalDirection
@@ -19,11 +19,11 @@ class ScrollPanel(Panel):
     A panel with scrollable elements.
     """
 
-    def __init__(self, elements: List[UiElement], title: str, position: Tuple[int, int],
+    def __init__(self, widgets: List[Widget], title: str, position: Tuple[int, int],
                  size: Tuple[int, int], pivot: Tuple[float, float] = None, anchor: Tuple[float, float] = None,
                  parent_rect: Rect = None):
         """
-        :param elements: A list of UI elements.
+        :param widgets: A list of UI widgets.
         :param title: The title text.
         :param position: The position of the panel in grid coordinates.
         :param size: The size of the panel in grid coordinates.
@@ -33,12 +33,12 @@ class ScrollPanel(Panel):
         """
 
         super().__init__(title=title, position=position, size=size, pivot=pivot, anchor=anchor, parent_rect=parent_rect)
-        self._elements: List[UiElement] = elements
-        self._pages: List[List[UiElement]] = list()
+        self._widgets: List[Widget] = widgets
+        self._pages: List[List[Widget]] = list()
         max_h = self._size[1] - 2
-        page: List[UiElement] = list()
+        page: List[Widget] = list()
         page_h = 0
-        for element in elements:
+        for element in widgets:
             element_h = element.get_size()[1]
             # Exceeded the max height. End the page.
             if page_h + element_h > max_h:
@@ -51,64 +51,70 @@ class ScrollPanel(Panel):
         if len(page) > 0:
             self._pages.append(page)
         self._page_index: int = 0
-        self._element_index: int = 0
+        self._widget_index: int = 0
         self.selection_index: int = 0
 
     def _do_result(self, result: RenderResult) -> bool:
-        if InputKey.up in result.inputs_pressed:
-            if self._element_index == 0 and self._page_index > 0:
-                element_index_0 = self._element_index
+        if InputKey.up in result.inputs_scroll:
+            if self._widget_index == 0 and self._page_index > 0:
+                widget_index_0 = self._widget_index
                 self._scroll(page_index_delta=-1,
-                             element_index=len(self._pages[self._page_index]) - 1,
-                             element_index_delta=False,
+                             widget_index=len(self._pages[self._page_index]) - 1,
+                             widget_index_delta=False,
                              selection_index_delta=-1)
                 self.undo_stack.append((self._scroll, {"page_index_delta": 1,
-                                                       "element_index": element_index_0,
-                                                       "element_index_delta": False,
+                                                       "widget_index": widget_index_0,
+                                                       "widget_index_delta": False,
                                                        "selection_index_delta": 1}))
                 return True
             # Scroll up an element.
-            elif self._element_index > 0:
+            elif self._widget_index > 0:
                 self._scroll(page_index_delta=0,
-                             element_index=-1,
-                             element_index_delta=True,
+                             widget_index=-1,
+                             widget_index_delta=True,
                              selection_index_delta=-1)
                 self.undo_stack.append((self._scroll, {"page_index_delta": 0,
-                                                       "element_index": 1,
-                                                       "element_index_delta": True,
+                                                       "widget_index": 1,
+                                                       "widget_index_delta": True,
                                                        "selection_index_delta": 1}))
                 return True
-        elif InputKey.down in result.inputs_pressed:
+        elif InputKey.down in result.inputs_scroll:
             # Scroll down a page.
-            if self._element_index == len(self._pages[self._page_index]) - 1 and self._page_index < len(self._pages) - 1:
-                element_index_0 = self._element_index
+            if self._widget_index == len(self._pages[self._page_index]) - 1 and self._page_index < len(self._pages) - 1:
+                widget_index_0 = self._widget_index
                 self._scroll(page_index_delta=1,
-                             element_index=0,
-                             element_index_delta=False,
+                             widget_index=0,
+                             widget_index_delta=False,
                              selection_index_delta=1)
                 self.undo_stack.append((self._scroll, {"page_index_delta": -1,
-                                                       "element_index": element_index_0,
-                                                       "element_index_delta": False,
+                                                       "widget_index": widget_index_0,
+                                                       "widget_index_delta": False,
                                                        "selection_index_delta": -1}))
                 return True
             # Scroll down an element.
-            elif self._element_index < len(self._pages[self._page_index]) - 1:
+            elif self._widget_index < len(self._pages[self._page_index]) - 1:
                 self._scroll(page_index_delta=0,
-                             element_index=1,
-                             element_index_delta=True,
+                             widget_index=1,
+                             widget_index_delta=True,
                              selection_index_delta=1)
                 self.undo_stack.append((self._scroll, {"page_index_delta": 0,
-                                                       "element_index": -1,
-                                                       "element_index_delta": True,
+                                                       "widget_index": -1,
+                                                       "widget_index_delta": True,
                                                        "selection_index_delta": -1}))
                 return True
+        # Listen to a widget.
+        if self._widgets[self.selection_index].do(result=result):
+            # Update the undo stack.
+            self.undo_stack.extend(self._widgets[self.selection_index].undo_stack[:])
+            self._widgets[self.selection_index].undo_stack.clear()
+            return True
         return False
 
     @final
     def _render_panel(self, focus: bool) -> List[Command]:
         # Blit the panel.
         commands = super()._render_panel(focus=focus)
-        parent_rect = get_parent_rect(position=(1, 4),
+        parent_rect = get_parent_rect(position=(self._position[0] + 1, self._position[1] + 1),
                                       size=self._size,
                                       pivot=self._pivot,
                                       anchor=self._anchor)
@@ -117,7 +123,7 @@ class ScrollPanel(Panel):
         for i, element in enumerate(self._pages[self._page_index]):
             commands.extend(element.blit(position=(0, y),
                                          panel_focus=focus,
-                                         element_focus=i == self._element_index,
+                                         element_focus=i == self._widget_index,
                                          pivot=self._pivot,
                                          anchor=self._anchor,
                                          parent_rect=parent_rect))
@@ -142,23 +148,30 @@ class ScrollPanel(Panel):
         return commands
 
     @final
-    def _scroll(self, page_index_delta: int, element_index: int, element_index_delta: bool, selection_index_delta: int) -> None:
+    def _scroll(self, page_index_delta: int, widget_index: int, widget_index_delta: bool, selection_index_delta: int) -> None:
         """
         Scroll. Apply deltas to each index.
 
         :param page_index_delta: The page index delta.
-        :param element_index: The element index.
-        :param element_index_delta: If True, `element_index` is a delta.
+        :param widget_index: The element index.
+        :param widget_index_delta: If True, `widget_index` is a delta.
         :param selection_index_delta: The selection index delta.
         """
 
         # Scroll.
         self._page_index += page_index_delta
-        if element_index_delta:
-            self._element_index += element_index
+        if widget_index_delta:
+            self._widget_index += widget_index
         else:
-            self._element_index = element_index
+            self._widget_index = widget_index
         self.selection_index += selection_index_delta
 
+    @final
     def get_panel_help(self) -> str:
-        return tooltip(keys=[InputKey.up, InputKey.down], predicate="scroll", boop="and")
+        return self._get_panel_title() + ". " + tooltip(keys=[InputKey.up, InputKey.down], predicate="scroll", boop="and")
+
+    def get_widget_help(self) -> str:
+        return self._widgets[self.selection_index].get_help_text()
+
+    def _get_panel_title(self) -> str:
+        return "Scroll panel"

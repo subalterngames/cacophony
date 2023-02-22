@@ -7,11 +7,14 @@ from cacophony.render.commands.border import Border
 from cacophony.render.commands.arrow import Arrow
 from cacophony.render.color import Color
 from cacophony.render.globals import COLORS
-from cacophony.render.ui_element.ui_element import UiElement
+from cacophony.render.widget.widget import Widget
+from cacophony.render.render_result import RenderResult
+from cacophony.render.input_key import InputKey
 from cacophony.cardinal_direction import CardinalDirection
+from cacophony.util import tooltip
 
 
-class Options(UiElement):
+class Options(Widget):
     """
     Cycle through a list of options.
     """
@@ -23,6 +26,7 @@ class Options(UiElement):
         :param index: The index of the current option.
         """
 
+        super().__init__()
         self._title: str = title
         self.options: List[str] = options
         self.index: int = index
@@ -84,13 +88,31 @@ class Options(UiElement):
         return commands
 
     @final
-    def cycle(self, increment: bool) -> None:
-        """
-        Cycle the index value up or down.
+    def do(self, result: RenderResult) -> bool:
+        if InputKey.left in result.inputs_scroll:
+            self.undo_stack.append((self._scroll, {"increment": True}))
+            self._scroll(increment=False)
+            return True
+        elif InputKey.right in result.inputs_scroll:
+            self.undo_stack.append((self._scroll, {"increment": False}))
+            self._scroll(increment=True)
+            return True
+        return False
 
-        :param increment: If True, increment the index. If False, decrement the index.
+    def get_help_text(self) -> str:
+        """
+        :return: Text-to-speech text.
         """
 
+        return f"{self._title}. {self.options[self.index]}. " + tooltip(keys=[InputKey.left, InputKey.right],
+                                                                        predicate="cycle", boop="and") + " "
+
+    @final
+    def get_size(self) -> Tuple[int, int]:
+        return self._size
+
+    @final
+    def _scroll(self, increment: bool) -> None:
         if increment:
             self.index += 1
             if self.index >= len(self.options):
@@ -99,7 +121,3 @@ class Options(UiElement):
             self.index -= 1
             if self.index < 0:
                 self.index = len(self.options) - 1
-
-    @final
-    def get_size(self) -> Tuple[int, int]:
-        return self._size

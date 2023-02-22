@@ -1,12 +1,13 @@
 from typing import List, Tuple
 from pygame import Rect
 from cacophony.render.commands.command import Command
-from cacophony.render.commands.border import Border
-from cacophony.render.commands.rectangle import Rectangle
 from cacophony.render.commands.text import Text
 from cacophony.render.color import Color
 from cacophony.render.globals import COLORS
-from cacophony.render.ui_element.label import Label
+from cacophony.render.widget.label import Label
+from cacophony.render.input_key import InputKey
+from cacophony.render.render_result import RenderResult
+from cacophony.util import tooltip
 
 
 class Boolean(Label):
@@ -14,13 +15,13 @@ class Boolean(Label):
     A text label and a boolean value.
     """
 
-    def __init__(self, text: str, value: bool):
+    def __init__(self, title: str, value: bool):
         """
-        :param text: The label text.
+        :param title: The label text.
         :param value: The value.
         """
 
-        super().__init__(text=text, size=len(text) + 5)
+        super().__init__(text=title, size=len(title) + 5)
         self.value: bool = value
 
     def blit(self, position: Tuple[int, int], panel_focus: bool, element_focus: bool, pivot: Tuple[float, float] = None,
@@ -43,3 +44,12 @@ class Boolean(Label):
                              anchor=anchor,
                              parent_rect=parent_rect))
         return commands
+
+    def do(self, result: RenderResult) -> bool:
+        if InputKey.select in result.inputs_pressed:
+            self.value = not self.value
+            return True
+        return False
+
+    def get_help_text(self) -> str:
+        return f"{self.get_size}. Set to {self.value}. " + tooltip(keys=[InputKey.select], predicate="set")  + " "

@@ -9,15 +9,16 @@ from cacophony.render.renderer import Renderer
 from cacophony.render.panel.tracks_list import TracksList
 from cacophony.render.panel.piano_roll import PianoRoll
 from cacophony.render.panel.main_menu import MainMenu
-from cacophony.render.panel.chiptune_panel import ChiptunePanel
+from cacophony.render.panel.synthesizer_panel import SynthesizerPanel
 from cacophony.render.input_key import InputKey
 
 
 m = Music(bpm=120)
 m.tracks.append(Track(track_id=0, synthesizer=Chiptune(ChiptunePCM.saw)))
-synth_1 = SoundFont(channel=1)
-synth_1.load("D:/SoundFonts/ms_basic.sf3")
-synth_1.set_instrument(bank=0, preset=2)
+synth_1 = SoundFont(channel_index=0)
+synth_1.path = "D:/SoundFonts/ms_basic.sf3"
+synth_1.bank = 0
+synth_1.preset = 2
 track_1 = Track(track_id=1, synthesizer=synth_1)
 t = 0
 for n in range(60, 80):
@@ -29,14 +30,14 @@ for n in range(60, 80):
 m.tracks.append(track_1)
 track_id = 2
 for i in range(4):
-    m.tracks.append(Track(track_id=track_id, synthesizer=SoundFont(channel=track_id)))
+    m.tracks.append(Track(track_id=track_id, synthesizer=SoundFont(channel_index=i)))
     track_id += 1
 r = Renderer()
 result = r.render([])
 panels = [MainMenu(),
           TracksList(music=m),
           PianoRoll(music=m, track_index=0, selected_note=-1, note_0=60, time_0=0),
-          ChiptunePanel(music=m, track_index=0)]
+          SynthesizerPanel(music=m, track_index=0)]
 focus = 0
 track_index = 0
 channel = pygame.mixer.find_channel()

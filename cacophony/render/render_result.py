@@ -1,6 +1,7 @@
+from time import time
 from typing import List
 from cacophony.render.input_key import InputKey
-from cacophony.render.globals import INPUTS
+from cacophony.render.globals import INPUTS, SCROLL_DT
 
 
 class RenderResult:
@@ -11,6 +12,9 @@ class RenderResult:
 
     `self.inputs_pressed` and `self.inputs_held` contain the converted `InputKey` values.
     """
+
+    _SCROLL_T0: float = 0
+    _SCROLL_INPUTS: List[InputKey] = [InputKey.up, InputKey.down, InputKey.left, InputKey.right]
 
     def __init__(self, pressed: List[str], held: List[str], midi: List[List[int]]):
         """
@@ -47,3 +51,18 @@ class RenderResult:
             k = (m[0], m[1], m[2])
             if k in INPUTS:
                 self.inputs_pressed.append(INPUTS[k])
+        self.inputs_scroll: List[InputKey] = list()
+        for ik in RenderResult._SCROLL_INPUTS:
+            if ik in self.inputs_pressed:
+                self.inputs_scroll.append(ik)
+        # Reset the scroll time.
+        if len(self.inputs_scroll) > 0:
+            RenderResult._SCROLL_T0 = time()
+        # Time to check the held scroll keys.
+        elif time() - RenderResult._SCROLL_T0 > SCROLL_DT:
+            for ik in RenderResult._SCROLL_INPUTS:
+                if ik in self.inputs_held:
+                    self.inputs_scroll.append(ik)
+        # Reset the scroll time.
+        if len(self.inputs_scroll) > 0:
+            RenderResult._SCROLL_T0 = time()
