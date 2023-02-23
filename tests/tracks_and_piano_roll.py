@@ -5,6 +5,7 @@ from cacophony.music.note import Note
 from cacophony.synthesizer.soundfont import SoundFont
 from cacophony.synthesizer.chiptune import Chiptune
 from cacophony.synthesizer.chiptune_pcm import ChiptunePCM
+from cacophony.synthesizer.clatter import Clatter
 from cacophony.render.renderer import Renderer
 from cacophony.render.panel.tracks_list import TracksList
 from cacophony.render.panel.piano_roll import PianoRoll
@@ -47,6 +48,9 @@ while True:
         channel.play(sound)
     # Cycle between panels.
     if InputKey.next_panel in result.inputs_pressed:
+        sound = pygame.mixer.Sound(Clatter.get_random())
+        sound.set_volume(0.2)
+        sound.play()
         panels[focus].initialized = False
         focus += 1
         if focus >= len(panels):

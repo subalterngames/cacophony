@@ -49,6 +49,8 @@ class Clatter(Synthesizer):
     """
 
     __IMPACT_MATERIALS: List[ImpactMaterial] = Enum.GetValues(ImpactMaterial)
+    __SMALL_IMPACT_MATERIALS: List[ImpactMaterial] = [__im for __im in __IMPACT_MATERIALS if __im.ToString()[-1] == "1"]
+    __LARGE_IMPACT_MATERIALS: List[ImpactMaterial] = [__im for __im in __IMPACT_MATERIALS if __im.ToString()[-1] == "5"]
     __MASSES: List[float] = [0.123, 0.261, 1.305, 12.008, 81.325, 183.7]
     __AMPS_AND_RESONANCES: List[tuple] = list(permutations([round(__a, 1) for __a in np.arange(0, 1, step=0.2)], 4))
     __MAX_SPEED: float = 5
@@ -75,36 +77,69 @@ class Clatter(Synthesizer):
     def get_help_text(self) -> str:
         return "Clatter."
 
+    @staticmethod
+    def get_random(amp_min: float = 0.2, amp_max: float = 0.4, resonance_min: float = 0.01, resonance_max: float = 1) -> bytes:
+        """
+        Generate a random sound.
+
+        :param amp_min: The minimum amp value.
+        :param amp_max: The maximum amp value.
+        :param resonance_min: The minimum resonance value.
+        :param resonance_max: The maximum resonance value.
+
+        :return: Audio samples.
+        """
+
+        rng = np.random.RandomState()
+        amps = rng.uniform(amp_min, amp_max, size=2)
+        resonances = rng.uniform(resonance_min, resonance_max, size=2)
+        return Clatter._get_impact(primary_impact_material=Clatter.__SMALL_IMPACT_MATERIALS[rng.randint(0, len(Clatter.__SMALL_IMPACT_MATERIALS))],
+                                   primary_mass=float(rng.uniform(0.1, 0.3)),
+                                   primary_amp=float(amps[0]),
+                                   primary_resonance=float(resonances[0]),
+                                   secondary_impact_material=Clatter.__LARGE_IMPACT_MATERIALS[rng.randint(0, len(Clatter.__LARGE_IMPACT_MATERIALS))],
+                                   secondary_mass=100,
+                                   secondary_amp=float(amps[1]),
+                                   secondary_resonance=float(resonances[1]),
+                                   speed=float(rng.uniform(1, 1.5)))
+
     def _audio(self, note: Note, volume: int, duration: float) -> bytes:
         # Get the impact materials.
         n: int = note.note % len(Clatter.__IMPACT_MATERIALS)
         primary_impact_material: ImpactMaterial = Clatter.__IMPACT_MATERIALS[n]
         secondary_impact_material: ImpactMaterial = Clatter.__IMPACT_MATERIALS[(len(Clatter.__IMPACT_MATERIALS) - n) % len(Clatter.__IMPACT_MATERIALS)]
-        # Load the impact materials.
-        ImpactMaterialData.Load(primary_impact_material)
-        ImpactMaterialData.Load(secondary_impact_material)
         # Parse the material to get the size.
         primary_size: int = int(primary_impact_material.ToString()[-1])
         secondary_size: int = int(secondary_impact_material.ToString()[-1])
-        # Get the masses.
-        primary_mass: float = Clatter.__MASSES[primary_size]
-        secondary_mass: float = Clatter.__MASSES[secondary_size]
         # Get the amps and resonances.
         ar = Clatter.__AMPS_AND_RESONANCES[volume % len(Clatter.__AMPS_AND_RESONANCES)]
-        primary_amp: float = ar[0] + 0.1
-        primary_resonance: float = ar[1]
-        secondary_amp: float = ar[2] + 0.1
-        secondary_resonance: float = ar[3]
-        # Get the speed.
-        speed: float = note.duration % Clatter.__MAX_SPEED
+        return Clatter._get_impact(primary_impact_material=primary_impact_material,
+                                   primary_mass=Clatter.__MASSES[primary_size],
+                                   primary_amp=ar[0] + 0.1,
+                                   primary_resonance=ar[1],
+                                   secondary_impact_material=secondary_impact_material,
+                                   secondary_mass=Clatter.__MASSES[secondary_size],
+                                   secondary_amp=ar[2] + 0.1,
+                                   secondary_resonance=ar[3],
+                                   speed=note.duration % Clatter.__MAX_SPEED,
+                                   seed=self.seed.value if self.has_seed.value else None)
+
+    @staticmethod
+    def _get_impact(primary_impact_material: ImpactMaterial, primary_mass: float, primary_amp: float, primary_resonance: float,
+                    secondary_impact_material: ImpactMaterial, secondary_mass: float, secondary_amp: float, secondary_resonance: float,
+                    speed: float, seed: int = None) -> bytes:
+        # Load the impact materials.
+        ImpactMaterialData.Load(primary_impact_material)
+        ImpactMaterialData.Load(secondary_impact_material)
         # Get the objects.
         primary = ClatterObjectData(0, primary_impact_material, primary_amp, primary_resonance, primary_mass)
         secondary = ClatterObjectData(1, secondary_impact_material, secondary_amp, secondary_resonance, secondary_mass)
-        # Generate audio.
-        if self.has_seed.value:
-            rng = Random(self.seed.value)
-        else:
+        # Get the random number generator.
+        if seed is None:
             rng = Random()
+        else:
+            rng = Random(seed)
+        # Generate audio.
         impact = Impact(primary, secondary, rng)
         impact.GetAudio(speed)
         return bytes(impact.samples.ToInt16Bytes())
