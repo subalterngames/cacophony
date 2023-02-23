@@ -55,6 +55,8 @@ class ScrollPanel(Panel):
         self.selection_index: int = 0
 
     def _do_result(self, result: RenderResult) -> bool:
+        if len(self._widgets) == 0:
+            return False
         if InputKey.up in result.inputs_scroll:
             if self._widget_index == 0 and self._page_index > 0:
                 widget_index_0 = self._widget_index
@@ -103,7 +105,7 @@ class ScrollPanel(Panel):
                                                        "selection_index_delta": -1}))
                 return True
         # Listen to a widget.
-        if self._widgets[self.selection_index].do(result=result):
+        if len(self._widgets) > 0 and self._widgets[self.selection_index].do(result=result):
             # Update the undo stack.
             self.undo_stack.extend(self._widgets[self.selection_index].undo_stack[:])
             self._widgets[self.selection_index].undo_stack.clear()
@@ -114,6 +116,8 @@ class ScrollPanel(Panel):
     def _render_panel(self, focus: bool) -> List[Command]:
         # Blit the panel.
         commands = super()._render_panel(focus=focus)
+        if len(self._pages) == 0:
+            return commands
         parent_rect = get_parent_rect(position=(self._position[0] + 1, self._position[1] + 1),
                                       size=self._size,
                                       pivot=self._pivot,

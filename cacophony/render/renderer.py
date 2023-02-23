@@ -6,9 +6,6 @@ from cacophony.render.commands.command import Command
 from cacophony.render.globals import WINDOW_PIXEL_WIDTH, WINDOW_PIXEL_HEIGHT
 from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
-from cacophony.text_to_speech import TextToSpeech
-from cacophony.util import tooltip
-
 
 class Renderer:
     """
@@ -29,7 +26,6 @@ class Renderer:
             pygame.display.set_mode((WINDOW_PIXEL_WIDTH, WINDOW_PIXEL_HEIGHT))
         self._done: bool = False
         self._held: List[str] = list()
-        self.__app_help_text: str = Renderer.__get_app_help_text()
         self._undo_stack: List[Tuple[Surface, List[Rect]]] = list()
         self._undoing: bool = False
 
@@ -78,11 +74,6 @@ class Renderer:
         # Stop undoing.
         elif InputKey.undo not in result.inputs_held and self._undoing:
             self._undoing = False
-        # Get help (seriously).
-        if InputKey.app_help in result.inputs_pressed:
-            TextToSpeech.say(self.__app_help_text)
-        elif InputKey.stop_tts in result.inputs_pressed:
-            TextToSpeech.stop()
         return result
 
     def do(self) -> RenderResult:
@@ -105,23 +96,3 @@ class Renderer:
 
         self._undo_stack.clear()
         self._undoing = False
-
-    @staticmethod
-    def __get_app_help_text() -> str:
-        """
-        :return: The help text for the whole app.
-        """
-
-        text = "Hello world. I am Casey the Cacodemon. "
-        tooltips = [tooltip(keys=[InputKey.next_panel, InputKey.previous_panel], predicate="cycle through panels.", boop="and"),
-                    tooltip(keys=[InputKey.panel_help], predicate="ask me to tell you what the current panel does."),
-                    tooltip(keys=[InputKey.widget_help], predicate="ask me to tell you what the current widget does."),
-                    tooltip(keys=[InputKey.new_file], predicate="new file."),
-                    tooltip(keys=[InputKey.open_file], predicate="open file."),
-                    tooltip(keys=[InputKey.save_file], predicate="save."),
-                    tooltip(keys=[InputKey.undo], predicate="undo."),
-                    tooltip(keys=[InputKey.quit_program], predicate="quit."),
-                    tooltip(keys=[InputKey.app_help], predicate="ask me to say this message again."),
-                    tooltip(keys=[InputKey.stop_tts], predicate="tell me to stop talking.")]
-        text += " ".join(tooltips)
-        return text

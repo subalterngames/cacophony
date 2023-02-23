@@ -87,6 +87,9 @@ class PianoRoll(Panel):
                                   anchor=self._anchor,
                                   parent_rect=self._parent_rect)])
             # Blit each note.
+            if len(self.music.tracks) == 0:
+                note_y += 1
+                continue
             for i, note in enumerate(self.music.tracks[self.track_index].notes):
                 # Ignore notes that are out of range.
                 if note.note != note_value or note.note < self.note_0 or note.note > note_1 or note.start + note.duration <= self.time_0 or note.start > time_1:
@@ -109,10 +112,11 @@ class PianoRoll(Panel):
             note_y += 1
         # Add arrows.
         max_time = 0
-        for note in self.music.tracks[self.track_index].notes:
-            note_t1 = note.start + note.duration
-            if note_t1 > max_time:
-                max_time = note_t1
+        if len(self.music.tracks) > 0:
+            for note in self.music.tracks[self.track_index].notes:
+                note_t1 = note.start + note.duration
+                if note_t1 > max_time:
+                    max_time = note_t1
         if focus:
             arrow_color = COLORS[Color.border_focus]
             mid_x = self._position[0] + self._size[0] // 2

@@ -32,34 +32,37 @@ class SynthesizerPanel(ScrollPanel):
         self.music: Music = music
         self.track_index: int = track_index
         layout: Tuple[int, int, int, int] = LAYOUTS["SynthesizerPanel"]
-        # Generate elements from the Callbacker parameters.
-        synthesizer: Synthesizer = self.music.tracks[self.track_index].synthesizer
         self._synthesizer_widgets: Dict[Widget, str] = dict()
         position = (layout[0], layout[1])
         size = (layout[2], layout[3])
-        for k in synthesizer.__dict__:
-            # Ignore hidden parameters.
-            if k[0] == "_":
-                continue
-            v = synthesizer.__dict__[k]
-            if isinstance(v, IndexedList):
-                widget = Options(title=k, options=v.get_strs(), index=v.index, width=size[0] - 2)
-            elif isinstance(v, FilePath):
-                widget = FilePrompt(path=v.value, width=size[0] - 2, suffixes=v.suffixes)
-            elif isinstance(v, Value):
-                if isinstance(v.value, bool):
-                    widget = Boolean(title=k, value=v.value)
+        # Generate elements from the Callbacker parameters.
+        if len(self.music.tracks) > 0:
+            synthesizer: Synthesizer = self.music.tracks[self.track_index].synthesizer
+            for k in synthesizer.__dict__:
+                # Ignore hidden parameters.
+                if k[0] == "_":
+                    continue
+                v = synthesizer.__dict__[k]
+                if isinstance(v, IndexedList):
+                    widget = Options(title=k, options=v.get_strs(), index=v.index, width=size[0] - 2)
+                elif isinstance(v, FilePath):
+                    widget = FilePrompt(path=v.value, width=size[0] - 2, suffixes=v.suffixes)
+                elif isinstance(v, Value):
+                    if isinstance(v.value, bool):
+                        widget = Boolean(title=k, value=v.value)
+                    else:
+                        raise Exception(f"Unsupported value widget: {v}")
                 else:
-                    raise Exception(f"Unsupported value widget: {v}")
-            else:
-                raise Exception(f"Unsupported parameter: {k}, {v}, {v.__class__.__name__}")
-            self._synthesizer_widgets[widget] = k
+                    raise Exception(f"Unsupported parameter: {k}, {v}, {v.__class__.__name__}")
+                self._synthesizer_widgets[widget] = k
         super().__init__(title=self._get_panel_title(), position=position, size=size,
                          widgets=list(self._synthesizer_widgets.keys()))
 
     @final
     def _do_result(self, result: RenderResult) -> bool:
         did = super()._do_result(result=result)
+        if len(self._widgets) == 0:
+            return False
         # Something happened. Update the synthesizer parameters.
         if did:
             focused_widget = self._widgets[self.selection_index]
@@ -102,9 +105,15 @@ class SynthesizerPanel(ScrollPanel):
         return did
 
     def get_widget_help(self) -> str:
-        focused_widget = self._widgets[self.selection_index]
-        attr: Callbacker = getattr(self.music.tracks[self.track_index].synthesizer, self._synthesizer_widgets[focused_widget])
-        return f"{super().get_widget_help()} {attr.tts}"
+        if len(self.music.tracks) > 0:
+            focused_widget = self._widgets[self.selection_index]
+            attr: Callbacker = getattr(self.music.tracks[self.track_index].synthesizer, self._synthesizer_widgets[focused_widget])
+            return f"{super().get_widget_help()} {attr.tts}"
+        else:
+            return ""
 
     def _get_panel_title(self) -> str:
-        return f"{self.track_index} {self.music.tracks[self.track_index].synthesizer.__class__.__name__}"
+        if len(self.music.tracks) > 0:
+            return f"{self.track_index} {self.music.tracks[self.track_index].synthesizer.__class__.__name__}"
+        else:
+            return "Synthesizer"
