@@ -1,4 +1,3 @@
-from time import time
 from pathlib import Path
 from typing import List, Optional
 from platform import system
@@ -162,9 +161,9 @@ class OpenFile(Panel):
         # Empty page.
         if len(self._pages) == 0 or len(self._pages[self._page_index]) == 0:
             return False
-        if InputKey.up in result.inputs_pressed:
+        if InputKey.up in result.inputs_scroll:
             return self._scroll(up=True)
-        elif InputKey.down in result.inputs_pressed:
+        elif InputKey.down in result.inputs_scroll:
             return self._scroll(up=False)
         # Select a file.
         elif InputKey.select in result.inputs_pressed:
@@ -173,12 +172,6 @@ class OpenFile(Panel):
                 self.path = p
                 self.done = True
                 return True
-        # Hold down the key and scroll.
-        if time() - self._scroll_t0 > SCROLL_DT:
-            if InputKey.up in result.inputs_held:
-                return self._scroll(up=True)
-            elif InputKey.down in result.inputs_held:
-                return self._scroll(up=False)
         return False
 
     def _get_pages(self) -> List[List[Path]]:
@@ -220,20 +213,16 @@ class OpenFile(Panel):
             if self._element_index == 0 and self._page_index > 0:
                 self._page_index -= 1
                 self._element_index = len(self._pages[self._page_index]) - 1
-                self._scroll_t0 = time()
                 return True
             elif self._element_index > 0:
                 self._element_index -= 1
-                self._scroll_t0 = time()
                 return True
         else:
             if self._element_index == len(self._pages[self._page_index]) - 1 and self._page_index < len(self._pages) - 1:
                 self._page_index += 1
                 self._element_index = 0
-                self._scroll_t0 = time()
                 return True
             elif self._element_index < len(self._pages[self._page_index]) - 1:
                 self._element_index += 1
-                self._scroll_t0 = time()
                 return True
         return False

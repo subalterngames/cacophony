@@ -16,9 +16,7 @@ from cacophony.render.input_key import InputKey
 m = Music(bpm=120)
 m.tracks.append(Track(track_id=0, synthesizer=Chiptune(ChiptunePCM.saw)))
 synth_1 = SoundFont(channel_index=0)
-synth_1.path = "D:/SoundFonts/ms_basic.sf3"
-synth_1.bank = 0
-synth_1.preset = 2
+# synth_1.path.value = "D:/SoundFonts/ms_basic.sf3"
 track_1 = Track(track_id=1, synthesizer=synth_1)
 t = 0
 for n in range(60, 80):
@@ -37,7 +35,7 @@ result = r.render([])
 panels = [MainMenu(),
           TracksList(music=m),
           PianoRoll(music=m, track_index=0, selected_note=-1, note_0=60, time_0=0),
-          SynthesizerPanel(music=m, track_index=0)]
+          SynthesizerPanel(music=m, track_index=1)]
 focus = 0
 track_index = 0
 channel = pygame.mixer.find_channel()

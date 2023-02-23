@@ -42,6 +42,8 @@ class TextToSpeech:
             # Set the voice.
             TextToSpeech._ENGINE.setProperty("voice",
                                              TextToSpeech._ENGINE.getProperty('voices')[voice_id].id)
+            TextToSpeech._ENGINE.setProperty("rate",
+                                             int(get_config()["TEXT_TO_SPEECH"]["rate"]))
             # Set a channel.
             TextToSpeech._CHANNEL = pygame.mixer.find_channel()
         # Continue the current audio.

@@ -15,10 +15,15 @@ class Border(AbcRectangle):
         if not CLEAR_COLOR_IS_BLACK:
             surface.fill(CLEAR_COLOR)
         # Draw the rectangle.
-        pygame.draw.rect(surface, self._color, Rect(CELL_SIZE[0] // 2,
-                                                    CELL_SIZE[1] // 3,
-                                                    self._size[0] - CELL_SIZE[0],
-                                                    int(self._size[1] - CELL_SIZE[1] * (2 / 3))),
-                         width=BORDER_PIXEL_WIDTH)
+        if self._grid_size[1] > 1:
+            pygame.draw.rect(surface, self._color, Rect(CELL_SIZE[0] // 2,
+                                                        CELL_SIZE[1] // 3,
+                                                        self._size[0] - CELL_SIZE[0],
+                                                        int(self._size[1] - CELL_SIZE[1] * (2 / 3))),
+                             width=BORDER_PIXEL_WIDTH)
+        # Draw on the edges of the cells.
+        else:
+            pygame.draw.rect(surface, self._color, Rect(0, 0, self._size[0], CELL_SIZE[1]),
+                             width=BORDER_PIXEL_WIDTH)
         surface.set_colorkey(CLEAR_COLOR)
         return surface

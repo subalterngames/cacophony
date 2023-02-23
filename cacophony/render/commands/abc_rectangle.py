@@ -22,6 +22,7 @@ class AbcRectangle(RenderAt, ABC):
         :param parent_rect: The parent rect that pivot and anchor are relative to. If None, this defaults to the display surface rect.
         """
 
+        self._grid_size: Tuple[int, int] = size
         self._size: Tuple[int, int] = (size[0] * CELL_SIZE[0], size[1] * CELL_SIZE[1])
         self._color: Tuple[int, int, int] = color
         super().__init__(position=position, pivot=pivot, anchor=anchor, parent_rect=parent_rect)

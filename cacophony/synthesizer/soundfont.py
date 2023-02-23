@@ -9,7 +9,7 @@ from cacophony.util import get_path
 from cacophony.music.globals import FRAMERATE
 from cacophony.callbacker.int_list import IntList, zero_127
 from cacophony.callbacker.dictionary import Dictionary
-from cacophony.callbacker.value import Value
+from cacophony.callbacker.file_path import FilePath
 
 
 class SoundFont(Synthesizer):
@@ -33,13 +33,13 @@ class SoundFont(Synthesizer):
         self._path: str = ""
         self._loader: Optional[sf2_loader] = None
         # Set the channel.
-        self.channel: IntList = zero_127(index=channel_index, tts="Set the channel.")
+        self.channel: IntList = zero_127(index=channel_index, tts="")
         # A dictionary of instrument integer keys and names.
-        self.preset: Dictionary = Dictionary(values=dict(), tts="Set the instrument.")
+        self.preset: Dictionary = Dictionary(values=dict(), tts="")
         # A list of bank integers.
-        self.bank: IntList = IntList(values=[], callback=self._set_bank, tts="Set the bank.")
+        self.bank: IntList = IntList(values=[], callback=self._set_bank, tts="")
         # The path to the file. When this is set, we'll try loading the SoundFont.
-        self.path: Value[str] = Value(value=path, callback=self._set_path, tts="Set the sound font file.")
+        self.path: FilePath = FilePath(suffixes=[".sf2", ".sf3"], value=path, callback=self._set_path, tts="")
         self._set_path()
         # Set the indices of the bank and preset.
         self.bank.index = bank_index
@@ -82,7 +82,9 @@ class SoundFont(Synthesizer):
         instruments = self._loader.all_instruments()[self.bank.get()]
         self.preset = Dictionary(values={int(i): instruments[i] for i in instruments},
                                  index=0,
-                                 callback=self._set_preset)
+                                 callback=self._set_preset,
+                                 tts="")
+        self._set_preset()
 
     def _set_preset(self) -> None:
         """
@@ -101,10 +103,11 @@ class SoundFont(Synthesizer):
 
     def _audio(self, note: Note, volume: int, duration: float) -> bytes:
         # Note on event.
-        self._loader.synth.noteon(self.channel, note.note, volume)
+        channel = self.channel.get()
+        self._loader.synth.noteon(channel, note.note, volume)
         # Get samples for the duration.
         a: np.ndarray = self._loader.synth.get_samples(len=int(FRAMERATE * duration))
         # Note off.
-        self._loader.synth.noteoff(self.channel, note.note)
+        self._loader.synth.noteoff(channel, note.note)
         # Return the int16 samples.
         return np.int16(a).tobytes()

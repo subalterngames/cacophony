@@ -13,7 +13,7 @@ class Value(Callbacker, Generic[T]):
         """
         :param value: The initial value of type T.
         :param tts: Text-to-speech text.
-        :param callback: An optional callback that is invoked when `index` is set.
+        :param callback: An optional callback that is invoked when `value` is set.
         """
 
         super().__init__(callback=callback, tts=tts)
