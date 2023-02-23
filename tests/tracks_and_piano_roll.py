@@ -12,6 +12,7 @@ from cacophony.render.panel.piano_roll import PianoRoll
 from cacophony.render.panel.main_menu import MainMenu
 from cacophony.render.panel.synthesizer_panel import SynthesizerPanel
 from cacophony.render.input_key import InputKey
+from cacophony.render.globals import UI_AUDIO_GAIN
 
 
 m = Music(bpm=120)
@@ -48,9 +49,10 @@ while True:
         channel.play(sound)
     # Cycle between panels.
     if InputKey.next_panel in result.inputs_pressed:
-        sound = pygame.mixer.Sound(Clatter.get_random())
-        sound.set_volume(0.2)
-        sound.play()
+        if UI_AUDIO_GAIN > 0:
+            sound = pygame.mixer.Sound(Clatter.get_random())
+            sound.set_volume(UI_AUDIO_GAIN)
+            sound.play()
         panels[focus].initialized = False
         focus += 1
         if focus >= len(panels):

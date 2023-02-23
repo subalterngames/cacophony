@@ -98,4 +98,8 @@ LAYOUTS: Dict[str, Tuple[int, int, int, int]] = {"MainMenu": __main_menu_rect,
                                                  "TracksList": __tracks_list_rect,
                                                  "PianoRoll": __piano_roll_rect,
                                                  "SynthesizerPanel": __synthesizer_rect}
+# Scrolling.
 SCROLL_DT: float = float(__parser["SCROLL"]["dt"])
+# UI audio.
+__ui_audio: SectionProxy = __parser["UI_AUDIO"]
+UI_AUDIO_GAIN: float = int(__ui_audio["gain"]) / 127
