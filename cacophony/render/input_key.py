@@ -6,18 +6,22 @@ class InputKey(IntFlag):
     Enum values for input keys.
     """
 
-    up = 1
-    right = 2
-    down = 4
-    left = 8
-    next_panel = 16
-    previous_panel = 32
-    select = 64
-    play = 128
-    panel_help = 256
-    widget_help = 512
-    app_help = 1024
-    undo = 2048
-    cancel = 4096
-    open_file = 8192
-    stop_tts = 16384
+    up = 0
+    right = 1
+    down = 2
+    left = 3
+    next_panel = 4
+    previous_panel = 5
+    select = 6
+    play = 7
+    panel_help = 8
+    widget_help = 9
+    app_help = 10
+    undo = 11
+    cancel = 12
+    open_file = 13
+    stop_tts = 14
+    new_file = 15
+    save_file = 16
+    quit_program = 17
+

@@ -116,7 +116,11 @@ class Renderer:
         tooltips = [tooltip(keys=[InputKey.next_panel, InputKey.previous_panel], predicate="cycle through panels.", boop="and"),
                     tooltip(keys=[InputKey.panel_help], predicate="ask me to tell you what the current panel does."),
                     tooltip(keys=[InputKey.widget_help], predicate="ask me to tell you what the current widget does."),
+                    tooltip(keys=[InputKey.new_file], predicate="new file."),
+                    tooltip(keys=[InputKey.open_file], predicate="open file."),
+                    tooltip(keys=[InputKey.save_file], predicate="save."),
                     tooltip(keys=[InputKey.undo], predicate="undo."),
+                    tooltip(keys=[InputKey.quit_program], predicate="quit."),
                     tooltip(keys=[InputKey.app_help], predicate="ask me to say this message again."),
                     tooltip(keys=[InputKey.stop_tts], predicate="tell me to stop talking.")]
         text += " ".join(tooltips)
