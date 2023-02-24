@@ -27,5 +27,6 @@ class EnumList(IndexedList, Generic[T]):
     def get_str_value(self) -> str:
         return self.get().name
 
+    @final
     def get_strs(self) -> List[str]:
         return [v.name for v in self.values]

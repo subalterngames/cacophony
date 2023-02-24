@@ -50,7 +50,7 @@ class VSTi(Synthesizer):
         super().__init__(beat_index=beat_index, gain_index=gain_index, use_volume=use_volume, volume_index=volume_index)
 
     def get_channels(self) -> int:
-        return 2
+        return 1
 
     def get_help_text(self) -> str:
         text = "VST plugin. "

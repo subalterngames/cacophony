@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC
-from typing import List, TypeVar, Generic, Optional, Callable
+from typing import List, TypeVar, Generic, Callable
 from overrides import final
 from cacophony.callbacker.callbacker import Callbacker
 
@@ -36,23 +36,6 @@ class IndexedList(Callbacker, Generic[T], ABC):
         self._invoke()
 
     @final
-    def increment(self, add: bool) -> None:
-        """
-        Increment or decrement the index. If it is less than 0, it becomes len(values) - 1. If it is greater than len(values) - 1, it becomes 0.
-
-        :param add: If True, increment. If False, decrement.
-        """
-
-        if add:
-            self.index += 1
-            if self.index >= len(self.values):
-                self.index = 0
-        else:
-            self.index -= 1
-            if self.index < 0:
-                self.index = len(self.values) - 1
-
-    @final
     def get(self) -> T:
         """
         :return: Returns the value in `self.values` at index `self.index`.
@@ -73,16 +56,3 @@ class IndexedList(Callbacker, Generic[T], ABC):
         """
 
         return [str(v) for v in self.values]
-
-    @final
-    def get_index(self, value: T) -> Optional[int]:
-        """
-        :param value: The value of type T.
-
-        :return: The index in `self.values` of `value`. If `value` isn't in `self.values`, this returns None.
-        """
-
-        try:
-            return self.values.index(value)
-        except ValueError:
-            return None
