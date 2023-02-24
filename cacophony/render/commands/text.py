@@ -2,7 +2,7 @@ from textwrap import wrap
 from typing import Tuple, Optional, List, Union
 from pygame import Surface, Rect
 from cacophony.render.commands.render_at import RenderAt
-from cacophony.render.globals import CELL_SIZE, CLEAR_COLOR, CLEAR_COLOR_IS_BLACK, FONT
+from cacophony.render.globals import CELL_SIZE, FONT
 
 
 class Text(RenderAt):

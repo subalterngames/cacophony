@@ -5,7 +5,6 @@ from pygame import Rect
 from cacophony.render.commands.command import Command
 from cacophony.render.commands.text import Text
 from cacophony.render.commands.border import Border
-from cacophony.render.commands.rectangle import Rectangle
 from cacophony.render.color import Color
 from cacophony.render.globals import COLORS
 from cacophony.render.widget.widget import Widget

@@ -22,7 +22,7 @@ class ChooseSynthesizer(ScrollPanel):
         synths: List[Callable] = []
         cacophony_synths_dir = Path(resource_filename(__name__, "")).joinpath("../../synthesizer").resolve().absolute()
         # Source: https://julienharbulot.com/python-dynamical-import.html
-        for _, module_name, _ in iter_modules([cacophony_synths_dir]):
+        for _, module_name, _ in iter_modules([str(cacophony_synths_dir)]):
             # Source: https://stackoverflow.com/a/55067404
             for name, cls in inspect.getmembers(importlib.import_module(f"cacophony.synthesizer.{module_name}"), inspect.isclass):
                 # This is a synthesizer.

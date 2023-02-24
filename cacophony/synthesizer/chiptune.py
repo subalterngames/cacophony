@@ -38,6 +38,4 @@ class Chiptune(Synthesizer):
         return f"Chiptune {self.pcm.get().name} waveform generator."
 
     def get(self, note: int, volume: int, duration: float) -> bytes:
-        return self._generators[self.pcm.get()](note=midi_to_frequency(note),
-                                                amplitude=volume / 127,
-                                                length=duration)
+        return self._generators[self.pcm.get()](midi_to_frequency(note), volume / 127, duration)
