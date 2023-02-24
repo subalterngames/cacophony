@@ -9,15 +9,16 @@ class Dictionary(IntList):
     A list of key-value pairs values with an index that wraps around the collection. The values are always strings.
     """
 
-    def __init__(self, values: Dict[int, str], tts: str, index: int = 0, callback: Callable[[], None] = None):
+    def __init__(self, values: Dict[int, str], tts: str, index: int = 0, callback: Callable = None, kwargs: dict = None):
         """
         :param values: A list of int values.
         :param tts: Text-to-speech text.
         :param index: The current index.
         :param callback: An optional callback that is invoked when `index` is set.
+        :param kwargs: An optional dictionary of keyword arguments.
         """
 
-        super().__init__(values=list(values.keys()), tts=tts, index=index, callback=callback)
+        super().__init__(values=list(values.keys()), tts=tts, index=index, callback=callback, kwargs=kwargs)
         self._dict_values: List[str] = list(values.values())
 
     @final
