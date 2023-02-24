@@ -3,3 +3,4 @@
 *.pyc
 temp/
 scratch.py
+synthesizers/

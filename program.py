@@ -33,8 +33,11 @@ class Program:
         result = renderer.render([])
         while True:
             # Quit.
-            if InputKey.quit_program in result.inputs_pressed:
+            if InputKey.quit_program in result.inputs_held:
                 return
+            # New file.
+            elif InputKey.new_file in result.inputs_held:
+                self.new_file()
             # Cycle between panels.
             elif InputKey.next_panel in result.inputs_pressed:
                 self.cycle_panel_focus(increment=True)
@@ -114,6 +117,19 @@ class Program:
                     tooltip(keys=[InputKey.stop_tts], predicate="tell me to stop talking.")]
         text += " ".join(tooltips)
         return text
+
+    def new_file(self) -> None:
+        """
+        Create a new file.
+        """
+
+        self.music = Music(bpm=60)
+        self.renderer = Renderer()
+        self.main_menu = MainMenu()
+        self.tracks_list = TracksList(music=self.music)
+        self.piano_roll = PianoRoll(music=self.music, track_index=0, selected_note=0, time_0=0, note_0=60)
+        self.synthesizer_panel = SynthesizerPanel(music=self.music, track_index=0)
+        self.panels = [self.main_menu, self.tracks_list, self.piano_roll, self.synthesizer_panel]
 
 
 if __name__ == "__main__":

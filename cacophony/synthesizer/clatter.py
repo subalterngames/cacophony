@@ -1,4 +1,3 @@
-from __future__ import annotations
 from itertools import permutations
 from typing import List
 from pathlib import Path
@@ -6,7 +5,6 @@ import clr
 from requests import get
 from bs4 import BeautifulSoup
 import numpy as np
-from cacophony.music.note import Note
 from cacophony.synthesizer.synthesizer import Synthesizer
 from cacophony.paths import USER_DIRECTORY
 from cacophony.callbacker.value import Value
@@ -103,9 +101,9 @@ class Clatter(Synthesizer):
                                    secondary_resonance=float(resonances[1]),
                                    speed=float(rng.uniform(1, 1.5)))
 
-    def _audio(self, note: Note, volume: int, duration: float) -> bytes:
+    def get(self, note: int, volume: int, duration: float) -> bytes:
         # Get the impact materials.
-        n: int = note.note % len(Clatter.__IMPACT_MATERIALS)
+        n: int = note % len(Clatter.__IMPACT_MATERIALS)
         primary_impact_material: ImpactMaterial = Clatter.__IMPACT_MATERIALS[n]
         secondary_impact_material: ImpactMaterial = Clatter.__IMPACT_MATERIALS[(len(Clatter.__IMPACT_MATERIALS) - n) % len(Clatter.__IMPACT_MATERIALS)]
         # Parse the material to get the size.
@@ -121,7 +119,7 @@ class Clatter(Synthesizer):
                                    secondary_mass=Clatter.__MASSES[secondary_size],
                                    secondary_amp=ar[2] + 0.1,
                                    secondary_resonance=ar[3],
-                                   speed=note.duration % Clatter.__MAX_SPEED,
+                                   speed=duration % Clatter.__MAX_SPEED,
                                    seed=self.seed.value if self.has_seed.value else None)
 
     @staticmethod

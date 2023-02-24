@@ -1,10 +1,8 @@
-from __future__ import annotations
 from typing import Union, Callable, Dict
 from pygame.midi import midi_to_frequency
 from chipnumpy.synthesizer import Synthesizer as ChipSynth
 from cacophony.synthesizer.chiptune_pcm import ChiptunePCM
 from cacophony.synthesizer.synthesizer import Synthesizer
-from cacophony.music.note import Note
 from cacophony.callbacker.enum_list import EnumList
 
 
@@ -39,7 +37,7 @@ class Chiptune(Synthesizer):
     def get_help_text(self) -> str:
         return f"Chiptune {self.pcm.get().name} waveform generator."
 
-    def _audio(self, note: Note, volume: int, duration: float) -> bytes:
-        return self._generators[self.pcm.get()](note=midi_to_frequency(note.note),
+    def get(self, note: int, volume: int, duration: float) -> bytes:
+        return self._generators[self.pcm.get()](note=midi_to_frequency(note),
                                                 amplitude=volume / 127,
                                                 length=duration)

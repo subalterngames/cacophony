@@ -59,7 +59,7 @@ class Synthesizer(ABC):
             # Use the note's volume.
             else:
                 volume = int(note.volume * gainf)
-            return self._audio(note=note, volume=volume, duration=get_duration(bpm=bpm, beat=note.duration))
+            return self.get(note=note.note, volume=volume, duration=get_duration(bpm=bpm, beat=note.duration))
 
     @abstractmethod
     def get_channels(self) -> int:
@@ -155,11 +155,11 @@ class Synthesizer(ABC):
         raise Exception()
 
     @abstractmethod
-    def _audio(self, note: Note, volume: int, duration: float) -> bytes:
+    def get(self, note: int, volume: int, duration: float) -> bytes:
         """
         Synthesize a note.
 
-        :param note: The note.
+        :param note: The MIDI note value.
         :param volume: The volume of the note.
         :param duration: The duration of the note in seconds.
 

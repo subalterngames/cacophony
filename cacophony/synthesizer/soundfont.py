@@ -1,10 +1,8 @@
-from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 import numpy as np
 from sf2_loader.read_sf2.read_sf2 import sf2_loader
 from cacophony.synthesizer.synthesizer import Synthesizer
-from cacophony.music.note import Note
 from cacophony.util import get_path
 from cacophony.music.globals import FRAMERATE
 from cacophony.callbacker.int_list import IntList, zero_127
@@ -101,13 +99,13 @@ class SoundFont(Synthesizer):
             return "SoundFont. No file loaded."
         return f"SoundFont {Path(self._path).name}. {self.preset.get_str()}."
 
-    def _audio(self, note: Note, volume: int, duration: float) -> bytes:
+    def get(self, note: int, volume: int, duration: float) -> bytes:
         # Note on event.
         channel = self.channel.get()
-        self._loader.synth.noteon(channel, note.note, volume)
+        self._loader.synth.noteon(channel, note, volume)
         # Get samples for the duration.
         a: np.ndarray = self._loader.synth.get_samples(len=int(FRAMERATE * duration))
         # Note off.
-        self._loader.synth.noteoff(channel, note.note)
+        self._loader.synth.noteoff(channel, note)
         # Return the int16 samples.
         return np.int16(a).tobytes()
