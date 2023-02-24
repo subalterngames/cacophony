@@ -12,9 +12,9 @@ from cacophony.callbacker.float_list import FloatList
 from cacophony.music.globals import FRAMERATE, SAMPLE_WIDTH
 
 
-class VST(Synthesizer):
+class VSTi(Synthesizer):
     """
-    A VST synthesizer.
+    A VST instrument.
     """
 
     def __init__(self, path: str = "", channel_index: int = 1, buffer_size_index: int = 2, beat_index: int = 5,
@@ -95,7 +95,7 @@ class VST(Synthesizer):
         self._pointers.clear()
         for i in range(self._plugin.get_num_output_channels()):
             self._buffers.append(np.zeros(buffer_size, dtype=self._dtype))
-            self._pointers.append(VST._numpy_array_to_pointer(self._buffers[i]))
+            self._pointers.append(VSTi._numpy_array_to_pointer(self._buffers[i]))
 
     def _load(self) -> None:
         """
