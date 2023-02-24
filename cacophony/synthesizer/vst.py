@@ -4,11 +4,12 @@ import numpy as np
 from cython_vst_loader.vst_host import VstHost
 from cython_vst_loader.vst_plugin import VstPlugin
 from cython_vst_loader.vst_event import VstNoteOnMidiEvent, VstNoteOffMidiEvent
+from pydub import AudioSegment
 from cacophony.synthesizer.synthesizer import Synthesizer
 from cacophony.callbacker.file_path import FilePath
 from cacophony.callbacker.int_list import IntList, zero_127
 from cacophony.callbacker.float_list import FloatList
-from cacophony.music.globals import FRAMERATE
+from cacophony.music.globals import FRAMERATE, SAMPLE_WIDTH
 
 
 class VST(Synthesizer):
@@ -16,7 +17,7 @@ class VST(Synthesizer):
     A VST synthesizer.
     """
 
-    def __init__(self, path: str = "", channel_index: int = 1, buffer_size_index: int = 1, beat_index: int = 5,
+    def __init__(self, path: str = "", channel_index: int = 1, buffer_size_index: int = 2, beat_index: int = 5,
                  gain_index: int = 127, use_volume: bool = True, volume_index: int = 127):
         """
         :param path: The path to the VST .dll or .so file.
@@ -31,11 +32,8 @@ class VST(Synthesizer):
         # Set the buffer size.
         self.buffer_size: IntList = IntList(values=[256, 512, 1024], index=buffer_size_index, tts="",
                                             callback=self._set_buffers)
-        self._left_buffer: np.ndarray = np.zeros([])
-        self._right_buffer: np.ndarray = np.zeros([])
-        self._left_buffer_pointer: int = 0
-        self._right_buffer_pointer: int = 0
-        self._set_buffers()
+        self._buffers: List[np.ndarray] = list()
+        self._pointers: List[int] = list()
         self._host: VstHost = VstHost(FRAMERATE, self.buffer_size.get())
         # Set the channel.
         self.channel: IntList = zero_127(index=channel_index, tts="")
@@ -65,33 +63,39 @@ class VST(Synthesizer):
         num = int(FRAMERATE / (self.buffer_size.get() * duration))
         # Get the audio buffer.
         buffer_size = self.buffer_size.get()
-        arr = np.zeros(shape=(2, buffer_size * num), dtype=self._dtype)
+        arr = np.zeros(shape=(len(self._buffers), buffer_size, num), dtype=self._dtype)
         # Note on.
         event_note_on = VstNoteOnMidiEvent(3, note, volume, self.channel.get())
-        for i in range(1, num):
-            # Get the buffers.
-
+        for i in range(num):
             # Do the event.
             self._plugin.process_events([event_note_on])
             # Process the audio.
-            self._process([], [self._left_pointer, self._right_pointer], buffer_size)
+            self._process([], self._pointers, buffer_size)
             # Add the chunk.
-            arr[0][buffer_size * i: buffer_size * (i + 1)] = self._left_buffer
-            arr[1][buffer_size * i: buffer_size * (i + 1)] = self._right_buffer
+            for j in range(len(self._buffers)):
+                arr[j][i] = self._buffers[i]
         # Note off.
         self._plugin.process_events([VstNoteOffMidiEvent(3, note, self.channel.get())])
-        return np.int16(arr * 32767).tobytes()
+        # Overlay everything.
+        q = np.int16(arr.reshape(arr.shape[0], arr.shape[1] * arr.shape[2]) * 32767)
+        segment = AudioSegment(q[0], frame_rate=FRAMERATE, sample_width=SAMPLE_WIDTH, channels=1)
+        for i in range(1, q.shape[0]):
+            segment = segment.overlay(AudioSegment(q[i], frame_rate=FRAMERATE, sample_width=SAMPLE_WIDTH, channels=1))
+        return segment.raw_data
 
     def _set_buffers(self) -> None:
         """
         Set the cached buffer size.
         """
 
+        if self._plugin is None:
+            return
         buffer_size = self.buffer_size.get()
-        self._left_buffer = np.zeros(buffer_size, dtype=self._dtype)
-        self._right_buffer = np.zeros(buffer_size, dtype=self._dtype)
-        self._left_pointer = VST._numpy_array_to_pointer(self._left_buffer)
-        self._right_pointer = VST._numpy_array_to_pointer(self._right_buffer)
+        self._buffers.clear()
+        self._pointers.clear()
+        for i in range(self._plugin.get_num_output_channels()):
+            self._buffers.append(np.zeros(buffer_size, dtype=self._dtype))
+            self._pointers.append(VST._numpy_array_to_pointer(self._buffers[i]))
 
     def _load(self) -> None:
         """
