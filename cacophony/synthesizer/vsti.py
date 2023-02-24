@@ -156,7 +156,6 @@ class VSTi(Synthesizer):
         :return: The numpy array pointer.
         """
 
-        if arr.ndim != 1:
-            raise Exception('expected a 1d numpy array here')
+        # Source: https://github.com/hq9000/cython-vst-loader
         pointer, _ = arr.__array_interface__['data']
         return pointer
