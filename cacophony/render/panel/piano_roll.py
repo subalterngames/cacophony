@@ -6,6 +6,7 @@ from cacophony.render.commands.piano_roll_note import PianoRollNote
 from cacophony.render.globals import COLORS, LAYOUTS
 from cacophony.render.color import Color
 from cacophony.render.panel.panel import Panel
+from cacophony.render.panel.panel_type import PanelType
 from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
 from cacophony.cardinal_direction import CardinalDirection
@@ -37,6 +38,9 @@ class PianoRoll(Panel):
         self.selected_note: int = selected_note
         self.time_0: int = time_0
         self.note_0: int = note_0
+
+    def get_panel_type(self) -> PanelType:
+        return PanelType.piano_roll
 
     def _do_result(self, result: RenderResult) -> bool:
         if self.note_0 > 0 and InputKey.down in result.inputs_pressed:

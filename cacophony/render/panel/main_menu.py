@@ -5,6 +5,7 @@ from cacophony.render.commands.rectangle import Rectangle
 from cacophony.render.globals import COLORS, INPUT_KEYS, LAYOUTS
 from cacophony.render.color import Color
 from cacophony.render.panel.panel import Panel
+from cacophony.render.panel.panel_type import PanelType
 from cacophony.render.input_key import InputKey
 
 
@@ -29,6 +30,12 @@ class MainMenu(Panel):
             help_texts.append("[" + ", ".join([str(v).capitalize() for v in INPUT_KEYS[help_key]]) + " " + help_key.name.split("_")[0].title() + "]")
         self._help_text: str = "Help: " + " ".join(help_texts)
 
+    def get_panel_help(self) -> str:
+        return "Main menu"
+
+    def get_panel_type(self) -> PanelType:
+        return PanelType.main_menu
+
     def _render_panel(self, focus: bool) -> List[Command]:
         commands = super()._render_panel(focus=focus)
         commands.extend([Rectangle(position=(-2, self._position[1]),
@@ -45,6 +52,3 @@ class MainMenu(Panel):
                               anchor=(1, 0),
                               parent_rect=None)])
         return commands
-
-    def get_panel_help(self) -> str:
-        return "Main menu"

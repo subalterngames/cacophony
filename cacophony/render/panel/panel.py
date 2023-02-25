@@ -1,4 +1,4 @@
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Dict
 from overrides import final
 from pygame.display import get_surface
 from pygame import Rect
@@ -11,6 +11,7 @@ from cacophony.render.color import Color
 from cacophony.render.macros.parent_rect import get_parent_rect
 from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
+from cacophony.render.panel.panel_type import PanelType
 from cacophony.text_to_speech import TextToSpeech
 
 
@@ -53,6 +54,8 @@ class Panel:
         self.initialized: bool = False
         # A stack of undo operations. Each element is a tuple: Callbable, kwargs.
         self.undo_stack: List[Tuple[Callable, dict]] = list()
+        # A list of panels that this panel affected. They will be re-rendered. The value is kwargs for attributes to set.
+        self.affected_panels: Dict[PanelType: dict] = dict()
 
     @final
     def render(self, result: RenderResult, focus: bool) -> List[Command]:
@@ -65,19 +68,26 @@ class Panel:
         :return: A list of commands.
         """
 
+        # No panels have been affected yet.
+        self.affected_panels.clear()
+        # If this panel has focus, listen for user input requesting help text.
         if focus:
             if InputKey.panel_help in result.inputs_pressed:
                 TextToSpeech.say(self.get_panel_help())
             elif InputKey.widget_help in result.inputs_pressed:
                 TextToSpeech.say(self.get_widget_help())
         rerender = False
+        # Initialize and rerender.
         if not self.initialized:
             self.initialized = True
             rerender = True
+        # Handle user input.
         elif focus and self._do_result(result=result):
             rerender = True
+        # Something changed.
         if rerender:
             return self._render_panel(focus=focus)
+        # Nothing changed.
         else:
             return []
 
@@ -125,6 +135,13 @@ class Panel:
         """
 
         return ""
+
+    def get_panel_type(self) -> PanelType:
+        """
+        :return: An enum value describing this panel.
+        """
+
+        return PanelType.undefined
 
     def _do_result(self, result: RenderResult) -> bool:
         """

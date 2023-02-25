@@ -3,6 +3,7 @@ from overrides import final
 from pygame.mixer import Sound
 from cacophony.render.globals import LAYOUTS
 from cacophony.render.panel.scroll_panel import ScrollPanel
+from cacophony.render.panel.panel_type import PanelType
 from cacophony.render.render_result import RenderResult
 from cacophony.render.widget.widget import Widget
 from cacophony.render.widget.boolean import Boolean
@@ -57,6 +58,9 @@ class SynthesizerPanel(ScrollPanel):
                 self._synthesizer_widgets[widget] = k
         super().__init__(title=self._get_panel_title(), position=position, size=size,
                          widgets=list(self._synthesizer_widgets.keys()))
+
+    def get_panel_type(self) -> PanelType:
+        return PanelType.synthesizer_panel
 
     @final
     def _do_result(self, result: RenderResult) -> bool:

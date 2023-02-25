@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 import pygame.mixer
 from cacophony.render.renderer import Renderer
 from cacophony.render.panel.panel import Panel
@@ -6,6 +6,7 @@ from cacophony.render.panel.piano_roll import PianoRoll
 from cacophony.render.panel.main_menu import MainMenu
 from cacophony.render.panel.tracks_list import TracksList
 from cacophony.render.panel.synthesizer_panel import SynthesizerPanel
+from cacophony.render.panel.panel_type import PanelType
 from cacophony.render.input_key import InputKey
 from cacophony.render.globals import UI_AUDIO_GAIN
 from cacophony.render.render_result import RenderResult
@@ -16,19 +17,33 @@ from cacophony.util import tooltip
 
 
 class Program:
+    """
+    Cacophony.
+    """
+
     def __init__(self):
+        """
+        (no parameters)
+        """
+
         # Create new empty music.
         self.music: Music = Music(bpm=60)
         self.renderer: Renderer = Renderer()
-        self.main_menu: MainMenu = MainMenu()
-        self.tracks_list: TracksList = TracksList(music=self.music)
-        self.piano_roll: PianoRoll = PianoRoll(music=self.music, track_index=0, selected_note=0, time_0=0, note_0=60)
-        self.synthesizer_panel: SynthesizerPanel = SynthesizerPanel(music=self.music, track_index=0)
-        self.panels: List[Panel] = [self.main_menu, self.tracks_list, self.piano_roll, self.synthesizer_panel]
-        self.panel_focus: int = 0
+        main_menu: MainMenu = MainMenu()
+        tracks_list: TracksList = TracksList(music=self.music)
+        piano_roll: PianoRoll = PianoRoll(music=self.music, track_index=0, selected_note=0, time_0=0, note_0=60)
+        synthesizer_panel: SynthesizerPanel = SynthesizerPanel(music=self.music, track_index=0)
+        panels: List[Panel] = [main_menu, tracks_list, piano_roll, synthesizer_panel]
+        self.panels: Dict[PanelType, Panel] = {panel.get_panel_type(): panel for panel in panels}
+        self._panel_keys: List[PanelType] = list(self.panels.keys())
+        self._panel_focus: int = 0
         self.app_help_text: str = Program.get_app_help_text()
 
     def run(self) -> None:
+        """
+        Run the program in a loop until the user quits.
+        """
+
         renderer = Renderer()
         result = renderer.render([])
         while True:
@@ -59,18 +74,18 @@ class Program:
         """
 
         # Re-initialize the panel that is about to lose focus.
-        self.panels[self.panel_focus].initialized = False
+        self.panels[self._panel_keys[self._panel_focus]].initialized = False
         # Cycle.
         if increment:
-            self.panel_focus += 1
-            if self.panel_focus >= len(self.panels):
-                self.panel_focus = 0
+            self._panel_focus += 1
+            if self._panel_focus >= len(self.panels):
+                self._panel_focus = 0
         else:
-            self.panel_focus -= 1
-            if self.panel_focus < 0:
-                self.panel_focus = len(self.panels) - 1
+            self._panel_focus -= 1
+            if self._panel_focus < 0:
+                self._panel_focus = len(self.panels) - 1
         # Re-initialize the panel that just gained focus.
-        self.panels[self.panel_focus].initialized = False
+        self.panels[self._panel_keys[self._panel_focus]].initialized = False
         # Plink!
         if UI_AUDIO_GAIN > 0:
             sound = pygame.mixer.Sound(Clatter.get_random())
@@ -78,23 +93,33 @@ class Program:
             sound.play()
 
     def render(self, result: RenderResult) -> RenderResult:
+        """
+        Render the window. Render the focused panel.
+
+        Check which other panels have been affected.
+
+        Pass parameter-value pairs to the affected panels and render those panels.
+
+        :param result: The `RenderResult` user input data from the previous frame.
+
+        :return: A new `RenderResult`.
+        """
+
         commands = []
-        # Render the main menu.
-        commands.extend(self.main_menu.render(result=result, focus=self.panel_focus == 0))
-        # Remember the track index.
-        track_index = self.tracks_list.selection_index
-        # Render the tracks list.
-        commands.extend(self.tracks_list.render(result=result, focus=self.panel_focus == 1))
-        # The selected track changed.
-        if track_index != self.tracks_list.selection_index:
-            self.piano_roll.track_index = self.tracks_list.selection_index
-            self.piano_roll.initialized = False
-            self.synthesizer_panel.track_index = self.tracks_list.selection_index
-            self.synthesizer_panel.initialized = False
-        # Render the piano roll.
-        commands.extend(self.piano_roll.render(result=result, focus=self.panel_focus == 2))
-        # Render the synthesizer panel.
-        commands.extend(self.synthesizer_panel.render(result=result, focus=self.panel_focus == 3))
+        # Render the focused panel.
+        commands.extend(self.panels[self._panel_keys[self._panel_focus]].render(result=result, focus=True))
+        # Rerender all affected panels.
+        for affected_panel in self.panels[self._panel_keys[self._panel_focus]].affected_panels:
+            # Set attributes for the panels.
+            for attr_key in self.panels[self._panel_keys[self._panel_focus]].affected_panels[affected_panel]:
+                attr_value = self.panels[self._panel_keys[self._panel_focus]].affected_panels[affected_panel][attr_key]
+                setattr(self.panels[affected_panel], attr_key, attr_value)
+            # Mark the affected panel as uninitialized.
+            self.panels[affected_panel].initialized = False
+        # Rerender all uninitialized panels.
+        for panel_type in self.panels:
+            if not self.panels[panel_type].initialized:
+                commands.extend(self.panels[panel_type].render(result=result, focus=False))
         # Render.
         return self.renderer.render(commands)
 
@@ -125,11 +150,16 @@ class Program:
 
         self.music = Music(bpm=60)
         self.renderer = Renderer()
-        self.main_menu = MainMenu()
-        self.tracks_list = TracksList(music=self.music)
-        self.piano_roll = PianoRoll(music=self.music, track_index=0, selected_note=0, time_0=0, note_0=60)
-        self.synthesizer_panel = SynthesizerPanel(music=self.music, track_index=0)
-        self.panels = [self.main_menu, self.tracks_list, self.piano_roll, self.synthesizer_panel]
+        main_menu = MainMenu()
+        tracks_list = TracksList(music=self.music)
+        piano_roll = PianoRoll(music=self.music, track_index=0, selected_note=0, time_0=0, note_0=60)
+        synthesizer_panel = SynthesizerPanel(music=self.music, track_index=0)
+        panels = [main_menu, tracks_list, piano_roll, synthesizer_panel]
+        self.panels.clear()
+        self.panels.update({panel.get_panel_type(): panel for panel in panels})
+        self._panel_keys.clear()
+        self._panel_keys.extend(list(self.panels.keys()))
+        self._panel_focus = 0
 
 
 if __name__ == "__main__":
