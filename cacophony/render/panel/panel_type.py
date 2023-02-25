@@ -13,3 +13,4 @@ class PanelType(IntEnum):
     tracks_list = 1
     piano_roll = 2
     synthesizer_panel = 3
+    new_track = 4

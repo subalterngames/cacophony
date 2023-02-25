@@ -36,28 +36,8 @@ class SynthesizerPanel(ScrollPanel):
         self._synthesizer_widgets: Dict[Widget, str] = dict()
         position = (layout[0], layout[1])
         size = (layout[2], layout[3])
-        # Generate elements from the Callbacker parameters.
-        if len(self.music.tracks) > 0:
-            synthesizer: Synthesizer = self.music.tracks[self.track_index].synthesizer
-            for k in synthesizer.__dict__:
-                # Ignore hidden parameters.
-                if k[0] == "_":
-                    continue
-                v = synthesizer.__dict__[k]
-                if isinstance(v, IndexedList):
-                    widget = Options(title=k, options=v.get_strs(), index=v.index, width=size[0] - 2)
-                elif isinstance(v, FilePath):
-                    widget = FilePrompt(path=v.value, width=size[0] - 2, suffixes=v.suffixes)
-                elif isinstance(v, Value):
-                    if isinstance(v.value, bool):
-                        widget = Boolean(title=k, value=v.value)
-                    else:
-                        raise Exception(f"Unsupported value widget: {v}")
-                else:
-                    raise Exception(f"Unsupported parameter: {k}, {v}, {v.__class__.__name__}")
-                self._synthesizer_widgets[widget] = k
-        super().__init__(title=self._get_panel_title(), position=position, size=size,
-                         widgets=list(self._synthesizer_widgets.keys()))
+        # We will fill the widgets list later so that we can dynamically re-initialize.
+        super().__init__(title=self._get_panel_title(), position=position, size=size, widgets=[])
 
     def get_panel_type(self) -> PanelType:
         return PanelType.synthesizer_panel
@@ -65,6 +45,8 @@ class SynthesizerPanel(ScrollPanel):
     @final
     def _do_result(self, result: RenderResult) -> bool:
         did = super()._do_result(result=result)
+        if not self.initialized:
+            self._initialize()
         if len(self._widgets) == 0:
             return False
         # Something happened. Update the synthesizer parameters.
@@ -121,3 +103,33 @@ class SynthesizerPanel(ScrollPanel):
             return f"{self.track_index} {self.music.tracks[self.track_index].synthesizer.__class__.__name__}"
         else:
             return "Synthesizer"
+
+    def _initialize(self) -> None:
+        """
+        Initialize the panel from the track index.
+        """
+
+        self._synthesizer_widgets.clear()
+        # Generate elements from the Callbacker parameters.
+        if len(self.music.tracks) > 0:
+            synthesizer: Synthesizer = self.music.tracks[self.track_index].synthesizer
+            for k in synthesizer.__dict__:
+                # Ignore hidden parameters.
+                if k[0] == "_":
+                    continue
+                v = synthesizer.__dict__[k]
+                if isinstance(v, IndexedList):
+                    widget = Options(title=k, options=v.get_strs(), index=v.index, width=self._size[0] - 2)
+                elif isinstance(v, FilePath):
+                    widget = FilePrompt(path=v.value, width=self._size[0] - 2, suffixes=v.suffixes)
+                elif isinstance(v, Value):
+                    if isinstance(v.value, bool):
+                        widget = Boolean(title=k, value=v.value)
+                    else:
+                        raise Exception(f"Unsupported value widget: {v}")
+                else:
+                    raise Exception(f"Unsupported parameter: {k}, {v}, {v.__class__.__name__}")
+                self._synthesizer_widgets[widget] = k
+        # Repopulate the pages.
+        self._widgets = list(self._synthesizer_widgets.keys())
+        self._populate_pages()

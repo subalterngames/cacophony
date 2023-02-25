@@ -6,6 +6,7 @@ from cacophony.render.panel.piano_roll import PianoRoll
 from cacophony.render.panel.main_menu import MainMenu
 from cacophony.render.panel.tracks_list import TracksList
 from cacophony.render.panel.synthesizer_panel import SynthesizerPanel
+from cacophony.render.panel.new_track import NewTrack
 from cacophony.render.panel.panel_type import PanelType
 from cacophony.render.input_key import InputKey
 from cacophony.render.globals import UI_AUDIO_GAIN
@@ -33,7 +34,8 @@ class Program:
         tracks_list: TracksList = TracksList(music=self.music)
         piano_roll: PianoRoll = PianoRoll(music=self.music, track_index=0, selected_note=0, time_0=0, note_0=60)
         synthesizer_panel: SynthesizerPanel = SynthesizerPanel(music=self.music, track_index=0)
-        panels: List[Panel] = [main_menu, tracks_list, piano_roll, synthesizer_panel]
+        new_track: NewTrack = NewTrack(music=self.music, current_track_index=0)
+        panels: List[Panel] = [main_menu, tracks_list, piano_roll, synthesizer_panel, new_track]
         self.panels: Dict[PanelType, Panel] = {panel.get_panel_type(): panel for panel in panels}
         self._panel_keys: List[PanelType] = list(self.panels.keys())
         self._panel_focus: int = 0
@@ -80,10 +82,20 @@ class Program:
             self._panel_focus += 1
             if self._panel_focus >= len(self.panels):
                 self._panel_focus = 0
+            # Ignore inactive panels.
+            while not self.panels[self._panel_keys[self._panel_focus]].active:
+                self._panel_focus += 1
+                if self._panel_focus >= len(self.panels):
+                    self._panel_focus = 0
         else:
             self._panel_focus -= 1
             if self._panel_focus < 0:
                 self._panel_focus = len(self.panels) - 1
+            # Ignore inactive panels.
+            while not self.panels[self._panel_keys[self._panel_focus]].active:
+                self._panel_focus -= 1
+                if self._panel_focus < 0:
+                    self._panel_focus = len(self.panels) - 1
         # Re-initialize the panel that just gained focus.
         self.panels[self._panel_keys[self._panel_focus]].initialized = False
         # Plink!
@@ -118,7 +130,7 @@ class Program:
             self.panels[affected_panel].initialized = False
         # Rerender all uninitialized panels.
         for panel_type in self.panels:
-            if not self.panels[panel_type].initialized:
+            if self.panels[panel_type].active and not self.panels[panel_type].initialized:
                 commands.extend(self.panels[panel_type].render(result=result, focus=False))
         # Render.
         return self.renderer.render(commands)
@@ -154,7 +166,8 @@ class Program:
         tracks_list = TracksList(music=self.music)
         piano_roll = PianoRoll(music=self.music, track_index=0, selected_note=0, time_0=0, note_0=60)
         synthesizer_panel = SynthesizerPanel(music=self.music, track_index=0)
-        panels = [main_menu, tracks_list, piano_roll, synthesizer_panel]
+        new_track = NewTrack(music=self.music, current_track_index=0)
+        panels = [main_menu, tracks_list, piano_roll, synthesizer_panel, new_track]
         self.panels.clear()
         self.panels.update({panel.get_panel_type(): panel for panel in panels})
         self._panel_keys.clear()

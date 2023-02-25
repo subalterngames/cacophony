@@ -35,24 +35,10 @@ class ScrollPanel(Panel):
         super().__init__(title=title, position=position, size=size, pivot=pivot, anchor=anchor, parent_rect=parent_rect)
         self._widgets: List[Widget] = widgets
         self._pages: List[List[Widget]] = list()
-        max_h = self._size[1] - 2
-        page: List[Widget] = list()
-        page_h = 0
-        for element in widgets:
-            element_h = element.get_size()[1]
-            # Exceeded the max height. End the page.
-            if page_h + element_h > max_h:
-                self._pages.append(page[:])
-                page_h = 0
-                page.clear()
-            # Append to the page.
-            page.append(element)
-            page_h += element_h
-        if len(page) > 0:
-            self._pages.append(page)
         self._page_index: int = 0
         self._widget_index: int = 0
         self.selection_index: int = 0
+        self._populate_pages()
 
     def _do_result(self, result: RenderResult) -> bool:
         if len(self._widgets) == 0:
@@ -171,7 +157,6 @@ class ScrollPanel(Panel):
             self._widget_index = widget_index
         self.selection_index += selection_index_delta
 
-    @final
     def get_panel_help(self) -> str:
         return self._get_panel_title() + ". " + tooltip(keys=[InputKey.up, InputKey.down], predicate="scroll", boop="and")
 
@@ -180,3 +165,29 @@ class ScrollPanel(Panel):
 
     def _get_panel_title(self) -> str:
         return "Scroll panel"
+
+    @final
+    def _populate_pages(self) -> None:
+        """
+        Populate the pages lists.
+        """
+
+        self._pages.clear()
+        max_h = self._size[1] - 2
+        page: List[Widget] = list()
+        page_h = 0
+        for element in self._widgets:
+            element_h = element.get_size()[1]
+            # Exceeded the max height. End the page.
+            if page_h + element_h > max_h:
+                self._pages.append(page[:])
+                page_h = 0
+                page.clear()
+            # Append to the page.
+            page.append(element)
+            page_h += element_h
+        if len(page) > 0:
+            self._pages.append(page)
+        self._page_index = 0
+        self._widget_index = 0
+        self.selection_index = 0

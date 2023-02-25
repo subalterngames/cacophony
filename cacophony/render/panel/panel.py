@@ -51,6 +51,9 @@ class Panel:
                                                       pivot=pivot,
                                                       anchor=anchor,
                                                       grandparent_rect=self._parent_rect)
+        # If the panel isn't active, it will never be rendered.
+        self.active: bool = True
+        # If the panel is active but not initialized, it will always be rendered and then this will be set to True.
         self.initialized: bool = False
         # A stack of undo operations. Each element is a tuple: Callbable, kwargs.
         self.undo_stack: List[Tuple[Callable, dict]] = list()
@@ -79,17 +82,18 @@ class Panel:
         rerender = False
         # Initialize and rerender.
         if not self.initialized:
-            self.initialized = True
             rerender = True
         # Handle user input.
         elif focus and self._do_result(result=result):
             rerender = True
         # Something changed.
         if rerender:
-            return self._render_panel(focus=focus)
+            commands = self._render_panel(focus=focus)
         # Nothing changed.
         else:
-            return []
+            commands = []
+        self.initialized = True
+        return commands
 
     def _render_panel(self, focus: bool) -> List[Command]:
         """

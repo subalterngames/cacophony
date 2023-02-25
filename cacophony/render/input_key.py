@@ -24,4 +24,5 @@ class InputKey(IntFlag):
     new_file = 15
     save_file = 16
     quit_program = 17
-
+    add = 18
+    subtract = 19
