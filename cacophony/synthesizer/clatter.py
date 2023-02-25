@@ -44,6 +44,8 @@ class Clatter(Synthesizer):
     - The mass is derived from the "size bucket" of the impact material.
     - The volume value sets the primary amp, primary resonance, secondary amp, and secondary resonance values.
     - The note beat duration sets the speed.
+
+    *Note to future self: Yes, it is possible to call the Clatter CLI instead. However, it is almost 200 times slower.*
     """
 
     __IMPACT_MATERIALS: List[ImpactMaterial] = Enum.GetValues(ImpactMaterial)
