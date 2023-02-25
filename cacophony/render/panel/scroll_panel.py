@@ -58,6 +58,7 @@ class ScrollPanel(Panel):
         if len(self._widgets) == 0:
             return False
         if InputKey.up in result.inputs_scroll:
+            # Scroll up a page.
             if self._widget_index == 0 and self._page_index > 0:
                 widget_index_0 = self._widget_index
                 self._scroll(page_index_delta=-1,

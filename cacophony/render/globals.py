@@ -98,6 +98,7 @@ LAYOUTS: Dict[str, Tuple[int, int, int, int]] = {"MainMenu": __main_menu_rect,
                                                  "TracksList": __tracks_list_rect,
                                                  "PianoRoll": __piano_roll_rect,
                                                  "SynthesizerPanel": __synthesizer_rect}
+LAYOUTS["NewTrack"] = LAYOUTS["TracksList"]
 # Scrolling.
 SCROLL_DT: float = float(__parser["SCROLL"]["dt"])
 # UI audio.
