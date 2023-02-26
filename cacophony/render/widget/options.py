@@ -8,10 +8,10 @@ from cacophony.render.commands.arrow import Arrow
 from cacophony.render.color import Color
 from cacophony.render.globals import COLORS
 from cacophony.render.widget.widget import Widget
-from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
 from cacophony.cardinal_direction import CardinalDirection
 from cacophony.util import tooltip
+from cacophony.state import State
 
 
 class Options(Widget):
@@ -33,11 +33,11 @@ class Options(Widget):
         self.index: int = index
         self._size: Tuple[int, int] = (width, 4)
 
-    def blit(self, position: Tuple[int, int], panel_focus: bool, element_focus: bool, pivot: Tuple[float, float] = None,
+    def blit(self, position: Tuple[int, int], panel_focus: bool, widget_focus: bool, pivot: Tuple[float, float] = None,
              anchor: Tuple[float, float] = None, parent_rect: Rect = None) -> List[Command]:
         if not panel_focus:
             c = Color.border_no_focus
-        elif element_focus:
+        elif widget_focus:
             c = Color.parameter_value
         else:
             c = Color.border_focus
@@ -55,7 +55,7 @@ class Options(Widget):
                              parent_rect=parent_rect))
         text_y += 1
         # Show the border and the arrows.
-        if element_focus:
+        if widget_focus:
             commands.extend([Border(position=position,
                                     size=self._size,
                                     color=color,
@@ -87,12 +87,12 @@ class Options(Widget):
         return commands
 
     @final
-    def do(self, result: RenderResult) -> bool:
-        if InputKey.left in result.inputs_scroll:
+    def do(self, state: State) -> bool:
+        if InputKey.left in state.result.inputs_scroll:
             self.undo_stack.append((self._scroll, {"increment": True}))
             self._scroll(increment=False)
             return True
-        elif InputKey.right in result.inputs_scroll:
+        elif InputKey.right in state.result.inputs_scroll:
             self.undo_stack.append((self._scroll, {"increment": False}))
             self._scroll(increment=True)
             return True

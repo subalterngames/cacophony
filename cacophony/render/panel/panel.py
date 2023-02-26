@@ -1,4 +1,4 @@
-from typing import List, Tuple, Callable, Dict
+from typing import List, Tuple
 from overrides import final
 from pygame.display import get_surface
 from pygame import Rect
@@ -9,10 +9,11 @@ from cacophony.render.commands.text import Text
 from cacophony.render.globals import COLORS
 from cacophony.render.color import Color
 from cacophony.render.macros.parent_rect import get_parent_rect
-from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
 from cacophony.render.panel.panel_type import PanelType
+from cacophony.render.widget.widget import Widget
 from cacophony.text_to_speech import TextToSpeech
+from cacophony.state import State
 
 
 class Panel:
@@ -53,52 +54,48 @@ class Panel:
                                                       grandparent_rect=self._parent_rect)
         # If the panel isn't active, it will never be rendered.
         self.active: bool = True
-        # If the panel is active but not initialized, it will always be rendered and then this will be set to True.
-        self.initialized: bool = False
-        # A stack of undo operations. Each element is a tuple: Callbable, kwargs.
-        self.undo_stack: List[Tuple[Callable, dict]] = list()
-        # A list of panels that this panel affected. They will be re-rendered. The value is kwargs for attributes to set.
-        self.affected_panels: Dict[PanelType: dict] = dict()
+        # If the panel doesn't have focus, setting this to True will force it to re-render.
+        self.do_render: bool = True
+        self._widgets: List[Widget] = list()
+        self._focused_widget_index: int = 0
 
     @final
-    def render(self, result: RenderResult, focus: bool) -> List[Command]:
+    def render(self, state: State, focus: bool) -> List[Command]:
         """
         Process user input and blit the panel.
 
-        :param result: The [`RenderResult`](render_result.md) from the previous frame.
+        :param state: The [`State`](state.md) of the program.
         :param focus: If True, the panel has focus.
 
         :return: A list of commands.
         """
 
-        # No panels have been affected yet.
-        self.affected_panels.clear()
         # If this panel has focus, listen for user input requesting help text.
         if focus:
-            if InputKey.panel_help in result.inputs_pressed:
-                TextToSpeech.say(self.get_panel_help())
-            elif InputKey.widget_help in result.inputs_pressed:
-                TextToSpeech.say(self.get_widget_help())
-        rerender = False
-        # Initialize and rerender.
-        if not self.initialized:
-            rerender = True
-        # Handle user input.
-        elif focus and self._do_result(result=result):
-            rerender = True
-        # Something changed.
-        if rerender:
-            commands = self._render_panel(focus=focus)
-        # Nothing changed.
-        else:
-            commands = []
-        self.initialized = True
+            if InputKey.panel_help in state.result.inputs_pressed:
+                TextToSpeech.say(self.get_panel_help(state=state))
+            elif InputKey.widget_help in state.result.inputs_pressed:
+                TextToSpeech.say(self.get_widget_help(state=state))
+        commands = []
+        # Listen to the focused widget.
+        if self.do_render or focus:
+            # The focused widget did something.
+            if len(self._widgets) > 0 and self._widgets[self._focused_widget_index].do(state=state):
+                # Update the undo stack.
+                state.undo_stack.extend(self._widgets[self._focused_widget_index].undo_stack)
+                self._widgets[self._focused_widget_index].undo_stack.clear()
+            # Something changed or we manually requested a re-render.
+            if self.do_render or self._do_result(state=state):
+                commands.extend(self._render_panel(state=state, focus=focus))
+        # Don't manually re-render next frame.
+        self.do_render = False
         return commands
 
-    def _render_panel(self, focus: bool) -> List[Command]:
+    def _render_panel(self, state: State, focus: bool) -> List[Command]:
         """
         Blit the panel.
 
+        :param state: The state of the program.
         :param focus: If True, the panel has focus.
 
         :return: A list of commands.
@@ -126,15 +123,19 @@ class Panel:
                      background_color=COLORS[Color.panel_background],
                      parent_rect=self._title_text_rect)]
 
-    def get_panel_help(self) -> str:
+    def get_panel_help(self, state: State) -> str:
         """
+        :param state: The `State` of the program.
+
         :return: Panel help text.
         """
 
         return self._title
 
-    def get_widget_help(self) -> str:
+    def get_widget_help(self, state: State) -> str:
         """
+        :param state: The `State` of the program.
+
         :return: Help text for the focused widget (if any).
         """
 
@@ -147,9 +148,9 @@ class Panel:
 
         return PanelType.undefined
 
-    def _do_result(self, result: RenderResult) -> bool:
+    def _do_result(self, state: State) -> bool:
         """
-        :param result: The `RenderResult` from the previous frame.
+        :param state: The `State` of the program.
 
         :return: True if the panel needs to be re-rendered.
         """

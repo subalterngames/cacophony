@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple, Callable
 from pygame import Rect
 from cacophony.render.commands.command import Command
-from cacophony.render.render_result import RenderResult
+from cacophony.state import State
 
 
 class Widget(ABC):
@@ -19,14 +19,14 @@ class Widget(ABC):
         self.undo_stack: List[Tuple[Callable, dict]] = list()
 
     @abstractmethod
-    def blit(self, position: Tuple[int, int], panel_focus: bool, element_focus: bool, pivot: Tuple[float, float] = None,
+    def blit(self, position: Tuple[int, int], panel_focus: bool, widget_focus: bool, pivot: Tuple[float, float] = None,
              anchor: Tuple[float, float] = None, parent_rect: Rect = None) -> List[Command]:
         """
         Blit the UI element.
 
         :param position: The position of this widget.
         :param panel_focus: If True, this widget's panel has focus.
-        :param element_focus: If True, this widget has focus.
+        :param widget_focus: If True, this widget has focus.
         :param pivot: The pivot of this widget.
         :param anchor: The anchor of this widget.
         :param parent_rect: The parent rect.
@@ -45,11 +45,11 @@ class Widget(ABC):
         raise Exception()
 
     @abstractmethod
-    def do(self, result: RenderResult) -> bool:
+    def do(self, state: State) -> bool:
         """
         Do something!
 
-        :param result: The [`RenderResult`](render_result.md).
+        :param state: The [`State`](state.md) of the program.
 
         :return: True if we did something.
         """

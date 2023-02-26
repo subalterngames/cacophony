@@ -7,9 +7,9 @@ from cacophony.render.commands.border import Border
 from cacophony.render.color import Color
 from cacophony.render.globals import COLORS
 from cacophony.render.widget.widget import Widget
-from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
 from cacophony.util import tooltip
+from cacophony.state import State
 
 
 class Action(Widget):
@@ -32,10 +32,10 @@ class Action(Widget):
         self._callback: Callable[[], None] = callback
 
     @final
-    def blit(self, position: Tuple[int, int], panel_focus: bool, element_focus: bool, pivot: Tuple[float, float] = None,
+    def blit(self, position: Tuple[int, int], panel_focus: bool, widget_focus: bool, pivot: Tuple[float, float] = None,
              anchor: Tuple[float, float] = None, parent_rect: Rect = None) -> List[Command]:
         if panel_focus:
-            if element_focus:
+            if widget_focus:
                 background_color = Color.border_focus
                 text_color = Color.parameter_value
             else:
@@ -46,7 +46,7 @@ class Action(Widget):
             text_color = Color.border_no_focus
         commands = []
         # Show the border.
-        if element_focus:
+        if widget_focus:
             commands.append(Border(position=position,
                                    size=self._size,
                                    color=COLORS[text_color],
@@ -68,8 +68,8 @@ class Action(Widget):
         return self._size
 
     @final
-    def do(self, result: RenderResult) -> bool:
-        if InputKey.select in result.inputs_pressed:
+    def do(self, state: State) -> bool:
+        if InputKey.select in state.result.inputs_pressed:
             self._callback()
             return True
         return False

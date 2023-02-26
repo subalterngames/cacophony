@@ -12,11 +12,12 @@ from cacophony.render.commands.text import Text
 from cacophony.render.macros.parent_rect import get_parent_rect
 from cacophony.render.globals import COLORS, WINDOW_GRID_WIDTH, WINDOW_GRID_HEIGHT
 from cacophony.render.color import Color
-from cacophony.render.render_result import RenderResult
+from cacophony.render.panel.panel_type import PanelType
 from cacophony.render.input_key import InputKey
-from cacophony.util import tooltip
+from cacophony.util import tooltip, get_string_path
 from cacophony.paths import USER_DIRECTORY
 from cacophony.cardinal_direction import CardinalDirection
+from cacophony.state import State
 
 
 class OpenFile(Panel):
@@ -27,9 +28,9 @@ class OpenFile(Panel):
     # The initial root directory is a copy of the user directory.
     _ROOT_DIRECTORY: Path = Path(USER_DIRECTORY).absolute()
 
-    def __init__(self, suffixes: List[str]):
+    def __init__(self):
         """
-        :param suffixes: A list of file suffixes that we're searching for.
+        (no parameters)
         """
 
         super().__init__(title="Open",
@@ -41,13 +42,10 @@ class OpenFile(Panel):
         self._open_file_rect: Rect = get_parent_rect(position=self._position, size=self._size, pivot=self._pivot,
                                                      anchor=self._anchor)
         self._previous_surface: Surface = get_surface().convert()
-        self._suffixes: List[str] = suffixes
         self._directory: Optional[Path] = Path(OpenFile._ROOT_DIRECTORY)
-        self.path: Optional[Path] = None
-        self.done: bool = False
         self._page_index: int = 0
         self._element_index: int = 0
-        self._pages: List[List[Path]] = self._get_pages()
+        self._pages: List[List[Path]] = list()
         # List the system drives.
         if system() == "Windows":
             import win32api
@@ -56,23 +54,26 @@ class OpenFile(Panel):
             self._drives: List[Path] = [Path(drive) for drive in drives]
         else:
             self._drives = []
+        self._done: bool = False
 
-    def get_panel_help(self) -> str:
+    def get_panel_help(self, state: State) -> str:
         return "Open file. " + tooltip(keys=[InputKey.up, InputKey.down], predicate="scroll", boop="and") + " " + \
                tooltip(keys=[InputKey.left], predicate="move up a directory") + " " + \
                tooltip(keys=[InputKey.right], predicate="open directory") + " " + \
                tooltip(keys=[InputKey.select], predicate="open file") + " " + \
                tooltip(keys=[InputKey.cancel], predicate="close this window")
 
-    def get_widget_help(self) -> str:
+    def get_widget_help(self, state: State) -> str:
         if self._directory is not None and len(self._pages) > 0 and len(self._pages[self._page_index]) > 0 and (not self._pages[self._page_index][self._element_index].is_dir()):
             return self._pages[self._page_index][self._element_index].name
         else:
             return "No file selected."
 
-    def _render_panel(self, focus: bool) -> List[Command]:
-        commands = super()._render_panel(focus=focus)
-        if self.done:
+    def _render_panel(self, state: State, focus: bool) -> List[Command]:
+        if self.do_render:
+            self._pages = self._get_pages(state=state)
+        commands = super()._render_panel(state=state, focus=focus)
+        if self._done:
             commands.append(Blit(surface=self._previous_surface, position=(0, 0)))
             return commands
         x = 1
@@ -129,8 +130,8 @@ class OpenFile(Panel):
                                   parent_rect=self._open_file_rect))
         return commands
 
-    def _do_result(self, result: RenderResult) -> bool:
-        if InputKey.left in result.inputs_pressed:
+    def _do_result(self, state: State) -> bool:
+        if InputKey.left in state.result.inputs_pressed:
             if self._directory is None:
                 return False
             # Top-level directory.
@@ -146,36 +147,38 @@ class OpenFile(Panel):
             # Go up a directory.
             else:
                 self._directory = Path(self._directory.parent)
-                self._pages = self._get_pages()
+                self._pages = self._get_pages(state=state)
                 return True
-        elif InputKey.right in result.inputs_pressed:
+        elif InputKey.right in state.result.inputs_pressed:
             # Go down a directory.
             if self._pages[self._page_index][self._element_index].is_dir():
                 self._directory = Path(self._pages[self._page_index][self._element_index])
-                self._pages = self._get_pages()
+                self._pages = self._get_pages(state=state)
                 return True
         # Cancel and restore balance to the Force.
-        elif InputKey.cancel in result.inputs_pressed:
-            self.done = True
+        elif InputKey.cancel in state.result.inputs_pressed:
+            self._end(state=state)
             return True
         # Empty page.
         if len(self._pages) == 0 or len(self._pages[self._page_index]) == 0:
             return False
-        if InputKey.up in result.inputs_scroll:
+        if InputKey.up in state.result.inputs_scroll:
             return self._scroll(up=True)
-        elif InputKey.down in result.inputs_scroll:
+        elif InputKey.down in state.result.inputs_scroll:
             return self._scroll(up=False)
         # Select a file.
-        elif InputKey.select in result.inputs_pressed:
+        elif InputKey.select in state.result.inputs_pressed:
             p = self._pages[self._page_index][self._element_index]
             if p.is_file():
-                self.path = p
-                self.done = True
+                state.open_file_state.callback(get_string_path(p))
+                self._end(state=state)
                 return True
         return False
 
-    def _get_pages(self) -> List[List[Path]]:
+    def _get_pages(self, state: State) -> List[List[Path]]:
         """
+        :param state: The `State` of the program.
+
         :return: A list of lists of paths that will fit in the panel.
         """
 
@@ -186,7 +189,7 @@ class OpenFile(Panel):
         page: List[Path] = list()
         for f in self._directory.iterdir():
             try:
-                if f.suffix in self._suffixes or f.is_dir():
+                if f.suffix in state.open_file_state.suffixes or f.is_dir():
                     if f.is_dir():
                         try:
                             list(f.iterdir())
@@ -226,3 +229,15 @@ class OpenFile(Panel):
                 self._element_index += 1
                 return True
         return False
+
+    def _end(self, state: State) -> None:
+        """
+        End this panel.
+        :param state: The `State` of the program.
+        """
+
+        state.focused_panel = state.open_file_state.previous_focus
+        state.active_panels.remove(PanelType.open_file)
+        state.active_panels.append(state.open_file_state.previous_focus)
+        state.dirty_panels.append(state.open_file_state.previous_focus)
+        self._done = True

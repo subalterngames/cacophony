@@ -8,6 +8,7 @@ from cacophony.render.panel.tracks_list import TracksList
 from cacophony.render.panel.synthesizer_panel import SynthesizerPanel
 from cacophony.render.panel.new_track import NewTrack
 from cacophony.render.panel.panel_type import PanelType
+from cacophony.render.panel.open_file import OpenFile
 from cacophony.render.input_key import InputKey
 from cacophony.render.globals import UI_AUDIO_GAIN
 from cacophony.render.render_result import RenderResult
@@ -15,6 +16,9 @@ from cacophony.text_to_speech import TextToSpeech
 from cacophony.synthesizer.clatter import Clatter
 from cacophony.music.music import Music
 from cacophony.util import tooltip
+from cacophony.state import State
+from cacophony.piano_roll_state import PianoRollState
+from cacophony.open_file_state import OpenFileState
 
 
 class Program:
@@ -27,19 +31,18 @@ class Program:
         (no parameters)
         """
 
-        # Create new empty music.
-        self.music: Music = Music(bpm=60)
         self.renderer: Renderer = Renderer()
-        main_menu: MainMenu = MainMenu()
-        tracks_list: TracksList = TracksList(music=self.music)
-        piano_roll: PianoRoll = PianoRoll(music=self.music, track_index=0, selected_note=0, time_0=0, note_0=60)
-        synthesizer_panel: SynthesizerPanel = SynthesizerPanel(music=self.music, track_index=0)
-        new_track: NewTrack = NewTrack(music=self.music, current_track_index=0)
-        panels: List[Panel] = [main_menu, tracks_list, piano_roll, synthesizer_panel, new_track]
-        self.panels: Dict[PanelType, Panel] = {panel.get_panel_type(): panel for panel in panels}
-        self._panel_keys: List[PanelType] = list(self.panels.keys())
-        self._panel_focus: int = 0
+        self.panels: Dict[PanelType, Panel] = dict()
         self.app_help_text: str = Program.get_app_help_text()
+        self.state: State = State(music=Music(bpm=60),
+                                  track_index=0,
+                                  focused_panel=PanelType.main_menu,
+                                  open_file_state=OpenFileState(suffixes=[],
+                                                                previous_focus=PanelType.main_menu),
+                                  piano_roll_state=PianoRollState(time_0=0,
+                                                                  note_0=60,
+                                                                  selected_note_index=0))
+        self.new_file()
 
     def run(self) -> None:
         """
@@ -47,26 +50,40 @@ class Program:
         """
 
         renderer = Renderer()
-        result = renderer.render([])
+        self.state.result = renderer.render([])
         while True:
             # Quit.
-            if InputKey.quit_program in result.inputs_held:
+            if InputKey.quit_program in self.state.result.inputs_held:
                 return
             # New file.
-            elif InputKey.new_file in result.inputs_held:
+            elif InputKey.new_file in self.state.result.inputs_held:
                 self.new_file()
             # Cycle between panels.
-            elif InputKey.next_panel in result.inputs_pressed:
+            elif InputKey.next_panel in self.state.result.inputs_pressed:
                 self.cycle_panel_focus(increment=True)
-            elif InputKey.previous_panel in result.inputs_pressed:
+            elif InputKey.previous_panel in self.state.result.inputs_pressed:
                 self.cycle_panel_focus(increment=False)
             # Get help (seriously).
-            if InputKey.app_help in result.inputs_pressed:
+            if InputKey.app_help in self.state.result.inputs_pressed:
                 TextToSpeech.say(self.app_help_text)
-            elif InputKey.stop_tts in result.inputs_pressed:
+            elif InputKey.stop_tts in self.state.result.inputs_pressed:
                 TextToSpeech.stop()
             # Render.
-            result = self.render(result=result)
+            commands = []
+            # Render all active panels.
+            for panel_type in self.state.active_panels:
+                commands.extend(self.panels[panel_type].render(state=self.state,
+                                                               focus=panel_type == self.state.focused_panel))
+            # Render all dirty panels.
+            dirty_panels = list(set(self.state.dirty_panels))
+            for panel_type in dirty_panels:
+                self.panels[panel_type].do_render = True
+                commands.extend(self.panels[panel_type].render(state=self.state,
+                                                               focus=panel_type == self.state.focused_panel))
+            # Clear the dirty panels.
+            self.state.dirty_panels.clear()
+            # Render.
+            self.state.result = self.renderer.render(commands)
 
     def cycle_panel_focus(self, increment: bool) -> None:
         """
@@ -76,28 +93,24 @@ class Program:
         """
 
         # Re-initialize the panel that is about to lose focus.
-        self.panels[self._panel_keys[self._panel_focus]].initialized = False
+        self.state.dirty_panels.append(self.state.focused_panel)
+        active_panels = [panel for panel in self.panels if panel in self.state.active_panels]
+        # Can't cycle.
+        if len(active_panels) <= 1:
+            return
+        panel_focus = active_panels.index(self.state.focused_panel)
         # Cycle.
         if increment:
-            self._panel_focus += 1
-            if self._panel_focus >= len(self.panels):
-                self._panel_focus = 0
-            # Ignore inactive panels.
-            while not self.panels[self._panel_keys[self._panel_focus]].active:
-                self._panel_focus += 1
-                if self._panel_focus >= len(self.panels):
-                    self._panel_focus = 0
+            panel_focus += 1
+            if panel_focus >= len(active_panels):
+                panel_focus = 0
         else:
-            self._panel_focus -= 1
-            if self._panel_focus < 0:
-                self._panel_focus = len(self.panels) - 1
-            # Ignore inactive panels.
-            while not self.panels[self._panel_keys[self._panel_focus]].active:
-                self._panel_focus -= 1
-                if self._panel_focus < 0:
-                    self._panel_focus = len(self.panels) - 1
-        # Re-initialize the panel that just gained focus.
-        self.panels[self._panel_keys[self._panel_focus]].initialized = False
+            panel_focus -= 1
+            if panel_focus < 0:
+                panel_focus = len(active_panels) - 1
+        # Set the focused panel.
+        self.state.focused_panel = active_panels[panel_focus]
+        self.state.dirty_panels.append(self.state.focused_panel)
         # Plink!
         if UI_AUDIO_GAIN > 0:
             sound = pygame.mixer.Sound(Clatter.get_random())
@@ -117,23 +130,7 @@ class Program:
         :return: A new `RenderResult`.
         """
 
-        commands = []
-        # Render the focused panel.
-        commands.extend(self.panels[self._panel_keys[self._panel_focus]].render(result=result, focus=True))
-        # Rerender all affected panels.
-        for affected_panel in self.panels[self._panel_keys[self._panel_focus]].affected_panels:
-            # Set attributes for the panels.
-            for attr_key in self.panels[self._panel_keys[self._panel_focus]].affected_panels[affected_panel]:
-                attr_value = self.panels[self._panel_keys[self._panel_focus]].affected_panels[affected_panel][attr_key]
-                setattr(self.panels[affected_panel], attr_key, attr_value)
-            # Mark the affected panel as uninitialized.
-            self.panels[affected_panel].initialized = False
-        # Rerender all uninitialized panels.
-        for panel_type in self.panels:
-            if self.panels[panel_type].active and not self.panels[panel_type].initialized:
-                commands.extend(self.panels[panel_type].render(result=result, focus=False))
-        # Render.
-        return self.renderer.render(commands)
+
 
     @staticmethod
     def get_app_help_text() -> str:
@@ -160,19 +157,30 @@ class Program:
         Create a new file.
         """
 
-        self.music = Music(bpm=60)
-        self.renderer = Renderer()
-        main_menu = MainMenu()
-        tracks_list = TracksList(music=self.music)
-        piano_roll = PianoRoll(music=self.music, track_index=0, selected_note=0, time_0=0, note_0=60)
-        synthesizer_panel = SynthesizerPanel(music=self.music, track_index=0)
-        new_track = NewTrack(music=self.music, current_track_index=0)
-        panels = [main_menu, tracks_list, piano_roll, synthesizer_panel, new_track]
+        # Create the panels.
+        main_menu: MainMenu = MainMenu()
+        tracks_list: TracksList = TracksList()
+        piano_roll: PianoRoll = PianoRoll()
+        synthesizer_panel: SynthesizerPanel = SynthesizerPanel()
+        new_track: NewTrack = NewTrack()
+        open_file: OpenFile = OpenFile()
+        panels: List[Panel] = [main_menu, tracks_list, piano_roll, synthesizer_panel, new_track, open_file]
         self.panels.clear()
         self.panels.update({panel.get_panel_type(): panel for panel in panels})
-        self._panel_keys.clear()
-        self._panel_keys.extend(list(self.panels.keys()))
-        self._panel_focus = 0
+        # Create a new renderer.
+        self.renderer = Renderer()
+        # Create a new state.
+        self.state: State = State(music=Music(bpm=60),
+                                  track_index=0,
+                                  focused_panel=PanelType.main_menu,
+                                  open_file_state=OpenFileState(suffixes=[],
+                                                                previous_focus=PanelType.main_menu),
+                                  piano_roll_state=PianoRollState(time_0=0,
+                                                                  note_0=60,
+                                                                  selected_note_index=0))
+        # Set the active panels.
+        self.state.active_panels.extend([PanelType.main_menu, PanelType.tracks_list, PanelType.piano_roll, PanelType.synthesizer_panel])
+        self.state.dirty_panels.extend(self.state.active_panels)
 
 
 if __name__ == "__main__":

@@ -8,9 +8,10 @@ from cacophony.render.commands.border import Border
 from cacophony.render.color import Color
 from cacophony.render.globals import COLORS
 from cacophony.render.widget.widget import Widget
-from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
-from cacophony.util import tooltip, get_string_path
+from cacophony.render.panel.panel_type import PanelType
+from cacophony.util import tooltip
+from cacophony.state import State
 
 
 class FilePrompt(Widget):
@@ -30,18 +31,18 @@ class FilePrompt(Widget):
         self._suffixes: List[str] = suffixes
         self._size: Tuple[int, int] = (width, 4)
 
-    def blit(self, position: Tuple[int, int], panel_focus: bool, element_focus: bool, pivot: Tuple[float, float] = None,
+    def blit(self, position: Tuple[int, int], panel_focus: bool, widget_focus: bool, pivot: Tuple[float, float] = None,
              anchor: Tuple[float, float] = None, parent_rect: Rect = None) -> List[Command]:
         if not panel_focus:
             c = Color.border_no_focus
-        elif element_focus:
+        elif widget_focus:
             c = Color.parameter_value
         else:
             c = Color.border_focus
         color = COLORS[c]
         commands = []
         # Show the border.
-        if element_focus:
+        if widget_focus:
             commands.append(Border(position=position,
                                    size=self._size,
                                    color=color,
@@ -51,7 +52,7 @@ class FilePrompt(Widget):
         button_text = "file:"
         # Get the colors for the button.
         if panel_focus:
-            if element_focus:
+            if widget_focus:
                 button_background_color = Color.border_focus
                 button_text_color = Color.parameter_value
             else:
@@ -85,23 +86,24 @@ class FilePrompt(Widget):
     def get_size(self) -> Tuple[int, int]:
         return self._size
 
-    def do(self, result: RenderResult) -> bool:
+    def do(self, state: State) -> bool:
         # Open the file.
-        if InputKey.select in result.inputs_pressed:
-            # Open the prompt.
-            from cacophony.render.panel.open_file import OpenFile
-            from cacophony.render.renderer import Renderer
-            r = Renderer()
-            result = r.render([])
-            of = OpenFile(suffixes=self._suffixes)
-            while not of.done:
-                result = r.render(of.render(result=result, focus=True))
-            # The path changed. Set my path and return True.
-            if of.path is not None:
-                str_path = get_string_path(of.path)
-                if str_path != self.path:
-                    self.path = str_path
-                    return True
+        if InputKey.select in state.result.inputs_pressed:
+            # Set the suffixes.
+            state.open_file_state.suffixes.clear()
+            state.open_file_state.suffixes.extend(self._suffixes)
+            # When we're done opening the file, set the path.
+            state.open_file_state.callback = self._set_path
+            # Mark the focused panel as dirty.
+            state.dirty_panels.append(state.focused_panel)
+            # Remember the focused panel.
+            state.open_file_state.previous_focus = state.focused_panel
+            # Clear the active panels and open the open file panel.
+            state.active_panels.clear()
+            state.active_panels.append(PanelType.open_file)
+            state.dirty_panels.append(PanelType.open_file)
+            state.focused_panel = PanelType.open_file
+            return True
         return False
 
     def get_help_text(self) -> str:
@@ -113,3 +115,6 @@ class FilePrompt(Widget):
         if len(self.path) > 0:
             text += f"The current file is {Path(self.path).name}. "
         return text
+
+    def _set_path(self, path: str) -> None:
+        self.path = path

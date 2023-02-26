@@ -7,7 +7,7 @@ from cacophony.render.commands.border import Border
 from cacophony.render.color import Color
 from cacophony.render.globals import COLORS
 from cacophony.render.widget.widget import Widget
-from cacophony.render.render_result import RenderResult
+from cacophony.state import State
 
 
 class Label(Widget):
@@ -36,18 +36,18 @@ class Label(Widget):
         else:
             raise Exception(f"Invalid label size: {size}")
 
-    def blit(self, position: Tuple[int, int], panel_focus: bool, element_focus: bool, pivot: Tuple[float, float] = None,
+    def blit(self, position: Tuple[int, int], panel_focus: bool, widget_focus: bool, pivot: Tuple[float, float] = None,
              anchor: Tuple[float, float] = None, parent_rect: Rect = None) -> List[Command]:
         if not panel_focus:
             c = Color.border_no_focus
-        elif element_focus:
+        elif widget_focus:
             c = Color.parameter_value
         else:
             c = Color.border_focus
         color = COLORS[c]
         commands = []
         # Show the border.
-        if element_focus:
+        if widget_focus:
             commands.append(Border(position=position,
                                    size=self._size,
                                    color=color,
@@ -68,7 +68,7 @@ class Label(Widget):
     def get_size(self) -> Tuple[int, int]:
         return self._size
 
-    def do(self, result: RenderResult) -> bool:
+    def do(self, state: State) -> bool:
         return False
 
     def get_help_text(self) -> str:

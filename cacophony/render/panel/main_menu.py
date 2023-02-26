@@ -7,6 +7,7 @@ from cacophony.render.color import Color
 from cacophony.render.panel.panel import Panel
 from cacophony.render.panel.panel_type import PanelType
 from cacophony.render.input_key import InputKey
+from cacophony.state import State
 
 
 class MainMenu(Panel):
@@ -36,8 +37,8 @@ class MainMenu(Panel):
     def get_panel_type(self) -> PanelType:
         return PanelType.main_menu
 
-    def _render_panel(self, focus: bool) -> List[Command]:
-        commands = super()._render_panel(focus=focus)
+    def _render_panel(self, state: State, focus: bool) -> List[Command]:
+        commands = super()._render_panel(state=state, focus=focus)
         commands.extend([Rectangle(position=(-2, self._position[1]),
                                    size=(len(self._help_text) + 2, 1),
                                    color=COLORS[Color.panel_background],
