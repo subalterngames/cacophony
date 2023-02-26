@@ -1,11 +1,14 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from overrides import final
 import pygame
+import pygame.mixer
+import pygame.midi
 from pygame import Surface, Rect
 from cacophony.render.commands.command import Command
-from cacophony.render.globals import WINDOW_PIXEL_WIDTH, WINDOW_PIXEL_HEIGHT
+from cacophony.render.globals import WINDOW_PIXEL_WIDTH, WINDOW_PIXEL_HEIGHT, MIDI_INPUT_DEVICE_ID
 from cacophony.render.render_result import RenderResult
 from cacophony.render.input_key import InputKey
+
 
 class Renderer:
     """
@@ -13,6 +16,7 @@ class Renderer:
     """
 
     _INITIALIZED: bool = False
+    _MIDI_IN: Optional[pygame.midi.Input] = None
 
     def __init__(self):
         """
@@ -24,6 +28,10 @@ class Renderer:
             Renderer._INITIALIZED = True
             pygame.init()
             pygame.display.set_mode((WINDOW_PIXEL_WIDTH, WINDOW_PIXEL_HEIGHT))
+            pygame.mixer.init(allowedchanges=pygame.AUDIO_ALLOW_CHANNELS_CHANGE)
+            pygame.midi.init()
+            midi_id = pygame.midi.get_default_input_id() if MIDI_INPUT_DEVICE_ID == "default" else int( MIDI_INPUT_DEVICE_ID)
+            Renderer._MIDI_IN = pygame.midi.Input(midi_id)
         self._done: bool = False
         self._held: List[str] = list()
         self._undo_stack: List[Tuple[Surface, List[Rect]]] = list()
@@ -63,7 +71,9 @@ class Renderer:
                 k = pygame.key.name(event.key)
                 if k in self._held:
                     self._held.remove(k)
-        result = RenderResult(pressed=pressed, held=self._held, midi=[])
+        # Get MIDI events.
+        midi_events = Renderer._MIDI_IN.read(10)
+        result = RenderResult(pressed=pressed, held=self._held, midi=[m[0] for m in midi_events])
         # Undo.
         if InputKey.undo in result.inputs_held and not self._undoing and len(self._undo_stack) > 0:
             self._undoing = True

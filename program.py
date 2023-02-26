@@ -11,11 +11,11 @@ from cacophony.render.panel.panel_type import PanelType
 from cacophony.render.panel.open_file import OpenFile
 from cacophony.render.input_key import InputKey
 from cacophony.render.globals import UI_AUDIO_GAIN
-from cacophony.render.render_result import RenderResult
 from cacophony.text_to_speech import TextToSpeech
 from cacophony.synthesizer.clatter import Clatter
 from cacophony.music.music import Music
-from cacophony.util import tooltip
+from cacophony.music.note import Note
+from cacophony.util import tooltip, note_on
 from cacophony.state import State
 from cacophony.piano_roll_state import PianoRollState
 from cacophony.open_file_state import OpenFileState
@@ -84,6 +84,8 @@ class Program:
             self.state.dirty_panels.clear()
             # Render.
             self.state.result = self.renderer.render(commands)
+            # Play any MIDI notes.
+            self.play_midi_notes()
 
     def cycle_panel_focus(self, increment: bool) -> None:
         """
@@ -116,21 +118,6 @@ class Program:
             sound = pygame.mixer.Sound(Clatter.get_random())
             sound.set_volume(UI_AUDIO_GAIN)
             sound.play()
-
-    def render(self, result: RenderResult) -> RenderResult:
-        """
-        Render the window. Render the focused panel.
-
-        Check which other panels have been affected.
-
-        Pass parameter-value pairs to the affected panels and render those panels.
-
-        :param result: The `RenderResult` user input data from the previous frame.
-
-        :return: A new `RenderResult`.
-        """
-
-
 
     @staticmethod
     def get_app_help_text() -> str:
@@ -181,6 +168,23 @@ class Program:
         # Set the active panels.
         self.state.active_panels.extend([PanelType.main_menu, PanelType.tracks_list, PanelType.piano_roll, PanelType.synthesizer_panel])
         self.state.dirty_panels.extend(self.state.active_panels)
+
+    def play_midi_notes(self) -> None:
+        """
+        Play notes from a MIDI controller without recording them.
+        """
+
+        if self.state.track_index >= len(self.state.music.tracks):
+            return
+        # Play the notes.
+        beat = self.state.music.tracks[self.state.track_index].synthesizer.beat.get().value
+        for i in range(len(self.state.result.midi)):
+            # Play the note.
+            if note_on(midi_event=self.state.result.midi[i]):
+                note = Note(self.state.result.midi[i][1], start=0, duration=beat, volume=self.state.result.midi[i][2])
+                a = self.state.music.tracks[self.state.track_index].synthesizer.audio(note=note, bpm=self.state.music.bpm)
+                sound = pygame.mixer.Sound(a)
+                sound.play()
 
 
 if __name__ == "__main__":

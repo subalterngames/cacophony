@@ -10,6 +10,11 @@ from cacophony.synthesizer.clatter import Clatter
 from cacophony.music.track import Track
 from cacophony.music.note import Note
 
+pygame.mixer.init(allowedchanges=pygame.AUDIO_ALLOW_CHANNELS_CHANGE)
+pygame.midi.init()
+m = pygame.midi.Input(pygame.midi.get_default_input_id())
+print(m)
+print(pygame.midi.get_default_input_id())
 
 bpm = 120
 beat = 1

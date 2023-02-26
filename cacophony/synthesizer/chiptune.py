@@ -11,7 +11,7 @@ class Chiptune(Synthesizer):
     A simple chiptune synthesizer.
     """
 
-    def __init__(self, pcm_index: int = 0, beat_index: int = 5, gain_index: int = 127, use_volume: bool = True, volume_index: int = 127):
+    def __init__(self, pcm_index: int = 2, beat_index: int = 5, gain_index: int = 127, use_volume: bool = True, volume_index: int = 127):
         """
         :param pcm_index: The index for the PCM type.
         :param beat_index: The index of the beat.

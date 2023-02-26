@@ -104,3 +104,6 @@ SCROLL_DT: float = float(__parser["SCROLL"]["dt"])
 # UI audio.
 __ui_audio: SectionProxy = __parser["UI_AUDIO"]
 UI_AUDIO_GAIN: float = int(__ui_audio["gain"]) / 127
+# MIDI
+__midi_devices: SectionProxy = __parser["MIDI_DEVICES"]
+MIDI_INPUT_DEVICE_ID: str = __midi_devices["input"]

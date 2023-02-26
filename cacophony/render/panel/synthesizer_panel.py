@@ -1,6 +1,5 @@
 from typing import Tuple, Dict
 from overrides import final
-from pygame.mixer import Sound
 from cacophony.render.globals import LAYOUTS
 from cacophony.render.panel.scroll_panel import ScrollPanel
 from cacophony.render.panel.panel_type import PanelType
@@ -8,13 +7,11 @@ from cacophony.render.widget.widget import Widget
 from cacophony.render.widget.boolean import Boolean
 from cacophony.render.widget.options import Options
 from cacophony.render.widget.file_prompt import FilePrompt
-from cacophony.music.note import Note
 from cacophony.synthesizer.synthesizer import Synthesizer
 from cacophony.callbacker.callbacker import Callbacker
 from cacophony.callbacker.indexed_list import IndexedList
 from cacophony.callbacker.file_path import FilePath
 from cacophony.callbacker.value import Value
-from cacophony.util import note_on
 from cacophony.state import State
 
 
@@ -72,15 +69,6 @@ class SynthesizerPanel(ScrollPanel):
                     k.value = v.value
                 else:
                     raise Exception(f"Unsupported parameter: {k}, {v}, {v.__class__.__name__}")
-        # Play the notes.
-        beat = state.music.tracks[state.track_index].synthesizer.beat.get().value
-        for i in range(len(state.result.midi)):
-            # Play the note.
-            if note_on(midi_event=state.result.midi[i]):
-                note = Note(state.result.midi[i][1], start=0, duration=beat, volume=state.result.midi[i][2])
-                a = state.music.tracks[state.track_index].synthesizer.audio(note=note, bpm=state.music.bpm)
-                sound = Sound(a)
-                sound.play()
         return did
 
     def get_widget_help(self, state: State) -> str:
