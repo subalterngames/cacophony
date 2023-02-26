@@ -23,10 +23,6 @@ class NewTrack(ScrollPanel):
         super().__init__(title=f"New Track",
                          position=(layout[0], layout[1]),
                          size=(layout[2], layout[3]))
-        # Scroll past the dividers.
-        for i in range(2):
-            self.selection_index = 2
-            self._widget_index = 2
 
     def get_panel_type(self) -> PanelType:
         return PanelType.new_track
@@ -34,11 +30,11 @@ class NewTrack(ScrollPanel):
     def _do_result(self, state: State) -> bool:
         did = super()._do_result(state=state)
         # Selected a synthesizer.
-        if InputKey.select in state.result.inputs_pressed and isinstance(self._widgets[self.selection_index], Label):
+        if InputKey.select in state.result.inputs_pressed and isinstance(self._widgets[self._focused_widget_index], Label):
             # Get the selected synthesizer label.
-            if self._widgets[self.selection_index] in self._synthesizer_labels:
-                index = self._synthesizer_labels.index(self._widgets[self.selection_index])
-                track_id = max([track_id for track_id in state.music.tracks]) + 1 if len(state.music.tracks) > 0 else 0
+            if self._widgets[self._focused_widget_index] in self._synthesizer_labels:
+                index = self._synthesizer_labels.index(self._widgets[self._focused_widget_index])
+                track_id = max([track.track_id for track in state.music.tracks]) + 1 if len(state.music.tracks) > 0 else 0
                 # Add the track.
                 track: Track = Track(track_id=track_id,
                                      synthesizer=self._synthesizer_callables[index]())
@@ -63,6 +59,11 @@ class NewTrack(ScrollPanel):
         self._widgets.extend(synthesizers)
         self._synthesizer_labels.clear()
         self._synthesizer_labels.extend(synthesizers)
+
+    def _populate_pages(self) -> None:
+        super()._populate_pages()
+        self._widget_page_index = 2
+        self._focused_widget_index = 2
 
     @staticmethod
     def _end(state: State) -> None:

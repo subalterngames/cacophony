@@ -39,6 +39,7 @@ class TracksList(ScrollPanel):
         did = super()._do_result(state=state)
         # If the user scrolls through the tracks list, change the piano roll and the synthesizer panel.
         if did:
+            state.track_index = self._focused_widget_index
             state.dirty_panels.extend([PanelType.piano_roll, PanelType.synthesizer_panel])
             return True
         # Show the new track panel and hide this panel.

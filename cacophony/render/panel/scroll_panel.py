@@ -132,12 +132,11 @@ class ScrollPanel(Panel, ABC):
 
         track_index: int = state.track_index
         state.undo_stack.append((state.set_track_index, {"track_index": track_index}))
-        # Scroll.
         self._page_index += page_index_delta
         if widget_index_delta:
-            self._focused_widget_index += widget_index
+            self._widget_page_index += widget_index
         else:
-            self._focused_widget_index = widget_index
+            self._widget_page_index = widget_index
         self._focused_widget_index += selection_index_delta
 
     def get_panel_help(self, state: State) -> str:
@@ -171,7 +170,6 @@ class ScrollPanel(Panel, ABC):
 
         raise Exception()
 
-    @final
     def _populate_pages(self) -> None:
         """
         Populate the pages lists.
