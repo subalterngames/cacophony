@@ -91,14 +91,14 @@ class ScrollPanel(Panel, ABC):
                                       anchor=self._anchor)
         y = 0
         # Blit each element in the page.
-        for i, element in enumerate(self._pages[self._page_index]):
-            commands.extend(element.blit(position=(0, y),
-                                         panel_focus=focus,
-                                         widget_focus=i == self._focused_widget_index,
-                                         pivot=self._pivot,
-                                         anchor=self._anchor,
-                                         parent_rect=parent_rect))
-            y += element.get_size()[1]
+        for i, widget in enumerate(self._pages[self._page_index]):
+            commands.extend(widget.blit(position=(0, y),
+                                        panel_focus=focus,
+                                        widget_focus=i == self._focused_widget_index,
+                                        pivot=self._pivot,
+                                        anchor=self._anchor,
+                                        parent_rect=parent_rect))
+            y += widget.get_size()[1]
         # Blit arrows.
         arrow_x = self._size[0] - 4
         arrow_color = COLORS[Color.border_focus if focus else Color.border_no_focus]

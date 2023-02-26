@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 from overrides import final
 from pygame import Rect
 from cacophony.render.commands.command import Command
@@ -19,15 +19,18 @@ class Options(Widget):
     Cycle through a list of options.
     """
 
-    def __init__(self, title: str, options: List[str], index: int, width: int):
+    def __init__(self, title: str, options: List[str], index: int, width: int,
+                 callback: Callable = None, kwargs: dict = None):
         """
         :param title: The title text.
         :param options: A list of options.
         :param index: The index of the current option.
         :param width: The width of the widget.
+        :param callback: An optional callback method.
+        :param kwargs: Optional keyword arguments for the callback.
         """
 
-        super().__init__()
+        super().__init__(callback=callback, kwargs=kwargs)
         self._title: str = title
         self.options: List[str] = options
         self.index: int = index
@@ -115,6 +118,12 @@ class Options(Widget):
 
     @final
     def _scroll(self, increment: bool) -> None:
+        """
+        Scroll up or down.
+
+        :param increment: Increment or decrement.
+        """
+
         if increment:
             self.index += 1
             if self.index >= len(self.options):
@@ -123,3 +132,5 @@ class Options(Widget):
             self.index -= 1
             if self.index < 0:
                 self.index = len(self.options) - 1
+        # Invoke the callback.
+        self._invoke()

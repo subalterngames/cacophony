@@ -42,20 +42,6 @@ class SynthesizerPanel(ScrollPanel):
         # Something happened. Update the synthesizer parameters.
         if did:
             focused_widget = self._widgets[self._focused_widget_index]
-            # Get the class attribute.
-            fw = self._synthesizer_widgets[focused_widget]
-            attr = getattr(state.music.tracks[state.track_index].synthesizer, fw)
-            # Set the index in a list.
-            if isinstance(focused_widget, Options):
-                attr.index = focused_widget.index
-            # Set a boolean value.
-            elif isinstance(focused_widget, Boolean):
-                attr.value = focused_widget.value
-            # Set a file path.
-            elif isinstance(focused_widget, FilePrompt):
-                attr.value = focused_widget.path
-            else:
-                raise Exception(f"Unsupported: {attr}, {focused_widget}")
             # Update the other widgets.
             for k in self._synthesizer_widgets:
                 # Ignore hidden parameters.
@@ -69,7 +55,8 @@ class SynthesizerPanel(ScrollPanel):
                     k.value = v.value
                 else:
                     raise Exception(f"Unsupported parameter: {k}, {v}, {v.__class__.__name__}")
-        return did
+            return True
+        return False
 
     def get_widget_help(self, state: State) -> str:
         if len(state.music.tracks) > 0:
@@ -97,11 +84,18 @@ class SynthesizerPanel(ScrollPanel):
                 v = synthesizer.__dict__[k]
                 if isinstance(v, IndexedList):
                     widget = Options(title=k, options=v.get_strs(), index=v.index, width=self._size[0] - 2)
+                    widget.set_callback(callback=SynthesizerPanel._set_indexed_list, kwargs={"indexed_list": v,
+                                                                                             "options": widget})
                 elif isinstance(v, FilePath):
                     widget = FilePrompt(path=v.value, width=self._size[0] - 2, suffixes=v.suffixes)
+                    widget.set_callback(callback=SynthesizerPanel._set_path,
+                                        kwargs={"file_path": v,
+                                                "file_prompt": widget})
                 elif isinstance(v, Value):
                     if isinstance(v.value, bool):
                         widget = Boolean(title=k, value=v.value)
+                        widget.set_callback(callback=SynthesizerPanel._set_boolean, kwargs={"value": v,
+                                                                                            "widget": widget})
                     else:
                         raise Exception(f"Unsupported value widget: {v}")
                 else:
@@ -110,3 +104,36 @@ class SynthesizerPanel(ScrollPanel):
         # Repopulate the pages.
         self._widgets = list(self._synthesizer_widgets.keys())
         self._populate_pages()
+
+    @staticmethod
+    def _set_indexed_list(indexed_list: IndexedList, options: Options) -> None:
+        """
+        Set the index of an indexed list from an options widget.
+
+        :param indexed_list: The indexed list.
+        :param options: The options widget.
+        """
+
+        indexed_list.index = options.index
+
+    @staticmethod
+    def _set_boolean(value: Value[bool], widget: Boolean) -> None:
+        """
+        Set a boolean value.
+
+        :param value: The boolean value.
+        :param widget: The boolean widget.
+        """
+
+        value.value = widget.value
+
+    @staticmethod
+    def _set_path(file_path: FilePath, file_prompt: FilePrompt) -> None:
+        """
+        Set a file path.
+
+        :param file_path: The file path.
+        :param file_prompt: The file prompt widget.
+        """
+
+        file_path.value = file_prompt.path

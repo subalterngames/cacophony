@@ -52,14 +52,15 @@ class Synthesizer(ABC):
             return b''
         # Return a note.
         else:
-            gainf = self.gain.get() / 127.0
             # Use the global volume.
-            if self.use_volume:
-                volume = int(self.volume.get() * gainf)
+            if self.use_volume.value:
+                v = self.volume.get()
             # Use the note's volume.
             else:
-                volume = int(note.volume * gainf)
-            return self.get(note=note.note, volume=volume, duration=get_duration(bpm=bpm, beat=note.duration))
+                v = note.volume
+            return self.get(note=note.note,
+                            volume=int((v / 127) * (self.gain.get() / 127) * 127),
+                            duration=get_duration(bpm=bpm, beat=note.duration))
 
     @abstractmethod
     def get_channels(self) -> int:

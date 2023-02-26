@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 from pathlib import Path
 from overrides import final
 from pygame import Rect
@@ -19,14 +19,16 @@ class FilePrompt(Widget):
     A prompt that show a file path and a "button" to change it.
     """
 
-    def __init__(self, path: str, width: int, suffixes: List[str]):
+    def __init__(self, path: str, width: int, suffixes: List[str], callback: Callable = None, kwargs: dict = None):
         """
         :param path: The path.
         :param width: The width of the widget.
         :param suffixes: Valid file suffixes.
+        :param callback: An optional callback method.
+        :param kwargs: Optional keyword arguments for the callback.
         """
 
-        super().__init__()
+        super().__init__(callback=callback, kwargs=kwargs)
         self.path: str = path
         self._suffixes: List[str] = suffixes
         self._size: Tuple[int, int] = (width, 4)
@@ -118,3 +120,4 @@ class FilePrompt(Widget):
 
     def _set_path(self, path: str) -> None:
         self.path = path
+        self._invoke()

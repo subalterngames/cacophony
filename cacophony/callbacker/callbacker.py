@@ -29,6 +29,7 @@ class Callbacker(ABC):
         """
 
         self.__kwargs = kwargs
+        self.__has_kwargs = True
 
     @final
     def _invoke(self) -> None:

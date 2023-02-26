@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 from pygame import Rect
 from cacophony.render.commands.command import Command
 from cacophony.render.commands.text import Text
@@ -15,13 +15,15 @@ class Boolean(Label):
     A text label and a boolean value.
     """
 
-    def __init__(self, title: str, value: bool):
+    def __init__(self, title: str, value: bool, callback: Callable = None, kwargs: dict = None):
         """
         :param title: The label text.
         :param value: The value.
+        :param callback: An optional callback method.
+        :param kwargs: Optional keyword arguments for the callback.
         """
 
-        super().__init__(text=title, size=len(title) + 5)
+        super().__init__(text=title, size=len(title) + 5, callback=callback, kwargs=kwargs)
         self.value: bool = value
 
     def blit(self, position: Tuple[int, int], panel_focus: bool, widget_focus: bool, pivot: Tuple[float, float] = None,
@@ -52,6 +54,8 @@ class Boolean(Label):
             self.undo_stack.append((self._set_value, {"value": v}))
             # Set the value.
             self.value = not self.value
+            # Invoke the callback.
+            self._invoke()
             return True
         return False
 

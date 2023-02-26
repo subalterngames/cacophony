@@ -84,8 +84,11 @@ class Panel:
                 # Update the undo stack.
                 state.undo_stack.extend(self._widgets[self._focused_widget_index].undo_stack)
                 self._widgets[self._focused_widget_index].undo_stack.clear()
+                did_widget = True
+            else:
+                did_widget = False
             # Something changed or we manually requested a re-render.
-            if self.do_render or self._do_result(state=state):
+            if self.do_render or self._do_result(state=state) or did_widget:
                 commands.extend(self._render_panel(state=state, focus=focus))
         # Don't manually re-render next frame.
         self.do_render = False

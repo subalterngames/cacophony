@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Callable
 from overrides import final
 from pygame import Rect
 from cacophony.render.commands.command import Command
@@ -15,13 +15,15 @@ class Label(Widget):
     A text label.
     """
 
-    def __init__(self, text: str, size: Union[int, Tuple[int, int]] = None):
+    def __init__(self, text: str, size: Union[int, Tuple[int, int]] = None, callback: Callable = None, kwargs: dict = None):
         """
         :param text: The label text.
         :param size: Either an integer or a tuple value for the size of the element in grid coordinates. If an integer, the text will be one line, truncated to this length (see `overflow`). If a tuple, the text will wrap around the width and won't exceed the height. If None, the text is a single unwrapped line.
+        :param callback: An optional callback method.
+        :param kwargs: Optional keyword arguments for the callback.
         """
 
-        super().__init__()
+        super().__init__(callback=callback, kwargs=kwargs)
         self._text: str = text
         # One line, as long as the text is long.
         if size is None:

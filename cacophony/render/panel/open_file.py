@@ -69,6 +69,9 @@ class OpenFile(Panel):
         else:
             return "No file selected."
 
+    def get_panel_type(self) -> PanelType:
+        return PanelType.open_file
+
     def _render_panel(self, state: State, focus: bool) -> List[Command]:
         if self.do_render:
             self._pages = self._get_pages(state=state)
