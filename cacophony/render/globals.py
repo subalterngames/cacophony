@@ -104,6 +104,20 @@ SCROLL_DT: float = float(__parser["SCROLL"]["dt"])
 # UI audio.
 __ui_audio: SectionProxy = __parser["UI_AUDIO"]
 UI_AUDIO_GAIN: float = int(__ui_audio["gain"]) / 127
-# MIDI
+# MIDI devices.
 __midi_devices: SectionProxy = __parser["MIDI_DEVICES"]
 MIDI_INPUT_DEVICE_ID: str = __midi_devices["input"]
+# MIDI input.
+__midi_input_aliases_section: SectionProxy = __parser["MIDI_INPUT_ALIASES"]
+__midi_input_aliases: Dict[Tuple[int, int], str] = {tuple(loads(__midi_input_aliases_section[__k])): __k for __k in __midi_input_aliases_section}
+__midi_input: SectionProxy = __parser["MIDI_INPUT"]
+MIDI_ALIASES: Dict[InputKey, str] = dict()
+for __k in __midi_input:
+    __v = tuple(loads(__midi_input[__k]))
+    __ik = InputKey[__k]
+    INPUTS[__v] = __ik
+    INPUT_KEYS[__ik].append(__v)
+    # Get an alias.
+    __v2 = (__v[0], __v[1])
+    if __v2 in __midi_input_aliases:
+        MIDI_ALIASES[__ik] = __midi_input_aliases[__v2]

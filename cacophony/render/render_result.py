@@ -49,6 +49,7 @@ class RenderResult:
                     self.inputs_held.append(INPUTS[k])
         for m in self.midi:
             k = (m[0], m[1], m[2])
+            # MIDI input.
             if k in INPUTS:
                 self.inputs_pressed.append(INPUTS[k])
         self.inputs_scroll: List[InputKey] = list()
