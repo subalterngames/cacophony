@@ -126,7 +126,7 @@ class OpenFile(Panel):
                                   parent_rect=self._open_file_rect))
         return commands
 
-    def _do_result(self, state: State) -> bool:
+    def _do_result(self, state: State, did_widget: bool) -> bool:
         if InputKey.left in state.result.inputs_pressed:
             if self._directory is None:
                 return False

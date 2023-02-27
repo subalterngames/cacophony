@@ -88,7 +88,7 @@ class Panel:
             else:
                 did_widget = False
             # Something changed or we manually requested a re-render.
-            if self.do_render or self._do_result(state=state) or did_widget:
+            if self.do_render or self._do_result(state=state, did_widget=did_widget) or did_widget:
                 commands.extend(self._render_panel(state=state, focus=focus))
         # Don't manually re-render next frame.
         self.do_render = False
@@ -151,9 +151,10 @@ class Panel:
 
         return PanelType.undefined
 
-    def _do_result(self, state: State) -> bool:
+    def _do_result(self, state: State, did_widget: bool) -> bool:
         """
         :param state: The `State` of the program.
+        :param did_widget: If True, a widget did something.
 
         :return: True if the panel needs to be re-rendered.
         """

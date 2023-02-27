@@ -27,8 +27,8 @@ class NewTrack(ScrollPanel):
     def get_panel_type(self) -> PanelType:
         return PanelType.new_track
 
-    def _do_result(self, state: State) -> bool:
-        did = super()._do_result(state=state)
+    def _do_result(self, state: State, did_widget: bool) -> bool:
+        did = super()._do_result(state=state, did_widget=did_widget)
         # Selected a synthesizer.
         if InputKey.select in state.result.inputs_pressed and isinstance(self._widgets[self._focused_widget_index], Label):
             # Get the selected synthesizer label.

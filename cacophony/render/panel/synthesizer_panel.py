@@ -35,12 +35,12 @@ class SynthesizerPanel(ScrollPanel):
         return PanelType.synthesizer_panel
 
     @final
-    def _do_result(self, state: State) -> bool:
-        did = super()._do_result(state=state)
+    def _do_result(self, state: State, did_widget: bool) -> bool:
+        did = super()._do_result(state=state, did_widget=did_widget)
         if len(self._widgets) == 0:
             return False
         # Something happened. Update the synthesizer parameters.
-        if did:
+        if did or did_widget:
             focused_widget = self._widgets[self._focused_widget_index]
             # Update the other widgets.
             for k in self._synthesizer_widgets:

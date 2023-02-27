@@ -73,7 +73,7 @@ class FilePrompt(Widget):
                              parent_rect=parent_rect))
         # Show the path.
         if len(self.path) > 0:
-            commands.append(Text(text=self.path,
+            commands.append(Text(text=Path(self.path).name,
                                  size=self._size[0] - 2,
                                  position=(position[0] + 1, position[1] + 2),
                                  text_color=color,

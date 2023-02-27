@@ -32,7 +32,7 @@ class PianoRoll(Panel):
     def get_panel_type(self) -> PanelType:
         return PanelType.piano_roll
 
-    def _do_result(self, state: State) -> bool:
+    def _do_result(self, state: State, did_widget: bool) -> bool:
         if state.piano_roll_state.note_0 > 0 and InputKey.down in state.result.inputs_pressed:
             state.piano_roll_state.note_0 -= 1
             return True

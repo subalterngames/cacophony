@@ -37,7 +37,7 @@ class ScrollPanel(Panel, ABC):
         self._page_index: int = 0
         self._widget_page_index: int = 0
 
-    def _do_result(self, state: State) -> bool:
+    def _do_result(self, state: State, did_widget: bool) -> bool:
         if len(self._widgets) == 0:
             return False
         if InputKey.up in state.result.inputs_scroll:

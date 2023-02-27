@@ -31,7 +31,7 @@ class MainMenu(Panel):
             help_texts.append("[" + ", ".join([str(v).capitalize() for v in INPUT_KEYS[help_key]]) + " " + help_key.name.split("_")[0].title() + "]")
         self._help_text: str = "Help: " + " ".join(help_texts)
 
-    def get_panel_help(self) -> str:
+    def get_panel_help(self, state: State) -> str:
         return "Main menu"
 
     def get_panel_type(self) -> PanelType:

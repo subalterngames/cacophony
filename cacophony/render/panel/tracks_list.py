@@ -35,8 +35,8 @@ class TracksList(ScrollPanel):
     def _get_panel_title(self, state: State) -> str:
         return "List of tracks."
 
-    def _do_result(self, state: State) -> bool:
-        did = super()._do_result(state=state)
+    def _do_result(self, state: State, did_widget: bool) -> bool:
+        did = super()._do_result(state=state, did_widget=did_widget)
         # If the user scrolls through the tracks list, change the piano roll and the synthesizer panel.
         if did:
             state.track_index = self._focused_widget_index
