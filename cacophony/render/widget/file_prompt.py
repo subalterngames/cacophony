@@ -100,6 +100,9 @@ class FilePrompt(Widget):
             state.dirty_panels.append(state.focused_panel)
             # Remember the focused panel.
             state.open_file_state.previous_focus = state.focused_panel
+            # Remember the active panels.
+            state.open_file_state.previous_active.clear()
+            state.open_file_state.previous_active.extend(state.active_panels)
             # Clear the active panels and open the open file panel.
             state.active_panels.clear()
             state.active_panels.append(PanelType.open_file)

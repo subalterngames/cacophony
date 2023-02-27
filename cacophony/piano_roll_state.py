@@ -3,7 +3,7 @@ class PianoRollState:
     The state of the piano roll.
     """
 
-    def __init__(self, time_0: float, note_0: int, selected_note_index: int):
+    def __init__(self, time_0: float = 0, note_0: int = 60, selected_note_index: int = 0):
         """
         :param time_0: The current rendered start time.
         :param note_0: The current lowest note.

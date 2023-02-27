@@ -37,11 +37,8 @@ class Program:
         self.state: State = State(music=Music(bpm=60),
                                   track_index=0,
                                   focused_panel=PanelType.main_menu,
-                                  open_file_state=OpenFileState(suffixes=[],
-                                                                previous_focus=PanelType.main_menu),
-                                  piano_roll_state=PianoRollState(time_0=0,
-                                                                  note_0=60,
-                                                                  selected_note_index=0))
+                                  open_file_state=OpenFileState(),
+                                  piano_roll_state=PianoRollState())
         self.new_file()
 
     def run(self) -> None:
@@ -160,11 +157,8 @@ class Program:
         self.state: State = State(music=Music(bpm=60),
                                   track_index=0,
                                   focused_panel=PanelType.main_menu,
-                                  open_file_state=OpenFileState(suffixes=[],
-                                                                previous_focus=PanelType.main_menu),
-                                  piano_roll_state=PianoRollState(time_0=0,
-                                                                  note_0=60,
-                                                                  selected_note_index=0))
+                                  open_file_state=OpenFileState(),
+                                  piano_roll_state=PianoRollState())
         # Set the active panels.
         self.state.active_panels.extend([PanelType.main_menu, PanelType.tracks_list, PanelType.piano_roll, PanelType.synthesizer_panel])
         self.state.dirty_panels.extend(self.state.active_panels)

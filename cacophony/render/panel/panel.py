@@ -80,7 +80,7 @@ class Panel:
         # Listen to the focused widget.
         if self.do_render or focus:
             # The focused widget did something.
-            if len(self._widgets) > 0 and self._widgets[self._focused_widget_index].do(state=state):
+            if focus and len(self._widgets) > 0 and self._widgets[self._focused_widget_index].do(state=state):
                 # Update the undo stack.
                 state.undo_stack.extend(self._widgets[self._focused_widget_index].undo_stack)
                 self._widgets[self._focused_widget_index].undo_stack.clear()

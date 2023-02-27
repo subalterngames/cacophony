@@ -1,12 +1,10 @@
 from pathlib import Path
 from typing import List, Optional
 from platform import system
-from pygame.display import get_surface
-from pygame import Surface, Rect
+from pygame import Rect
 from cacophony.render.panel.panel import Panel
 from cacophony.render.commands.command import Command
 from cacophony.render.commands.arrow import Arrow
-from cacophony.render.commands.blit import Blit
 from cacophony.render.commands.line import Line
 from cacophony.render.commands.text import Text
 from cacophony.render.macros.parent_rect import get_parent_rect
@@ -41,7 +39,6 @@ class OpenFile(Panel):
                          parent_rect=None)
         self._open_file_rect: Rect = get_parent_rect(position=self._position, size=self._size, pivot=self._pivot,
                                                      anchor=self._anchor)
-        self._previous_surface: Surface = get_surface().convert()
         self._directory: Optional[Path] = Path(OpenFile._ROOT_DIRECTORY)
         self._page_index: int = 0
         self._element_index: int = 0
@@ -54,7 +51,6 @@ class OpenFile(Panel):
             self._drives: List[Path] = [Path(drive) for drive in drives]
         else:
             self._drives = []
-        self._done: bool = False
 
     def get_panel_help(self, state: State) -> str:
         return "Open file. " + tooltip(keys=[InputKey.up, InputKey.down], predicate="scroll", boop="and") + " " + \
@@ -76,9 +72,6 @@ class OpenFile(Panel):
         if self.do_render:
             self._pages = self._get_pages(state=state)
         commands = super()._render_panel(state=state, focus=focus)
-        if self._done:
-            commands.append(Blit(surface=self._previous_surface, position=(0, 0)))
-            return commands
         x = 1
         y = 1
         w = self._size[0] - 2
@@ -236,11 +229,11 @@ class OpenFile(Panel):
     def _end(self, state: State) -> None:
         """
         End this panel.
+
         :param state: The `State` of the program.
         """
 
         state.focused_panel = state.open_file_state.previous_focus
-        state.active_panels.remove(PanelType.open_file)
-        state.active_panels.append(state.open_file_state.previous_focus)
-        state.dirty_panels.append(state.open_file_state.previous_focus)
-        self._done = True
+        state.active_panels.clear()
+        state.active_panels.extend(state.open_file_state.previous_active)
+        state.dirty_panels.extend(state.open_file_state.previous_active)

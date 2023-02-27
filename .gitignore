@@ -4,3 +4,5 @@
 temp/
 scratch.py
 synthesizers/
+*.sf2
+*.sf3
