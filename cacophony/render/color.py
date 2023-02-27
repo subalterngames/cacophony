@@ -20,3 +20,5 @@ class Color(IntEnum):
     piano_roll_note_name_no_focus = 15
     parameter_boolean_true = 16
     parameter_boolean_false = 17
+    start_time = 18
+    end_time = 19
