@@ -9,6 +9,7 @@ edition = "2021"
 strum = "0.24"
 strum_macros = "0.24"
 fraction = "0.13.1"
+serde_json = "1.0"
 
 [dependencies.serde]
 version = "1.0.153"
