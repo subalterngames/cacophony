@@ -1,6 +1,6 @@
 use super::midi_track::{MidiTrack, SerializableTrack};
-use crate::serialize_fraction;
-use fraction::{Fraction, Zero};
+use crate::{serialize_fraction, SerializableFraction, Fraction};
+use fraction::Zero;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -49,7 +49,7 @@ impl Music {
     }
 
     /// Serialize to a `SerializableMusic`.
-    pub fn serialize(&self) -> SerializableMusic {
+    pub(crate) fn serialize(&self) -> SerializableMusic {
         SerializableMusic {
             name: self.name.clone(),
             midi_tracks: self.midi_tracks.iter().map(|m| m.serialize()).collect(),
@@ -63,7 +63,7 @@ impl Music {
 
 /// Music that can be serialized.
 #[derive(Serialize, Deserialize)]
-pub struct SerializableMusic {
+pub(crate) struct SerializableMusic {
     /// The name of the music.
     name: String,
     /// The file path. If None, we haven't saved this music yet.
@@ -73,14 +73,14 @@ pub struct SerializableMusic {
     /// The beats per minute.
     bpm: u32,
     /// Start audio playback at this time.
-    playback_time: [u64; 2],
+    playback_time: SerializableFraction,
     /// The index of the selected track.
     selected: Option<usize>,
 }
 
 impl SerializableMusic {
     /// Deserialize to a `Music`.
-    pub fn deserialize(&self) -> Music {
+    pub(crate) fn deserialize(&self) -> Music {
         Music {
             name: self.name.clone(),
             midi_tracks: self.midi_tracks.iter().map(|m| m.deserialize()).collect(),
@@ -95,8 +95,7 @@ impl SerializableMusic {
 #[cfg(test)]
 mod tests {
     use super::super::note::Note;
-    use super::{MidiTrack, Music, SerializableMusic};
-    use fraction::Fraction;
+    use super::{MidiTrack, Music, SerializableMusic, Fraction};
     use serde_json::{from_str, to_string};
 
     #[test]

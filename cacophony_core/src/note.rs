@@ -1,5 +1,4 @@
-use crate::serialize_fraction;
-use fraction::Fraction;
+use crate::{serialize_fraction, deserialize_fraction, Fraction, SerializableFraction};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter, Result};
@@ -73,9 +72,9 @@ pub(crate) struct SerializableNote {
     /// The velocity value (0-127).
     v: u8,
     /// The start bar time.
-    s: [u64; 2],
+    s: SerializableFraction,
     /// The duration bar time.
-    d: [u64; 2],
+    d: SerializableFraction,
 }
 
 impl SerializableNote {
@@ -84,8 +83,8 @@ impl SerializableNote {
         Note {
             note: self.n,
             velocity: self.v,
-            start: Fraction::new(self.s[0], self.s[1]),
-            duration: Fraction::new(self.d[0], self.d[1]),
+            start: deserialize_fraction(&self.s),
+            duration: deserialize_fraction(&self.d),
         }
     }
 }
