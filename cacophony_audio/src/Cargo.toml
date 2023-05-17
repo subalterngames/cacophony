@@ -1,0 +1,17 @@
+[package]
+name = "cacophony_audio"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+midir = "0.9.1"
+cpal = "0.13.1"
+crossbeam-channel = "0.5.8"
+fraction = "0.13.1"
+time = "0.3.21"
+
+[dependencies.oxisynth]
+version = "0.0.3"
+features = ["sf3"]
+git = "https://github.com/PolyMeilex/OxiSynth.git"
+branch = "master"
