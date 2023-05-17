@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
-use crate::{serialize_fraction, deserialize_fraction, Fraction, SerializableFraction};
+use crate::{deserialize_fraction, serialize_fraction, Fraction, SerializableFraction};
+use serde::{Deserialize, Serialize};
 
 /// The dimensions of the piano roll viewport.
 pub struct Viewport {
@@ -12,7 +12,13 @@ pub struct Viewport {
 impl Viewport {
     /// Returns a serializable version of the viewport.
     pub(crate) fn serialize(&self) -> SerializableViewport {
-        SerializableViewport { dt: [serialize_fraction(&self.dt[0]), serialize_fraction(&self.dt[1])], dn: self.dn }
+        SerializableViewport {
+            dt: [
+                serialize_fraction(&self.dt[0]),
+                serialize_fraction(&self.dt[1]),
+            ],
+            dn: self.dn,
+        }
     }
 }
 
@@ -28,6 +34,12 @@ pub(crate) struct SerializableViewport {
 impl SerializableViewport {
     /// Returns a deserialized `Viewport`.
     pub(crate) fn deserialize(&self) -> Viewport {
-        Viewport { dt: [deserialize_fraction(&self.dt[0]), deserialize_fraction(&self.dt[1])], dn: self.dn}
+        Viewport {
+            dt: [
+                deserialize_fraction(&self.dt[0]),
+                deserialize_fraction(&self.dt[1]),
+            ],
+            dn: self.dn,
+        }
     }
 }

@@ -1,4 +1,4 @@
-use crate::{serialize_fraction, deserialize_fraction, Fraction, SerializableFraction};
+use crate::{deserialize_fraction, serialize_fraction, Fraction, SerializableFraction};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter, Result};

@@ -1,5 +1,5 @@
 use super::midi_track::{MidiTrack, SerializableTrack};
-use crate::{serialize_fraction, SerializableFraction, Fraction};
+use crate::{serialize_fraction, Fraction, SerializableFraction};
 use fraction::Zero;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -95,7 +95,7 @@ impl SerializableMusic {
 #[cfg(test)]
 mod tests {
     use super::super::note::Note;
-    use super::{MidiTrack, Music, SerializableMusic, Fraction};
+    use super::{Fraction, MidiTrack, Music, SerializableMusic};
     use serde_json::{from_str, to_string};
 
     #[test]
