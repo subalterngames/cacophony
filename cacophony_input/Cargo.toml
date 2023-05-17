@@ -1,0 +1,17 @@
+[package]
+name = "cacophony_input"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+midir = "0.9.1"
+crossbeam-channel = "0.5.8"
+rust-ini = "0.18"
+
+[dependencies.cacophony_core]
+version = "0.1.0"
+path = "../cacophony_core"
+
+[dependencies.cacophony_audio]
+version = "0.1.0"
+path = "../cacophony_audio"
