@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use crate::Program;
 use crate::TimeState;
+use std::collections::HashMap;
 
 /// The state of the synthesizer.
 pub struct SynthState {
@@ -34,7 +34,7 @@ impl Clone for SynthState {
         Self {
             programs: self.programs.clone(),
             time: self.time,
-            gain: self.gain
+            gain: self.gain,
         }
     }
 }

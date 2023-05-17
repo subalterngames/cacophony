@@ -12,9 +12,9 @@ pub mod time;
 pub use crate::command::Command;
 pub use crate::conn::Conn;
 pub use crate::message::{AudioMessage, CommandsMessage, ExportedAudio};
-pub(crate) use crate::time_state::TimeState;
 use crate::program::Program;
 pub use crate::synth_state::SynthState;
+pub(crate) use crate::time_state::TimeState;
 use crossbeam_channel::{bounded, unbounded};
 use player::Player;
 use std::thread::spawn;
@@ -29,7 +29,13 @@ pub fn connect() -> Conn {
 
     // Spawn the synthesizer thread.
     spawn(move || {
-        synthesizer::Synthesizer::start(recv_commands, send_audio, send_state, send_exported_audio, send_time)
+        synthesizer::Synthesizer::start(
+            recv_commands,
+            send_audio,
+            send_state,
+            send_exported_audio,
+            send_time,
+        )
     });
     // Spawn the audio thread.
     let player = Player::new(recv_audio);

@@ -29,5 +29,11 @@ pub fn bar_to_samples(bar: &Fraction, bpm: u32) -> u64 {
 /// Returns a time string of the bar length.
 pub fn bar_to_time_string(bar: &Fraction, bpm: u32) -> String {
     let time = Duration::seconds_f64(bar_to_seconds(bar, bpm));
-    format!("{:02}:{:02}:{:02}.{:03}", time.whole_hours(), time.whole_minutes(), time.whole_seconds() % 60, time.subsec_milliseconds())
+    format!(
+        "{:02}:{:02}:{:02}.{:03}",
+        time.whole_hours(),
+        time.whole_minutes(),
+        time.whole_seconds() % 60,
+        time.subsec_milliseconds()
+    )
 }

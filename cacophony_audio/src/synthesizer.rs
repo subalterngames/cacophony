@@ -1,4 +1,6 @@
-use crate::{AudioMessage, Command, CommandsMessage, ExportedAudio, Program, SynthState, TimeState};
+use crate::{
+    AudioMessage, Command, CommandsMessage, ExportedAudio, Program, SynthState, TimeState,
+};
 use crossbeam_channel::{Receiver, Sender};
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use std::collections::HashMap;
@@ -56,7 +58,7 @@ impl Synthesizer {
         send_audio: Sender<AudioMessage>,
         send_state: Sender<SynthState>,
         send_exported_audio: Sender<ExportedAudio>,
-        send_time: Sender<TimeState>
+        send_time: Sender<TimeState>,
     ) {
         // Create the synthesizer.
         let mut s = Synthesizer {
@@ -188,7 +190,7 @@ impl Synthesizer {
                                 // Unset the program for this track.
                                 Command::UnsetProgram { channel } => {
                                     s.state.programs.remove(channel);
-                                },
+                                }
                                 // Load SoundFont.
                                 Command::LoadSoundFont { channel, path } => match s
                                     .soundfonts
@@ -209,22 +211,22 @@ impl Synthesizer {
                                         }
                                     },
                                 },
-                                Command::SetGain { gain } => { 
+                                Command::SetGain { gain } => {
                                     s.synth.set_gain(*gain as f32 / 127.0);
                                     s.state.gain = *gain;
-                                },
+                                }
                                 // Export audio.
                                 Command::Export { commands } => {
                                     match send_exported_audio.send(s.export(commands.clone())) {
                                         Ok(_) => (),
                                         Err(error) => panic!("Failed to export audio! {}", error),
                                     }
-                                },
-                                Command::SetTime { time } => s.state.time.time = Some(*time)
+                                }
+                                Command::SetTime { time } => s.state.time.time = Some(*time),
                             }
                         }
                         // Try to send the state.
-                        if send_state.send(s.state.clone()).is_ok() { }
+                        if send_state.send(s.state.clone()).is_ok() {}
                     }
                 }
             }

@@ -44,5 +44,5 @@ pub enum Command {
     /// Export audio.
     Export { commands: Vec<Command> },
     /// Set the time.
-    SetTime { time: u64 }
+    SetTime { time: u64 },
 }

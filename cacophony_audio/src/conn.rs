@@ -14,7 +14,7 @@ pub struct Conn {
     /// Receive exported audio.
     pub(crate) recv_exported_audio: Receiver<ExportedAudio>,
     /// Receive the updated time.
-    pub(crate) recv_time: Receiver<TimeState>
+    pub(crate) recv_time: Receiver<TimeState>,
 }
 
 impl Conn {

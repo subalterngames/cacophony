@@ -9,6 +9,9 @@ pub struct TimeState {
 
 impl Default for TimeState {
     fn default() -> Self {
-        Self { time: None, music: false }
+        Self {
+            time: None,
+            music: false,
+        }
     }
 }
