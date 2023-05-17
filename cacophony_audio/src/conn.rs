@@ -18,7 +18,9 @@ pub struct Conn {
 }
 
 impl Conn {
-    /// Try to send commands and receive a program.
+    /// Try to send commands and receive a `SynthState`, which updates `self.state.
+    /// 
+    /// - `commands` The commands that we'll send.
     pub fn send(&mut self, commands: CommandsMessage) {
         match self.send_commands.send(commands) {
             Ok(_) => (),
@@ -31,6 +33,8 @@ impl Conn {
     }
 
     /// Send the note-on commands with an export command. Block until we export the audio.
+    /// 
+    /// - `commands` The commands that we'll send.
     pub fn export(&mut self, commands: CommandsMessage) -> ExportedAudio {
         // Export.
         self.send(vec![Command::Export { commands }]);
