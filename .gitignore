@@ -4,7 +4,5 @@
 temp/
 scratch.py
 synthesizers/
-*.sf2
-*.sf3
 */target/
-cacophony_audio/tests/
+ms_basic.sf3

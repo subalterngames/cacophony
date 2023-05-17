@@ -4,5 +4,3 @@ use crate::Command;
 pub type AudioMessage = (f32, f32);
 /// Type alias for a commands message.
 pub type CommandsMessage = Vec<Command>;
-/// Type alias for exported audio.
-pub type ExportedAudio = Vec<[f32; 2]>;

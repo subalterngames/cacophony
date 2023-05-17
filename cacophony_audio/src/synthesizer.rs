@@ -1,10 +1,11 @@
 use crate::{
-    AudioMessage, Command, CommandsMessage, ExportedAudio, Program, SynthState, TimeState,
+    AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState, TimeState,
 };
 use crossbeam_channel::{Receiver, Sender};
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use std::collections::HashMap;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
+use std::io::Write;
 
 /// A convenient wrapper for a SoundFont.
 struct SoundFontBanks {
@@ -39,6 +40,10 @@ struct QueuedEvent {
     event: MidiEvent,
 }
 
+/// Synthesize audio.
+/// 
+/// - A list of `Command` can be received from the `Conn`. If received, the `Synthesizer` executes the commands and sends a `SynthState` to the `Conn`.
+/// - Per frame, the `Synthesizer` reads audio from its synthesizer and tries to send a sample to the `Player` and a `TimeState` to the `Conn`.
 pub(crate) struct Synthesizer {
     /// The synthesizer.
     synth: Synth,
@@ -50,14 +55,23 @@ pub(crate) struct Synthesizer {
     ready: bool,
     /// The state of the synthesizer.
     state: SynthState,
+    export_state: Option<ExportState>,
+    export_file: Option<File>
 }
 
 impl Synthesizer {
+    /// Start the synthesizer loop.
+    /// 
+    /// - `recv_commands` Receive commands from the conn.
+    /// - `send_audio` Send audio samples to the player.
+    /// - `send_state` Send a state to the conn.
+    /// - `send_export` Send audio samples to an exporter.
+    /// - `send_time` Send the time to the conn.
     pub(crate) fn start(
         recv_commands: Receiver<CommandsMessage>,
         send_audio: Sender<AudioMessage>,
         send_state: Sender<SynthState>,
-        send_exported_audio: Sender<ExportedAudio>,
+        send_export: Sender<ExportState>,
         send_time: Sender<TimeState>,
     ) {
         // Create the synthesizer.
@@ -67,6 +81,8 @@ impl Synthesizer {
             events_queue: vec![],
             ready: true,
             state: SynthState::default(),
+            export_file: None,
+            export_state: None
         };
         loop {
             if s.ready {
@@ -215,11 +231,17 @@ impl Synthesizer {
                                     s.synth.set_gain(*gain as f32 / 127.0);
                                     s.state.gain = *gain;
                                 }
-                                // Export audio.
-                                Command::Export { commands } => {
-                                    match send_exported_audio.send(s.export(commands.clone())) {
-                                        Ok(_) => (),
-                                        Err(error) => panic!("Failed to export audio! {}", error),
+                                // Start to export audio.
+                                Command::Export { path , state } => {
+                                    match path.to_str() {
+                                        Some(path) => match OpenOptions::new().write(true).append(false).truncate(true).create(true).open(path) {
+                                            Ok(file) => {
+                                                s.export_file = Some(file);
+                                                s.export_state = Some(state.clone());
+                                            }
+                                            Err(error) => panic!("Error opening the file to export: {:?}", error)
+                                        }
+                                        None => panic!("Error converting export path to string: {:?}", path)
                                     }
                                 }
                                 Command::SetTime { time } => s.state.time.time = Some(*time),
@@ -252,22 +274,51 @@ impl Synthesizer {
                 s.events_queue.retain(|e| e.time != time);
             }
 
-            // Send audio.
-            match send_audio.send(s.synth.read_next()) {
-                // We sent a message. Increment the time.
-                Ok(_) => {
-                    // Increment time.
-                    if let Some(time) = s.state.time.time.as_mut() {
-                        *time += 1;
+            // Get the sample.
+            let sample = s.synth.read_next();
+
+            // Either export audio or play the file.
+            match (&mut s.export_file, &mut s.export_state) {
+                (Some(export_file), Some(export_state)) => {
+                    // Export.
+                    if let Err(error) = export_file.write(&sample.0.to_le_bytes()) {
+                        panic!("Error exporting example: {}", error)
                     }
-                    // We're ready for a new message.
-                    s.ready = true;
+                    if let Err(error) = export_file.write(&sample.1.to_le_bytes()) {
+                        panic!("Error exporting example: {}", error)
+                    }
+                    // Increment the number of exported samples.
+                    export_state.exported += 1;
+                    // Send the export state.
+                    if send_export.try_send(export_state.clone()).is_ok() {}
+                    // Are we done exporting?
+                    if export_state.exported >= export_state.samples {
+                        s.export_state = None;
+                        s.export_file = None;
+                    }
                 }
-                // Wait.
-                Err(_) => continue,
+                // Set to None.
+                (Some(_), None) => s.export_file = None,
+                (None, Some(_)) => s.export_state = None,
+                // Play
+                (None, None) => {
+                    match send_audio.send(sample) {
+                        // We sent a message. Increment the time.
+                        Ok(_) => {
+                            // Increment time.
+                            if let Some(time) = s.state.time.time.as_mut() {
+                                *time += 1;
+                            }
+                            // We're ready for a new message.
+                            s.ready = true;
+                        }
+                        // Wait.
+                        Err(_) => continue,
+                    }
+                    // Send the time state.
+                    if send_time.try_send(s.state.time).is_ok() {}
+                }
             }
-            // Send the time state.
-            if send_time.try_send(s.state.time).is_ok() {}
         }
     }
 
@@ -325,75 +376,6 @@ impl Synthesizer {
             },
             MidiEvent::SystemReset => MidiEvent::SystemReset,
         }
-    }
-
-    /// Export all audio using the queued up events.
-    fn export(&mut self, commands: CommandsMessage) -> ExportedAudio {
-        let mut num_note_offs: usize = 0;
-        for command in commands.iter() {
-            if let Command::NoteOffAt {
-                channel: _,
-                key: _,
-                time: _,
-            } = command
-            {
-                num_note_offs += 1
-            }
-        }
-        // Get the buffer.
-        let mut buffer: ExportedAudio = vec![];
-        let mut note_offs: usize = 0;
-        let mut t = 0;
-        // Get samples.
-        while note_offs < num_note_offs {
-            for command in commands.iter() {
-                match command {
-                    Command::NoteOnAt {
-                        channel,
-                        key,
-                        velocity,
-                        time,
-                        duration: _,
-                    } => {
-                        // Time to play this note.
-                        if *time == t {
-                            Synthesizer::send_event(
-                                MidiEvent::NoteOn {
-                                    channel: *channel,
-                                    key: *key,
-                                    vel: *velocity,
-                                },
-                                &mut self.synth,
-                            );
-                        }
-                    }
-                    Command::NoteOffAt { channel, key, time } => {
-                        if *time == t {
-                            // Increment the note-off counter.
-                            note_offs += 1;
-                            // Note-off.
-                            Synthesizer::send_event(
-                                MidiEvent::NoteOff {
-                                    channel: *channel,
-                                    key: *key,
-                                },
-                                &mut self.synth,
-                            );
-                        }
-                    }
-                    _ => (),
-                }
-            }
-            // Get a sample.
-            let sample = self.synth.read_next();
-            buffer.push([sample.0, sample.1]);
-            // Increment the time.
-            t += 1;
-        }
-        // Append some silence.
-        let silence = [0.0, 0.0];
-        (0..44100).for_each(|_| buffer.push(silence));
-        buffer
     }
 
     /// Set the synthesizer program to a program.

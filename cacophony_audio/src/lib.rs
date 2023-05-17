@@ -6,15 +6,17 @@ mod program;
 mod synth_state;
 mod synthesizer;
 mod time_state;
+mod export_state;
 
 pub mod time;
 
 pub use crate::command::Command;
 pub use crate::conn::Conn;
-pub use crate::message::{AudioMessage, CommandsMessage, ExportedAudio};
+pub use crate::message::{AudioMessage, CommandsMessage};
 use crate::program::Program;
 pub use crate::synth_state::SynthState;
 pub(crate) use crate::time_state::TimeState;
+pub(crate) use export_state::ExportState;
 use crossbeam_channel::{bounded, unbounded};
 use player::Player;
 use std::thread::spawn;
@@ -25,7 +27,7 @@ pub fn connect() -> Conn {
     let (send_state, recv_state) = bounded(1);
     let (send_audio, recv_audio) = bounded(1);
     let (send_time, recv_time) = bounded(1);
-    let (send_exported_audio, recv_exported_audio) = unbounded();
+    let (send_export, recv_export) = unbounded();
 
     // Spawn the synthesizer thread.
     spawn(move || {
@@ -33,21 +35,14 @@ pub fn connect() -> Conn {
             recv_commands,
             send_audio,
             send_state,
-            send_exported_audio,
+            send_export,
             send_time,
         )
     });
     // Spawn the audio thread.
     let player = Player::new(recv_audio);
     // Get the conn.
-    Conn {
-        state: SynthState::default(),
-        _player: player,
-        send_commands,
-        recv: recv_state,
-        recv_exported_audio,
-        recv_time,
-    }
+    Conn::new(player, send_commands, recv_state, recv_export, recv_time)
 }
 
 #[cfg(test)]
@@ -61,12 +56,6 @@ mod tests {
     const DURATION: u64 = 44100;
     const KEY: u8 = 60;
     const VELOCITY: u8 = 120;
-
-    #[test]
-    fn conn() {
-        let conn = connect();
-        assert!(conn._player.is_some());
-    }
 
     #[test]
     fn sf() {
@@ -118,9 +107,6 @@ mod tests {
         conn.send(commands);
         // Listen!
         sleep(Duration::from_secs(10));
-        // Export.
-        let exported_audio = conn.export(get_commands());
-        assert!(exported_audio.len() > 0);
     }
 
     fn get_commands() -> CommandsMessage {

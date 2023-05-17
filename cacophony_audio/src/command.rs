@@ -1,3 +1,6 @@
+use std::path::PathBuf;
+use crate::export_state::ExportState;
+
 /// A command for the synthesizer.
 #[derive(Eq, PartialEq, Clone)]
 pub enum Command {
@@ -42,7 +45,7 @@ pub enum Command {
     /// Set the overall gain.
     SetGain { gain: u8 },
     /// Export audio.
-    Export { commands: Vec<Command> },
+    Export { path: PathBuf, state: ExportState },
     /// Set the time.
     SetTime { time: u64 },
 }
