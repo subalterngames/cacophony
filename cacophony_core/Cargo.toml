@@ -8,3 +8,8 @@ edition = "2021"
 [dependencies]
 strum = "0.24"
 strum_macros = "0.24"
+fraction = "0.13.1"
+
+[dependencies.serde]
+version = "1.0.153"
+features = ["derive"]
