@@ -3,6 +3,7 @@ mod midi_track;
 mod music;
 mod note;
 mod serialize;
+pub mod config;
 pub use input_event::InputEvent;
 pub use midi_track::MidiTrack;
 pub use music::Music;
