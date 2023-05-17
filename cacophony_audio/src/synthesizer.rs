@@ -240,7 +240,7 @@ impl Synthesizer {
                                     {
                                         Ok(file) => {
                                             s.export_file = Some(file);
-                                            s.export_state = Some(state.clone());
+                                            s.export_state = Some(*state);
                                         }
                                         Err(error) => {
                                             panic!("Error opening the file to export: {:?}", error)
@@ -296,7 +296,7 @@ impl Synthesizer {
                     // Increment the number of exported samples.
                     export_state.exported += 1;
                     // Send the export state.
-                    if send_export.try_send(export_state.clone()).is_ok() {}
+                    if send_export.try_send(*export_state).is_ok() {}
                     // Are we done exporting?
                     if export_state.exported >= export_state.samples {
                         s.export_state = None;
