@@ -12,19 +12,15 @@ from cacophony.music.note import Note
 
 pygame.mixer.init(allowedchanges=pygame.AUDIO_ALLOW_CHANNELS_CHANGE)
 pygame.midi.init()
-m = pygame.midi.Input(pygame.midi.get_default_input_id())
-print(m)
-print(pygame.midi.get_default_input_id())
 
 bpm = 120
 beat = 1
-sf = SoundFont(channel=0)
-sf.load("D:/SoundFonts/ms_basic.sf3")
-sf.set_instrument(bank=0, preset=0)
+#sf = SoundFont(channel=0)
+#sf.load("D:/SoundFonts/ms_basic.sf3")
+#sf.set_instrument(bank=0, preset=0)
 synths = [Chiptune(ChiptunePCM.saw),
-          sf,
           Clatter()]
-synth_index = 0
+synth_index = 1
 knob = 0
 music = Music(bpm=bpm, tracks=[Track(track_id=0, synthesizer=synths[synth_index])])
 pygame.init()
