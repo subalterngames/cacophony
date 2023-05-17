@@ -20,12 +20,26 @@ pub struct Conn {
 }
 
 impl Conn {
-    pub(crate) fn new(player: Option<Player>, send_commands: Sender<CommandsMessage>, recv: Receiver<SynthState>, recv_export: Receiver<ExportState>, recv_time: Receiver<TimeState>) -> Self {
-        Self { state: SynthState::default(), export_state: None, _player: player, send_commands, recv, recv_export, recv_time}
+    pub(crate) fn new(
+        player: Option<Player>,
+        send_commands: Sender<CommandsMessage>,
+        recv: Receiver<SynthState>,
+        recv_export: Receiver<ExportState>,
+        recv_time: Receiver<TimeState>,
+    ) -> Self {
+        Self {
+            state: SynthState::default(),
+            export_state: None,
+            _player: player,
+            send_commands,
+            recv,
+            recv_export,
+            recv_time,
+        }
     }
 
     /// Try to send commands and receive a `SynthState`, which updates `self.state.
-    /// 
+    ///
     /// - `commands` The commands that we'll send.
     pub fn send(&mut self, commands: CommandsMessage) {
         match self.send_commands.send(commands) {

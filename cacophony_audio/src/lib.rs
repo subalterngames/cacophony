@@ -1,12 +1,12 @@
 mod command;
 mod conn;
+mod export_state;
 mod message;
 mod player;
 mod program;
 mod synth_state;
 mod synthesizer;
 mod time_state;
-mod export_state;
 
 pub mod time;
 
@@ -16,8 +16,8 @@ pub use crate::message::{AudioMessage, CommandsMessage};
 use crate::program::Program;
 pub use crate::synth_state::SynthState;
 pub(crate) use crate::time_state::TimeState;
-pub(crate) use export_state::ExportState;
 use crossbeam_channel::{bounded, unbounded};
+pub(crate) use export_state::ExportState;
 use player::Player;
 use std::thread::spawn;
 

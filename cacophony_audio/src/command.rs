@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use crate::export_state::ExportState;
+use std::path::PathBuf;
 
 /// A command for the synthesizer.
 #[derive(Eq, PartialEq, Clone)]

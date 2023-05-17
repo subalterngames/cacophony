@@ -1,6 +1,4 @@
-use crate::{
-    AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState, TimeState,
-};
+use crate::{AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState, TimeState};
 use crossbeam_channel::{Receiver, Sender};
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use std::collections::HashMap;
@@ -41,7 +39,7 @@ struct QueuedEvent {
 }
 
 /// Synthesize audio.
-/// 
+///
 /// - A list of `Command` can be received from the `Conn`. If received, the `Synthesizer` executes the commands and sends a `SynthState` to the `Conn`.
 /// - Per frame, the `Synthesizer` reads audio from its synthesizer and tries to send a sample to the `Player` and a `TimeState` to the `Conn`.
 pub(crate) struct Synthesizer {
@@ -56,12 +54,12 @@ pub(crate) struct Synthesizer {
     /// The state of the synthesizer.
     state: SynthState,
     export_state: Option<ExportState>,
-    export_file: Option<File>
+    export_file: Option<File>,
 }
 
 impl Synthesizer {
     /// Start the synthesizer loop.
-    /// 
+    ///
     /// - `recv_commands` Receive commands from the conn.
     /// - `send_audio` Send audio samples to the player.
     /// - `send_state` Send a state to the conn.
@@ -82,7 +80,7 @@ impl Synthesizer {
             ready: true,
             state: SynthState::default(),
             export_file: None,
-            export_state: None
+            export_state: None,
         };
         loop {
             if s.ready {
@@ -232,18 +230,26 @@ impl Synthesizer {
                                     s.state.gain = *gain;
                                 }
                                 // Start to export audio.
-                                Command::Export { path , state } => {
-                                    match path.to_str() {
-                                        Some(path) => match OpenOptions::new().write(true).append(false).truncate(true).create(true).open(path) {
-                                            Ok(file) => {
-                                                s.export_file = Some(file);
-                                                s.export_state = Some(state.clone());
-                                            }
-                                            Err(error) => panic!("Error opening the file to export: {:?}", error)
+                                Command::Export { path, state } => match path.to_str() {
+                                    Some(path) => match OpenOptions::new()
+                                        .write(true)
+                                        .append(false)
+                                        .truncate(true)
+                                        .create(true)
+                                        .open(path)
+                                    {
+                                        Ok(file) => {
+                                            s.export_file = Some(file);
+                                            s.export_state = Some(state.clone());
                                         }
-                                        None => panic!("Error converting export path to string: {:?}", path)
+                                        Err(error) => {
+                                            panic!("Error opening the file to export: {:?}", error)
+                                        }
+                                    },
+                                    None => {
+                                        panic!("Error converting export path to string: {:?}", path)
                                     }
-                                }
+                                },
                                 Command::SetTime { time } => s.state.time.time = Some(*time),
                             }
                         }
