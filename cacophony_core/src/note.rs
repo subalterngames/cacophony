@@ -1,8 +1,8 @@
+use crate::serialize_fraction;
 use fraction::Fraction;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter, Result};
-use crate::serialize_fraction;
 
 /// A MIDI note with a start bar time and a duration bar time.
 #[derive(Copy, Clone, PartialEq, Eq)]

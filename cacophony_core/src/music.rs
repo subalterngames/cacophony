@@ -1,7 +1,7 @@
 use super::midi_track::{MidiTrack, SerializableTrack};
+use crate::serialize_fraction;
 use fraction::{Fraction, Zero};
 use serde::{Deserialize, Serialize};
-use crate::serialize_fraction;
 use std::path::PathBuf;
 
 /// Tracks, notes, and metadata.
