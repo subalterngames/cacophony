@@ -8,17 +8,13 @@ midir = "0.9.1"
 crossbeam-channel = "0.5.8"
 rust-ini = "0.18"
 hashbrown = "0.13.2"
+serde_json = "1.0"
 strum = "0.24"
 strum_macros = "0.24"
-derivative = "2.2.0"
 
 [dependencies.cacophony_core]
 version = "0.1.0"
 path = "../cacophony_core"
-
-[dependencies.cacophony_audio]
-version = "0.1.0"
-path = "../cacophony_audio"
 
 [dependencies.macroquad]
 version = "0.3"
@@ -26,3 +22,7 @@ default-features = false
 features = []
 git = "https://github.com/not-fl3/macroquad.git"
 rev = "5b5bb10"
+
+[dependencies.serde]
+version = "1.0.153"
+features = ["derive"]

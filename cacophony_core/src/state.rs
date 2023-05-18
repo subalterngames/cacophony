@@ -1,6 +1,6 @@
 use crate::music::SerializableMusic;
 use crate::viewport::SerializableViewport;
-use crate::{Music, Viewport};
+use crate::{Music, Viewport, InputState};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
@@ -11,14 +11,12 @@ const READ_ERROR: &str = "Error reading file: ";
 const WRITE_ERROR: &str = "Error writing file: ";
 
 pub struct State {
-    /// If true, we will accept musical input.
-    pub armed: bool,
-    /// If true, we're inputting an alphanumeric string and we should ignore certain key bindings.
-    pub alphanumeric_input: bool,
     /// The music.
     pub music: Music,
     /// The viewport.
     pub viewport: Viewport,
+    /// The input state.
+    pub input: InputState,
 }
 
 impl State {
@@ -65,8 +63,7 @@ impl State {
         let music = self.music.serialize();
         let viewport = self.viewport.serialize();
         let s = SerializableState {
-            armed: self.armed,
-            alphanumeric_input: self.alphanumeric_input,
+            input: self.input,
             music,
             viewport,
         };
@@ -79,10 +76,8 @@ impl State {
 
 #[derive(Serialize, Deserialize)]
 struct SerializableState {
-    /// If true, we will accept musical input.
-    armed: bool,
-    /// If true, we're inputting an alphanumeric string and we should ignore certain key bindings.
-    alphanumeric_input: bool,
+    /// The input state.
+    input: InputState,
     /// The serializable music.
     music: SerializableMusic,
     /// The serializable viewport.
@@ -95,8 +90,7 @@ impl SerializableState {
         let music = self.music.deserialize();
         let viewport = self.viewport.deserialize();
         State {
-            armed: self.armed,
-            alphanumeric_input: self.alphanumeric_input,
+            input: self.input,
             music,
             viewport,
         }

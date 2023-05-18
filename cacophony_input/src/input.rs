@@ -1,14 +1,11 @@
 use crate::{InputEvent, MidiConn, MidiBinding, NoteOn, QwertyBinding, KEYS};
-use cacophony_audio::{connect, Conn};
 use cacophony_core::State;
-use derivative::Derivative;
 use hashbrown::HashMap;
 use ini::Ini;
 use macroquad::input::*;
 
 /// Listens for user input from qwerty and MIDI devices and records the current input state.
-#[derive(Derivative)]
-#[derivative(Default)]
+#[derive(Default)]
 pub struct Input {
     /// Events that began on this frame (usually due to a key press or MIDI controller message).
     pub event_starts: Vec<InputEvent>,
@@ -16,9 +13,6 @@ pub struct Input {
     pub event_continues: Vec<InputEvent>,
     /// The MIDI connection.
     midi_conn: Option<MidiConn>,
-    /// The synthesizer-audio player `Conn`.
-    #[derivative(Default(value = "connect()"))]
-    pub conn: Conn,
     // Note-on MIDI messages. These will be sent immediately to the synthesizer to be played.
     pub note_ons: Vec<[u8; 3]>,
     /// Note-on events that don't have corresponding off events.
@@ -37,11 +31,21 @@ pub struct Input {
 
 impl Input {
     pub fn new(config: &Ini) -> Self {
+        // Get the audio connections.
         let midi_conn = MidiConn::new(config);
-        let conn = connect();
+
+        // Get qwerty events.
+        let mut qwerty_events: HashMap<InputEvent, QwertyBinding> = HashMap::new();
+        // Get the qwerty input mapping.
+        let keyboard_input = config.section(Some("KEYBOARD_INPUT")).unwrap();
+        for kv in keyboard_input.iter() {
+            let k_input = Input::parse_qwerty_binding(kv.0, kv.1);
+            qwerty_events.insert(k_input.0, k_input.1);
+        }
+
         Self {
             midi_conn,
-            conn,
+            qwerty_events,
             ..Default::default()
         }
     }
@@ -115,5 +119,15 @@ impl Input {
     /// Reads the qwerty and MIDI bindings for an event.
     pub fn get_bindings(&self, event: &InputEvent) -> (Option<QwertyBinding>, Option<MidiBinding>) {
         (self.qwerty_events.get(event).cloned(), self.midi_events.get(event).cloned())
+    }
+
+    // Parse a qwerty binding from a key-value pair of strings (i.e. from a config file).
+    fn parse_qwerty_binding(key: &str, value: &str) -> (InputEvent, QwertyBinding) {
+        match key.parse::<InputEvent>() {
+            Ok(input_key) => {
+                (input_key, QwertyBinding::deserialize(value))
+            }
+            Err(error) => panic!("Invalid input key {}: {}", key, error),
+        }
     }
 }
