@@ -19,8 +19,6 @@ pub struct Input {
     /// The synthesizer-audio player `Conn`.
     #[derivative(Default(value = "connect()"))]
     pub conn: Conn,
-    /// A buffer of raw MIDI messages polled on this frame.
-    pub midi: Vec<[u8; 3]>,
     // Note-on MIDI messages. These will be sent immediately to the synthesizer to be played.
     pub note_ons: Vec<[u8; 3]>,
     /// Note-on events that don't have corresponding off events.
@@ -71,19 +69,19 @@ impl Input {
         self.event_continues = self.qwerty_events.iter().filter(|q| q.1.down).map(|q| *q.0).collect();
 
         // MIDI INPUT.
+        let mut midi = vec![];
         if let Some(midi_conn) = &mut self.midi_conn {
-            self.midi.clear();
-            self.midi.extend(midi_conn.poll());
+            midi.extend(midi_conn.poll());
 
             // Append MIDI events.
             for mde in self.midi_events.iter_mut() {
-                if mde.1.update(&self.midi) {
+                if mde.1.update(&midi) {
                     self.event_starts.push(*mde.0);
                 }
             }
 
             // Get note-on and note-off events.
-            for midi in self.midi.iter() {
+            for midi in midi.iter() {
                 // Note-on.
                 if midi[0] >= 144 && midi[0] <= 159 {
                     if state.armed {
