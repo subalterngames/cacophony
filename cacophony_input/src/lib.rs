@@ -1,6 +1,10 @@
 mod midi_conn;
 mod input;
+mod input_event;
 mod note_on;
+mod midi_delta_event;
 pub(crate) use midi_conn::MidiConn;
 pub(crate) use note_on::NoteOn;
+pub(crate) use midi_delta_event::MidiDeltaEvent;
 pub use input::Input;
+pub use input_event::InputEvent;
