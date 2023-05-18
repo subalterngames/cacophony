@@ -28,3 +28,15 @@ where
         None => panic!("Missing key {}", key),
     }
 }
+
+/// Parse a 1 or 0 as a boolean.
+pub fn parse_bool(properties: &Properties, key: &str) -> bool {
+    match properties.get(key) {
+        Some(value) => match value {
+            "1" => true,
+            "0" => false,
+            _ => panic!("Invalid boolean value {} {}", key, value),
+        },
+        None => panic!("Missing key {}", key),
+    }
+}

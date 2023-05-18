@@ -1,0 +1,12 @@
+[package]
+name = "cacophony_text"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rust-ini = "0.18"
+tts = "0.25.1"
+
+[dependencies.cacophony_core]
+version = "0.1.0"
+path = "../cacophony_core"
