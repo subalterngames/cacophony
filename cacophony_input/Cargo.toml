@@ -8,6 +8,7 @@ midir = "0.9.1"
 crossbeam-channel = "0.5.8"
 rust-ini = "0.18"
 hashbrown = "0.13.2"
+serde = "1.0.153"
 serde_json = "1.0"
 strum = "0.24"
 strum_macros = "0.24"
@@ -22,7 +23,3 @@ default-features = false
 features = []
 git = "https://github.com/not-fl3/macroquad.git"
 rev = "5b5bb10"
-
-[dependencies.serde]
-version = "1.0.153"
-features = ["derive"]

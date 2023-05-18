@@ -1,3 +1,4 @@
+use crate::input_state::SerializableInputState;
 use crate::music::SerializableMusic;
 use crate::viewport::SerializableViewport;
 use crate::{InputState, Music, Viewport};
@@ -62,8 +63,9 @@ impl State {
     fn serialize(&self) -> String {
         let music = self.music.serialize();
         let viewport = self.viewport.serialize();
+        let input = self.input.serialize();
         let s = SerializableState {
-            input: self.input,
+            input,
             music,
             viewport,
         };
@@ -77,7 +79,7 @@ impl State {
 #[derive(Serialize, Deserialize)]
 struct SerializableState {
     /// The input state.
-    input: InputState,
+    input: SerializableInputState,
     /// The serializable music.
     music: SerializableMusic,
     /// The serializable viewport.
@@ -88,8 +90,9 @@ impl SerializableState {
     fn deserialize(&self) -> State {
         let music = self.music.deserialize();
         let viewport = self.viewport.deserialize();
+        let input = self.input.deserialize();
         State {
-            input: self.input,
+            input,
             music,
             viewport,
         }

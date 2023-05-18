@@ -4,8 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-strum = "0.24"
-strum_macros = "0.24"
 fraction = "0.13.1"
 serde_json = "1.0"
 rust-ini = "0.18"

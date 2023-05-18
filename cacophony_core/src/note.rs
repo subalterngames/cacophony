@@ -65,7 +65,7 @@ impl Debug for Note {
 }
 
 /// A serializable note, with reduced key names.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub(crate) struct SerializableNote {
     /// The MIDI note value (0-127).
     n: u8,
