@@ -16,6 +16,8 @@ pub struct QwertyBinding {
     sensitivity: u64,
     /// The frame of the most recent press.
     frame: u64,
+    /// If true, listen to down events.
+    repeatable: bool,
     /// If true, this event is pressed.
     pub pressed: bool,
     /// If true, this event is down.
@@ -44,10 +46,12 @@ impl QwertyBinding {
                     .collect();
                 let sensitivity = q.sensitivity;
                 let non_mods = MODS.iter().filter(|m| !mods.contains(m)).copied().collect();
+                let repeatable = sensitivity > 0;
                 Self {
                     keys,
                     mods,
                     non_mods,
+                    repeatable,
                     sensitivity,
                     frame: 0,
                     pressed: false,
@@ -95,7 +99,7 @@ impl QwertyBinding {
                 self.frame = 0;
             }
             // Down.
-            if self.keys.iter().all(|k| {
+            if self.repeatable && self.keys.iter().all(|k| {
                 (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(k)) && down.contains(k)
             }) {
                 if self.frame >= self.sensitivity {
@@ -114,6 +118,7 @@ impl QwertyBinding {
 struct SerializableQwertyBinding {
     keys: Vec<String>,
     mods: Vec<String>,
+    #[serde(default)]
     sensitivity: u64,
 }
 
