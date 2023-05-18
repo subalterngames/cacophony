@@ -1,6 +1,6 @@
 use crate::music::SerializableMusic;
 use crate::viewport::SerializableViewport;
-use crate::{Music, Viewport, InputState};
+use crate::{InputState, Music, Viewport};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
@@ -82,7 +82,6 @@ struct SerializableState {
     music: SerializableMusic,
     /// The serializable viewport.
     viewport: SerializableViewport,
-
 }
 
 impl SerializableState {
