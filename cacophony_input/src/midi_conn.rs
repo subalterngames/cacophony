@@ -1,7 +1,7 @@
-use crossbeam_channel::{Sender, Receiver, unbounded};
-use midir::{MidiInput, MidiInputConnection, MidiInputPort};
-use ini::Ini;
 use cacophony_core::config::parse;
+use crossbeam_channel::{unbounded, Receiver, Sender};
+use ini::Ini;
+use midir::{MidiInput, MidiInputConnection, MidiInputPort};
 
 // The MIDI connection error message.
 const MIDI_ERROR_MESSAGE: &str = "Couldn't connect to a MIDI input device";
@@ -22,7 +22,7 @@ pub(crate) struct MidiConn {
 
 impl MidiConn {
     /// Returns a new MIDI context. Returns None if we can't find an input device, and prints a helpful message.
-    /// 
+    ///
     /// - `config` The config file that has user-defined MIDI settings.
     pub(crate) fn new(config: &Ini) -> Option<Self> {
         // Get the MIDI device section.

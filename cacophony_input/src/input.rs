@@ -1,10 +1,10 @@
-use ini::Ini;
-use crate::{MidiConn, NoteOn, MidiDeltaEvent, InputEvent};
-use cacophony_audio::{Conn, connect};
+use crate::{InputEvent, MidiConn, MidiDeltaEvent, NoteOn};
+use cacophony_audio::{connect, Conn};
 use cacophony_core::State;
-use hashbrown::HashMap;
-use macroquad::input::*;
 use derivative::Derivative;
+use hashbrown::HashMap;
+use ini::Ini;
+use macroquad::input::*;
 
 /// Listens for user input from qwerty and MIDI devices and records the current input state.
 #[derive(Derivative)]
@@ -17,7 +17,7 @@ pub struct Input {
     /// The MIDI connection.
     midi_conn: Option<MidiConn>,
     /// The synthesizer-audio player `Conn`.
-    #[derivative(Default(value="connect()"))]
+    #[derivative(Default(value = "connect()"))]
     pub conn: Conn,
     /// A buffer of raw MIDI messages polled on this frame.
     pub midi: Vec<[u8; 3]>,
@@ -39,7 +39,11 @@ impl Input {
     pub fn new(config: &Ini) -> Self {
         let midi_conn = MidiConn::new(config);
         let conn = connect();
-        Self { midi_conn, conn, ..Default::default() }
+        Self {
+            midi_conn,
+            conn,
+            ..Default::default()
+        }
     }
 
     pub fn update(&mut self, state: &State) {
@@ -51,7 +55,7 @@ impl Input {
         self.pressed_chars.clear();
         while let Some(key) = get_char_pressed() {
             self.pressed_chars.push(key);
-        } 
+        }
 
         // MIDI INPUT.
         if let Some(midi_conn) = &mut self.midi_conn {
