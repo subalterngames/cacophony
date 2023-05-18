@@ -62,7 +62,7 @@ impl Input {
         let down: Vec<KeyCode> = KEYS.iter().filter(|&k| is_key_down(*k)).map(|k| *k).collect();
 
         // Update the qwerty key bindings.
-        self.qwerty_events.iter_mut().for_each(|q| q.1.update(&pressed, &down, state.alphanumeric_input));
+        self.qwerty_events.iter_mut().for_each(|q| q.1.update(&pressed, &down, state.input.alphanumeric_input));
         // Get the key presses.
         self.event_starts = self.qwerty_events.iter().filter(|q| q.1.pressed).map(|q| *q.0).collect();
         // Get the key downs.
@@ -84,7 +84,7 @@ impl Input {
             for midi in midi.iter() {
                 // Note-on.
                 if midi[0] >= 144 && midi[0] <= 159 {
-                    if state.armed {
+                    if state.input.armed {
                         // Remember the note-on for piano roll input.
                         self.note_on_events.push(NoteOn::new(midi));
                     }
@@ -92,7 +92,7 @@ impl Input {
                     self.note_ons.push(*midi);
                 }
                 // Note-off.
-                if state.armed && midi[0] >= 128 && midi[0] <= 143 {
+                if state.input.armed && midi[0] >= 128 && midi[0] <= 143 {
                     // Find the corresponding note.
                     for note_on in self.note_on_events.iter_mut() {
                         // Same key. Note-off.
