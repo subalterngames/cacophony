@@ -1,7 +1,7 @@
 use fraction::GenericFraction;
 
 /// The unsinged fraction type.
-type Fu = u16;
+type Fu = u32;
 /// Type alias for a u16 fraction.
 pub type Fraction = GenericFraction<Fu>;
 /// Serializable array of the numerator and denominator of a fraction.
