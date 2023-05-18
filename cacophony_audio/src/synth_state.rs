@@ -1,6 +1,6 @@
 use crate::Program;
 use crate::TimeState;
-use std::collections::HashMap;
+use hashbrown::HashMap;
 
 /// The state of the synthesizer.
 pub struct SynthState {

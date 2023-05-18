@@ -1,7 +1,7 @@
 use crate::{AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState, TimeState};
 use crossbeam_channel::{Receiver, Sender};
+use hashbrown::HashMap;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
-use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 
