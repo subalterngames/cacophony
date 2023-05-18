@@ -1,6 +1,6 @@
 use crate::{ALPHANUMERIC_INPUT_MODS, MODS};
 use macroquad::input::KeyCode;
-use serde::{Serialize, Deserialize};
+use serde::Deserialize;
 use serde_json::{from_str, Error};
 
 /// A list of qwerty keys plus mods that define a qwerty key binding.
@@ -24,7 +24,7 @@ pub struct QwertyBinding {
 
 impl QwertyBinding {
     /// Deserialize a serializable version of this binding from a string.
-    pub fn deserialize(string: &str) -> Self {
+    pub(crate) fn deserialize(string: &str) -> Self {
         let q: Result<SerializableQwertyBinding, Error> = from_str(string);
         match q {
             Ok(q) => {
@@ -69,7 +69,7 @@ impl QwertyBinding {
     /// - `pressed` The keys that were pressed on this frame.
     /// - `down` The keys that were held down on this frame.
     /// - `alphanumeric` If true, we're in alphanumeric input mode, which can affect whether we can listen for certain qwerty bindings.
-    pub fn update(&mut self, pressed: &[KeyCode], down: &[KeyCode], alphanumeric: bool) {
+    pub(crate) fn update(&mut self, pressed: &[KeyCode], down: &[KeyCode], alphanumeric: bool) {
         self.pressed = false;
         self.down = false;
         // Mods.
@@ -98,7 +98,7 @@ impl QwertyBinding {
 }
 
 /// A serializable version of a qwerty binding.
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct SerializableQwertyBinding {
     keys: Vec<String>,
     mods: Vec<String>,

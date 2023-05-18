@@ -1,5 +1,8 @@
+use serde::Deserialize;
+use serde_json::{from_str, Error};
+
 /// Bindings for MIDI input.
-#[derive(Clone)]
+#[derive(Clone, Deserialize)]
 pub struct MidiBinding {
     /// The two bytes defining the MIDI input device.
     pub bytes: [u8; 2],
@@ -8,16 +11,16 @@ pub struct MidiBinding {
     /// A value that controls the sensitivity of the events. Check for events every `nth` consecutive inputs.
     sensitivity: u8,
     /// A counter for tracking sensitivity.
+    #[serde(default)]
     counter: u8,
 }
 
 impl MidiBinding {
-    pub(crate) fn new(bytes: [u8; 2], positive: bool, sensitivity: u8) -> Self {
-        Self {
-            bytes,
-            positive,
-            sensitivity,
-            counter: 0,
+    pub(crate) fn deserialize(string: &str) -> Self {
+        let m: Result<Self, Error> = from_str(string);
+        match m {
+            Ok(m) => m,
+            Err(error) => panic!("Failed to deserialize {} into a MidiBinding: {}", string, error)
         }
     }
 

@@ -37,15 +37,25 @@ impl Input {
         // Get qwerty events.
         let mut qwerty_events: HashMap<InputEvent, QwertyBinding> = HashMap::new();
         // Get the qwerty input mapping.
-        let keyboard_input = config.section(Some("KEYBOARD_INPUT")).unwrap();
+        let keyboard_input = config.section(Some("QWERTY_BINDINGS")).unwrap();
         for kv in keyboard_input.iter() {
             let k_input = Input::parse_qwerty_binding(kv.0, kv.1);
             qwerty_events.insert(k_input.0, k_input.1);
         }
 
+        // Get MIDI events.
+        let mut midi_events: HashMap<InputEvent, MidiBinding> = HashMap::new();
+        // Get the qwerty input mapping.
+        let midi_input = config.section(Some("MIDI_BINDINGS")).unwrap();
+        for kv in midi_input.iter() {
+            let k_input = Input::parse_midi_binding(kv.0, kv.1);
+            midi_events.insert(k_input.0, k_input.1);
+        }
+
         Self {
             midi_conn,
             qwerty_events,
+            midi_events,
             ..Default::default()
         }
     }
@@ -126,6 +136,16 @@ impl Input {
         match key.parse::<InputEvent>() {
             Ok(input_key) => {
                 (input_key, QwertyBinding::deserialize(value))
+            }
+            Err(error) => panic!("Invalid input key {}: {}", key, error),
+        }
+    }
+
+    // Parse a MIDI binding from a key-value pair of strings (i.e. from a config file).
+    fn parse_midi_binding(key: &str, value: &str) -> (InputEvent, MidiBinding) {
+        match key.parse::<InputEvent>() {
+            Ok(input_key) => {
+                (input_key, MidiBinding::deserialize(value))
             }
             Err(error) => panic!("Invalid input key {}: {}", key, error),
         }
