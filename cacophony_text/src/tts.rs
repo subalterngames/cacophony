@@ -1,3 +1,10 @@
+#[cfg(target_os = "macos")]
+use cocoa_foundation::base::id;
+#[cfg(target_os = "macos")]
+use cocoa_foundation::foundation::NSRunLoop;
+#[cfg(target_os = "macos")]
+use objc::{msg_send, sel, sel_impl};
+
 use cacophony_core::config::{parse, parse_bool};
 use ini::Ini;
 use tts::Tts;
