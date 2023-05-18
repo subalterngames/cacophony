@@ -28,14 +28,26 @@ impl QwertyBinding {
         let q: Result<SerializableQwertyBinding, Error> = from_str(string);
         match q {
             Ok(q) => {
-                let keys = q.keys.iter().map(|s| keycode_from_str(s)).filter(|s| s.is_some()).map(|s| s.unwrap()).collect();
-                let mods: Vec<KeyCode> = q.mods.iter().map(|s| keycode_from_str(s)).filter(|s| s.is_some()).map(|s| s.unwrap()).collect();
+                let keys = q
+                    .keys
+                    .iter()
+                    .map(|s| keycode_from_str(s))
+                    .filter(|s| s.is_some())
+                    .map(|s| s.unwrap())
+                    .collect();
+                let mods: Vec<KeyCode> = q
+                    .mods
+                    .iter()
+                    .map(|s| keycode_from_str(s))
+                    .filter(|s| s.is_some())
+                    .map(|s| s.unwrap())
+                    .collect();
                 let sensitivity = q.sensitivity;
                 let non_mods = MODS
-                .iter()
-                .filter(|m| !mods.contains(m))
-                .map(|m| *m)
-                .collect();
+                    .iter()
+                    .filter(|m| !mods.contains(m))
+                    .map(|m| *m)
+                    .collect();
                 Self {
                     keys,
                     mods,
@@ -46,21 +58,24 @@ impl QwertyBinding {
                     down: false,
                 }
             }
-            Err(error) => panic!("Failed to deserialize {} into a QwertyBinding: {}", string, error)
+            Err(error) => panic!(
+                "Failed to deserialize {} into a QwertyBinding: {}",
+                string, error
+            ),
         }
     }
 
     /// Update the state of this key binding.
-    /// 
+    ///
     /// The keys are pressed if:
     ///
     /// - All of the `mods` are down.
     /// - No other mods are down.
     /// - Either alphanumeric input is disabled or this key is allowed in the context of alphanumeric input.
     /// - All of the `keys` are pressed.
-    /// 
+    ///
     /// They keys are down if:
-    /// 
+    ///
     /// - All of the above is true.
     /// - A sufficient number of frames have elapsed.
     ///
@@ -78,20 +93,21 @@ impl QwertyBinding {
         {
             // Pressed.
             if self.keys.iter().all(|k| {
-                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(&k)) && pressed.contains(k) }) {
+                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(&k)) && pressed.contains(k)
+            }) {
                 self.pressed = true;
                 self.frame = 0;
             }
             // Down.
             if self.keys.iter().all(|k| {
-                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(&k)) && down.contains(k) }) {
-                    if self.frame >= self.sensitivity {
-                        self.frame = 0;
-                        self.down = true;
-                    }
-                    else {
-                        self.frame += 1;
-                    }
+                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(&k)) && down.contains(k)
+            }) {
+                if self.frame >= self.sensitivity {
+                    self.frame = 0;
+                    self.down = true;
+                } else {
+                    self.frame += 1;
+                }
             }
         }
     }
@@ -102,7 +118,7 @@ impl QwertyBinding {
 struct SerializableQwertyBinding {
     keys: Vec<String>,
     mods: Vec<String>,
-    sensitivity: u64
+    sensitivity: u64,
 }
 
 fn keycode_from_str(s: &str) -> Option<KeyCode> {

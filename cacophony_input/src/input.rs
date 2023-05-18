@@ -1,4 +1,4 @@
-use crate::{InputEvent, MidiConn, MidiBinding, NoteOn, QwertyBinding, KEYS};
+use crate::{InputEvent, MidiBinding, MidiConn, NoteOn, QwertyBinding, KEYS};
 use cacophony_core::State;
 use hashbrown::HashMap;
 use ini::Ini;
@@ -71,16 +71,36 @@ impl Input {
             self.pressed_chars.push(c);
         }
         // Get all pressed keys.
-        let pressed: Vec<KeyCode> = KEYS.iter().filter(|&k| is_key_pressed(*k)).map(|k| *k).collect();
+        let pressed: Vec<KeyCode> = KEYS
+            .iter()
+            .filter(|&k| is_key_pressed(*k))
+            .map(|k| *k)
+            .collect();
         // Get all held keys.
-        let down: Vec<KeyCode> = KEYS.iter().filter(|&k| is_key_down(*k)).map(|k| *k).collect();
+        let down: Vec<KeyCode> = KEYS
+            .iter()
+            .filter(|&k| is_key_down(*k))
+            .map(|k| *k)
+            .collect();
 
         // Update the qwerty key bindings.
-        self.qwerty_events.iter_mut().for_each(|q| q.1.update(&pressed, &down, state.input.alphanumeric_input));
+        self.qwerty_events
+            .iter_mut()
+            .for_each(|q| q.1.update(&pressed, &down, state.input.alphanumeric_input));
         // Get the key presses.
-        self.event_starts = self.qwerty_events.iter().filter(|q| q.1.pressed).map(|q| *q.0).collect();
+        self.event_starts = self
+            .qwerty_events
+            .iter()
+            .filter(|q| q.1.pressed)
+            .map(|q| *q.0)
+            .collect();
         // Get the key downs.
-        self.event_continues = self.qwerty_events.iter().filter(|q| q.1.down).map(|q| *q.0).collect();
+        self.event_continues = self
+            .qwerty_events
+            .iter()
+            .filter(|q| q.1.down)
+            .map(|q| *q.0)
+            .collect();
 
         // MIDI INPUT.
         let mut midi = vec![];
@@ -128,15 +148,16 @@ impl Input {
 
     /// Reads the qwerty and MIDI bindings for an event.
     pub fn get_bindings(&self, event: &InputEvent) -> (Option<QwertyBinding>, Option<MidiBinding>) {
-        (self.qwerty_events.get(event).cloned(), self.midi_events.get(event).cloned())
+        (
+            self.qwerty_events.get(event).cloned(),
+            self.midi_events.get(event).cloned(),
+        )
     }
 
     // Parse a qwerty binding from a key-value pair of strings (i.e. from a config file).
     fn parse_qwerty_binding(key: &str, value: &str) -> (InputEvent, QwertyBinding) {
         match key.parse::<InputEvent>() {
-            Ok(input_key) => {
-                (input_key, QwertyBinding::deserialize(value))
-            }
+            Ok(input_key) => (input_key, QwertyBinding::deserialize(value)),
             Err(error) => panic!("Invalid input key {}: {}", key, error),
         }
     }
@@ -144,9 +165,7 @@ impl Input {
     // Parse a MIDI binding from a key-value pair of strings (i.e. from a config file).
     fn parse_midi_binding(key: &str, value: &str) -> (InputEvent, MidiBinding) {
         match key.parse::<InputEvent>() {
-            Ok(input_key) => {
-                (input_key, MidiBinding::deserialize(value))
-            }
+            Ok(input_key) => (input_key, MidiBinding::deserialize(value)),
             Err(error) => panic!("Invalid input key {}: {}", key, error),
         }
     }

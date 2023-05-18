@@ -1,16 +1,16 @@
 mod input;
 mod input_event;
 mod keys;
-mod midi_conn;
 mod midi_binding;
+mod midi_conn;
 mod mods;
 mod note_on;
 mod qwerty_binding;
 pub use input::Input;
 pub use input_event::InputEvent;
 pub(crate) use keys::KEYS;
-pub(crate) use midi_conn::MidiConn;
 pub(crate) use midi_binding::MidiBinding;
+pub(crate) use midi_conn::MidiConn;
 pub(crate) use mods::{ALPHANUMERIC_INPUT_MODS, MODS};
 pub(crate) use note_on::NoteOn;
 pub use qwerty_binding::QwertyBinding;

@@ -20,7 +20,10 @@ impl MidiBinding {
         let m: Result<Self, Error> = from_str(string);
         match m {
             Ok(m) => m,
-            Err(error) => panic!("Failed to deserialize {} into a MidiBinding: {}", string, error)
+            Err(error) => panic!(
+                "Failed to deserialize {} into a MidiBinding: {}",
+                string, error
+            ),
         }
     }
 
