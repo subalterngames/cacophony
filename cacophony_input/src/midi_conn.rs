@@ -93,9 +93,8 @@ impl MidiConn {
         // Clear the buffer of events.
         self.buffer.clear();
         for _ in 0..self.num_events {
-            match self.receiver.try_recv() {
-                Ok(resp) => self.buffer.push(resp),
-                Err(_) => (),
+            if let Ok(resp) = self.receiver.try_recv() {
+                self.buffer.push(resp);
             }
         }
         self.buffer.as_slice()

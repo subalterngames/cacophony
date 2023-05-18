@@ -33,21 +33,17 @@ impl QwertyBinding {
                     .iter()
                     .map(|s| keycode_from_str(s))
                     .filter(|s| s.is_some())
-                    .map(|s| s.unwrap())
+                    .flatten()
                     .collect();
                 let mods: Vec<KeyCode> = q
                     .mods
                     .iter()
                     .map(|s| keycode_from_str(s))
                     .filter(|s| s.is_some())
-                    .map(|s| s.unwrap())
+                    .flatten()
                     .collect();
                 let sensitivity = q.sensitivity;
-                let non_mods = MODS
-                    .iter()
-                    .filter(|m| !mods.contains(m))
-                    .map(|m| *m)
-                    .collect();
+                let non_mods = MODS.iter().filter(|m| !mods.contains(m)).copied().collect();
                 Self {
                     keys,
                     mods,
@@ -93,14 +89,14 @@ impl QwertyBinding {
         {
             // Pressed.
             if self.keys.iter().all(|k| {
-                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(&k)) && pressed.contains(k)
+                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(k)) && pressed.contains(k)
             }) {
                 self.pressed = true;
                 self.frame = 0;
             }
             // Down.
             if self.keys.iter().all(|k| {
-                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(&k)) && down.contains(k)
+                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(k)) && down.contains(k)
             }) {
                 if self.frame >= self.sensitivity {
                     self.frame = 0;

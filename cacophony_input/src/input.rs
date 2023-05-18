@@ -74,14 +74,10 @@ impl Input {
         let pressed: Vec<KeyCode> = KEYS
             .iter()
             .filter(|&k| is_key_pressed(*k))
-            .map(|k| *k)
+            .copied()
             .collect();
         // Get all held keys.
-        let down: Vec<KeyCode> = KEYS
-            .iter()
-            .filter(|&k| is_key_down(*k))
-            .map(|k| *k)
-            .collect();
+        let down: Vec<KeyCode> = KEYS.iter().filter(|&k| is_key_down(*k)).copied().collect();
 
         // Update the qwerty key bindings.
         self.qwerty_events
