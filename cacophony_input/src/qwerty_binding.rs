@@ -2,6 +2,7 @@ use crate::{ALPHANUMERIC_INPUT_MODS, MODS};
 use macroquad::input::KeyCode;
 
 /// A list of qwerty keys plus mods that define a qwerty key binding.
+#[derive(Clone)]
 pub struct QwertyBinding {
     /// The keys that were pressed on this frame.
     pub keys: Vec<KeyCode>,
