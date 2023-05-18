@@ -13,6 +13,8 @@ const WRITE_ERROR: &str = "Error writing file: ";
 pub struct State {
     /// If true, we will accept musical input.
     pub armed: bool,
+    /// If true, we're inputting an alphanumeric string and we should ignore certain key bindings.
+    pub alphanumeric_input: bool,
     /// The music.
     pub music: Music,
     /// The viewport.
@@ -64,6 +66,7 @@ impl State {
         let viewport = self.viewport.serialize();
         let s = SerializableState {
             armed: self.armed,
+            alphanumeric_input: self.alphanumeric_input,
             music,
             viewport,
         };
@@ -78,10 +81,13 @@ impl State {
 struct SerializableState {
     /// If true, we will accept musical input.
     armed: bool,
+    /// If true, we're inputting an alphanumeric string and we should ignore certain key bindings.
+    alphanumeric_input: bool,
     /// The serializable music.
     music: SerializableMusic,
     /// The serializable viewport.
     viewport: SerializableViewport,
+
 }
 
 impl SerializableState {
@@ -90,6 +96,7 @@ impl SerializableState {
         let viewport = self.viewport.deserialize();
         State {
             armed: self.armed,
+            alphanumeric_input: self.alphanumeric_input,
             music,
             viewport,
         }
