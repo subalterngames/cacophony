@@ -35,9 +35,37 @@ impl Text {
 
     /// Returns the text.
     pub fn get(&self, key: &str) -> String {
-        match self.text.get(&String::from(key)) {
+        match self.text.get(&key.to_string()) {
             Some(t) => t.clone(),
             None => panic!("Invalid text key {}", key),
+        }
+    }
+
+    /// Returns the text. Fills in the values.
+    pub fn get_with_values(&self, key: &str, values: &[&str]) -> String {
+        match self.text.get(&String::from(key)) {
+            Some(t) => {
+                let mut text = t.clone();
+                for (i, v) in values.iter().enumerate() {
+                    let mut k = String::from("\\");
+                    k.push_str(i.to_string().as_str());
+                    let vv = v.to_string();
+                    text = text.replace(&k, vv.as_str());
+                }
+                if text.contains('\\') {
+                    println!("WARNING! Bad TTS text. {} {} {:?}", text, key, values);
+                }
+                text.replace("  ", " ")
+            }
+            None => panic!("Invalid text key {}", key),
+        }
+    }
+
+    /// Get the string version of a key code.
+    pub fn get_keycode(&self, key: &KeyCode) -> String {
+        match self.keycodes.get(key) {
+            Some(t) => t.clone(),
+            None => panic!("Invalid text key {:?}", key),
         }
     }
 
