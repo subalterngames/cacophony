@@ -1,5 +1,5 @@
 use crate::{MidiBinding, MidiConn, NoteOn, QwertyBinding, KEYS};
-use cacophony_core::{State, InputEvent};
+use cacophony_core::{InputEvent, State};
 use hashbrown::HashMap;
 use ini::Ini;
 use macroquad::input::*;

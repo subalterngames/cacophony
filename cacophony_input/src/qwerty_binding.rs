@@ -99,9 +99,11 @@ impl QwertyBinding {
                 self.frame = 0;
             }
             // Down.
-            if self.repeatable && self.keys.iter().all(|k| {
-                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(k)) && down.contains(k)
-            }) {
+            if self.repeatable
+                && self.keys.iter().all(|k| {
+                    (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(k)) && down.contains(k)
+                })
+            {
                 if self.frame >= self.sensitivity {
                     self.frame = 0;
                     self.down = true;
