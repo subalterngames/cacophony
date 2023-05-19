@@ -8,7 +8,7 @@ use serde_json::{from_str, Error};
 pub struct QwertyBinding {
     /// The keys that were pressed on this frame.
     pub keys: Vec<KeyCode>,
-    /// The modifiers that are being held down, e.g. LCtrl.
+    /// The modifiers that are being held down.
     pub mods: Vec<KeyCode>,
     /// All mods that are *not* part of this qwerty binding.
     non_mods: Vec<KeyCode>,
@@ -20,8 +20,6 @@ pub struct QwertyBinding {
     repeatable: bool,
     /// If true, this event is pressed.
     pub pressed: bool,
-    /// If true, this event is down.
-    pub down: bool,
 }
 
 impl QwertyBinding {
@@ -44,7 +42,7 @@ impl QwertyBinding {
                     .filter(|s| s.is_some())
                     .flatten()
                     .collect();
-                let sensitivity = q.sensitivity;
+                let sensitivity = q.dt;
                 let non_mods = MODS.iter().filter(|m| !mods.contains(m)).copied().collect();
                 let repeatable = sensitivity > 0;
                 Self {
@@ -55,7 +53,6 @@ impl QwertyBinding {
                     sensitivity,
                     frame: 0,
                     pressed: false,
-                    down: false,
                 }
             }
             Err(error) => panic!(
@@ -86,7 +83,6 @@ impl QwertyBinding {
     /// - `alphanumeric` If true, we're in alphanumeric input mode, which can affect whether we can listen for certain qwerty bindings.
     pub(crate) fn update(&mut self, pressed: &[KeyCode], down: &[KeyCode], alphanumeric: bool) {
         self.pressed = false;
-        self.down = false;
         // Mods.
         if self.mods.iter().all(|m| down.contains(m))
             && !self.non_mods.iter().any(|m| down.contains(m))
@@ -106,7 +102,7 @@ impl QwertyBinding {
             {
                 if self.frame >= self.sensitivity {
                     self.frame = 0;
-                    self.down = true;
+                    self.pressed = true;
                 } else {
                     self.frame += 1;
                 }
@@ -118,10 +114,13 @@ impl QwertyBinding {
 /// A serializable version of a qwerty binding.
 #[derive(Deserialize)]
 struct SerializableQwertyBinding {
+    /// The keys that were pressed on this frame.
     keys: Vec<String>,
+    /// The modifiers that are being held down as strings.
     mods: Vec<String>,
+    /// Wait this many frame for a repeat event.
     #[serde(default)]
-    sensitivity: u64,
+    dt: u64,
 }
 
 fn keycode_from_str(s: &str) -> Option<KeyCode> {

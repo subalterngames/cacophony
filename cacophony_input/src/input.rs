@@ -8,9 +8,7 @@ use macroquad::input::*;
 #[derive(Default)]
 pub struct Input {
     /// Events that began on this frame (usually due to a key press or MIDI controller message).
-    pub event_starts: Vec<InputEvent>,
-    /// Events that began on a previous frame and have continued on this frame. See: `[TIME]` -> `held_time_frames` in config.ini.
-    pub event_continues: Vec<InputEvent>,
+    pub events: Vec<InputEvent>,
     /// The MIDI connection.
     midi_conn: Option<MidiConn>,
     // Note-on MIDI messages. These will be sent immediately to the synthesizer to be played.
@@ -84,17 +82,10 @@ impl Input {
             .iter_mut()
             .for_each(|q| q.1.update(&pressed, &down, state.input.alphanumeric_input));
         // Get the key presses.
-        self.event_starts = self
+        self.events = self
             .qwerty_events
             .iter()
             .filter(|q| q.1.pressed)
-            .map(|q| *q.0)
-            .collect();
-        // Get the key downs.
-        self.event_continues = self
-            .qwerty_events
-            .iter()
-            .filter(|q| q.1.down)
             .map(|q| *q.0)
             .collect();
 
@@ -106,7 +97,7 @@ impl Input {
             // Append MIDI events.
             for mde in self.midi_events.iter_mut() {
                 if mde.1.update(&midi) {
-                    self.event_starts.push(*mde.0);
+                    self.events.push(*mde.0);
                 }
             }
 
