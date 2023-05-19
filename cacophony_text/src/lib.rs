@@ -11,7 +11,7 @@ pub fn fraction(fraction: &Fraction) -> String {
     match fraction.denom().unwrap() {
         // If the denominator is 1, return a whole number.
         1 => numer.to_string(),
-        // Format the
+        // Format as a fraction.
         other => format!("{}/{}", numer, other),
     }
 }
