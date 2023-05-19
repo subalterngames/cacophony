@@ -15,3 +15,23 @@ pub fn fraction(fraction: &Fraction) -> String {
         other => format!("{}/{}", numer, other),
     }
 }
+
+/// Truncate a string to fit a specified length.
+///
+/// - `string` The string.
+/// - `length` The maximum length of the string.
+/// - `left` If true, remove characters from the left. Example: `"ABCDEFG" -> `"DEFG"`. If false, remove characters from the right. Example: `"ABCDEFG" -> `"ABCD"`.
+pub fn truncate(string: &str, length: usize, left: bool) -> String {
+    let len = string.chars().count();
+    if len <= length {
+        string.to_string()
+    }
+    // Remove characters on the left.
+    else if left {
+        string[len - length..len].to_string()
+    }
+    // Remove characters on the right.
+    else {
+        string[0..length].to_string()
+    }
+}
