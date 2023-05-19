@@ -6,6 +6,8 @@ edition = "2021"
 [dependencies]
 rust-ini = "0.18"
 tts = "0.25.1"
+hashbrown = "0.13.2"
+csv = "1.2.1"
 
 [dependencies.cacophony_core]
 version = "0.1.0"

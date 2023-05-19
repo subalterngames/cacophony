@@ -1,6 +1,8 @@
+mod text;
 mod tts;
 pub use self::tts::TTS;
 use cacophony_core::Fraction;
+pub use text::Text;
 
 /// Converts a fraction to a string.
 pub fn fraction(fraction: &Fraction) -> String {
