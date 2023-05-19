@@ -117,6 +117,7 @@ struct SerializableQwertyBinding {
     /// The keys that were pressed on this frame.
     keys: Vec<String>,
     /// The modifiers that are being held down as strings.
+    #[serde(default)]
     mods: Vec<String>,
     /// Wait this many frame for a repeat event.
     #[serde(default)]
