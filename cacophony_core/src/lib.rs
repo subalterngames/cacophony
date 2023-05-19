@@ -9,8 +9,9 @@ mod paths;
 mod state;
 mod viewport;
 pub(crate) use fraction_utils::{
-    deserialize_fraction, serialize_fraction, Fraction, SerializableFraction,
+    deserialize_fraction, serialize_fraction, SerializableFraction,
 };
+pub use fraction_utils::Fraction;
 pub use input_event::InputEvent;
 pub(crate) use input_state::InputState;
 pub use midi_track::MidiTrack;
