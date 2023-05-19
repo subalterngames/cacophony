@@ -1,5 +1,6 @@
 use cacophony_core::config::parse;
-use cacophony_core::Paths;
+use cacophony_core::time::bar_to_duration;
+use cacophony_core::{Fraction, Paths};
 use csv::Reader;
 use hashbrown::HashMap;
 use ini::Ini;
@@ -66,6 +67,29 @@ impl Text {
         match self.keycodes.get(key) {
             Some(t) => t.clone(),
             None => panic!("Invalid text key {:?}", key),
+        }
+    }
+
+    /// Converts a beat fraction into a time string.
+    pub fn get_time(&self, beat: &Fraction, bpm: u32) -> String {
+        let duration = bar_to_duration(beat, bpm);
+        let hours = duration.whole_hours();
+        let minutes = duration.whole_minutes() - (hours * 60);
+        let seconds = duration.whole_seconds() - (minutes * 60);
+        // Include hours?
+        match duration.whole_hours() > 0 {
+            true => self.get_with_values(
+                "TIME_TTS_HOURS",
+                &[
+                    hours.to_string().as_str(),
+                    minutes.to_string().as_str(),
+                    seconds.to_string().as_str(),
+                ],
+            ),
+            false => self.get_with_values(
+                "TIME_TTS",
+                &[minutes.to_string().as_str(), seconds.to_string().as_str()],
+            ),
         }
     }
 

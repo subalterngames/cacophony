@@ -39,7 +39,7 @@ impl Paths {
             default_ini_path,
             user_directory,
             user_ini_path,
-            text_path
+            text_path,
         }
     }
 }
