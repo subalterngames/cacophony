@@ -8,6 +8,7 @@ mod note;
 mod paths;
 mod state;
 mod viewport;
+mod time;
 pub(crate) use fraction_utils::{
     deserialize_fraction, serialize_fraction, SerializableFraction,
 };

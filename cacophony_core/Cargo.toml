@@ -10,6 +10,7 @@ rust-ini = "0.18"
 directories = "5.0.0"
 strum = "0.24"
 strum_macros = "0.24"
+time = "0.3.21"
 
 [dependencies.serde]
 version = "1.0.153"
