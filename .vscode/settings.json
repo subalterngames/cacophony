@@ -4,6 +4,5 @@
         ".\\cacophony_core\\Cargo.toml",
         ".\\cacophony_input\\Cargo.toml",
         ".\\cacophony_text\\Cargo.toml",
-        ".\\cacophony_time\\Cargo.toml",
     ]
 }
