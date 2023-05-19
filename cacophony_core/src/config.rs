@@ -1,20 +1,19 @@
+use crate::Paths;
 use ini::{Ini, Properties};
 use std::fmt::Display;
 use std::str::FromStr;
-use crate::Paths;
 
 /// Load the config file.
 pub fn load() -> Ini {
     let paths = Paths::new();
     let path = if paths.user_ini_path.exists() {
         paths.user_ini_path
-    }
-    else {
+    } else {
         paths.default_ini_path
     };
     match Ini::load_from_file(&path) {
         Ok(ini) => ini,
-        Err(error) => panic!("Error loading confi.ini from {:?}: {}", path, error)
+        Err(error) => panic!("Error loading confi.ini from {:?}: {}", path, error),
     }
 }
 

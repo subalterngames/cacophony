@@ -1,6 +1,6 @@
-use std::path::PathBuf;
-use std::env::current_dir;
 use directories::UserDirs;
+use std::env::current_dir;
+use std::path::PathBuf;
 
 const CONFIG_FILENAME: &str = "config.ini";
 
@@ -38,7 +38,13 @@ impl Paths {
             default_ini_path,
             data_directory,
             user_directory,
-            user_ini_path
+            user_ini_path,
         }
+    }
+}
+
+impl Default for Paths {
+    fn default() -> Self {
+        Self::new()
     }
 }
