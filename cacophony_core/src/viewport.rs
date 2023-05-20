@@ -2,6 +2,7 @@ use crate::{deserialize_fraction, serialize_fraction, Fraction, SerializableFrac
 use serde::{Deserialize, Serialize};
 
 /// The dimensions of the piano roll viewport.
+#[derive(Clone)]
 pub struct Viewport {
     /// The start and end time of the viewport.
     pub dt: [Fraction; 2],

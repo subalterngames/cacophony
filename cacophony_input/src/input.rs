@@ -8,7 +8,7 @@ use macroquad::input::*;
 #[derive(Default)]
 pub struct Input {
     /// Events that began on this frame (usually due to a key press or MIDI controller message).
-    pub events: Vec<InputEvent>,
+    events: Vec<InputEvent>,
     /// The MIDI connection.
     midi_conn: Option<MidiConn>,
     // Note-on MIDI messages. These will be sent immediately to the synthesizer to be played.
@@ -133,6 +133,11 @@ impl Input {
         }
     }
 
+    /// Returns true if the event happened.
+    pub fn happened(&self, event: &InputEvent) -> bool {
+        self.events.contains(event)
+    }
+    
     /// Reads the qwerty and MIDI bindings for an event.
     pub fn get_bindings(&self, event: &InputEvent) -> (Option<&QwertyBinding>, Option<&MidiBinding>) {
         (

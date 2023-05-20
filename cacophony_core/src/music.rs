@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 /// Tracks, notes, and metadata.
+#[derive(Clone)]
 pub struct Music {
     /// The name of the music.
     pub name: String,
