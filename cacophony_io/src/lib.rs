@@ -1,1 +1,1 @@
-mod tooltip;
+pub mod tooltip;
