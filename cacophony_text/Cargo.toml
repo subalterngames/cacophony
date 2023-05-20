@@ -11,5 +11,4 @@ csv = "1.2.1"
 miniquad = "0.3"
 
 [dependencies.cacophony_core]
-version = "0.1.0"
 path = "../cacophony_core"
