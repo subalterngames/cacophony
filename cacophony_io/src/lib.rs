@@ -24,6 +24,7 @@ impl IO {
             self.redo.push(s1.clone());
             // Assign s1 to state.
             *state = s1;
+        // Redo.
         } else if input.happened(&InputEvent::Redo) && !self.redo.is_empty() {
             // Pop s1.
             let s1 = self.redo.remove(0);
