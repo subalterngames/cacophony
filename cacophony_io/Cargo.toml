@@ -1,0 +1,25 @@
+[package]
+name = "cacophony_io"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.cacophony_core]
+version = "0.1.0"
+path = "../cacophony_core"
+
+[dependencies.cacophony_input]
+version = "0.1.0"
+path = "../cacophony_input"
+
+[dependencies.cacophony_text]
+version = "0.1.0"
+path = "../cacophony_text"
+
+[dependencies.macroquad]
+version = "0.3"
+default-features = false
+features = []
+git = "https://github.com/not-fl3/macroquad.git"
+rev = "5b5bb10"

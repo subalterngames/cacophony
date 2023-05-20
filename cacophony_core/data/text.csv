@@ -122,3 +122,5 @@ Menu,menu
 Unknown,unknown
 TIME_TTS,\0 minutes and \1 seconds
 TIME_TTS_HOURS,"\0 hours, \1 minutes, and \2 seconds"
+OR, or 
+MIDI_CONTROL,MIDI control \0 channel \1

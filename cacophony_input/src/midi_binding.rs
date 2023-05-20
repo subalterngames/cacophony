@@ -6,6 +6,9 @@ use serde_json::{from_str, Error};
 pub struct MidiBinding {
     /// The two bytes defining the MIDI input device.
     pub bytes: [u8; 2],
+    /// An alias name for the MIDI binding.
+    #[serde(default)]
+    pub alias: Option<String>,
     /// If true, this is a positive delta. If false, this is a negative delta.
     positive: bool,
     /// A value that controls the sensitivity of the events. Check for events every `nth` consecutive inputs.

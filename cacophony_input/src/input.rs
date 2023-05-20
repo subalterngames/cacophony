@@ -134,10 +134,10 @@ impl Input {
     }
 
     /// Reads the qwerty and MIDI bindings for an event.
-    pub fn get_bindings(&self, event: &InputEvent) -> (Option<QwertyBinding>, Option<MidiBinding>) {
+    pub fn get_bindings(&self, event: &InputEvent) -> (Option<&QwertyBinding>, Option<&MidiBinding>) {
         (
-            self.qwerty_events.get(event).cloned(),
-            self.midi_events.get(event).cloned(),
+            self.qwerty_events.get(event),
+            self.midi_events.get(event),
         )
     }
 
