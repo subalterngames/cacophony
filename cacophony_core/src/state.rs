@@ -1,7 +1,7 @@
 use crate::input_state::SerializableInputState;
 use crate::music::SerializableMusic;
 use crate::viewport::SerializableViewport;
-use crate::{InputState, Music, Viewport};
+use crate::{Index, InputState, Music, PanelType, Viewport};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
@@ -18,6 +18,10 @@ pub struct State {
     pub viewport: Viewport,
     /// The input state.
     pub input: InputState,
+    /// A list of all panels that need to be drawn.
+    pub panels: Vec<PanelType>,
+    /// The index of the focused panel.
+    pub focus: Index,
 }
 
 impl State {
@@ -68,6 +72,8 @@ impl State {
             input,
             music,
             viewport,
+            panels: self.panels.clone(),
+            focus: self.focus
         };
         match to_string(&s) {
             Ok(s) => s,
@@ -84,6 +90,10 @@ struct SerializableState {
     music: SerializableMusic,
     /// The serializable viewport.
     viewport: SerializableViewport,
+    /// A list of all panels that need to be drawn.
+    panels: Vec<PanelType>,
+    /// The index of the focused panel.
+    focus: Index,
 }
 
 impl SerializableState {
@@ -95,6 +105,8 @@ impl SerializableState {
             input,
             music,
             viewport,
+            panels: self.panels.clone(),
+            focus: self.focus
         }
     }
 }

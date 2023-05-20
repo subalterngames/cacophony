@@ -1,5 +1,6 @@
 pub mod config;
 mod fraction_utils;
+mod index;
 mod input_state;
 mod midi_track;
 mod music;
@@ -11,6 +12,7 @@ pub mod time;
 mod viewport;
 pub use fraction_utils::Fraction;
 pub(crate) use fraction_utils::{deserialize_fraction, serialize_fraction, SerializableFraction};
+pub use index::Index;
 pub(crate) use input_state::InputState;
 pub use midi_track::MidiTrack;
 pub use music::Music;
