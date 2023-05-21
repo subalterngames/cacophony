@@ -2,7 +2,6 @@ mod text;
 mod tts;
 pub use self::tts::TTS;
 use common::Fraction;
-use common::hashbrown::HashMap;
 pub use text::Text;
 
 /// Converts a fraction to a string.
