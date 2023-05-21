@@ -1,9 +1,4 @@
-use crate::{get_tooltip_with_values, Panel, UndoState};
-use audio::{Command, Conn};
-use common::music_panel_field::MusicPanelField;
-use common::{Index, State};
-use input::{Input, InputEvent};
-use text::{Text, TTS};
+use crate::panel::*;
 
 const MAX_GAIN: usize = 127;
 

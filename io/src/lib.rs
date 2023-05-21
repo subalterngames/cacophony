@@ -6,6 +6,7 @@ use text::{Text, TTS};
 mod music_panel;
 mod panel;
 mod tooltip;
+mod tracks_panel;
 mod undo_state;
 pub(crate) use panel::Panel;
 pub(crate) use tooltip::{get_tooltip, get_tooltip_with_values};

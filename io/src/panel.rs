@@ -1,8 +1,9 @@
-use crate::UndoState;
-use audio::Conn;
-use common::State;
-use input::Input;
-use text::{Text, TTS};
+pub(crate) use crate::{get_tooltip_with_values, UndoState};
+pub(crate) use audio::{Command, Conn};
+pub(crate) use common::music_panel_field::MusicPanelField;
+pub(crate) use common::{Index, State};
+pub(crate) use input::{Input, InputEvent};
+pub(crate) use text::{Text, TTS};
 
 /// I guess this is how we do function aliases in Rust.
 pub(crate) trait Panel {
