@@ -74,7 +74,7 @@ impl State {
             music,
             viewport,
             panels: self.panels.clone(),
-            focus: self.focus
+            focus: self.focus,
         };
         match to_string(&s) {
             Ok(s) => s,
@@ -107,7 +107,7 @@ impl SerializableState {
             music,
             viewport,
             panels: self.panels.clone(),
-            focus: self.focus
+            focus: self.focus,
         }
     }
 }

@@ -1,10 +1,10 @@
 use common::config::parse;
-use common::time::bar_to_duration;
-use common::{Fraction, Paths};
 use common::csv::Reader;
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::input::KeyCode;
+use common::time::bar_to_duration;
+use common::{Fraction, Paths};
 
 const LANGUAGES: [&str; 1] = ["en"];
 

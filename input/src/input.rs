@@ -1,8 +1,8 @@
-use crate::{MidiBinding, MidiConn, NoteOn, QwertyBinding, KEYS, InputEvent};
-use common::State;
+use crate::{InputEvent, MidiBinding, MidiConn, NoteOn, QwertyBinding, KEYS};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::input::*;
+use common::State;
 
 /// Listens for user input from qwerty and MIDI devices and records the current input state.
 #[derive(Default)]
@@ -137,13 +137,13 @@ impl Input {
     pub fn happened(&self, event: &InputEvent) -> bool {
         self.events.contains(event)
     }
-    
+
     /// Reads the qwerty and MIDI bindings for an event.
-    pub fn get_bindings(&self, event: &InputEvent) -> (Option<&QwertyBinding>, Option<&MidiBinding>) {
-        (
-            self.qwerty_events.get(event),
-            self.midi_events.get(event),
-        )
+    pub fn get_bindings(
+        &self,
+        event: &InputEvent,
+    ) -> (Option<&QwertyBinding>, Option<&MidiBinding>) {
+        (self.qwerty_events.get(event), self.midi_events.get(event))
     }
 
     // Parse a qwerty binding from a key-value pair of strings (i.e. from a config file).
