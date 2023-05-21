@@ -1,7 +1,7 @@
 use common::hashbrown::HashMap;
 use common::{PanelType, State};
 use input::{Input, InputEvent};
-use text::Text;
+use text::{Text, TTS};
 mod tooltip;
 pub(crate) use tooltip::get_tooltip;
 
@@ -69,9 +69,14 @@ impl IO {
         }
     }
 
-    pub fn update(&mut self, state: &mut State, input: &mut Input, text: &Text) {
+    pub fn update(&mut self, state: &mut State, input: &mut Input, tts: &mut TTS, text: &Text) -> bool {
         // Update the input state.
         input.update(state);
+
+        // Quit.
+        if input.happened(&InputEvent::Quit) {
+            return true
+        }
 
         // Undo.
         if input.happened(&InputEvent::Undo) && !self.undo.is_empty() {
@@ -99,6 +104,20 @@ impl IO {
             state.focus.increment(false);
             self.push_undo(state);
         }
+
+        // App-level TTS.
+        for tts_e in self.tts.iter() {
+            if input.happened(tts_e.0) {
+                tts.say(&tts_e.1)
+            }
+        }
+        // Stop talking.
+        if input.happened(&InputEvent::StopTTS) {
+            tts.stop();
+        }
+
+        // We're not done yet.
+        false
     }
 
     /// Push this state to the undo stack and clear the redo stack.

@@ -46,11 +46,6 @@ impl TTS {
         }
     }
 
-    /// Returns true if Casey can speak.
-    pub fn can_speak(&self) -> bool {
-        self.tts.is_some()
-    }
-
     /// Say something. Optionally sets subtitles.
     pub fn say(&mut self, text: &str) {
         self.speech = None;
@@ -66,7 +61,7 @@ impl TTS {
     }
 
     /// Stop speaking.
-    pub fn stop_speaking(&mut self) {
+    pub fn stop(&mut self) {
         if let Some(tts) = &mut self.tts {
             if let Ok(speaking) = tts.is_speaking() {
                 if speaking {
