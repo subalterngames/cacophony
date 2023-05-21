@@ -60,10 +60,7 @@ impl Panel for MusicPanel {
                 }
                 MusicPanelField::Gain => get_tooltip_with_values(
                     "MUSIC_PANEL_TTS_GAIN",
-                    &[
-                        InputEvent::DecreaseMusicPanelGain,
-                        InputEvent::IncreaseMusicPanelGain,
-                    ],
+                    &[InputEvent::DecreaseMusicGain, InputEvent::IncreaseMusicGain],
                     &[&conn.state.gain.to_string()],
                     input,
                     text,
@@ -87,9 +84,9 @@ impl Panel for MusicPanel {
             }
             // Set the gain.
             MusicPanelField::Gain => {
-                if input.happened(&InputEvent::DecreaseMusicPanelGain) {
+                if input.happened(&InputEvent::DecreaseMusicGain) {
                     return Some(MusicPanel::set_gain(state, conn, false));
-                } else if input.happened(&InputEvent::IncreaseMusicPanelGain) {
+                } else if input.happened(&InputEvent::IncreaseMusicGain) {
                     return Some(MusicPanel::set_gain(state, conn, true));
                 }
             }

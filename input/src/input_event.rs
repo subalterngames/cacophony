@@ -29,6 +29,20 @@ pub enum InputEvent {
     // Music panel.
     NextMusicPanelField,
     PreviousMusicPanelField,
-    IncreaseMusicPanelGain,
-    DecreaseMusicPanelGain,
+    IncreaseMusicGain,
+    DecreaseMusicGain,
+    // Tracks panel.
+    AddTrack,
+    RemoveTrack,
+    NextTrack,
+    PreviousTrack,
+    EnableSoundFontPanel,
+    PreviousPreset,
+    NextPreset,
+    PreviousBank,
+    NextBank,
+    IncreaseTrackGain,
+    DecreaseTrackGain,
+    Mute,
+    Solo,
 }

@@ -62,8 +62,8 @@ impl Conn {
         }
     }
 
-     /// Try to update the time.
-     pub fn update_time(&mut self) {
+    /// Try to update the time.
+    pub fn update_time(&mut self) {
         if let Ok(time) = self.recv_time.try_recv() {
             self.state.time = time;
         }

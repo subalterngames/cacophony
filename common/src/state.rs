@@ -1,7 +1,7 @@
 use crate::input_state::SerializableInputState;
 use crate::music::SerializableMusic;
-use crate::viewport::SerializableViewport;
 use crate::music_panel_field::{MusicPanelField, MUSIC_PANEL_FIELDS};
+use crate::viewport::SerializableViewport;
 use crate::{Index, InputState, Music, PanelType, Viewport};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
@@ -25,7 +25,7 @@ pub struct State {
     /// The index of the focused panel.
     pub focus: Index,
     /// The currently-selected music panel field.
-    pub music_panel_field: Index
+    pub music_panel_field: Index,
 }
 
 impl State {
@@ -82,7 +82,7 @@ impl State {
             viewport,
             panels: self.panels.clone(),
             focus: self.focus,
-            music_panel_field: self.music_panel_field
+            music_panel_field: self.music_panel_field,
         };
         match to_string(&s) {
             Ok(s) => s,
@@ -104,7 +104,7 @@ struct SerializableState {
     /// The index of the focused panel.
     focus: Index,
     /// The currently-selected music panel field.
-    music_panel_field: Index
+    music_panel_field: Index,
 }
 
 impl SerializableState {
@@ -118,7 +118,7 @@ impl SerializableState {
             viewport,
             panels: self.panels.clone(),
             focus: self.focus,
-            music_panel_field: self.music_panel_field
+            music_panel_field: self.music_panel_field,
         }
     }
 }

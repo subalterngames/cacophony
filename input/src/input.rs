@@ -1,9 +1,9 @@
-use std::str::FromStr;
 use crate::{InputEvent, MidiBinding, MidiConn, NoteOn, QwertyBinding, KEYS};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::input::*;
 use common::State;
+use std::str::FromStr;
 
 /// Listens for user input from qwerty and MIDI devices and records the current input state.
 #[derive(Default)]
@@ -149,14 +149,16 @@ impl Input {
 
     /// Modify a string with qwerty input from this frame. Allow alphanumeric input.
     pub fn modify_string_abc123(&self, string: &mut String) -> bool {
-        self.modify_string(string, &self
-            .pressed_chars
-            .iter()
-            .filter(|c| c.is_ascii_alphanumeric())
-            .copied()
-            .collect(),)
+        self.modify_string(
+            string,
+            &self
+                .pressed_chars
+                .iter()
+                .filter(|c| c.is_ascii_alphanumeric())
+                .copied()
+                .collect(),
+        )
     }
-    
 
     /// Modify a u32 value.
     pub fn modify_u32(&self, value: &mut u32) -> bool {

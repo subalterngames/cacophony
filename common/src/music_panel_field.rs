@@ -2,7 +2,11 @@
 pub enum MusicPanelField {
     Name,
     BPM,
-    Gain
+    Gain,
 }
 
-pub(crate) const MUSIC_PANEL_FIELDS: [MusicPanelField; 3] = [MusicPanelField::Name, MusicPanelField::BPM, MusicPanelField::Gain];
+pub(crate) const MUSIC_PANEL_FIELDS: [MusicPanelField; 3] = [
+    MusicPanelField::Name,
+    MusicPanelField::BPM,
+    MusicPanelField::Gain,
+];

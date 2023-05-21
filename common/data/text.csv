@@ -128,6 +128,15 @@ APP_TTS,"Hello world. I am Casey the Cacodemon. \0, \1, \2, \3, and \4 to ask fo
 FILE_TTS,\0 for new music. \1 to open a file. \2 to save. \3 to save as. \4 to export.
 CONFIG_TTS,\0 to edit the config file. \1 to overwrite the config file with default values. Restart Cacophony to apply your edits.
 MUSIC_PANEL_TTS,Set global values for the music.
-MUSIC_PANEL_TTS_BPM,Type to set the beats per minute. The current b p m is \0.
-MUSIC_PANEL_TTS_GAIN,\0 and \1 to set the gain. The current gain is \2.
-MUSIC_PANEL_TTS_NAME,Type to change the change of the music. The current name is \0.
+MUSIC_PANEL_TTS_BPM,The b p m is \0. Type to set the beats per minute.
+MUSIC_PANEL_TTS_GAIN,The gain is \2. \0 and \1 to set the gain.
+MUSIC_PANEL_TTS_NAME,The name is \0. Type to change the change of the music.
+TRACKS_LIST_PANEL_TTS_NO_SELECTION,\2 to add a track.
+TRACKS_LIST_PANEL_TTS_SELECTION,Track \4 is selected. \0 and \1 to scroll. \2 to add a track. \3 to remove track \4.
+TRACKS_LIST_SUB_PANEL_TTS_NO_SOUNDFONT,\0 to set the sound font for track \1.
+TRACKS_LIST_SUB_PANEL_TTS_SOUNDFONT_0,The preset is \6. \0 and \1 to set the preset. The bank is \7. \2 and \3 to set the bank. The gain is \8. \4 and \5 to set the gain.
+TRACKS_LIST_SUB_PANEL_TTS_MUTED,This track is muted. \0 to un mute.
+TRACKS_LIST_SUB_PANEL_TTS_UNMUTED,\0 to mute.
+TRACKS_LIST_SUB_PANEL_TTS_SOLOED,This track is solo. \0 to un solo.
+TRACKS_LIST_SUB_PANEL_TTS_NONSOLOED,\0 to solo.
+TRACKS_LIST_SUB_PANEL_TTS_SOUNDFONT_1,The sound font is \1. \0 to set the sound font.
