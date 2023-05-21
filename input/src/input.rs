@@ -1,8 +1,8 @@
 use crate::{MidiBinding, MidiConn, NoteOn, QwertyBinding, KEYS, InputEvent};
-use cacophony_core::State;
-use hashbrown::HashMap;
-use ini::Ini;
-use macroquad::input::*;
+use common::State;
+use common::hashbrown::HashMap;
+use common::ini::Ini;
+use common::macroquad::input::*;
 
 /// Listens for user input from qwerty and MIDI devices and records the current input state.
 #[derive(Default)]

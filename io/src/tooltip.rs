@@ -1,5 +1,5 @@
-use cacophony_input::{Input, InputEvent};
-use cacophony_text::Text;
+use input::{Input, InputEvent};
+use text::Text;
 
 /// Replace numbered args with the qwerty/MIDI bindings.
 ///

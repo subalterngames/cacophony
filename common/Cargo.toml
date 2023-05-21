@@ -1,20 +1,24 @@
 [package]
-name = "cacophony_input"
+name = "common"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+fraction = "0.13.1"
+serde_json = "1.0"
+rust-ini = "0.18"
+directories = "5.0.0"
+time = "0.3.21"
 midir = "0.9.1"
 crossbeam-channel = "0.5.8"
-rust-ini = "0.18"
 hashbrown = "0.13.2"
-serde = "1.0.153"
-serde_json = "1.0"
-strum = "0.24"
-strum_macros = "0.24"
+tts = "0.25.1"
+csv = "1.2.1"
 
-[dependencies.cacophony_core]
-path = "../cacophony_core"
+[dependencies.serde]
+version = "1.0.153"
+default-features = false
+features = ["derive"]
 
 [dependencies.macroquad]
 version = "0.3"

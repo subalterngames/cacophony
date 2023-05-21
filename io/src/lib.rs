@@ -1,6 +1,6 @@
-use cacophony_core::{PanelType, State};
-use cacophony_input::{Input, InputEvent};
-use cacophony_text::Text;
+use common::{PanelType, State};
+use input::{Input, InputEvent};
+use text::Text;
 pub mod tooltip;
 
 /// The maximum size of the undo stack.

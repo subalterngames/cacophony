@@ -5,9 +5,9 @@ use cocoa_foundation::foundation::NSRunLoop;
 #[cfg(target_os = "macos")]
 use objc::{msg_send, sel, sel_impl};
 
-use cacophony_core::config::{parse, parse_bool};
-use ini::Ini;
-use tts::Tts;
+use common::config::{parse, parse_bool};
+use common::ini::Ini;
+use common::tts::Tts;
 
 /// Text-to-speech.
 pub struct TTS {

@@ -1,0 +1,2 @@
+[workspace]
+members = ["audio", "common", "input", "io", "text"]

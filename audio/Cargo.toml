@@ -1,5 +1,5 @@
 [package]
-name = "cacophony_audio"
+name = "audio"
 version = "0.1.0"
 edition = "2021"
 

@@ -1,7 +1,7 @@
 mod text;
 mod tts;
 pub use self::tts::TTS;
-use cacophony_core::Fraction;
+use common::Fraction;
 pub use text::Text;
 
 /// Converts a fraction to a string.

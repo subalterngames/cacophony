@@ -1,9 +1,9 @@
 {
     "rust-analyzer.linkedProjects": [
-        ".\\cacophony_audio\\Cargo.toml",
-        ".\\cacophony_core\\Cargo.toml",
-        ".\\cacophony_input\\Cargo.toml",
-        ".\\cacophony_io\\Cargo.toml",
-        ".\\cacophony_text\\Cargo.toml",
+        ".\\audio\\Cargo.toml",
+        ".\\common\\Cargo.toml",
+        ".\\input\\Cargo.toml",
+        ".\\io\\Cargo.toml",
+        ".\\text\\Cargo.toml",
     ]
 }

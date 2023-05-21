@@ -1,5 +1,5 @@
 use crate::{ALPHANUMERIC_INPUT_MODS, MODS};
-use macroquad::input::KeyCode;
+use common::macroquad::input::KeyCode;
 use serde::Deserialize;
 use serde_json::{from_str, Error};
 

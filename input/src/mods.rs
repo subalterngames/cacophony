@@ -1,4 +1,4 @@
-use macroquad::input::KeyCode;
+use common::macroquad::input::KeyCode;
 
 /// The keycodes for the mods.
 pub(crate) const MODS: [KeyCode; 7] = [

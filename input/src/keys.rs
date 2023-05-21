@@ -1,4 +1,4 @@
-use macroquad::input::KeyCode;
+use common::macroquad::input::KeyCode;
 
 pub(crate) const KEYS: [KeyCode; 121] = [
     KeyCode::Space,

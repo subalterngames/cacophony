@@ -1,0 +1,17 @@
+[package]
+name = "input"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde_json = "1.0"
+strum = "0.24"
+strum_macros = "0.24"
+
+[dependencies.common]
+path = "../common"
+
+[dependencies.serde]
+version = "1.0.153"
+default-features = false
+features = ["derive"]
