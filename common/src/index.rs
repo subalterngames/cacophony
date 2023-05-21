@@ -38,8 +38,8 @@ impl Index {
     }
 
     /// Returns the index.
-    pub fn get(&self) -> &usize {
-        &self.index
+    pub fn get(&self) -> usize {
+        self.index
     }
 
     /// Set `self.index` to `index`. Panics if `index` is greater than or equal to `self.length`.

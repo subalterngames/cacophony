@@ -26,4 +26,9 @@ pub enum InputEvent {
     OverwriteConfig,
     // Quit.
     Quit,
+    // Music panel.
+    NextMusicPanelField,
+    PreviousMusicPanelField,
+    IncreaseMusicPanelGain,
+    DecreaseMusicPanelGain,
 }

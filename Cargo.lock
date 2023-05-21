@@ -667,6 +667,7 @@ dependencies = [
 name = "io"
 version = "0.1.0"
 dependencies = [
+ "audio",
  "common",
  "input",
  "text",

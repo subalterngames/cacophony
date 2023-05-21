@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use crate::{InputEvent, MidiBinding, MidiConn, NoteOn, QwertyBinding, KEYS};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
@@ -144,6 +145,64 @@ impl Input {
         event: &InputEvent,
     ) -> (Option<&QwertyBinding>, Option<&MidiBinding>) {
         (self.qwerty_events.get(event), self.midi_events.get(event))
+    }
+
+    /// Modify a string with qwerty input from this frame. Allow alphanumeric input.
+    pub fn modify_string_abc123(&self, string: &mut String) -> bool {
+        self.modify_string(string, &self
+            .pressed_chars
+            .iter()
+            .filter(|c| c.is_ascii_alphanumeric())
+            .copied()
+            .collect(),)
+    }
+    
+
+    /// Modify a u32 value.
+    pub fn modify_u32(&self, value: &mut u32) -> bool {
+        self.modify_value(value, 0)
+    }
+
+    /// Modify a value with qwerty input from this frame. Allow numeric input.
+    fn modify_value<T>(&self, value: &mut T, default_value: T) -> bool
+    where
+        T: ToString + FromStr,
+    {
+        // Convert the value to a string.
+        let mut string = value.to_string();
+        // Modify the string.
+        let modified = self.modify_string(
+            &mut string,
+            &self
+                .pressed_chars
+                .iter()
+                .filter(|c| c.is_ascii_digit())
+                .copied()
+                .collect(),
+        );
+        // Try to get a value.
+        match T::from_str(string.as_str()) {
+            Ok(v) => *value = v,
+            Err(_) => *value = default_value,
+        }
+        modified
+    }
+
+    /// Modify a string with qwerty input from this frame.
+    fn modify_string(&self, string: &mut String, chars: &Vec<char>) -> bool {
+        // Delete the last character.
+        if self.backspace {
+            string.pop().unwrap();
+            true
+        // Add new characters.
+        } else if !chars.is_empty() {
+            for ch in chars.iter() {
+                string.push(*ch);
+            }
+            true
+        } else {
+            false
+        }
     }
 
     // Parse a qwerty binding from a key-value pair of strings (i.e. from a config file).
