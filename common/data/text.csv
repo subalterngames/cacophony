@@ -124,3 +124,6 @@ TIME_TTS,\0 minutes and \1 seconds
 TIME_TTS_HOURS,"\0 hours, \1 minutes, and \2 seconds"
 OR, or 
 MIDI_CONTROL,MIDI control \0 channel \1
+APP_TTS,"Hello world. I am Casey the Cacodemon. \0, \1, \2, \3, and \4 to ask for help. \5 to quit. \6 and \7 to cycle panels. \8 or \9 to undo or redo. \10 to ask me to stop talking."
+FILE_TTS,\0 for new music. \1 to open a file. \2 to save. \3 to save as. \4 to export.
+CONFIG_TTS,\0 to edit the config file. \1 to overwrite the config file with default values. Restart Cacophony to apply your edits.

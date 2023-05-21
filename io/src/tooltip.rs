@@ -12,7 +12,7 @@ use text::Text;
 /// - The MIDI alias of `[176, 16] up` is `"Knob 1"`.
 ///
 /// ...Then the returned string is: `"Page up or Knob 1 to cycle to the next panel."`
-pub fn get_tooltip(key: &str, events: &[InputEvent], input: &Input, text: &Text) -> String {
+pub(crate) fn get_tooltip(key: &str, events: &[InputEvent], input: &Input, text: &Text) -> String {
     let mut s = text.get(key);
     // Iterate through each event.
     for (i, event) in events.iter().enumerate() {
@@ -85,7 +85,7 @@ pub fn get_tooltip(key: &str, events: &[InputEvent], input: &Input, text: &Text)
 /// - The MIDI alias of `[176, 16] up` is `"Knob 1"`.
 ///
 /// ...Then the returned string is: `"Page up or Knob 1 to cycle to the next panel."`
-pub fn get_tooltip_with_values(
+pub(crate) fn get_tooltip_with_values(
     key: &str,
     events: &[InputEvent],
     values: &[&str],
