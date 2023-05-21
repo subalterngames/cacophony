@@ -26,7 +26,7 @@ impl IO {
             "APP_TTS",
             &[
                 InputEvent::PanelTTS,
-                InputEvent::WidgetTTS,
+                InputEvent::SubPanelTTS,
                 InputEvent::AppTTS,
                 InputEvent::FileTTS,
                 InputEvent::ConfigTTS,
