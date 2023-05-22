@@ -1,5 +1,5 @@
+use crate::State;
 use audio::CommandsMessage;
-use common::State;
 
 /// A state that can be undone. Includes the global state and audio commands.
 #[derive(Clone)]
