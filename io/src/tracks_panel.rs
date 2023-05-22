@@ -55,7 +55,7 @@ impl TracksPanel {
         conn.send(c1);
         undo
     }
-    
+
     /// Increment or decrement the bank index, setting the preset index to 0. Returns a new undo-redo state.
     fn set_bank(channel: u8, conn: &mut Conn, up: bool) -> UndoRedoState {
         let program = conn.state.programs.get(&channel).unwrap();

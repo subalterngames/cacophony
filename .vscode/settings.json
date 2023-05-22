@@ -5,5 +5,5 @@
         ".\\input\\Cargo.toml",
         ".\\io\\Cargo.toml",
         ".\\text\\Cargo.toml",
-    ]
+    ],
 }
