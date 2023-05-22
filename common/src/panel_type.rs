@@ -9,5 +9,3 @@ pub enum PanelType {
     OpenFile,
     WriteSave,
 }
-
-pub(crate) const DEFAULT_PANELS: [PanelType; 3] = [PanelType::Music, PanelType::Music, PanelType::PianoRoll];

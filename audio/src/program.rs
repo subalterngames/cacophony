@@ -1,7 +1,9 @@
+use std::path::PathBuf;
+
 /// A channel's program.
 pub struct Program {
     /// The path to the current track's SoundFont.
-    pub path: String,
+    pub path: PathBuf,
     /// The total number of banks.
     pub num_banks: usize,
     /// The index of the bank in `banks`.

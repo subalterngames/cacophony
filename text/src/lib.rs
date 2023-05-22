@@ -2,8 +2,8 @@ mod text;
 mod tts;
 pub use self::tts::TTS;
 use common::Fraction;
-pub use text::Text;
 use std::path::Path;
+pub use text::Text;
 
 /// Converts a fraction to a string.
 pub fn fraction(fraction: &Fraction) -> String {
@@ -44,9 +44,9 @@ pub fn get_file_name(path: &Path) -> String {
     match path.file_name() {
         Some(filename) => match filename.to_str() {
             Some(s) => s.to_string(),
-            None => panic!("Invalid filename: {:?}", filename)
-        }
-        None => panic!("Not a file: {:?}", path)
+            None => panic!("Invalid filename: {:?}", filename),
+        },
+        None => panic!("Not a file: {:?}", path),
     }
 }
 
@@ -55,9 +55,9 @@ pub fn get_file_name_no_ex(path: &Path) -> String {
     match path.file_stem() {
         Some(filename) => match path.to_str() {
             Some(s) => s.to_string(),
-            None => panic!("Invalid filename: {:?}", filename)
-        }
-        None => panic!("Not a file: {:?}", path)
+            None => panic!("Invalid filename: {:?}", filename),
+        },
+        None => panic!("Not a file: {:?}", path),
     }
 }
 
@@ -67,9 +67,9 @@ pub fn get_folder_name(path: &Path) -> String {
     match components.last() {
         Some(s) => match s.as_os_str().to_str() {
             Some(s) => s.to_string(),
-            None => panic!("Invalid folder name: {:?}", s)
-        }
-        None => panic!("No path components: {:?}", path)
+            None => panic!("Invalid folder name: {:?}", s),
+        },
+        None => panic!("No path components: {:?}", path),
     }
 }
 
@@ -79,8 +79,7 @@ pub fn push_space(s: &mut String) {
         if last != ' ' {
             s.push(' ')
         }
-    }
-    else {
+    } else {
         s.push(' ');
     }
 }

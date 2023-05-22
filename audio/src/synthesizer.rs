@@ -4,6 +4,7 @@ use hashbrown::HashMap;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use std::fs::{File, OpenOptions};
 use std::io::Write;
+use std::path::PathBuf;
 
 /// A convenient wrapper for a SoundFont.
 struct SoundFontBanks {
@@ -46,7 +47,7 @@ pub(crate) struct Synthesizer {
     /// The synthesizer.
     synth: Synth,
     /// A map of the SoundFonts and their banks. Key = Path.
-    soundfonts: HashMap<String, SoundFontBanks>,
+    soundfonts: HashMap<PathBuf, SoundFontBanks>,
     /// A list of queued MIDI events.
     events_queue: Vec<QueuedEvent>,
     /// If true, we're ready to receive more commands.
@@ -385,7 +386,7 @@ impl Synthesizer {
     }
 
     /// Set the synthesizer program to a program.
-    fn set_program(&mut self, channel: u8, path: &String, bank: u32, preset: u8) {
+    fn set_program(&mut self, channel: u8, path: &PathBuf, bank: u32, preset: u8) {
         let sf_banks = &self.soundfonts[path].banks;
         // Get the bank info.
         let mut banks: Vec<u32> = sf_banks.keys().copied().collect();
@@ -417,7 +418,7 @@ impl Synthesizer {
     }
 
     /// Set the synthesizer program to a default program.
-    fn set_program_default(&mut self, channel: u8, path: &String) {
+    fn set_program_default(&mut self, channel: u8, path: &PathBuf) {
         let sf_banks = &self.soundfonts[path].banks;
         // Get the bank info.
         let mut banks: Vec<u32> = sf_banks.keys().copied().collect();

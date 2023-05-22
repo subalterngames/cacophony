@@ -46,6 +46,7 @@ pub fn connect() -> Conn {
 #[cfg(test)]
 mod tests {
     use crate::{connect, Command, CommandsMessage};
+    use std::path::PathBuf;
     use std::thread::sleep;
     use std::time::Duration;
 
@@ -61,7 +62,7 @@ mod tests {
         assert!(std::fs::File::open(SF_PATH).is_ok());
         let mut conn = connect();
         let commands = vec![Command::LoadSoundFont {
-            path: SF_PATH.to_string(),
+            path: PathBuf::from(SF_PATH),
             channel: CHANNEL,
         }];
         // Make sure we can send commands.
@@ -79,7 +80,7 @@ mod tests {
     fn audio() {
         let mut conn = connect();
         // Load the soundfont. set the program, and do a note-on.
-        let path = SF_PATH.to_string();
+        let path = PathBuf::from(SF_PATH);
         conn.send(vec![
             Command::LoadSoundFont {
                 path: path.clone(),

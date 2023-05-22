@@ -3,7 +3,6 @@ use crate::music::SerializableMusic;
 use crate::music_panel_field::{MusicPanelField, MUSIC_PANEL_FIELDS};
 use crate::viewport::SerializableViewport;
 use crate::{Index, InputState, Music, PanelType, Viewport};
-use crate::open_file::OpenFile;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
@@ -25,12 +24,8 @@ pub struct State {
     pub panels: Vec<PanelType>,
     /// The index of the focused panel.
     pub focus: Index,
-    /// The index of the previously-focused panel.
-    pub previous_focus: Index,
     /// The currently-selected music panel field.
     pub music_panel_field: Index,
-    /// The state of the open-file panel.
-    pub open_file: Option<OpenFile>,
 }
 
 impl State {
@@ -122,10 +117,8 @@ impl SerializableState {
             music,
             viewport,
             panels: self.panels.clone(),
-            previous_focus: self.focus.clone(),
             focus: self.focus,
             music_panel_field: self.music_panel_field,
-            open_file: None,
         }
     }
 }

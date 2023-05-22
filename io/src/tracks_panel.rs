@@ -1,7 +1,5 @@
-use crate::{panel::*, tooltip::get_tooltip};
-use common::open_file::OpenFile;
+use crate::{panel::*, tooltip::get_tooltip, OpenFileType};
 use common::MidiTrack;
-use std::path::PathBuf;
 use text::get_file_name_no_ex;
 
 pub(crate) struct TracksPanel {
@@ -89,8 +87,7 @@ impl Panel for TracksPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-        paths: &Paths,
-    ) -> Option<UndoRedoState> {
+    ) -> (Option<UndoRedoState>, IOCommands) {
         // Panel TTS.
         if input.happened(&InputEvent::PanelTTS) {
             match state.music.get_selected_track() {
@@ -111,7 +108,7 @@ impl Panel for TracksPanel {
                 }
                 None => tts.say(&self.tts_no_selection),
             }
-            None
+            (None, None)
         }
         // Sub-panel TTS.
         else if input.happened(&InputEvent::SubPanelTTS) {
@@ -158,7 +155,7 @@ impl Panel for TracksPanel {
                         s.push_str(&get_tooltip(solo_key, &[InputEvent::Solo], input, text));
                         // SoundFont.
                         s.push(' ');
-                        let sf_name = get_file_name_no_ex(&PathBuf::from(program.path.clone()));
+                        let sf_name = get_file_name_no_ex(&program.path);
                         s.push_str(&get_tooltip_with_values(
                             "TRACKS_LIST_SUB_PANEL_TTS_SOUNDFONT_1",
                             &[InputEvent::EnableSoundFontPanel],
@@ -181,9 +178,9 @@ impl Panel for TracksPanel {
                         tts.say(&tts_text);
                     }
                 }
-                None
+                (None, None)
             } else {
-                None
+                (None, None)
             }
         }
         // Add a track.
@@ -198,7 +195,7 @@ impl Panel for TracksPanel {
             state.music.selected = Some(state.music.midi_tracks.len());
             // Add a track.
             state.music.midi_tracks.push(MidiTrack::new(channel));
-            Some(UndoRedoState::from((s0, state)))
+            (Some(UndoRedoState::from((s0, state))), None)
         }
         // There is a selected track.
         else if let Some(selected) = state.music.selected {
@@ -230,15 +227,15 @@ impl Panel for TracksPanel {
                         let undo_redo = UndoRedoState::from((s0, c0, state, &c1));
                         // Remove the program.
                         conn.send(c1);
-                        return Some(undo_redo);
+                        return (Some(undo_redo), None);
                     }
-                    None => return Some(UndoRedoState::from((s0, state))),
+                    None => return (Some(UndoRedoState::from((s0, state))), None),
                 }
             } else if input.happened(&InputEvent::EnableSoundFontPanel) {
-                panic!("CLEAR THE STACK! ENABLE");
-                state.input.can_undo = false;
-                OpenFile::soundfont(paths, state);
-                None
+                return (
+                    None,
+                    Some(vec![IOCommand::EnableOpenFile(OpenFileType::SoundFont)]),
+                );
             } else {
                 let track = state.music.get_selected_track().unwrap();
                 let channel = track.channel;
@@ -246,26 +243,32 @@ impl Panel for TracksPanel {
                 match conn.state.programs.get(&channel) {
                     Some(_) => {
                         if input.happened(&InputEvent::NextPreset) {
-                            Some(TracksPanel::set_preset(channel, conn, true))
+                            (Some(TracksPanel::set_preset(channel, conn, true)), None)
                         } else if input.happened(&InputEvent::PreviousPreset) {
-                            Some(TracksPanel::set_preset(track.channel, conn, false))
+                            (
+                                Some(TracksPanel::set_preset(track.channel, conn, false)),
+                                None,
+                            )
                         } else if input.happened(&InputEvent::NextBank) {
-                            Some(TracksPanel::set_bank(track.channel, conn, true))
+                            (Some(TracksPanel::set_bank(track.channel, conn, true)), None)
                         } else if input.happened(&InputEvent::PreviousBank) {
-                            Some(TracksPanel::set_bank(track.channel, conn, false))
+                            (
+                                Some(TracksPanel::set_bank(track.channel, conn, false)),
+                                None,
+                            )
                         } else if input.happened(&InputEvent::IncreaseTrackGain) {
-                            Some(TracksPanel::set_gain(state, true))
+                            (Some(TracksPanel::set_gain(state, true)), None)
                         } else if input.happened(&InputEvent::DecreaseTrackGain) {
-                            Some(TracksPanel::set_gain(state, false))
+                            (Some(TracksPanel::set_gain(state, false)), None)
                         } else {
-                            None
+                            (None, None)
                         }
                     }
-                    None => None,
+                    None => (None, None),
                 }
             }
         } else {
-            None
+            (None, None)
         }
     }
 }

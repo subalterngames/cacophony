@@ -32,11 +32,11 @@ pub enum Command {
     /// Schedule a note-off event. `time` is the sample count from 0.
     NoteOffAt { channel: u8, key: u8, time: u64 },
     /// Load a SoundFont file.
-    LoadSoundFont { channel: u8, path: String },
+    LoadSoundFont { channel: u8, path: PathBuf },
     /// Set a program.
     SetProgram {
         channel: u8,
-        path: String,
+        path: PathBuf,
         bank_index: usize,
         preset_index: usize,
     },

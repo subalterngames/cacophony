@@ -1,6 +1,8 @@
+use std::path::{Path, PathBuf};
+
 /// Cached data for a file or directory.
 #[derive(Clone)]
-pub(super) struct FileOrDirectory {
+pub struct FileOrDirectory {
     /// The file.
     pub path: PathBuf,
     /// If true, this is a file.

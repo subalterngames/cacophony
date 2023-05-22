@@ -1,7 +1,8 @@
+pub(crate) use crate::io_command::{IOCommand, IOCommands};
 pub(crate) use crate::{get_tooltip_with_values, UndoRedoState};
 pub(crate) use audio::{Command, Conn};
 pub(crate) use common::music_panel_field::MusicPanelField;
-pub(crate) use common::{Index, Paths, State};
+pub(crate) use common::{Index, State};
 pub(crate) use input::{Input, InputEvent};
 pub(crate) use text::{Text, TTS};
 
@@ -22,6 +23,5 @@ pub(crate) trait Panel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-        paths: &Paths,
-    ) -> Option<UndoRedoState>;
+    ) -> (Option<UndoRedoState>, IOCommands);
 }
