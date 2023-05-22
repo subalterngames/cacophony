@@ -1,8 +1,8 @@
 use crate::{panel::*, tooltip::get_tooltip};
-use common::MidiTrack;
 use common::open_file::OpenFile;
-use text::get_file_name_no_ex;
+use common::MidiTrack;
 use std::path::PathBuf;
+use text::get_file_name_no_ex;
 
 pub(crate) struct TracksPanel {
     /// The text-to-speech string for the panel if there is not a selected track.
@@ -18,9 +18,7 @@ impl TracksPanel {
             input,
             text,
         );
-        Self {
-            tts_no_selection,
-        }
+        Self { tts_no_selection }
     }
 
     /// Increment or decrement the preset index. Returns a new undo-redo state.

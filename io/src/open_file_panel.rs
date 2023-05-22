@@ -1,7 +1,7 @@
-use common::open_file::{OpenFileType, OpenFile};
 use crate::panel::*;
-use text::{get_folder_name, get_file_name_no_ex, push_space};
 use crate::{get_tooltip, get_tooltip_with_values};
+use common::open_file::{OpenFile, OpenFileType};
+use text::{get_file_name_no_ex, get_folder_name, push_space};
 
 const SOUNDFONT_EXTENSIONS: [&str; 2] = ["sf2", "sf3"];
 const SAVE_FILE_EXTENSIONS: [&str; 1] = ["cac"];
@@ -28,13 +28,47 @@ pub struct OpenFilePanel {
 
 impl OpenFilePanel {
     pub fn new(input: &Input, text: &Text) -> Self {
-        let tts_close = get_tooltip("OPEN_FILE_TTS_CLOSE", &[InputEvent::CloseOpenFile], input, text);
-        let tts_write_save = get_tooltip("OPEN_FILE_TTS_WRITE_SAVE", &[InputEvent::SelectFile], input, text);
+        let tts_close = get_tooltip(
+            "OPEN_FILE_TTS_CLOSE",
+            &[InputEvent::CloseOpenFile],
+            input,
+            text,
+        );
+        let tts_write_save = get_tooltip(
+            "OPEN_FILE_TTS_WRITE_SAVE",
+            &[InputEvent::SelectFile],
+            input,
+            text,
+        );
         let tts_no_selection = text.get("OPEN_FILE_TTS_NO_SELECTION");
-        let tts_down_directory = get_tooltip("OPEN_FILE_TTS_DOWN_DIRECTORY", &[InputEvent::DownDirectory], input, text);
-        let tts_read_save = get_tooltip("OPEN_FILE_TTS_READ_SAVE", &[InputEvent::SelectFile], input, text);
-        let tts_load_soundfont = get_tooltip("OPEN_FILE_TTS_LOAD_SOUNDFONT", &[InputEvent::SelectFile], input, text);
-        Self { enabled: false, selected: false, tts_close, tts_write_save, tts_no_selection, tts_down_directory, tts_read_save, tts_load_soundfont }
+        let tts_down_directory = get_tooltip(
+            "OPEN_FILE_TTS_DOWN_DIRECTORY",
+            &[InputEvent::DownDirectory],
+            input,
+            text,
+        );
+        let tts_read_save = get_tooltip(
+            "OPEN_FILE_TTS_READ_SAVE",
+            &[InputEvent::SelectFile],
+            input,
+            text,
+        );
+        let tts_load_soundfont = get_tooltip(
+            "OPEN_FILE_TTS_LOAD_SOUNDFONT",
+            &[InputEvent::SelectFile],
+            input,
+            text,
+        );
+        Self {
+            enabled: false,
+            selected: false,
+            tts_close,
+            tts_write_save,
+            tts_no_selection,
+            tts_down_directory,
+            tts_read_save,
+            tts_load_soundfont,
+        }
     }
 
     /// Enable the panel.
@@ -46,32 +80,45 @@ impl OpenFilePanel {
 
 impl Panel for OpenFilePanel {
     fn update(
-            &mut self,
-            state: &mut State,
-            _: &mut Conn,
-            input: &Input,
-            tts: &mut TTS,
-            text: &Text,
-            _: &Paths,
-        ) -> Option<UndoRedoState> {
+        &mut self,
+        state: &mut State,
+        _: &mut Conn,
+        input: &Input,
+        tts: &mut TTS,
+        text: &Text,
+        _: &Paths,
+    ) -> Option<UndoRedoState> {
         if let Some(open_file) = &mut state.open_file {
             // Text-to-speech.
             if input.happened(&InputEvent::PanelTTS) || input.happened(&InputEvent::SubPanelTTS) {
                 // The current directory.
-                let mut s = text.get_with_values("OPEN_FILE_TTS_DIRECTORY", &[&get_folder_name(&open_file.directory)]);
+                let mut s = text.get_with_values(
+                    "OPEN_FILE_TTS_DIRECTORY",
+                    &[&get_folder_name(&open_file.directory)],
+                );
                 s.push(' ');
                 // Go up a directory.
                 if let Some(parent) = open_file.directory.parent() {
                     // OPEN_FILE_TTS_UP_DIRECTORY,\0 to go up to folder \1.
                     let parent_name = get_folder_name(parent);
-                    s.push_str(&get_tooltip_with_values("OPEN_FILE_TTS_UP_DIRECTORY", &[InputEvent::UpDirectory], &[&parent_name], input, text));
+                    s.push_str(&get_tooltip_with_values(
+                        "OPEN_FILE_TTS_UP_DIRECTORY",
+                        &[InputEvent::UpDirectory],
+                        &[&parent_name],
+                        input,
+                        text,
+                    ));
                     s.push(' ');
                 }
                 // Describe the selection.
                 match open_file.selected {
                     Some(selected) => {
                         let path = &open_file.paths[selected];
-                        let stem = if path.is_file { get_file_name_no_ex(&path.path) } else { get_folder_name(&path.path) };
+                        let stem = if path.is_file {
+                            get_file_name_no_ex(&path.path)
+                        } else {
+                            get_folder_name(&path.path)
+                        };
                         s.push_str(&text.get_with_values("OPEN_FILE_TTS_SELECTION", &[&stem]));
                         // Do something with the file.
                         if path.is_file {
@@ -84,7 +131,7 @@ impl Panel for OpenFilePanel {
                                     s.push(' ');
                                     s.push_str(&self.tts_read_save);
                                 }
-                                _ => ()
+                                _ => (),
                             }
                         }
                         // Down a directory.
@@ -93,7 +140,7 @@ impl Panel for OpenFilePanel {
                             s.push_str(&self.tts_down_directory);
                         }
                     }
-                    None => s.push_str(&self.tts_no_selection)
+                    None => s.push_str(&self.tts_no_selection),
                 }
                 // Write a save.
                 if let OpenFileType::WriteSave = open_file.open_file_type {
@@ -133,8 +180,7 @@ impl Panel for OpenFilePanel {
                 self.enabled = false;
                 OpenFile::disable(state);
             }
-        }
-        else {
+        } else {
             panic!("This should never happen!")
         }
         None

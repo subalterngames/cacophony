@@ -1,7 +1,7 @@
 pub(crate) use crate::{get_tooltip_with_values, UndoRedoState};
 pub(crate) use audio::{Command, Conn};
 pub(crate) use common::music_panel_field::MusicPanelField;
-pub(crate) use common::{Index, State, Paths};
+pub(crate) use common::{Index, Paths, State};
 pub(crate) use input::{Input, InputEvent};
 pub(crate) use text::{Text, TTS};
 
