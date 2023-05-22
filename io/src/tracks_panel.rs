@@ -20,6 +20,7 @@ impl TracksPanel {
         }
     }
 
+    /// Returns the name of the soundfont from a path.
     fn get_soundfont_name(path: &str) -> String {
         path.replace('\\', "/")
             .split('/')
@@ -31,6 +32,7 @@ impl TracksPanel {
             .to_string()
     }
 
+    /// Increment or decrement the preset index. Returns a new undo-redo state.
     fn set_preset(channel: u8, conn: &mut Conn, up: bool) -> UndoRedoState {
         let program = conn.state.programs.get(&channel).unwrap();
         let mut index = Index::new(program.preset_index, program.num_presets);
@@ -53,7 +55,8 @@ impl TracksPanel {
         conn.send(c1);
         undo
     }
-
+    
+    /// Increment or decrement the bank index, setting the preset index to 0. Returns a new undo-redo state.
     fn set_bank(channel: u8, conn: &mut Conn, up: bool) -> UndoRedoState {
         let program = conn.state.programs.get(&channel).unwrap();
         let mut index = Index::new(program.bank_index, program.num_banks);
@@ -77,6 +80,7 @@ impl TracksPanel {
         undo
     }
 
+    /// Increment or decrement the track gain. Returns a new undo-redo state.
     fn set_gain(state: &mut State, up: bool) -> UndoRedoState {
         let s0 = state.clone();
         let track = state.music.get_selected_track_mut().unwrap();
