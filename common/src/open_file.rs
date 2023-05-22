@@ -1,23 +1,27 @@
-use crate::Paths;
+use crate::{State, Paths, Index, PanelType};
+use crate::panel_type::DEFAULT_PANELS;
 use std::path::{Path, PathBuf};
 
 const SOUNDFONT_EXTENSIONS: [&str; 2] = ["sf2", "sf3"];
 const SAVE_FILE_EXTENSIONS: [&str; 1] = ["cac"];
 
-#[derive(Eq, PartialEq)]
-enum OpenFileType {
-    /// Read or write a save file.
-    Save,
+#[derive(Eq, PartialEq, Clone)]
+pub enum OpenFileType {
+    /// Read a save file.
+    ReadSave,
     /// Read a SoundFont.
     SoundFont,
+    /// Write a save file.
+    WriteSave,
 }
 
 /// Cached data for a file or directory.
-struct FileOrDirectory {
+#[derive(Clone)]
+pub struct FileOrDirectory {
     /// The file.
-    path: PathBuf,
+    pub path: PathBuf,
     /// If true, this is a file.
-    is_file: bool,
+    pub is_file: bool,
 }
 
 impl FileOrDirectory {
@@ -29,17 +33,20 @@ impl FileOrDirectory {
     }
 }
 
+
+/// Data for an open-file panel.
+#[derive(Clone)]
 pub struct OpenFile {
     /// Valid file extensions.
     extensions: Vec<String>,
     /// The current directory we're in.
     pub directory: PathBuf,
     /// This defines what we're using the panel for.
-    open_file_type: OpenFileType,
+    pub open_file_type: OpenFileType,
     /// The index of the selected file or folder.
     pub selected: Option<usize>,
     /// The folders and files in the directory.
-    paths: Vec<FileOrDirectory>,
+    pub paths: Vec<FileOrDirectory>,
 }
 
 impl OpenFile {
@@ -75,27 +82,67 @@ impl OpenFile {
         }
     }
 
-    /// Returns an `OpenFile` that can read SoundFonts.
-    pub fn soundfont(open_file: Option<&OpenFile>, paths: &Paths) -> Self {
-        Self::new(
+    /// Enable a panel that can read SoundFonts.
+    pub fn soundfont(open_file: Option<&OpenFile>, paths: &Paths, state: &mut State) {
+        state.open_file = Some(Self::new(
             OpenFileType::SoundFont,
             &SOUNDFONT_EXTENSIONS,
             open_file,
             paths,
-        )
+        ));
+        OpenFile::enable(state);
     }
 
-    /// Returns an `OpenFile` that can read rwrite save files.
-    pub fn save(open_file: Option<&OpenFile>, paths: &Paths) -> Self {
-        Self::new(OpenFileType::Save, &SAVE_FILE_EXTENSIONS, open_file, paths)
+    /// Enable a panel that can read save files.
+    pub fn read_save(open_file: Option<&OpenFile>, paths: &Paths, state: &mut State) {
+        state.open_file = Some(Self::new(OpenFileType::ReadSave, &SAVE_FILE_EXTENSIONS, open_file, paths));
+        OpenFile::enable(state);
     }
 
-    /// Set a new working directory.
-    pub fn set_directory(&mut self, directory: &Path) {
-        self.directory = directory.to_path_buf();
-        let (selected, paths) = OpenFile::get_paths(&self.directory, &self.extensions);
-        self.selected = selected;
-        self.paths = paths;
+    /// Enable a panel that can write save files.
+    pub fn write_save(open_file: Option<&OpenFile>, paths: &Paths, state: &mut State) {
+        state.open_file = Some(Self::new(OpenFileType::WriteSave, &SAVE_FILE_EXTENSIONS, open_file, paths));
+        OpenFile::enable(state);
+    }
+
+    /// Go up to the parent directory.
+    pub fn up_directory(&mut self) {
+        if let Some(parent) = self.directory.parent() {
+            self.directory = parent.to_path_buf();
+            let (selected, paths) = OpenFile::get_paths(&self.directory, &self.extensions);
+            self.selected = selected;
+            self.paths = paths;
+        }
+    }
+
+    /// Go down to a child directory.
+    pub fn down_directory(&mut self) {
+        if let Some(selected) = self.selected {
+            if !self.paths[selected].is_file {
+                self.directory = self.paths[selected].path.clone();
+                let (selected, paths) = OpenFile::get_paths(&self.directory, &self.extensions);
+                self.selected = selected;
+                self.paths = paths;
+            }
+        }
+    }
+
+    /// Scroll up.
+    pub fn previous_path(&mut self) {
+        if let Some(selected) = self.selected {
+            if selected > 0 {
+                self.selected = Some(selected - 1);
+            }
+        }
+    }
+
+    /// Scroll down.
+    pub fn next_path(&mut self) {
+        if let Some(selected) = self.selected {
+            if selected < self.paths.len() - 1 {
+                self.selected = Some(selected + 1);
+            }
+        }
     }
 
     /// Returns the child directories as strings.
@@ -120,6 +167,20 @@ impl OpenFile {
             .flatten()
             .map(|p| p.to_string())
             .collect()
+    }
+
+    /// Returns the number of child files and directories.
+    pub fn get_num_children(&self) -> usize {
+        self.paths.len()
+    }
+
+    fn enable(state: &mut State) {
+        // Clear all active panels.
+        state.panels.clear();
+        // Make this the only active panel.
+        state.panels.push(PanelType::OpenFile);
+        // Set a new index.
+        state.focus = Index::new(0, 1);
     }
 
     /// Get the child paths.

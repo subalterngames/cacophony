@@ -140,3 +140,12 @@ TRACKS_LIST_SUB_PANEL_TTS_UNMUTED,\0 to mute.
 TRACKS_LIST_SUB_PANEL_TTS_SOLOED,This track is solo. \0 to un solo.
 TRACKS_LIST_SUB_PANEL_TTS_NONSOLOED,\0 to solo.
 TRACKS_LIST_SUB_PANEL_TTS_SOUNDFONT_1,The sound font is \1. \0 to set the sound font.
+OPEN_FILE_TTS_DIRECTORY,The current directory is \0.
+OPEN_FILE_TTS_SELECTION,The current selection is \0.
+OPEN_FILE_TTS_NO_SELECTION,No file or folder is selected.
+OPEN_FILE_TTS_UP_DIRECTORY,\0 to go up to folder \1.
+OPEN_FILE_TTS_DOWN_DIRECTORY,\0 to open folder \1.
+OPEN_FILE_TTS_LOAD_SOUNDFONT,\0 to load the sound font.
+OPEN_FILE_TTS_READ_SAVE,\0 to load the save file.
+OPEN_FILE_TTS_WRITE_SAVE,\0 to save.
+OPEN_FILE_TTS_CLOSE,\0 to close.

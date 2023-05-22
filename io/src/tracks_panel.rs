@@ -1,35 +1,25 @@
 use crate::{panel::*, tooltip::get_tooltip};
 use common::MidiTrack;
+use text::get_file_name_no_ex;
+use std::path::PathBuf;
 
 pub(crate) struct TracksPanel {
     /// The text-to-speech string for the panel if there is not a selected track.
-    panel_tts_no_selection: String,
+    tts_no_selection: String,
 }
 
 impl TracksPanel {
     pub fn new(input: &Input, text: &Text) -> Self {
         // TRACKS_LIST_PANEL_TTS_NO_SELECTION,\2 to add a track.
-        let panel_tts_no_selection = get_tooltip(
+        let tts_no_selection = get_tooltip(
             "TRACKS_LIST_PANEL_TTS_NO_SELECTION",
             &[InputEvent::AddTrack],
             input,
             text,
         );
         Self {
-            panel_tts_no_selection,
+            tts_no_selection,
         }
-    }
-
-    /// Returns the name of the soundfont from a path.
-    fn get_soundfont_name(path: &str) -> String {
-        path.replace('\\', "/")
-            .split('/')
-            .last()
-            .unwrap()
-            .split('.')
-            .next()
-            .unwrap()
-            .to_string()
     }
 
     /// Increment or decrement the preset index. Returns a new undo-redo state.
@@ -119,7 +109,7 @@ impl Panel for TracksPanel {
                     );
                     tts.say(&tts_text)
                 }
-                None => tts.say(&self.panel_tts_no_selection),
+                None => tts.say(&self.tts_no_selection),
             }
             None
         }
@@ -168,7 +158,7 @@ impl Panel for TracksPanel {
                         s.push_str(&get_tooltip(solo_key, &[InputEvent::Solo], input, text));
                         // SoundFont.
                         s.push(' ');
-                        let sf_name = TracksPanel::get_soundfont_name(&program.path);
+                        let sf_name = get_file_name_no_ex(&PathBuf::from(program.path.clone()));
                         s.push_str(&get_tooltip_with_values(
                             "TRACKS_LIST_SUB_PANEL_TTS_SOUNDFONT_1",
                             &[InputEvent::EnableSoundFontPanel],

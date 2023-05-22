@@ -4,6 +4,7 @@ use common::{PanelType, State};
 use input::{Input, InputEvent};
 use text::{Text, TTS};
 mod music_panel;
+mod open_file_panel;
 mod panel;
 mod tooltip;
 mod tracks_panel;
@@ -26,6 +27,8 @@ pub struct IO {
     music_panel: music_panel::MusicPanel,
     /// The tracks panel.
     tracks_panel: tracks_panel::TracksPanel,
+    /// The open-file panel.
+    open_file_panel: open_file_panel::OpenFilePanel,
 }
 
 impl IO {
@@ -75,10 +78,12 @@ impl IO {
         tts.insert(InputEvent::ConfigTTS, config);
         let music_panel = music_panel::MusicPanel::new(text);
         let tracks_panel = tracks_panel::TracksPanel::new(input, text);
+        let open_file_panel = open_file_panel::OpenFilePanel::new(input, text);
         Self {
             tts,
             music_panel,
             tracks_panel,
+            open_file_panel,
             redo: vec![],
             undo: vec![],
         }

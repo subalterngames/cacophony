@@ -45,4 +45,11 @@ pub enum InputEvent {
     DecreaseTrackGain,
     Mute,
     Solo,
+    // Open file panel.
+    UpDirectory,
+    DownDirectory,
+    SelectFile,
+    NextPath,
+    PreviousPath,
+    CloseOpenFile,
 }
