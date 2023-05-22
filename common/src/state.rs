@@ -25,6 +25,8 @@ pub struct State {
     pub panels: Vec<PanelType>,
     /// The index of the focused panel.
     pub focus: Index,
+    /// The index of the previously-focused panel.
+    pub previous_focus: Index,
     /// The currently-selected music panel field.
     pub music_panel_field: Index,
     /// The state of the open-file panel.
@@ -120,6 +122,7 @@ impl SerializableState {
             music,
             viewport,
             panels: self.panels.clone(),
+            previous_focus: self.focus.clone(),
             focus: self.focus,
             music_panel_field: self.music_panel_field,
             open_file: None,

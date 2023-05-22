@@ -1,7 +1,10 @@
-use common::open_file::OpenFileType;
+use common::open_file::{OpenFileType, OpenFile};
 use crate::panel::*;
 use text::{get_folder_name, get_file_name_no_ex, push_space};
 use crate::{get_tooltip, get_tooltip_with_values};
+
+const SOUNDFONT_EXTENSIONS: [&str; 2] = ["sf2", "sf3"];
+const SAVE_FILE_EXTENSIONS: [&str; 1] = ["cac"];
 
 /// The file dialogue "popup" panel.
 pub struct OpenFilePanel {
@@ -49,6 +52,7 @@ impl Panel for OpenFilePanel {
             input: &Input,
             tts: &mut TTS,
             text: &Text,
+            _: &Paths,
         ) -> Option<UndoRedoState> {
         if let Some(open_file) = &mut state.open_file {
             // Text-to-speech.
@@ -122,10 +126,12 @@ impl Panel for OpenFilePanel {
             else if input.happened(&InputEvent::SelectFile) {
                 self.enabled = false;
                 self.selected = true;
+                OpenFile::disable(state);
             }
             // Close this.
             else if input.happened(&InputEvent::CloseOpenFile) {
                 self.enabled = false;
+                OpenFile::disable(state);
             }
         }
         else {

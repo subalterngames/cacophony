@@ -48,6 +48,7 @@ impl Panel for MusicPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
+        _: &Paths,
     ) -> Option<UndoRedoState> {
         // Cycle fields.
         if input.happened(&InputEvent::NextMusicPanelField) {

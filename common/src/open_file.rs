@@ -33,7 +33,6 @@ impl FileOrDirectory {
     }
 }
 
-
 /// Data for an open-file panel.
 #[derive(Clone)]
 pub struct OpenFile {
@@ -51,23 +50,10 @@ pub struct OpenFile {
 
 impl OpenFile {
     fn new(
+        directory: PathBuf,
         open_file_type: OpenFileType,
         extensions: &[&str],
-        open_file: Option<&OpenFile>,
-        paths: &Paths,
     ) -> Self {
-        // Get the initial working directory.
-        let directory = match open_file {
-            Some(open_file) => {
-                // If there is an existing open-file and its type is my type, then use it.
-                if open_file.open_file_type == open_file_type {
-                    open_file.directory.clone()
-                } else {
-                    paths.soundfonts_directory.clone()
-                }
-            }
-            None => paths.soundfonts_directory.clone(),
-        };
         // Get the extensions.
         let extensions: Vec<String> = extensions.iter().map(|s| s.to_string()).collect();
         // Get the selected child and the children.
@@ -83,25 +69,48 @@ impl OpenFile {
     }
 
     /// Enable a panel that can read SoundFonts.
-    pub fn soundfont(open_file: Option<&OpenFile>, paths: &Paths, state: &mut State) {
+    pub fn soundfont(paths: &Paths, state: &mut State) {
+        // Get the initial working directory.
+        let directory = match &state.open_file {
+            Some(open_file) => {
+                // If there is an existing open-file and its type is my type, then use it.
+                if open_file.open_file_type == OpenFileType::SoundFont {
+                    open_file.directory.clone()
+                } else {
+                    paths.soundfonts_directory.clone()
+                }
+            }
+            None => paths.soundfonts_directory.clone(),
+        };
         state.open_file = Some(Self::new(
+            directory,
             OpenFileType::SoundFont,
             &SOUNDFONT_EXTENSIONS,
-            open_file,
-            paths,
         ));
         OpenFile::enable(state);
     }
 
+    /// Disable this panel.
+    pub fn disable(state: &mut State) {
+        // Restore the panels.
+        state.panels = DEFAULT_PANELS.to_vec();
+        // Restore the focus.
+        state.focus = state.previous_focus.clone();
+        // Restore undo/redo.
+        state.input.can_undo = true;
+    }
+
     /// Enable a panel that can read save files.
-    pub fn read_save(open_file: Option<&OpenFile>, paths: &Paths, state: &mut State) {
-        state.open_file = Some(Self::new(OpenFileType::ReadSave, &SAVE_FILE_EXTENSIONS, open_file, paths));
+    pub fn read_save(paths: &Paths, state: &mut State) {
+        let directory = OpenFile::get_save_directory(state, paths);
+        state.open_file = Some(Self::new(directory, OpenFileType::ReadSave, &SAVE_FILE_EXTENSIONS));
         OpenFile::enable(state);
     }
 
     /// Enable a panel that can write save files.
-    pub fn write_save(open_file: Option<&OpenFile>, paths: &Paths, state: &mut State) {
-        state.open_file = Some(Self::new(OpenFileType::WriteSave, &SAVE_FILE_EXTENSIONS, open_file, paths));
+    pub fn write_save(paths: &Paths, state: &mut State) {
+        let directory = OpenFile::get_save_directory(state, paths);
+        state.open_file = Some(Self::new(directory, OpenFileType::WriteSave, &SAVE_FILE_EXTENSIONS));
         OpenFile::enable(state);
     }
 
@@ -179,6 +188,8 @@ impl OpenFile {
         state.panels.clear();
         // Make this the only active panel.
         state.panels.push(PanelType::OpenFile);
+        // Remember the focus.
+        state.previous_focus = state.focus.clone();
         // Set a new index.
         state.focus = Index::new(0, 1);
     }
@@ -212,7 +223,7 @@ impl OpenFile {
             folders.iter().map(|f| FileOrDirectory::new(f)).collect();
         paths.append(&mut files.iter().map(|f| FileOrDirectory::new(f)).collect());
 
-        // Set the selection index and the visible range.
+        // Set the selection index.
         let selected: Option<usize> = match !paths.is_empty() {
             true => {
                 // Start at the first file.
@@ -226,5 +237,19 @@ impl OpenFile {
             false => None,
         };
         (selected, paths)
+    }
+
+    fn get_save_directory(state: &State, paths: &Paths) -> PathBuf {
+        match &state.open_file {
+            Some(open_file) => {
+                // If there is an existing open-file and its type is my type, then use it.
+                if open_file.open_file_type == OpenFileType::ReadSave || open_file.open_file_type == OpenFileType::WriteSave {
+                    open_file.directory.clone()
+                } else {
+                    paths.saves_directory.clone()
+                }
+            }
+            None => paths.saves_directory.clone(),
+        }
     }
 }

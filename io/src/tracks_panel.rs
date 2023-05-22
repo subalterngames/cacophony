@@ -1,5 +1,6 @@
 use crate::{panel::*, tooltip::get_tooltip};
 use common::MidiTrack;
+use common::open_file::OpenFile;
 use text::get_file_name_no_ex;
 use std::path::PathBuf;
 
@@ -90,6 +91,7 @@ impl Panel for TracksPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
+        paths: &Paths,
     ) -> Option<UndoRedoState> {
         // Panel TTS.
         if input.happened(&InputEvent::PanelTTS) {
@@ -235,7 +237,10 @@ impl Panel for TracksPanel {
                     None => return Some(UndoRedoState::from((s0, state))),
                 }
             } else if input.happened(&InputEvent::EnableSoundFontPanel) {
-                panic!("TODO")
+                panic!("CLEAR THE STACK! ENABLE");
+                state.input.can_undo = false;
+                OpenFile::soundfont(paths, state);
+                None
             } else {
                 let track = state.music.get_selected_track().unwrap();
                 let channel = track.channel;
