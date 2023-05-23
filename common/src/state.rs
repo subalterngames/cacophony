@@ -1,6 +1,7 @@
 use crate::input_state::SerializableInputState;
 use crate::music::SerializableMusic;
 use crate::music_panel_field::{MusicPanelField, MUSIC_PANEL_FIELDS};
+use crate::time::{SerializableTime, Time};
 use crate::viewport::SerializableViewport;
 use crate::{Index, InputState, Music, PanelType, Viewport};
 use serde::{Deserialize, Serialize};
@@ -18,6 +19,8 @@ pub struct State {
     pub music: Music,
     /// The viewport.
     pub viewport: Viewport,
+    /// The time state.
+    pub time: Time,
     /// The input state.
     pub input: InputState,
     /// A list of all panels that need to be drawn.
@@ -76,10 +79,12 @@ impl State {
         let music = self.music.serialize();
         let viewport = self.viewport.serialize();
         let input = self.input.serialize();
+        let time = self.time.serialize();
         let s = SerializableState {
             input,
             music,
             viewport,
+            time,
             panels: self.panels.clone(),
             focus: self.focus,
             music_panel_field: self.music_panel_field,
@@ -99,6 +104,8 @@ struct SerializableState {
     music: SerializableMusic,
     /// The serializable viewport.
     viewport: SerializableViewport,
+    /// The serializable time state.
+    time: SerializableTime,
     /// A list of all panels that need to be drawn.
     panels: Vec<PanelType>,
     /// The index of the focused panel.
@@ -112,10 +119,12 @@ impl SerializableState {
         let music = self.music.deserialize();
         let viewport = self.viewport.deserialize();
         let input = self.input.deserialize();
+        let time = self.time.deserialize();
         State {
             input,
             music,
             viewport,
+            time,
             panels: self.panels.clone(),
             focus: self.focus,
             music_panel_field: self.music_panel_field,

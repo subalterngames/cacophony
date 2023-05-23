@@ -1,11 +1,62 @@
-use crate::Fraction;
-use fraction::ToPrimitive;
+use crate::{deserialize_fraction, serialize_fraction, Fraction, SerializableFraction};
+use fraction::{ToPrimitive, Zero};
+use serde::{Deserialize, Serialize};
 use time::Duration;
 
 /// Converts BPM to seconds.
 const BPM_TO_SECONDS: f64 = 60.0;
 /// The framerate as a f64 value.
 const FRAMERATE: f64 = 44100.0;
+
+/// The time state.
+#[derive(Clone)]
+pub struct Time {
+    /// The time defining the position of the cursor.
+    pub cursor: Fraction,
+    /// The time at which playback will start.
+    pub playback: Fraction,
+}
+
+impl Time {
+    pub fn new() -> Self {
+        Self {
+            cursor: Fraction::zero(),
+            playback: Fraction::zero(),
+        }
+    }
+
+    pub(crate) fn serialize(&self) -> SerializableTime {
+        SerializableTime {
+            cursor: serialize_fraction(&self.cursor),
+            playback: serialize_fraction(&self.playback),
+        }
+    }
+}
+
+impl Default for Time {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Time is a series.
+#[derive(Deserialize, Serialize)]
+pub(crate) struct SerializableTime {
+    /// The time defining the position of the cursor.
+    pub(crate) cursor: SerializableFraction,
+    /// The time at which playback will start.
+    pub(crate) playback: SerializableFraction,
+}
+
+impl SerializableTime {
+    /// Returns a deserialized `Viewport`.
+    pub(crate) fn deserialize(&self) -> Time {
+        Time {
+            cursor: deserialize_fraction(&self.cursor),
+            playback: deserialize_fraction(&self.playback),
+        }
+    }
+}
 
 /// Converts a time duration into a bar length.
 pub fn duration_to_bar(time: Duration, bpm: u32) -> Fraction {
