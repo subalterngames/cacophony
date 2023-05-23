@@ -34,3 +34,5 @@ pub mod music_panel_field;
 pub use edit_mode::{EditMode, EDIT_MODES};
 mod select_mode;
 pub use select_mode::SelectMode;
+mod piano_roll_mode;
+pub use piano_roll_mode::{PianoRollMode, PIANO_ROLL_MODES};
