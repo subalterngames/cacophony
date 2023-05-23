@@ -1,4 +1,4 @@
-use crate::{deserialize_fraction, serialize_fraction, Fraction, SerializableFraction};
+use crate::{deserialize_fraction, serialize_fraction, EditMode, Fraction, SerializableFraction};
 use fraction::{ToPrimitive, Zero};
 use serde::{Deserialize, Serialize};
 use time::Duration;
@@ -15,6 +15,8 @@ pub struct Time {
     pub cursor: Fraction,
     /// The time at which playback will start.
     pub playback: Fraction,
+    /// The current edit mode.
+    pub mode: EditMode,
 }
 
 impl Time {
@@ -22,6 +24,7 @@ impl Time {
         Self {
             cursor: Fraction::zero(),
             playback: Fraction::zero(),
+            mode: EditMode::Normal,
         }
     }
 
@@ -29,6 +32,7 @@ impl Time {
         SerializableTime {
             cursor: serialize_fraction(&self.cursor),
             playback: serialize_fraction(&self.playback),
+            mode: self.mode,
         }
     }
 }
@@ -46,6 +50,8 @@ pub(crate) struct SerializableTime {
     pub(crate) cursor: SerializableFraction,
     /// The time at which playback will start.
     pub(crate) playback: SerializableFraction,
+    /// The current edit mode.
+    pub(crate) mode: EditMode,
 }
 
 impl SerializableTime {
@@ -54,6 +60,7 @@ impl SerializableTime {
         Time {
             cursor: deserialize_fraction(&self.cursor),
             playback: deserialize_fraction(&self.playback),
+            mode: self.mode,
         }
     }
 }

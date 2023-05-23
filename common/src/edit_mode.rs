@@ -1,4 +1,6 @@
-#[derive(Copy, Clone)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Eq, PartialEq, Copy, Clone, Deserialize, Serialize)]
 pub enum EditMode {
     /// Edit at a normal pace. What "normal" means is defined by the edit mode.
     Normal,
