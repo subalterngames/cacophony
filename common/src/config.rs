@@ -1,4 +1,4 @@
-use crate::{Paths, Fraction};
+use crate::{Fraction, Paths};
 use ini::{Ini, Properties};
 use std::fmt::Display;
 use std::str::FromStr;

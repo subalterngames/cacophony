@@ -1,6 +1,6 @@
-use common::{State, EDIT_MODES, EditMode, Fraction};
 use common::config::{parse, parse_fraction};
 use common::ini::Ini;
+use common::{EditMode, Fraction, State, EDIT_MODES};
 
 /// Delta factors and values for edit modes.
 pub(super) struct EditModeDeltas {

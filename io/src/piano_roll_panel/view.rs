@@ -1,8 +1,8 @@
+use super::EditModeDeltas;
 use crate::get_tooltip_with_values;
 use crate::panel::*;
 use common::ini::Ini;
 use common::Zero;
-use super::EditModeDeltas;
 use common::{Fraction, EDIT_MODES, MAX_NOTE, MIN_NOTE};
 
 /// The piano roll view sub-pane
@@ -14,7 +14,7 @@ pub struct View {
 impl View {
     pub fn new(config: &Ini) -> Self {
         Self {
-            deltas: EditModeDeltas::new(config)
+            deltas: EditModeDeltas::new(config),
         }
     }
 
@@ -39,7 +39,7 @@ impl Panel for View {
         text: &Text,
     ) -> Option<UndoRedoState> {
         // Do nothing if there is no track.
-        if let None = state.music.selected {
+        if state.music.selected.is_none() {
             None
         }
         // Cycle the mode.

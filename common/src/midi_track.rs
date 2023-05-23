@@ -1,5 +1,5 @@
-use crate::Fraction;
 use super::note::{Note, SerializableNote};
+use crate::Fraction;
 use serde::{Deserialize, Serialize};
 
 /// A MIDI track has some notes.
