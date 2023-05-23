@@ -4,7 +4,7 @@ use crate::music::SerializableMusic;
 use crate::music_panel_field::{MusicPanelField, MUSIC_PANEL_FIELDS};
 use crate::time::{SerializableTime, Time};
 use crate::viewport::SerializableViewport;
-use crate::{Index, InputState, Music, PanelType, Viewport};
+use crate::{Index, InputState, Music, PanelType, Viewport, SelectMode};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
@@ -32,6 +32,8 @@ pub struct State {
     pub music_panel_field: Index,
     /// The index of the current piano roll edit mode.
     pub edit_mode: Index,
+    /// The current selection.
+    pub select_mode: SelectMode,
 }
 
 impl State {
@@ -83,6 +85,7 @@ impl State {
         let viewport = self.viewport.serialize();
         let input = self.input.serialize();
         let time = self.time.serialize();
+        let select_mode = self.select_mode.clone();
         let s = SerializableState {
             input,
             music,
@@ -92,6 +95,7 @@ impl State {
             focus: self.focus.get(),
             music_panel_field: self.music_panel_field.get(),
             edit_mode: self.edit_mode.get(),
+            select_mode,
         };
         match to_string(&s) {
             Ok(s) => s,
@@ -118,6 +122,8 @@ struct SerializableState {
     music_panel_field: usize,
     /// The index of the current piano roll edit mode.
     edit_mode: usize,
+    /// The current selection.
+    select_mode: SelectMode,
 }
 
 impl SerializableState {
@@ -130,6 +136,7 @@ impl SerializableState {
         let focus = Index::new(self.focus, panels.len());
         let music_panel_field = Index::new(self.music_panel_field, MUSIC_PANEL_FIELDS.len());
         let edit_mode = Index::new(self.edit_mode, EDIT_MODES.len());
+        let select_mode = self.select_mode.clone();
         State {
             input,
             music,
@@ -139,6 +146,7 @@ impl SerializableState {
             focus,
             music_panel_field,
             edit_mode,
+            select_mode,
         }
     }
 }
