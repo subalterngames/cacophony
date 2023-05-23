@@ -1,4 +1,4 @@
-use crate::Paths;
+use crate::{Paths, Fraction};
 use ini::{Ini, Properties};
 use std::fmt::Display;
 use std::str::FromStr;
@@ -52,6 +52,23 @@ pub fn parse_bool(properties: &Properties, key: &str) -> bool {
             "0" => false,
             _ => panic!("Invalid boolean value {} {}", key, value),
         },
+        None => panic!("Missing key {}", key),
+    }
+}
+
+/// Parse a fraction from a string.
+pub fn parse_fraction(properties: &Properties, key: &str) -> Fraction {
+    match properties.get(key) {
+        Some(value) => {
+            let nd: Vec<&str> = value.split('/').collect();
+            match nd[0].parse::<u32>() {
+                Ok(n) => match nd[1].parse::<u32>() {
+                    Ok(d) => Fraction::new(n, d),
+                    Err(error) => panic!("Invalid denominator in fraction {}: {}", value, error),
+                },
+                Err(error) => panic!("Invalid numerator in fraction {}: {}", value, error),
+            }
+        }
         None => panic!("Missing key {}", key),
     }
 }

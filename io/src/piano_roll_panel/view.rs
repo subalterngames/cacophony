@@ -1,34 +1,20 @@
 use crate::get_tooltip_with_values;
 use crate::panel::*;
-use common::config::parse;
 use common::ini::Ini;
 use common::Zero;
-use common::{fraction_from_str, EditMode, Fraction, EDIT_MODES, MAX_NOTE, MIN_NOTE};
+use super::EditModeDeltas;
+use common::{Fraction, EDIT_MODES, MAX_NOTE, MIN_NOTE};
 
 /// The piano roll view sub-pane
 pub struct View {
-    /// Multiply the beat by this factor to get the quick time.
-    quick_time_factor: u32,
-    /// In precise mode, move the view left and right by this beat length.
-    precise_time: Fraction,
-    /// In quick mode, move the viewport up and down by this many half-steps.
-    quick_note: u8,
-    /// In precise mode, move the view up and down by this many half-steps.
-    precise_note: u8,
+    /// Time values and deltas.
+    deltas: EditModeDeltas,
 }
 
 impl View {
     pub fn new(config: &Ini) -> Self {
-        let section = config.section(Some("VIEW")).unwrap();
-        let quick_time_factor: u32 = parse(section, "quick_time_factor");
-        let precise_time: Fraction = fraction_from_str(section.get("precise_time").unwrap());
-        let quick_note: u8 = parse(section, "quick_note");
-        let precise_note: u8 = parse(section, "precise_note");
         Self {
-            quick_time_factor,
-            precise_time,
-            quick_note,
-            precise_note,
+            deltas: EditModeDeltas::new(config)
         }
     }
 
@@ -40,24 +26,6 @@ impl View {
     /// Returns the delta from the viewport's n1 to its n0.
     fn get_dn(state: &State) -> u8 {
         state.view.dn[0] - state.view.dn[1]
-    }
-
-    /// Returns the delta for moving the viewport left or right.
-    fn get_input_time_delta(&self, state: &State) -> Fraction {
-        match EDIT_MODES[state.view.mode.get()] {
-            EditMode::Normal => state.input.beat,
-            EditMode::Quick => state.input.beat * self.quick_time_factor,
-            EditMode::Precise => self.precise_time,
-        }
-    }
-
-    /// Returns the delta for moving the viewport up or down.
-    fn get_input_note_delta(&self, state: &State) -> u8 {
-        match EDIT_MODES[state.view.mode.get()] {
-            EditMode::Normal => 1,
-            EditMode::Quick => self.quick_note,
-            EditMode::Precise => self.precise_note,
-        }
     }
 }
 
@@ -137,7 +105,7 @@ impl Panel for View {
         // Move the view leftwards.
         else if input.happened(&InputEvent::ViewLeft) {
             let s0 = state.clone();
-            let dt = self.get_input_time_delta(state);
+            let dt = self.deltas.get_dt(state);
             let t0 = state.view.dt[0] - dt;
             // Don't go past t=0.
             if t0.is_zero() || t0.is_sign_positive() {
@@ -154,7 +122,7 @@ impl Panel for View {
         // Move the view rightwards.
         else if input.happened(&InputEvent::ViewRight) {
             let s0 = state.clone();
-            let dt = self.get_input_time_delta(state);
+            let dt = self.deltas.get_dt(state);
             let t0 = state.view.dt[0] + dt;
             let t1 = state.view.dt[1] + dt;
             state.view.dt = [t0, t1];
@@ -163,7 +131,7 @@ impl Panel for View {
         // Move the view upwards.
         else if input.happened(&InputEvent::ViewUp) {
             let s0 = state.clone();
-            let dn = self.get_input_note_delta(state);
+            let dn = self.deltas.get_dn(state);
             // Don't go past n=1.
             if state.view.dn[0] + dn <= MAX_NOTE {
                 let n0 = state.view.dn[0] + dn;
@@ -181,7 +149,7 @@ impl Panel for View {
         // Move the view downwards.
         else if input.happened(&InputEvent::ViewDown) {
             let s0 = state.clone();
-            let dn = self.get_input_note_delta(state);
+            let dn = self.deltas.get_dn(state);
             // Don't go past n=0.
             if state.view.dn[1] - dn >= MIN_NOTE {
                 let n0 = state.view.dn[0] - dn;
