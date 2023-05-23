@@ -5,7 +5,7 @@ use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::input::KeyCode;
 use common::time::bar_to_duration;
-use common::Paths;
+use common::{EditMode, Paths};
 
 const LANGUAGES: [&str; 1] = ["en"];
 
@@ -14,6 +14,8 @@ pub struct Text {
     text: HashMap<String, String>,
     /// A map of key codes to displayable/sayable text.
     keycodes: HashMap<KeyCode, String>,
+    /// The text for each edit mode.
+    edit_modes: HashMap<EditMode, String>,
 }
 
 impl Text {
@@ -32,7 +34,12 @@ impl Text {
             text.insert(key, value);
         }
         let keycodes = Text::get_keycode_map(&text);
-        Self { text, keycodes }
+        let edit_modes = Text::get_edit_mode_map(&text);
+        Self {
+            text,
+            keycodes,
+            edit_modes,
+        }
     }
 
     /// Returns the text.
@@ -63,11 +70,19 @@ impl Text {
         }
     }
 
-    /// Get the string version of a key code.
+    /// Returns the string version of a key code.
     pub fn get_keycode(&self, key: &KeyCode) -> String {
         match self.keycodes.get(key) {
             Some(t) => t.clone(),
-            None => panic!("Invalid text key {:?}", key),
+            None => panic!("Invalid key code {:?}", key),
+        }
+    }
+
+    /// Returns the string version of an edit mode.
+    pub fn get_edit_mode(&self, mode: &EditMode) -> String {
+        match self.edit_modes.get(mode) {
+            Some(t) => t.clone(),
+            None => panic!("Invalid edit mode {:?}", mode),
         }
     }
 
@@ -219,5 +234,13 @@ impl Text {
         keycodes.insert(KeyCode::Menu, text["Menu"].clone());
         keycodes.insert(KeyCode::Unknown, text["Unknown"].clone());
         keycodes
+    }
+
+    fn get_edit_mode_map(text: &HashMap<String, String>) -> HashMap<EditMode, String> {
+        let mut edit_modes = HashMap::new();
+        edit_modes.insert(EditMode::Normal, text["EDIT_MODE_NORMAL"].clone());
+        edit_modes.insert(EditMode::Quick, text["EDIT_MODE_QUICK"].clone());
+        edit_modes.insert(EditMode::Precise, text["EDIT_MODE_PRECISE"].clone());
+        edit_modes
     }
 }

@@ -1,6 +1,6 @@
 use crate::Index;
 
-#[derive(Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone)]
 pub enum EditMode {
     /// Edit at a normal pace. What "normal" means is defined by the edit mode.
     Normal,

@@ -59,4 +59,5 @@ pub enum InputEvent {
     ViewDown,
     ViewStart,
     ViewEnd,
+    ViewCycleMode,
 }

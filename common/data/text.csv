@@ -149,3 +149,7 @@ OPEN_FILE_TTS_LOAD_SOUNDFONT,\0 to load the sound font.
 OPEN_FILE_TTS_READ_SAVE,\0 to load the save file.
 OPEN_FILE_TTS_WRITE_SAVE,\0 to save.
 OPEN_FILE_TTS_CLOSE,\0 to close.
+EDIT_MODE_NORMAL,Normal
+EDIT_MODE_QUICK,Quick
+EDIT_MODE_PRECISE,Precise
+VIEW_TTS,"View mode. The view is from beat \7 to \8 and note \9 to \10. \0, \1, \2, and \3 to move the view. \4 and \5 to move the view to the start and end. The view edit mode is \11. \6 to set the view edit mode."

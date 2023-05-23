@@ -19,7 +19,7 @@ pub struct State {
     /// The music.
     pub music: Music,
     /// The viewport.
-    pub viewport: View,
+    pub view: View,
     /// The time state.
     pub time: Time,
     /// The input state.
@@ -82,14 +82,14 @@ impl State {
 
     fn serialize(&self) -> String {
         let music = self.music.serialize();
-        let viewport = self.viewport.serialize();
+        let view = self.view.serialize();
         let input = self.input.serialize();
         let time = self.time.serialize();
         let select_mode = self.select_mode.clone();
         let s = SerializableState {
             input,
             music,
-            viewport,
+            view,
             time,
             panels: self.panels.clone(),
             focus: self.focus.get(),
@@ -111,7 +111,7 @@ struct SerializableState {
     /// The serializable music.
     music: SerializableMusic,
     /// The serializable viewport.
-    viewport: SerializableViewport,
+    view: SerializableViewport,
     /// The serializable time state.
     time: SerializableTime,
     /// A list of all panels that need to be drawn.
@@ -129,7 +129,7 @@ struct SerializableState {
 impl SerializableState {
     fn deserialize(&self) -> State {
         let music = self.music.deserialize();
-        let viewport = self.viewport.deserialize();
+        let view = self.view.deserialize();
         let input = self.input.deserialize();
         let time = self.time.deserialize();
         let panels = self.panels.clone();
@@ -140,7 +140,7 @@ impl SerializableState {
         State {
             input,
             music,
-            viewport,
+            view,
             time,
             panels,
             focus,

@@ -22,3 +22,15 @@ pub(crate) fn serialize_fraction(fraction: &Fraction) -> SerializableFraction {
 pub(crate) fn deserialize_fraction(fraction: &SerializableFraction) -> Fraction {
     Fraction::new(fraction[0], fraction[1])
 }
+
+/// Parse a fraction from a string.
+pub fn fraction_from_str(s: &str) -> Fraction {
+    let nd: Vec<&str> = s.split('/').collect();
+    match nd[0].parse::<u32>() {
+        Ok(n) => match nd[1].parse::<u32>() {
+            Ok(d) => Fraction::new(n, d),
+            Err(error) => panic!("Invalid denominator in fraction {}: {}", s, error),
+        },
+        Err(error) => panic!("Invalid numerator in fraction {}: {}", s, error),
+    }
+}
