@@ -29,6 +29,8 @@ pub struct State {
     pub focus: Index,
     /// The currently-selected music panel field.
     pub music_panel_field: Index,
+    /// The index of the current piano roll edit mode.
+    pub edit_mode: Index,
 }
 
 impl State {
@@ -88,6 +90,7 @@ impl State {
             panels: self.panels.clone(),
             focus: self.focus,
             music_panel_field: self.music_panel_field,
+            edit_mode: self.edit_mode,
         };
         match to_string(&s) {
             Ok(s) => s,
@@ -112,6 +115,8 @@ struct SerializableState {
     focus: Index,
     /// The currently-selected music panel field.
     music_panel_field: Index,
+    /// The index of the current piano roll edit mode.
+    edit_mode: Index,
 }
 
 impl SerializableState {
@@ -128,6 +133,7 @@ impl SerializableState {
             panels: self.panels.clone(),
             focus: self.focus,
             music_panel_field: self.music_panel_field,
+            edit_mode: self.edit_mode,
         }
     }
 }
