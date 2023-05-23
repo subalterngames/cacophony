@@ -1,6 +1,6 @@
 use common::config::{parse, parse_fraction};
 use common::ini::Ini;
-use common::{EditMode, Fraction, State, EDIT_MODES};
+use common::{EditMode, Fraction, InputState};
 
 /// Delta factors and values for edit modes.
 pub(super) struct EditModeDeltas {
@@ -46,17 +46,17 @@ impl EditModeDeltas {
     }
 
     /// Returns the delta for time.
-    pub(super) fn get_dt(&self, state: &State) -> Fraction {
-        match EDIT_MODES[state.view.mode.get()] {
-            EditMode::Normal => state.input.beat,
-            EditMode::Quick => state.input.beat * self.quick_time_factor,
+    pub(super) fn get_dt(&self, mode: &EditMode, input: &InputState) -> Fraction {
+        match mode {
+            EditMode::Normal => input.beat,
+            EditMode::Quick => input.beat * self.quick_time_factor,
             EditMode::Precise => self.precise_time,
         }
     }
 
     /// Returns the delta for notes.
-    pub(super) fn get_dn(&self, state: &State) -> u8 {
-        match EDIT_MODES[state.view.mode.get()] {
+    pub(super) fn get_dn(&self, mode: &EditMode) -> u8 {
+        match mode {
             EditMode::Normal => self.normal_note,
             EditMode::Quick => self.quick_note,
             EditMode::Precise => self.precise_note,
@@ -64,8 +64,8 @@ impl EditModeDeltas {
     }
 
     /// Returns the delta for volume.
-    pub(super) fn get_dv(&self, state: &State) -> u8 {
-        match EDIT_MODES[state.view.mode.get()] {
+    pub(super) fn get_dv(&self, mode: &EditMode) -> u8 {
+        match mode {
             EditMode::Normal => self.normal_volume,
             EditMode::Quick => self.quick_volume,
             EditMode::Precise => self.precise_volume,

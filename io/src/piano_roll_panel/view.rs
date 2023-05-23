@@ -43,7 +43,7 @@ impl Panel for View {
             None
         }
         // Cycle the mode.
-        else if input.happened(&InputEvent::ViewCycleMode) {
+        else if input.happened(&InputEvent::PianoRollCycleMode) {
             let s0 = state.clone();
             state.view.mode.increment(true);
             Some(UndoRedoState::from((s0, state)))
@@ -61,7 +61,7 @@ impl Panel for View {
                     InputEvent::ViewRight,
                     InputEvent::ViewStart,
                     InputEvent::ViewEnd,
-                    InputEvent::ViewCycleMode,
+                    InputEvent::PianoRollCycleMode,
                 ],
                 &[
                     &text.get_time(&state.view.dt[0], bpm),
@@ -104,8 +104,9 @@ impl Panel for View {
         }
         // Move the view leftwards.
         else if input.happened(&InputEvent::ViewLeft) {
+            let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
-            let dt = self.deltas.get_dt(state);
+            let dt = self.deltas.get_dt(&mode, &state.input);
             let t0 = state.view.dt[0] - dt;
             // Don't go past t=0.
             if t0.is_zero() || t0.is_sign_positive() {
@@ -121,8 +122,9 @@ impl Panel for View {
         }
         // Move the view rightwards.
         else if input.happened(&InputEvent::ViewRight) {
+            let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
-            let dt = self.deltas.get_dt(state);
+            let dt = self.deltas.get_dt(&mode, &state.input);
             let t0 = state.view.dt[0] + dt;
             let t1 = state.view.dt[1] + dt;
             state.view.dt = [t0, t1];
@@ -130,8 +132,9 @@ impl Panel for View {
         }
         // Move the view upwards.
         else if input.happened(&InputEvent::ViewUp) {
+            let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
-            let dn = self.deltas.get_dn(state);
+            let dn = self.deltas.get_dn(&mode);
             // Don't go past n=1.
             if state.view.dn[0] + dn <= MAX_NOTE {
                 let n0 = state.view.dn[0] + dn;
@@ -148,8 +151,9 @@ impl Panel for View {
         }
         // Move the view downwards.
         else if input.happened(&InputEvent::ViewDown) {
+            let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
-            let dn = self.deltas.get_dn(state);
+            let dn = self.deltas.get_dn(&mode);
             // Don't go past n=0.
             if state.view.dn[1] - dn >= MIN_NOTE {
                 let n0 = state.view.dn[0] - dn;

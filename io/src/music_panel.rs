@@ -1,6 +1,7 @@
 use crate::panel::*;
+use common::MAX_VOLUME;
 
-const MAX_GAIN: usize = 127;
+const MAX_GAIN: usize = MAX_VOLUME as usize;
 
 pub(crate) struct MusicPanel {
     /// The text-to-speech string for the panel.

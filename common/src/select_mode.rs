@@ -43,4 +43,31 @@ impl SelectMode {
             },
         }
     }
+
+    /// Converts and returns the selection as a list of cloned notes from the selected track's `notes`.
+    ///
+    /// - `music` The music.
+    pub fn get_notes_mut<'a>(&mut self, music: &'a mut Music) -> Option<Vec<&'a mut Note>> {
+        match music.get_selected_track_mut() {
+            None => None,
+            Some(track) => match self {
+                SelectMode::Single(index) => match index {
+                    Some(index) => Some(vec![&mut track.notes[*index]]),
+                    None => None,
+                },
+                SelectMode::Many(indices) => match indices {
+                    Some(indices) => Some(
+                        track
+                            .notes
+                            .iter_mut()
+                            .enumerate()
+                            .filter(|n| indices.contains(&n.0))
+                            .map(|n| n.1)
+                            .collect(),
+                    ),
+                    None => None,
+                },
+            },
+        }
+    }
 }

@@ -5,6 +5,7 @@ use std::fmt::{Debug, Formatter, Result};
 
 pub const MAX_NOTE: u8 = 127;
 pub const MIN_NOTE: u8 = 21;
+pub const MAX_VOLUME: u8 = 127;
 
 /// A MIDI note with a start bar time and a duration bar time.
 #[derive(Copy, Clone, PartialEq, Eq)]

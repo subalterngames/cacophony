@@ -52,6 +52,8 @@ pub enum InputEvent {
     NextPath,
     PreviousPath,
     CloseOpenFile,
+    // Piano roll.
+    PianoRollCycleMode,
     // Piano roll - view mode.
     ViewLeft,
     ViewRight,
@@ -59,8 +61,7 @@ pub enum InputEvent {
     ViewDown,
     ViewStart,
     ViewEnd,
-    ViewCycleMode,
-    // Piano roll = time mode.
+    // Piano roll - time mode.
     TimeCursorLeft,
     TimeCursorRight,
     TimeCursorStart,
@@ -69,5 +70,13 @@ pub enum InputEvent {
     TimePlaybackRight,
     TimePlaybackStart,
     TimePlaybackEnd,
-    TimeCycleMode,
+    // Piano roll - edit mode.
+    EditStartLeft,
+    EditStartRight,
+    EditDurationLeft,
+    EditDurationRight,
+    EditPitchUp,
+    EditPitchDown,
+    EditVolumeUp,
+    EditVolumeDown,
 }

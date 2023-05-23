@@ -154,3 +154,5 @@ EDIT_MODE_QUICK,Quick
 EDIT_MODE_PRECISE,Precise
 VIEW_TTS,"View mode. The view is from beat \7 to \8 and note \9 to \10. \0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end. The edit mode is \11. \6 to set the edit mode."
 TIME_TTS,Time mode. The cursor is at \9 and playback will start at \10. \0 and \1 to move the cursor. \2 and \3 to set the cursor to the start and end. \4 and \5 to move the playback time. \6 and \7 to set the playback time to the start and end. The edit mode is \11. \8 to set the edit mode.
+EDIT_TTS_NO_SELECTION,Edit mode. No notes are selected. Toggle select mode to select notes.
+EDIT_TTS,"Edit mode. \0, \1, \2, and \3 to move the selected notes. \4 and \5 to edit the duration of the notes. \6 and \7 to increase or decrease the volume of the notes. The edit mode is \9. \8 to set the edit mode."
