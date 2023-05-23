@@ -10,6 +10,7 @@ mod panel;
 mod tooltip;
 mod tracks_panel;
 mod undo_state;
+mod piano_roll_panel;
 use io_command::IOCommand;
 use open_file::open_file_panel::OpenFilePanel;
 use open_file::open_file_type::OpenFileType;

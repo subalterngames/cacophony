@@ -52,4 +52,11 @@ pub enum InputEvent {
     NextPath,
     PreviousPath,
     CloseOpenFile,
+    // Piano roll - view mode.
+    ViewLeft,
+    ViewRight,
+    ViewUp,
+    ViewDown,
+    ViewStart,
+    ViewEnd,
 }

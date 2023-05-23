@@ -3,8 +3,8 @@ use crate::input_state::SerializableInputState;
 use crate::music::SerializableMusic;
 use crate::music_panel_field::{MusicPanelField, MUSIC_PANEL_FIELDS};
 use crate::time::{SerializableTime, Time};
-use crate::viewport::SerializableViewport;
-use crate::{Index, InputState, Music, PanelType, Viewport, SelectMode};
+use crate::view::SerializableViewport;
+use crate::{Index, InputState, Music, PanelType, View, SelectMode};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
@@ -19,7 +19,7 @@ pub struct State {
     /// The music.
     pub music: Music,
     /// The viewport.
-    pub viewport: Viewport,
+    pub viewport: View,
     /// The time state.
     pub time: Time,
     /// The input state.

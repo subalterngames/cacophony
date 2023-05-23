@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 /// The dimensions of the piano roll viewport.
 #[derive(Clone)]
-pub struct Viewport {
+pub struct View {
     /// The start and end time of the viewport.
     pub dt: [Fraction; 2],
     /// The start and end note of the viewport.
@@ -12,7 +12,7 @@ pub struct Viewport {
     pub mode: Index,
 }
 
-impl Viewport {
+impl View {
     /// Returns a serializable version of the viewport.
     pub(crate) fn serialize(&self) -> SerializableViewport {
         SerializableViewport {
@@ -39,8 +39,8 @@ pub(crate) struct SerializableViewport {
 
 impl SerializableViewport {
     /// Returns a deserialized `Viewport`.
-    pub(crate) fn deserialize(&self) -> Viewport {
-        Viewport {
+    pub(crate) fn deserialize(&self) -> View {
+        View {
             dt: [
                 deserialize_fraction(&self.dt[0]),
                 deserialize_fraction(&self.dt[1]),
