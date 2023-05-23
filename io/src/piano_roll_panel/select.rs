@@ -11,12 +11,22 @@ pub(super) struct Select {}
 
 impl Select {
     /// Returns the index of the note closest (and before) the cursor.
-    fn get_note_index_closest_to_cursor(notes: &[Note], time: &Time) -> Option<usize> {
+    fn get_note_index_closest_to_before_cursor(notes: &[Note], time: &Time) -> Option<usize> {
         notes
             .iter()
             .enumerate()
             .filter(|n| n.1.start + n.1.duration < time.cursor)
             .max_by(|a, b| a.1.cmp(b.1))
+            .map(|max| max.0)
+    }
+
+    /// Returns the index of the note closest (and after) the cursor.
+    fn get_note_index_closest_to_after_cursor(notes: &[Note], time: &Time) -> Option<usize> {
+        notes
+            .iter()
+            .enumerate()
+            .filter(|n| n.1.start + n.1.duration >= time.cursor)
+            .min_by(|a, b| a.1.cmp(b.1))
             .map(|max| max.0)
     }
 }
@@ -51,7 +61,7 @@ impl Panel for Select {
         } else if input.happened(&InputEvent::SubPanelTTS) {
             panic!("TODO")
         }
-        // Move the selection left.
+        // Move the selection start leftwards.
         else if input.happened(&InputEvent::SelectStartLeft) {
             let s0 = state.clone();
             let mode = state.select_mode.clone();
@@ -65,9 +75,10 @@ impl Panel for Select {
                     }
                     None => {
                         if let Some(track) = state.music.get_selected_track() {
-                            if let Some(index) =
-                                Select::get_note_index_closest_to_cursor(&track.notes, &state.time)
-                            {
+                            if let Some(index) = Select::get_note_index_closest_to_before_cursor(
+                                &track.notes,
+                                &state.time,
+                            ) {
                                 state.select_mode = SelectMode::Single(Some(index));
                                 return Some(UndoRedoState::from((s0, state)));
                             }
@@ -100,9 +111,71 @@ impl Panel for Select {
                     None => {
                         if let Some(track) = state.music.get_selected_track() {
                             // Is there a note near the cursor?
-                            if let Some(index) =
-                                Select::get_note_index_closest_to_cursor(&track.notes, &state.time)
+                            if let Some(index) = Select::get_note_index_closest_to_before_cursor(
+                                &track.notes,
+                                &state.time,
+                            ) {
+                                state.select_mode = SelectMode::Many(Some(vec![index]));
+                                return Some(UndoRedoState::from((s0, state)));
+                            }
+                        }
+                    }
+                },
+            }
+            return None;
+        }
+        // Move the selection start rightwards.
+        else if input.happened(&InputEvent::SelectStartRight) {
+            let s0 = state.clone();
+            let mode = state.select_mode.clone();
+            match mode {
+                SelectMode::Single(index) => match index {
+                    Some(index) => {
+                        if let Some(track) = state.music.get_selected_track() {
+                            if let Some(max) = track
+                                .notes
+                                .iter()
+                                .enumerate()
+                                .filter(|n| n.1.gt(&track.notes[index]))
+                                .max_by(|a, b| a.1.cmp(b.1))
                             {
+                                state.select_mode = SelectMode::Single(Some(max.0));
+                                return Some(UndoRedoState::from((s0, state)));
+                            }
+                        }
+                    }
+                    None => {
+                        if let Some(track) = state.music.get_selected_track() {
+                            if let Some(index) = Select::get_note_index_closest_to_before_cursor(
+                                &track.notes,
+                                &state.time,
+                            ) {
+                                state.select_mode = SelectMode::Single(Some(index));
+                                return Some(UndoRedoState::from((s0, state)));
+                            }
+                        }
+                    }
+                },
+                SelectMode::Many(indices) => match indices {
+                    Some(indices) => match indices.len() > 1 {
+                        // Remove an index.
+                        true => {
+                            let indices = indices.as_slice()[0..indices.len()].to_vec();
+                            state.select_mode = SelectMode::Many(Some(indices));
+                            return Some(UndoRedoState::from((s0, state)));
+                        }
+                        // There are no indices.
+                        false => {
+                            state.select_mode = SelectMode::Many(None);
+                            return Some(UndoRedoState::from((s0, state)));
+                        }
+                    },
+                    None => {
+                        if let Some(track) = state.music.get_selected_track() {
+                            if let Some(index) = Select::get_note_index_closest_to_before_cursor(
+                                &track.notes,
+                                &state.time,
+                            ) {
                                 state.select_mode = SelectMode::Many(Some(vec![index]));
                                 return Some(UndoRedoState::from((s0, state)));
                             }
