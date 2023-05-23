@@ -227,12 +227,14 @@ impl Panel for TracksPanel {
                         let undo_redo = UndoRedoState::from((s0, c0, state, &c1));
                         // Remove the program.
                         conn.send(c1);
-                        return Some(undo_redo)
+                        return Some(undo_redo);
                     }
-                    None => return Some(UndoRedoState::from((s0, state)))
+                    None => return Some(UndoRedoState::from((s0, state))),
                 }
             } else if input.happened(&InputEvent::EnableSoundFontPanel) {
-                return Some(UndoRedoState::from(Some(vec![IOCommand::EnableOpenFile(OpenFileType::SoundFont)])))
+                return Some(UndoRedoState::from(Some(vec![IOCommand::EnableOpenFile(
+                    OpenFileType::SoundFont,
+                )])));
             } else {
                 let track = state.music.get_selected_track().unwrap();
                 let channel = track.channel;
@@ -242,7 +244,7 @@ impl Panel for TracksPanel {
                         if input.happened(&InputEvent::NextPreset) {
                             Some(TracksPanel::set_preset(channel, conn, true))
                         } else if input.happened(&InputEvent::PreviousPreset) {
-                             Some(TracksPanel::set_preset(track.channel, conn, false))
+                            Some(TracksPanel::set_preset(track.channel, conn, false))
                         } else if input.happened(&InputEvent::NextBank) {
                             Some(TracksPanel::set_bank(track.channel, conn, true))
                         } else if input.happened(&InputEvent::PreviousBank) {
@@ -255,7 +257,7 @@ impl Panel for TracksPanel {
                             None
                         }
                     }
-                    None => None
+                    None => None,
                 }
             }
         } else {

@@ -4,7 +4,7 @@ use crate::music::SerializableMusic;
 use crate::music_panel_field::{MusicPanelField, MUSIC_PANEL_FIELDS};
 use crate::time::{SerializableTime, Time};
 use crate::view::SerializableViewport;
-use crate::{Index, InputState, Music, PanelType, View, SelectMode};
+use crate::{Index, InputState, Music, PanelType, SelectMode, View};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};

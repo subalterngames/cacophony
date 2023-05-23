@@ -1,4 +1,4 @@
-use crate::{State, IOCommands};
+use crate::{IOCommands, State};
 use audio::CommandsMessage;
 
 /// A state that can be undone. Includes the global state and audio commands.
@@ -99,9 +99,6 @@ impl From<IOCommands> for UndoRedoState {
             commands: None,
             io_commands: None,
         };
-        Self {
-            undo,
-            redo,
-        }
+        Self { undo, redo }
     }
 }

@@ -7,17 +7,17 @@ mod io_command;
 mod music_panel;
 mod open_file;
 mod panel;
+mod piano_roll_panel;
 mod tooltip;
 mod tracks_panel;
 mod undo_state;
-mod piano_roll_panel;
 use io_command::IOCommand;
+pub(crate) use io_command::IOCommands;
 use open_file::open_file_panel::OpenFilePanel;
 use open_file::open_file_type::OpenFileType;
 pub(crate) use panel::Panel;
 pub(crate) use tooltip::{get_tooltip, get_tooltip_with_values};
 pub(crate) use undo_state::UndoRedoState;
-pub(crate) use io_command::IOCommands;
 
 /// The maximum size of the undo stack.
 const MAX_UNDOS: usize = 100;
@@ -182,7 +182,9 @@ impl IO {
                         IOCommand::EnableOpenFile(open_file_type) => match open_file_type {
                             OpenFileType::ReadSave => self.open_file_panel.read_save(paths, state),
                             OpenFileType::SoundFont => self.open_file_panel.soundfont(paths, state),
-                            OpenFileType::WriteSave => self.open_file_panel.write_save(paths, state),
+                            OpenFileType::WriteSave => {
+                                self.open_file_panel.write_save(paths, state)
+                            }
                         },
                         IOCommand::DisableOpenFile => {
                             self.open_file_panel.disable(state);
