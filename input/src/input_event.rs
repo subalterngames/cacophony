@@ -54,6 +54,16 @@ pub enum InputEvent {
     CloseOpenFile,
     // Piano roll.
     PianoRollCycleMode,
+    PianoRollSetTime,
+    PianoRollSetView,
+    PianoRollSetSelect,
+    PianoRollSetEdit,
+    Arm,
+    InputBeatLeft,
+    InputBeatRight,
+    IncreaseInputVolume,
+    DecreaseInputVolume,
+    ToggleInputVolume,
     // Piano roll - view mode.
     ViewLeft,
     ViewRight,

@@ -4,7 +4,7 @@ use crate::music::SerializableMusic;
 use crate::music_panel_field::{MusicPanelField, MUSIC_PANEL_FIELDS};
 use crate::time::{SerializableTime, Time};
 use crate::view::SerializableViewport;
-use crate::{Index, InputState, Music, PanelType, SelectMode, View, PIANO_ROLL_MODES};
+use crate::{Index, InputState, Music, PanelType, SelectMode, View, PianoRollMode};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
@@ -31,7 +31,7 @@ pub struct State {
     /// The currently-selected music panel field.
     pub music_panel_field: Index,
     /// The piano roll panel's current mode.
-    pub piano_roll_mode: Index,
+    pub piano_roll_mode: PianoRollMode,
     /// The index of the current piano roll edit mode.
     pub edit_mode: Index,
     /// The current selection.
@@ -95,7 +95,7 @@ impl State {
             time,
             panels: self.panels.clone(),
             focus: self.focus.get(),
-            piano_roll_mode: self.piano_roll_mode.get(),
+            piano_roll_mode: self.piano_roll_mode,
             music_panel_field: self.music_panel_field.get(),
             edit_mode: self.edit_mode.get(),
             select_mode,
@@ -126,7 +126,7 @@ struct SerializableState {
     /// The index of the current piano roll edit mode.
     edit_mode: usize,
     /// The piano roll panel's current mode.
-    piano_roll_mode: usize,
+    piano_roll_mode: PianoRollMode,
     /// The current selection.
     select_mode: SelectMode,
 }
@@ -142,7 +142,6 @@ impl SerializableState {
         let music_panel_field = Index::new(self.music_panel_field, MUSIC_PANEL_FIELDS.len());
         let edit_mode = Index::new(self.edit_mode, EDIT_MODES.len());
         let select_mode = self.select_mode.clone();
-        let piano_roll_mode = Index::new(self.piano_roll_mode, PIANO_ROLL_MODES.len());
         State {
             input,
             music,
@@ -151,7 +150,7 @@ impl SerializableState {
             panels,
             focus,
             music_panel_field,
-            piano_roll_mode,
+            piano_roll_mode: self.piano_roll_mode,
             edit_mode,
             select_mode,
         }

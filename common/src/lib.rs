@@ -35,4 +35,4 @@ pub use edit_mode::{EditMode, EDIT_MODES};
 mod select_mode;
 pub use select_mode::SelectMode;
 mod piano_roll_mode;
-pub use piano_roll_mode::{PianoRollMode, PIANO_ROLL_MODES};
+pub use piano_roll_mode::PianoRollMode;
