@@ -53,6 +53,7 @@ impl Panel for Edit {
                         InputEvent::EditDurationRight,
                         InputEvent::EditVolumeUp,
                         InputEvent::EditVolumeDown,
+                        InputEvent::PianoRollCycleMode,
                     ],
                     &[&text.get_edit_mode(&EDIT_MODES[state.edit_mode.get()])],
                     input,

@@ -79,4 +79,13 @@ pub enum InputEvent {
     EditPitchDown,
     EditVolumeUp,
     EditVolumeDown,
+    // Piano roll - select mode.
+    SelectSingleLeft,
+    SelectSingleRight,
+    SelectManyStartLeft,
+    SelectManyStartRight,
+    SelectManyEndLeft,
+    SelectManyEndRight,
+    SelectAll,
+    SelectNone,
 }
