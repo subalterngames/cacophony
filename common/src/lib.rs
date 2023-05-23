@@ -28,6 +28,6 @@ pub use paths::Paths;
 pub use state::State;
 pub use tts;
 pub(crate) use viewport::Viewport;
-mod edit_mode;
+pub(crate) mod edit_mode;
 pub mod music_panel_field;
 pub use edit_mode::EditMode;

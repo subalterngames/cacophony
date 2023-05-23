@@ -1,4 +1,4 @@
-use crate::{deserialize_fraction, serialize_fraction, Fraction, SerializableFraction, EditMode};
+use crate::{deserialize_fraction, serialize_fraction, Fraction, Index, SerializableFraction};
 use serde::{Deserialize, Serialize};
 
 /// The dimensions of the piano roll viewport.
@@ -9,7 +9,7 @@ pub struct Viewport {
     /// The start and end note of the viewport.
     pub dn: [u8; 2],
     /// The current edit mode.
-    pub mode: EditMode,
+    pub mode: Index,
 }
 
 impl Viewport {
@@ -34,7 +34,7 @@ pub(crate) struct SerializableViewport {
     /// The start and end note of the viewport.
     pub dn: [u8; 2],
     /// The current edit mode.
-    pub(crate) mode: EditMode,
+    pub(crate) mode: Index,
 }
 
 impl SerializableViewport {
