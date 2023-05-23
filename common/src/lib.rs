@@ -31,3 +31,5 @@ pub(crate) use viewport::Viewport;
 pub(crate) mod edit_mode;
 pub mod music_panel_field;
 pub use edit_mode::EditMode;
+mod select_mode;
+pub use select_mode::SelectMode;
