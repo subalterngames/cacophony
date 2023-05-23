@@ -87,7 +87,7 @@ impl Panel for View {
         else if input.happened(&InputEvent::ViewEnd) {
             let dt = View::get_dt(state);
             let track = state.music.get_selected_track().unwrap();
-            match track.notes.iter().map(|n| n.start + n.duration).max() {
+            match track.get_end() {
                 // Move the view to the end.
                 Some(max) => {
                     let s0 = state.clone();

@@ -60,4 +60,14 @@ pub enum InputEvent {
     ViewStart,
     ViewEnd,
     ViewCycleMode,
+    // Piano roll = time mode.
+    TimeCursorLeft,
+    TimeCursorRight,
+    TimeCursorStart,
+    TimeCursorEnd,
+    TimePlaybackLeft,
+    TimePlaybackRight,
+    TimePlaybackStart,
+    TimePlaybackEnd,
+    TimeCycleMode,
 }

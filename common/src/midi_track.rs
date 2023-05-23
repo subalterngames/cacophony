@@ -1,3 +1,4 @@
+use crate::Fraction;
 use super::note::{Note, SerializableNote};
 use serde::{Deserialize, Serialize};
 
@@ -24,6 +25,11 @@ impl MidiTrack {
             mute: false,
             solo: false,
         }
+    }
+
+    /// Returns the end time of the track.
+    pub fn get_end(&self) -> Option<Fraction> {
+        self.notes.iter().map(|n| n.start + n.duration).max()
     }
 
     /// Serialize to a `SerializableTrack`.
