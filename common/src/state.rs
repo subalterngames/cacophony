@@ -1,3 +1,4 @@
+use crate::edit_mode::EDIT_MODES;
 use crate::input_state::SerializableInputState;
 use crate::music::SerializableMusic;
 use crate::music_panel_field::{MusicPanelField, MUSIC_PANEL_FIELDS};
@@ -88,9 +89,9 @@ impl State {
             viewport,
             time,
             panels: self.panels.clone(),
-            focus: self.focus,
-            music_panel_field: self.music_panel_field,
-            edit_mode: self.edit_mode,
+            focus: self.focus.get(),
+            music_panel_field: self.music_panel_field.get(),
+            edit_mode: self.edit_mode.get(),
         };
         match to_string(&s) {
             Ok(s) => s,
@@ -112,11 +113,11 @@ struct SerializableState {
     /// A list of all panels that need to be drawn.
     panels: Vec<PanelType>,
     /// The index of the focused panel.
-    focus: Index,
+    focus: usize,
     /// The currently-selected music panel field.
-    music_panel_field: Index,
+    music_panel_field: usize,
     /// The index of the current piano roll edit mode.
-    edit_mode: Index,
+    edit_mode: usize,
 }
 
 impl SerializableState {
@@ -125,15 +126,19 @@ impl SerializableState {
         let viewport = self.viewport.deserialize();
         let input = self.input.deserialize();
         let time = self.time.deserialize();
+        let panels = self.panels.clone();
+        let focus = Index::new(self.focus, panels.len());
+        let music_panel_field = Index::new(self.music_panel_field, MUSIC_PANEL_FIELDS.len());
+        let edit_mode = Index::new(self.edit_mode, EDIT_MODES.len());
         State {
             input,
             music,
             viewport,
             time,
-            panels: self.panels.clone(),
-            focus: self.focus,
-            music_panel_field: self.music_panel_field,
-            edit_mode: self.edit_mode,
+            panels,
+            focus,
+            music_panel_field,
+            edit_mode,
         }
     }
 }
