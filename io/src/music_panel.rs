@@ -48,12 +48,12 @@ impl Panel for MusicPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-    ) -> (Option<UndoRedoState>, IOCommands) {
+    ) -> Option<UndoRedoState> {
         // Cycle fields.
         if input.happened(&InputEvent::NextMusicPanelField) {
-            return (Some(MusicPanel::set_field(state, true)), None);
+            return Some(MusicPanel::set_field(state, true));
         } else if input.happened(&InputEvent::PreviousMusicPanelField) {
-            return (Some(MusicPanel::set_field(state, false)), None);
+            return Some(MusicPanel::set_field(state, false));
         }
         // Panel TTS.
         else if input.happened(&InputEvent::PanelTTS) {
@@ -86,15 +86,15 @@ impl Panel for MusicPanel {
                 if input.modify_u32(&mut bpm) {
                     let s0 = state.clone();
                     state.music.bpm = bpm;
-                    return (Some(UndoRedoState::from((s0, state))), None);
+                    return Some(UndoRedoState::from((s0, state)));
                 }
             }
             // Set the gain.
             MusicPanelField::Gain => {
                 if input.happened(&InputEvent::DecreaseMusicGain) {
-                    return (Some(MusicPanel::set_gain(conn, false)), None);
+                    return Some(MusicPanel::set_gain(conn, false));
                 } else if input.happened(&InputEvent::IncreaseMusicGain) {
-                    return (Some(MusicPanel::set_gain(conn, true)), None);
+                    return Some(MusicPanel::set_gain(conn, true));
                 }
             }
             // Modify the name.
@@ -103,10 +103,10 @@ impl Panel for MusicPanel {
                 if input.modify_string_abc123(&mut name) {
                     let s0 = state.clone();
                     state.music.name = name;
-                    return (Some(UndoRedoState::from((s0, state))), None);
+                    return Some(UndoRedoState::from((s0, state)));
                 }
             }
         }
-        (None, None)
+        None
     }
 }

@@ -1,4 +1,4 @@
-use crate::State;
+use crate::{State, IOCommands};
 use audio::CommandsMessage;
 
 /// A state that can be undone. Includes the global state and audio commands.
@@ -6,8 +6,10 @@ use audio::CommandsMessage;
 pub(crate) struct UndoState {
     /// The state.
     pub(crate) state: Option<State>,
-    /// A list of commands to send.
+    /// A list of commands to send to the audio connection.
     pub(crate) commands: Option<CommandsMessage>,
+    /// A list of commands to send to the `IO` state.
+    pub(crate) io_commands: IOCommands,
 }
 
 impl From<State> for UndoState {
@@ -15,6 +17,7 @@ impl From<State> for UndoState {
         Self {
             state: Some(value),
             commands: None,
+            io_commands: None,
         }
     }
 }
@@ -24,6 +27,7 @@ impl From<CommandsMessage> for UndoState {
         Self {
             state: None,
             commands: Some(value),
+            io_commands: None,
         }
     }
 }
@@ -63,10 +67,12 @@ impl From<(State, CommandsMessage, &mut State, &CommandsMessage)> for UndoRedoSt
         let undo = UndoState {
             state: Some(value.0),
             commands: Some(value.1),
+            io_commands: None,
         };
         let redo = UndoState {
             state: Some(value.2.clone()),
             commands: Some(value.3.clone()),
+            io_commands: None,
         };
         Self { undo, redo }
     }
@@ -77,6 +83,25 @@ impl From<(UndoState, &UndoState)> for UndoRedoState {
         Self {
             undo: value.0,
             redo: value.1.clone(),
+        }
+    }
+}
+
+impl From<IOCommands> for UndoRedoState {
+    fn from(value: IOCommands) -> Self {
+        let undo = UndoState {
+            state: None,
+            commands: None,
+            io_commands: value,
+        };
+        let redo = UndoState {
+            state: None,
+            commands: None,
+            io_commands: None,
+        };
+        Self {
+            undo,
+            redo,
         }
     }
 }

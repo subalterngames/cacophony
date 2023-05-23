@@ -1,4 +1,4 @@
-pub(crate) use crate::io_command::{IOCommand, IOCommands};
+pub(crate) use crate::io_command::IOCommand;
 pub(crate) use crate::{get_tooltip_with_values, UndoRedoState};
 pub(crate) use audio::{Command, Conn};
 pub(crate) use common::music_panel_field::MusicPanelField;
@@ -15,7 +15,7 @@ pub(crate) trait Panel {
     /// - `input` Input events, key presses, etc.
     /// - `tts` Text-to-speech.
     ///
-    /// Returns: An undo `UndoState` and a redo `UndoState`, or None.
+    /// Returns: An `UndoRedoState`, implying that we modified `state`, or None.
     fn update(
         &mut self,
         state: &mut State,
@@ -23,5 +23,5 @@ pub(crate) trait Panel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-    ) -> (Option<UndoRedoState>, IOCommands);
+    ) -> Option<UndoRedoState>;
 }

@@ -207,7 +207,7 @@ impl Panel for OpenFilePanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-    ) -> (Option<UndoRedoState>, IOCommands) {
+    ) -> Option<UndoRedoState> {
         // Text-to-speech.
         if input.happened(&InputEvent::PanelTTS) || input.happened(&InputEvent::SubPanelTTS) {
             // The current directory.
@@ -329,9 +329,11 @@ impl Panel for OpenFilePanel {
                                 channel,
                                 path: self.paths[selected].path.clone(),
                             }];
-                            let undo = UndoRedoState::from((c0, &c1));
+                            let mut undo = UndoRedoState::from((c0, &c1));
+                            // Add an IO command.
+                            undo.undo.io_commands = Some(vec![IOCommand::DisableOpenFile]);
                             conn.send(c1);
-                            return (Some(undo), Some(vec![IOCommand::DisableOpenFile]));
+                            return Some(undo);
                         }
                     }
                 }
@@ -347,8 +349,8 @@ impl Panel for OpenFilePanel {
         // Close this.
         else if input.happened(&InputEvent::CloseOpenFile) {
             self.disable(state);
-            return (None, Some(vec![IOCommand::DisableOpenFile]));
+            return Some(UndoRedoState::from(Some(vec![IOCommand::DisableOpenFile])))
         }
-        (None, None)
+        None
     }
 }

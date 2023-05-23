@@ -1,6 +1,7 @@
 use crate::open_file::open_file_type::OpenFileType;
 
 /// Commands for the IO struct.
+#[derive(Clone)]
 pub(crate) enum IOCommand {
     /// Enable the open-file panel.
     EnableOpenFile(OpenFileType),

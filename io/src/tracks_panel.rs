@@ -87,7 +87,7 @@ impl Panel for TracksPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-    ) -> (Option<UndoRedoState>, IOCommands) {
+    ) -> Option<UndoRedoState> {
         // Panel TTS.
         if input.happened(&InputEvent::PanelTTS) {
             match state.music.get_selected_track() {
@@ -108,7 +108,7 @@ impl Panel for TracksPanel {
                 }
                 None => tts.say(&self.tts_no_selection),
             }
-            (None, None)
+            None
         }
         // Sub-panel TTS.
         else if input.happened(&InputEvent::SubPanelTTS) {
@@ -178,9 +178,9 @@ impl Panel for TracksPanel {
                         tts.say(&tts_text);
                     }
                 }
-                (None, None)
+                None
             } else {
-                (None, None)
+                None
             }
         }
         // Add a track.
@@ -195,7 +195,7 @@ impl Panel for TracksPanel {
             state.music.selected = Some(state.music.midi_tracks.len());
             // Add a track.
             state.music.midi_tracks.push(MidiTrack::new(channel));
-            (Some(UndoRedoState::from((s0, state))), None)
+            Some(UndoRedoState::from((s0, state)))
         }
         // There is a selected track.
         else if let Some(selected) = state.music.selected {
@@ -227,15 +227,12 @@ impl Panel for TracksPanel {
                         let undo_redo = UndoRedoState::from((s0, c0, state, &c1));
                         // Remove the program.
                         conn.send(c1);
-                        return (Some(undo_redo), None);
+                        return Some(undo_redo)
                     }
-                    None => return (Some(UndoRedoState::from((s0, state))), None),
+                    None => return Some(UndoRedoState::from((s0, state)))
                 }
             } else if input.happened(&InputEvent::EnableSoundFontPanel) {
-                return (
-                    None,
-                    Some(vec![IOCommand::EnableOpenFile(OpenFileType::SoundFont)]),
-                );
+                return Some(UndoRedoState::from(Some(vec![IOCommand::EnableOpenFile(OpenFileType::SoundFont)])))
             } else {
                 let track = state.music.get_selected_track().unwrap();
                 let channel = track.channel;
@@ -243,32 +240,26 @@ impl Panel for TracksPanel {
                 match conn.state.programs.get(&channel) {
                     Some(_) => {
                         if input.happened(&InputEvent::NextPreset) {
-                            (Some(TracksPanel::set_preset(channel, conn, true)), None)
+                            Some(TracksPanel::set_preset(channel, conn, true))
                         } else if input.happened(&InputEvent::PreviousPreset) {
-                            (
-                                Some(TracksPanel::set_preset(track.channel, conn, false)),
-                                None,
-                            )
+                             Some(TracksPanel::set_preset(track.channel, conn, false))
                         } else if input.happened(&InputEvent::NextBank) {
-                            (Some(TracksPanel::set_bank(track.channel, conn, true)), None)
+                            Some(TracksPanel::set_bank(track.channel, conn, true))
                         } else if input.happened(&InputEvent::PreviousBank) {
-                            (
-                                Some(TracksPanel::set_bank(track.channel, conn, false)),
-                                None,
-                            )
+                            Some(TracksPanel::set_bank(track.channel, conn, false))
                         } else if input.happened(&InputEvent::IncreaseTrackGain) {
-                            (Some(TracksPanel::set_gain(state, true)), None)
+                            Some(TracksPanel::set_gain(state, true))
                         } else if input.happened(&InputEvent::DecreaseTrackGain) {
-                            (Some(TracksPanel::set_gain(state, false)), None)
+                            Some(TracksPanel::set_gain(state, false))
                         } else {
-                            (None, None)
+                            None
                         }
                     }
-                    None => (None, None),
+                    None => None
                 }
             }
         } else {
-            (None, None)
+            None
         }
     }
 }
