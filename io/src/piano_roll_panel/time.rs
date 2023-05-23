@@ -6,7 +6,7 @@ use common::Zero;
 use common::{Fraction, EDIT_MODES};
 
 /// The piano roll time sub-panel.
-pub struct Time {
+pub(super) struct Time {
     /// Time values and deltas.
     deltas: EditModeDeltas,
 }

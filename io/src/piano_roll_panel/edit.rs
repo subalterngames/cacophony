@@ -5,6 +5,7 @@ use common::ini::Ini;
 use common::Zero;
 use common::{Fraction, EDIT_MODES, MAX_NOTE, MAX_VOLUME, MIN_NOTE};
 
+/// Edit selected notes.
 pub(super) struct Edit {
     /// The edit mode deltas.
     deltas: EditModeDeltas,

@@ -6,7 +6,7 @@ use common::Zero;
 use common::{Fraction, EDIT_MODES, MAX_NOTE, MIN_NOTE};
 
 /// The piano roll view sub-pane
-pub struct View {
+pub(super) struct View {
     /// Time values and deltas.
     deltas: EditModeDeltas,
 }
