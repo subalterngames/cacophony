@@ -1,25 +1,40 @@
-use common::ini::Ini;
-use common::{PianoRollMode};
-use common::hashbrown::HashMap;
 use super::*;
 use crate::panel::*;
+use common::config::{parse_fraction, parse_fractions};
+use common::hashbrown::HashMap;
+use common::ini::Ini;
+use common::{Fraction, Index, PianoRollMode};
 
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.
 pub struct PianoRollPanel {
+    /// The edit mode.
     edit: Edit,
+    /// The select mode.
     select: Select,
+    /// The time mode.
     time: Time,
+    /// The view mode.
     view: View,
+    /// The beats that we can potentially input.
+    beats: Vec<Fraction>,
 }
 
 impl PianoRollPanel {
     pub fn new(config: &Ini, text: &Text) -> Self {
         let edit = Edit::new(config, text);
-        let select = Select{};
+        let select = Select {};
         let time = Time::new(config);
         let view = View::new(config);
-        Self { edit, select, time, view }
+        let section = config.section(Some("PIANO_ROLL")).unwrap();
+        let beats = parse_fractions(section, "beats");
+        Self {
+            edit,
+            select,
+            time,
+            view,
+            beats,
+        }
     }
 
     /// Set the piano roll mode.
@@ -32,13 +47,13 @@ impl PianoRollPanel {
 
 impl Panel for PianoRollPanel {
     fn update(
-            &mut self,
-            state: &mut State,
-            conn: &mut Conn,
-            input: &Input,
-            tts: &mut TTS,
-            text: &Text,
-        ) -> Option<UndoRedoState> {
+        &mut self,
+        state: &mut State,
+        conn: &mut Conn,
+        input: &Input,
+        tts: &mut TTS,
+        text: &Text,
+    ) -> Option<UndoRedoState> {
         if input.happened(&InputEvent::PanelTTS) {
             panic!("TODO")
         }
@@ -50,19 +65,16 @@ impl Panel for PianoRollPanel {
         }
         // Set the input beat.
         else if input.happened(&InputEvent::InputBeatLeft) {
-            panic!("TODO")
+            panic!("TODO.")
         }
         // Set the mode.
         else if input.happened(&InputEvent::PianoRollSetEdit) {
             PianoRollPanel::set_mode(PianoRollMode::Edit, state)
-        }
-        else if input.happened(&InputEvent::PianoRollSetSelect) {
+        } else if input.happened(&InputEvent::PianoRollSetSelect) {
             PianoRollPanel::set_mode(PianoRollMode::Select, state)
-        }
-        else if input.happened(&InputEvent::PianoRollSetTime) {
+        } else if input.happened(&InputEvent::PianoRollSetTime) {
             PianoRollPanel::set_mode(PianoRollMode::Time, state)
-        }
-        else if input.happened(&InputEvent::PianoRollSetView) {
+        } else if input.happened(&InputEvent::PianoRollSetView) {
             PianoRollPanel::set_mode(PianoRollMode::View, state)
         }
         // Sub-panel actions.
@@ -72,7 +84,7 @@ impl Panel for PianoRollPanel {
                 PianoRollMode::Edit => self.edit.update(state, conn, input, tts, text),
                 PianoRollMode::Select => self.select.update(state, conn, input, tts, text),
                 PianoRollMode::Time => self.time.update(state, conn, input, tts, text),
-                PianoRollMode::View => self.view.update(state, conn, input, tts, text)
+                PianoRollMode::View => self.view.update(state, conn, input, tts, text),
             }
         }
     }

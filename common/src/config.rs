@@ -1,5 +1,6 @@
 use crate::{Fraction, Paths};
 use ini::{Ini, Properties};
+use serde_json::{from_str, Error};
 use std::fmt::Display;
 use std::str::FromStr;
 
@@ -59,16 +60,56 @@ pub fn parse_bool(properties: &Properties, key: &str) -> bool {
 /// Parse a fraction from a string.
 pub fn parse_fraction(properties: &Properties, key: &str) -> Fraction {
     match properties.get(key) {
-        Some(value) => {
+        Some(value) => value_to_fraction(key, value),
+        None => panic!("Missing key {}", key),
+    }
+}
+
+/// Parse a list of fraction strings.
+pub fn parse_fractions(properties: &Properties, key: &str) -> Vec<Fraction> {
+    match properties.get(key) {
+        Some(value) => match from_str::<Vec<&str>>(value) {
+            Ok(value) => value.iter().map(|v| value_to_fraction(key, v)).collect(),
+            Err(error) => panic!(
+                "Error parsing list of fractions {} for key {}: {}",
+                value, key, error
+            ),
+        },
+        None => panic!("Missing key {}", key),
+    }
+}
+
+/// Parse a value string as a fraction.
+fn value_to_fraction(key: &str, value: &str) -> Fraction {
+    // Is this formatted like a fraction, e.g. "1/2"?
+    match value.contains('/') {
+        true => {
             let nd: Vec<&str> = value.split('/').collect();
             match nd[0].parse::<u32>() {
                 Ok(n) => match nd[1].parse::<u32>() {
                     Ok(d) => Fraction::new(n, d),
-                    Err(error) => panic!("Invalid denominator in fraction {}: {}", value, error),
+                    Err(error) => panic!(
+                        "Invalid denominator in fraction {} for key {}: {}",
+                        value, key, error
+                    ),
                 },
-                Err(error) => panic!("Invalid numerator in fraction {}: {}", value, error),
+                Err(error) => panic!(
+                    "Invalid numerator in fraction {} for key {}: {}",
+                    value, key, error
+                ),
             }
         }
-        None => panic!("Missing key {}", key),
+        // Is this formated like a decimal, e.g. "0.5"?
+        false => match value.contains('.') {
+            true => match value.parse::<f64>() {
+                Ok(value) => Fraction::from(value),
+                Err(error) => panic!("Invalid value {} for key {}: {}", value, key, error),
+            },
+            // Is it formatted like an integer, e.g. "1"?
+            false => match value.parse::<u32>() {
+                Ok(value) => Fraction::from(value),
+                Err(error) => panic!("Invalid value {} for key {}: {}", value, key, error),
+            },
+        },
     }
 }

@@ -24,7 +24,7 @@ pub(super) struct EditModeDeltas {
 
 impl EditModeDeltas {
     pub(super) fn new(config: &Ini) -> Self {
-        let section = config.section(Some("EDIT_MODE_DELTAS")).unwrap();
+        let section = config.section(Some("PIANO_ROLL")).unwrap();
         let quick_time_factor: u32 = parse(section, "quick_time_factor");
         let precise_time: Fraction = parse_fraction(section, "precise_time");
         let normal_note: u8 = parse(section, "normal_note");
