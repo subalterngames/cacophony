@@ -54,7 +54,10 @@ impl Panel for PianoRollPanel {
         tts: &mut TTS,
         text: &Text,
     ) -> Option<UndoRedoState> {
-        if input.happened(&InputEvent::PanelTTS) {
+        if state.music.selected.is_none() {
+            None
+        }
+        else if input.happened(&InputEvent::PanelTTS) {
             panic!("TODO")
         }
         // Toggle arm.
@@ -65,7 +68,14 @@ impl Panel for PianoRollPanel {
         }
         // Set the input beat.
         else if input.happened(&InputEvent::InputBeatLeft) {
-            panic!("TODO.")
+            let s0 = state.clone();
+            state.input.beat.increment(false);
+            Some(UndoRedoState::from((s0, state)))
+        }
+        else if input.happened(&InputEvent::InputBeatRight) {
+            let s0 = state.clone();
+            state.input.beat.increment(true);
+            Some(UndoRedoState::from((s0, state)))
         }
         // Set the mode.
         else if input.happened(&InputEvent::PianoRollSetEdit) {

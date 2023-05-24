@@ -36,8 +36,6 @@ pub struct State {
     pub edit_mode: Index,
     /// The current selection.
     pub select_mode: SelectMode,
-    /// The index of the input beat.
-    pub beat: Index,
 }
 
 impl State {
@@ -101,7 +99,6 @@ impl State {
             music_panel_field: self.music_panel_field.get(),
             edit_mode: self.edit_mode.get(),
             select_mode,
-            beat: self.beat,
         };
         match to_string(&s) {
             Ok(s) => s,
@@ -132,8 +129,6 @@ struct SerializableState {
     piano_roll_mode: PianoRollMode,
     /// The current selection.
     select_mode: SelectMode,
-    /// The index of the current beat. This needs to be an index because we don't know the length.
-    beat: Index,
 }
 
 impl SerializableState {
@@ -158,7 +153,6 @@ impl SerializableState {
             piano_roll_mode: self.piano_roll_mode,
             edit_mode,
             select_mode,
-            beat: self.beat,
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::note::SerializableNote;
-use crate::{deserialize_fraction, serialize_fraction, Fraction, Note, SerializableFraction};
+use crate::{Note, Index};
 use serde::{Deserialize, Serialize};
 
 /// Booleans and numerical values describing the input state.
@@ -10,11 +10,11 @@ pub struct InputState {
     /// If true, we're inputting an alphanumeric string and we should ignore certain key bindings.
     pub alphanumeric_input: bool,
     /// The volume for all new notes.
-    pub volume: u8,
+    pub volume: Index,
     /// If true, we'll use the volume value.
     pub use_volume: bool,
     /// The input beat.
-    pub beat: Fraction,
+    pub beat: Index,
     /// If true, we can undo and redo.
     pub can_undo: bool,
     /// A buffer of cut/copied notes.
@@ -28,7 +28,7 @@ impl InputState {
             alphanumeric_input: self.alphanumeric_input,
             volume: self.volume,
             use_volume: self.use_volume,
-            beat: serialize_fraction(&self.beat),
+            beat: self.beat,
             can_undo: self.can_undo,
             copied: self.copied.iter().map(|n| n.serialize()).collect(),
         }
@@ -43,15 +43,15 @@ pub(crate) struct SerializableInputState {
     /// If true, we're inputting an alphanumeric string and we should ignore certain key bindings.
     pub alphanumeric_input: bool,
     /// The volume for all new notes.
-    pub volume: u8,
+    pub volume: Index,
     /// If true, we'll use the volume value.
     pub use_volume: bool,
-    /// The input beat.
-    pub beat: SerializableFraction,
     /// If true, we can undo and redo.
     pub can_undo: bool,
     /// A buffer of cut/copied notes.
     pub copied: Vec<SerializableNote>,
+    /// The index of the input beat.
+    pub beat: Index,
 }
 
 impl SerializableInputState {
@@ -62,7 +62,7 @@ impl SerializableInputState {
             alphanumeric_input: self.alphanumeric_input,
             volume: self.volume,
             use_volume: self.use_volume,
-            beat: deserialize_fraction(&self.beat),
+            beat: self.beat,
             can_undo: self.can_undo,
             copied: self.copied.iter().map(|n| n.deserialize()).collect(),
         }
