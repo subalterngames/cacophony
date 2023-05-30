@@ -1,5 +1,5 @@
 use crate::note::SerializableNote;
-use crate::{Note, Index};
+use crate::{Note, Index, Fraction, SerializableFraction, serialize_fraction, deserialize_fraction};
 use serde::{Deserialize, Serialize};
 
 /// Booleans and numerical values describing the input state.
@@ -14,7 +14,7 @@ pub struct InputState {
     /// If true, we'll use the volume value.
     pub use_volume: bool,
     /// The input beat.
-    pub beat: Index,
+    pub beat: Fraction,
     /// If true, we can undo and redo.
     pub can_undo: bool,
     /// A buffer of cut/copied notes.
@@ -28,7 +28,7 @@ impl InputState {
             alphanumeric_input: self.alphanumeric_input,
             volume: self.volume,
             use_volume: self.use_volume,
-            beat: self.beat,
+            beat: serialize_fraction(&self.beat),
             can_undo: self.can_undo,
             copied: self.copied.iter().map(|n| n.serialize()).collect(),
         }
@@ -50,8 +50,8 @@ pub(crate) struct SerializableInputState {
     pub can_undo: bool,
     /// A buffer of cut/copied notes.
     pub copied: Vec<SerializableNote>,
-    /// The index of the input beat.
-    pub beat: Index,
+    /// The input beat.
+    pub beat: SerializableFraction,
 }
 
 impl SerializableInputState {
@@ -62,7 +62,7 @@ impl SerializableInputState {
             alphanumeric_input: self.alphanumeric_input,
             volume: self.volume,
             use_volume: self.use_volume,
-            beat: self.beat,
+            beat: deserialize_fraction(&self.beat),
             can_undo: self.can_undo,
             copied: self.copied.iter().map(|n| n.deserialize()).collect(),
         }

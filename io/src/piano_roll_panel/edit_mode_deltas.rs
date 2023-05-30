@@ -46,10 +46,10 @@ impl EditModeDeltas {
     }
 
     /// Returns the delta for time.
-    pub(super) fn get_dt(&self, mode: &EditMode, beats: &Vec<Fraction>, input: &InputState) -> Fraction {
+    pub(super) fn get_dt(&self, mode: &EditMode, input: &InputState) -> Fraction {
         match mode {
-            EditMode::Normal => beats[input.beat.get()],
-            EditMode::Quick => beats[input.beat.get()] * self.quick_time_factor,
+            EditMode::Normal => input.beat,
+            EditMode::Quick => input.beat * self.quick_time_factor,
             EditMode::Precise => self.precise_time,
         }
     }
