@@ -29,64 +29,9 @@ pub struct OpenFilePanel {
     previous_focus: Index,
     /// The previously-active panels.
     previous_panels: Vec<PanelType>,
-    /// Text-to-speech string to close the panel.
-    tts_close: String,
-    /// Text-to-speech string to write a save file.
-    tts_write_save: String,
-    /// Text-to-speech if there is no selection.
-    tts_no_selection: String,
-    /// Text-to-speech to go down a directory.
-    tts_down_directory: String,
-    /// Text-to-speech to read a save file.
-    tts_read_save: String,
-    /// Text-to-speech to load a SoundFont.
-    tts_load_soundfont: String,
 }
 
 impl OpenFilePanel {
-    pub fn new(input: &Input, text: &Text) -> Self {
-        let tts_close = get_tooltip(
-            "OPEN_FILE_TTS_CLOSE",
-            &[InputEvent::CloseOpenFile],
-            input,
-            text,
-        );
-        let tts_write_save = get_tooltip(
-            "OPEN_FILE_TTS_WRITE_SAVE",
-            &[InputEvent::SelectFile],
-            input,
-            text,
-        );
-        let tts_no_selection = text.get("OPEN_FILE_TTS_NO_SELECTION");
-        let tts_down_directory = get_tooltip(
-            "OPEN_FILE_TTS_DOWN_DIRECTORY",
-            &[InputEvent::DownDirectory],
-            input,
-            text,
-        );
-        let tts_read_save = get_tooltip(
-            "OPEN_FILE_TTS_READ_SAVE",
-            &[InputEvent::SelectFile],
-            input,
-            text,
-        );
-        let tts_load_soundfont = get_tooltip(
-            "OPEN_FILE_TTS_LOAD_SOUNDFONT",
-            &[InputEvent::SelectFile],
-            input,
-            text,
-        );
-        Self {
-            tts_close,
-            tts_write_save,
-            tts_no_selection,
-            tts_down_directory,
-            tts_read_save,
-            tts_load_soundfont,
-            ..Default::default()
-        }
-    }
-
     /// Enable the panel.
     fn enable(&mut self, state: &mut State) {
         // Get the selected child and the children.

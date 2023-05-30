@@ -1,5 +1,4 @@
-use super::EditModeDeltas;
-use crate::get_tooltip_with_values;
+use super::{EditModeDeltas, PianoRollSubPanel, get_edit_mode_status_tts};
 use crate::panel::*;
 use common::ini::Ini;
 use common::Zero;
@@ -48,8 +47,8 @@ impl Panel for Time {
         state: &mut State,
         _: &mut Conn,
         input: &Input,
-        tts: &mut TTS,
-        text: &Text,
+        _: &mut TTS,
+        _: &Text,
     ) -> Option<UndoRedoState> {
         // Do nothing if there is no track.
         if state.music.selected.is_none() {
@@ -60,32 +59,6 @@ impl Panel for Time {
             let s0 = state.clone();
             state.time.mode.increment(true);
             Some(UndoRedoState::from((s0, state)))
-        }
-        // TTS.
-        else if input.happened(&InputEvent::SubPanelTTS) {
-            let bpm = state.music.bpm;
-            let cursor = text.get_time(&state.time.cursor, bpm);
-            let playback = text.get_time(&state.time.playback, bpm);
-            let mode = text.get_edit_mode(&EDIT_MODES[state.time.mode.get()]);
-            let s = get_tooltip_with_values(
-                "TIME_TTS",
-                &[
-                    InputEvent::TimeCursorLeft,
-                    InputEvent::TimeCursorRight,
-                    InputEvent::TimeCursorStart,
-                    InputEvent::TimeCursorEnd,
-                    InputEvent::TimePlaybackLeft,
-                    InputEvent::TimePlaybackRight,
-                    InputEvent::TimePlaybackStart,
-                    InputEvent::TimePlaybackEnd,
-                    InputEvent::PianoRollCycleMode,
-                ],
-                &[&cursor, &playback, &mode],
-                input,
-                text,
-            );
-            tts.say(&s);
-            None
         }
         // Move the cursor.
         else if input.happened(&InputEvent::TimeCursorStart) {
@@ -129,5 +102,27 @@ impl Panel for Time {
         } else {
             None
         }
+    }
+}
+
+impl PianoRollSubPanel for Time {
+    fn get_status_tts(&self, state: &State, text: &Text) -> String {
+        let mut s = get_edit_mode_status_tts(&EDIT_MODES[state.time.mode.get()], text);
+        s.push(' ');
+        s.push_str(&text.get_with_values("PIANO_ROLL_PANEL_STATUS_TTS_TIME", &[&text.get_fraction_tts(&state.time.cursor), &text.get_fraction_tts(&state.time.playback)]));
+        s
+    }
+
+    fn get_input_tts(&self, _: &State, input: &Input, text: &Text) -> String {
+        get_tooltip("PIANO_ROLL_PANEL_INPUT_TTS_TIME", &[
+            InputEvent::TimeCursorLeft,
+            InputEvent::TimeCursorRight,
+            InputEvent::TimeCursorStart,
+            InputEvent::TimeCursorEnd,
+            InputEvent::TimePlaybackLeft,
+            InputEvent::TimePlaybackRight,
+            InputEvent::TimePlaybackStart,
+            InputEvent::TimePlaybackEnd,
+        ], input, text)
     }
 }

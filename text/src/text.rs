@@ -5,7 +5,7 @@ use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::input::KeyCode;
 use common::time::bar_to_duration;
-use common::{EditMode, Paths};
+use common::{EditMode, Paths, PianoRollMode, ToPrimitive, MIN_NOTE};
 
 const LANGUAGES: [&str; 1] = ["en"];
 
@@ -16,6 +16,10 @@ pub struct Text {
     keycodes: HashMap<KeyCode, String>,
     /// The text for each edit mode.
     edit_modes: HashMap<EditMode, String>,
+    /// The text for each piano roll mode.
+    piano_roll_modes: HashMap<PianoRollMode, String>,
+    /// The name of each MIDI note.
+    note_names: Vec<String>,
 }
 
 impl Text {
@@ -33,12 +37,16 @@ impl Text {
             let value = record.get(column).unwrap().to_string();
             text.insert(key, value);
         }
+        let note_names: Vec<String> = text.remove("NOTE_NAMES").unwrap().split(", ").map(|s| s.to_string()).collect();
         let keycodes = Text::get_keycode_map(&text);
         let edit_modes = Text::get_edit_mode_map(&text);
+        let piano_roll_modes = Text::get_piano_roll_mode_map(&text);
         Self {
             text,
             keycodes,
             edit_modes,
+            piano_roll_modes,
+            note_names,
         }
     }
 
@@ -78,6 +86,14 @@ impl Text {
         }
     }
 
+        /// Returns the string version of a piano roll mode.
+        pub fn get_piano_roll_mode(&self, mode: &PianoRollMode) -> String {
+            match self.piano_roll_modes.get(mode) {
+                Some(t) => t.clone(),
+                None => panic!("Invalid piano roll mode {:?}", mode),
+            }
+        }
+
     /// Returns the string version of an edit mode.
     pub fn get_edit_mode(&self, mode: &EditMode) -> String {
         match self.edit_modes.get(mode) {
@@ -107,6 +123,57 @@ impl Text {
                 &[minutes.to_string().as_str(), seconds.to_string().as_str()],
             ),
         }
+    }
+
+    /// Returns a text-to-speech string of the `beat` fraction.
+    pub fn get_fraction_tts(&self, beat: &Fraction) -> String {
+        let numer = beat.numer().unwrap();
+        if *numer == 0 {
+            numer.to_string()
+        } else {
+            let denom = beat.denom().unwrap();
+            // Whole number.
+            if *denom == 1 {
+                numer.to_string()
+            } else {
+                // Fraction.
+                match (numer, denom) {
+                    (1, 32) => self.get("FRACTION_TTS_ONE_THIRTY_SECOND"),
+                    (1, 16) => self.get("FRACTION_TTS_ONE_SIXTEENTH"),
+                    (1, 8) => self.get("FRACTION_TTS_ONE_EIGHTH"),
+                    (1, 6) => self.get("FRACTION_TTS_ONE_SIXTH"),
+                    (1, 4) => self.get("FRACTION_TTS_ONE_FOURTH"),
+                    (1, 3) => self.get("FRACTION_TTS_ONE_THIRD"),
+                    (1, 2) => self.get("FRACTION_TTS_ONE_HALF"),
+                    (3, 2) => self.get("FRACTION_TTS_ONE_AND_A_HALF"),
+                    other => {
+                        let u = beat.trunc().abs().to_u64().unwrap();
+                        match u > 0 {
+                            true => {
+                                let fr = beat.fract();
+                                let n = fr.numer().unwrap();
+                                let d = fr.denom().unwrap();
+                                self.get_with_values("FRACTION_TTS_WHOLE", &[&u.to_string(), &n.to_string(), &d.to_string()])
+                            }
+                            false =>   self.get_with_values(
+                                "FRACTION_TTS",
+                                &[&other.0.to_string(), &other.1.to_string()],
+                            ),
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Returns an error text-to-speech string.
+    pub fn get_error(&self, error: &str) -> String {
+        self.get_with_values("ERROR", &[error])
+    }
+
+    /// Returns the name of the note.
+    pub fn get_note_name(&self, note: u8) -> String {
+        self.note_names[(note - MIN_NOTE) as usize].clone()
     }
 
     /// Returns a map of keycodes to displayable/sayable text (NOT string keys).
@@ -236,11 +303,23 @@ impl Text {
         keycodes
     }
 
+    /// Returns a HashMap of the edit modes.
     fn get_edit_mode_map(text: &HashMap<String, String>) -> HashMap<EditMode, String> {
         let mut edit_modes = HashMap::new();
         edit_modes.insert(EditMode::Normal, text["EDIT_MODE_NORMAL"].clone());
         edit_modes.insert(EditMode::Quick, text["EDIT_MODE_QUICK"].clone());
         edit_modes.insert(EditMode::Precise, text["EDIT_MODE_PRECISE"].clone());
         edit_modes
+    }
+
+    
+    /// Returns a HashMap of the piano roll modes.
+    fn get_piano_roll_mode_map(text: &HashMap<String, String>) -> HashMap<PianoRollMode, String> {
+        let mut piano_roll_modes = HashMap::new();
+        piano_roll_modes.insert(PianoRollMode::Edit, text["PIANO_ROLL_MODE_EDIT"].clone());
+        piano_roll_modes.insert(PianoRollMode::Select, text["PIANO_ROLL_MODE_SELECT"].clone());
+        piano_roll_modes.insert(PianoRollMode::Time, text["PIANO_ROLL_MODE_TIME"].clone());
+        piano_roll_modes.insert(PianoRollMode::View, text["PIANO_ROLL_MODE_VIEW"].clone());
+        piano_roll_modes
     }
 }

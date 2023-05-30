@@ -120,6 +120,7 @@ RightAlt,right alt
 RightSuper,right super
 Menu,menu
 Unknown,unknown
+NOTE_NAMES,"C0, C#0, D0, D#0, E0, F0, F#0, G0, G#0, A0, A#0, B0, C1, C#1, D1, D#1, E1, F1, F#1, G1, G#1, A1, A#1, B1, C2, C#2, D2, D#2, E2, F2, F#2, G2, G#2, A2, A#2, B2, C3, C#3, D3, D#3, E3, F3, F#3, G3, G#3, A3, A#3, B3, C4, C#4, D4, D#4, E4, F4, F#4, G4, G#4, A4, A#4, B4, C5, C#5, D5, D#5, E5, F5, F#5, G5, G#5, A5, A#5, B5, C6, C#6, D6, D#6, E6, F6, F#6, G6, G#6, A6, A#6, B6, C7, C#7, D7, D#7, E7, F7, F#7, G7, G#7, A7, A#7, B7, C8, C#8, D8, D#8, E8, F8, F#8, G8, G#8, A8, A#8, B8, C9, C#9, D9, D#9, E9, F9, F#9, G9"
 TIME_TTS,\0 minutes and \1 seconds
 TIME_TTS_HOURS,"\0 hours, \1 minutes, and \2 seconds"
 OR, or 
@@ -160,13 +161,49 @@ OPEN_FILE_PANEL_INPUT_TTS_READ_SAVE,\0 to load save file \1.
 OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT,\0 to load sound font \1.
 OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE,\0 to write save file \1.
 OPEN_FILE_PANEL_INPUT_TTS_CLOSE,\0 to close.
+PIANO_ROLL_PANEL_TTS_NO_TRACK,You cannot use this panel until you have added a track and loaded a sound font.
+PIANO_ROLL_PANEL_STATUS_TTS_MODE,The piano roll mode is \0.
+PIANO_ROLL_MODE_TIME,Time
+PIANO_ROLL_MODE_VIEW,View
+PIANO_ROLL_MODE_SELECT,Select
+PIANO_ROLL_MODE_EDIT,Edit
+FRACTION_TTS_ONE_THIRTY_SECOND,one thirty-second
+FRACTION_TTS_ONE_SIXTEENTH,one sixteenth
+FRACTION_TTS_ONE_EIGHTH,one eighth
+FRACTION_TTS_ONE_SIXTH,one sixth
+FRACTION_TTS_ONE_FOURTH,one fourth
+FRACTION_TTS_ONE_THIRD,one third
+FRACTION_TTS_ONE_HALF,one half
+FRACTION_TTS_ONE_AND_A_HALF,one and a half
+FRACTION_TTS_WHOLE,\0 and \1 over \2
+FRACTION_TTS,\0 over 1
+PIANO_ROLL_PANEL_STATUS_TTS_ARMED,"The track is armed and ready for your input. When you input new notes, their duration will be \1 beats and their volume will be \2."
+PIANO_ROLL_PANEL_STATUS_TTS_VOLUME,\0 if you use qwerty input otherwise the MIDI velocity value.
+PIANO_ROLL_PANEL_STATUS_TTS_NOT_ARMED,"The track is not armed, so you can't add notes."
 EDIT_MODE_NORMAL,Normal
 EDIT_MODE_QUICK,Quick
 EDIT_MODE_PRECISE,Precise
-VIEW_TTS,"View mode. The view is from beat \7 to \8 and note \9 to \10. \0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end. The edit mode is \11. \6 to change the edit mode."
+PIANO_ROLL_PANEL_STATUS_TTS_PIANO_ROLL_MODE,The piano roll mode is \0.
+PIANO_ROLL_PANEL_STATUS_TTS_EDIT_MODE,The edit mode is \0.
+PIANO_ROLL_PANEL_INPUT_TTS_EDIT_MODE,\0 to set the edit mode to \1.
+PIANO_ROLL_PANEL_STATUS_TTS_NO_SELECTION,No notes are selected.
+PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE,The selected note has a pitch of \0 and starts at beat \1.
+PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_MANY,The selected notes start at beat \0 and end at beat \1.
+PIANO_ROLL_PANEL_INPUT_TTS_SELECT_SINGLE,\0 and \1 to select a different note.
+PIANO_ROLL_PANEL_INPUT_TTS_SELECT_MANY,\0 and \1 to set the start of the selection. \2 and \3 to set the end of the selection.
+PIANO_ROLL_PANEL_INPUT_TTS_SELECT_ALL,\0 to select all. 
+PIANO_ROLL_PANEL_INPUT_TTS_DESELECT,\0 to deselect.
+PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_SINGLE,\0 to select only one note.
+PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_MANY,\0 to select multiple notes.
+PIANO_ROLL_PANEL_INPUT_TTS_EDIT,\0 and \1 to set the start time. \2 and \3 to set the pitch. \3 and \4 to set the duration. \5 and \6 to set the volume.
+PIANO_ROLL_PANEL_STATUS_TTS_TIME,"The cursor is at \0. Playback will start at \1."
+PIANO_ROLL_PANEL_INPUT_TTS_TIME,\0 and \1 to move the cursor. \2 and \3 to set the cursor to the start and end. \4 and \5 to move the playback time. \6 and \7 to set the playback time to the start and end.
+PIANO_ROLL_PANEL_STATUS_TTS_VIEW,The view is from beats \0 to \1 and pitches \2 to \3.
+PIANO_ROLL_PANEL_INPUT_TTS_VIEW,"\0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end."
+VIEW_TTS,"View mode. The view is from beat \7 to \8 and note \9 to \10.   The edit mode is \11. \6 to change the edit mode."
 TIME_TTS,Time mode. The cursor is at \9 and playback will start at \10. \0 and \1 to move the cursor. \2 and \3 to set the cursor to the start and end. \4 and \5 to move the playback time. \6 and \7 to set the playback time to the start and end. The edit mode is \11. \8 to change the edit mode.
 EDIT_TTS_NO_SELECTION,Edit mode. No notes are selected. Toggle select mode to select notes.
-EDIT_TTS,"Edit mode. \0, \1, \2, and \3 to move the selected notes. \4 and \5 to edit the duration of the notes. \6 and \7 to increase or decrease the volume of the notes. The edit mode is \9. \8 to change the edit mode."
+EDIT_TTS,"Edit mode.  The edit mode is \9. \8 to change the edit mode."
 SELECT_TTS_SINGLE,Select mode. \3 \0 and \1 to select a note. \2 to deselect. \3 to select all. The edit mode is Single. \4 to change the edit mode to Many.
 SELECT_TTS_SINGLE_NO_SELECTION,No note is selected.
 SELECT_TTS_SINGLE_SELECTION,"The selected note is: pitch \0, volume \1, at \2."

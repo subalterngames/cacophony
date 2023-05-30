@@ -12,7 +12,7 @@ pub mod time;
 mod view;
 pub use crossbeam_channel;
 pub use csv;
-pub use fraction::Zero;
+pub use fraction::{Zero, ToPrimitive};
 pub use fraction_utils::Fraction;
 pub(crate) use fraction_utils::{deserialize_fraction, serialize_fraction, SerializableFraction};
 pub use hashbrown;

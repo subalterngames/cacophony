@@ -1,5 +1,4 @@
-use super::EditModeDeltas;
-use crate::get_tooltip_with_values;
+use super::{EditModeDeltas, PianoRollSubPanel, get_cycle_edit_mode_input_tts, get_edit_mode_status_tts};
 use crate::panel::*;
 use common::ini::Ini;
 use common::Zero;
@@ -35,8 +34,8 @@ impl Panel for View {
         state: &mut State,
         _: &mut Conn,
         input: &Input,
-        tts: &mut TTS,
-        text: &Text,
+        _: &mut TTS,
+        _: &Text,
     ) -> Option<UndoRedoState> {
         // Do nothing if there is no track.
         if state.music.selected.is_none() {
@@ -47,34 +46,6 @@ impl Panel for View {
             let s0 = state.clone();
             state.view.mode.increment(true);
             Some(UndoRedoState::from((s0, state)))
-        }
-        // Sub-panel TTS.
-        else if input.happened(&InputEvent::SubPanelTTS) {
-            let mode = EDIT_MODES[state.view.mode.get()];
-            let bpm = state.music.bpm;
-            let s = get_tooltip_with_values(
-                "VIEW_TTS",
-                &[
-                    InputEvent::ViewUp,
-                    InputEvent::ViewDown,
-                    InputEvent::ViewLeft,
-                    InputEvent::ViewRight,
-                    InputEvent::ViewStart,
-                    InputEvent::ViewEnd,
-                    InputEvent::PianoRollCycleMode,
-                ],
-                &[
-                    &text.get_time(&state.view.dt[0], bpm),
-                    &text.get_time(&state.view.dt[1], bpm),
-                    &state.view.dn[0].to_string(),
-                    &state.view.dn[1].to_string(),
-                    &text.get_edit_mode(&mode),
-                ],
-                input,
-                text,
-            );
-            tts.say(&s);
-            None
         }
         // Move the view to t0.
         else if input.happened(&InputEvent::ViewStart) {
@@ -170,5 +141,32 @@ impl Panel for View {
         } else {
             None
         }
+    }
+}
+
+impl PianoRollSubPanel for View {
+    fn get_status_tts(&self, state: &State, text: &Text) -> String {
+        let mut s = text.get_with_values("PIANO_ROLL_PANEL_STATUS_TTS_VIEW", &[&text.get_fraction_tts(&state.view.dt[0]),
+        &text.get_fraction_tts(&state.view.dt[1]),
+        &text.get_note_name(state.view.dn[0]),
+        &text.get_note_name(state.view.dn[1])]);
+        s.push(' ');
+        s.push_str(&get_edit_mode_status_tts(&EDIT_MODES[state.view.mode.get()], text));
+        s
+    }
+
+    fn get_input_tts(&self, state: &State, input: &Input, text: &Text) -> String {
+        // PIANO_ROLL_PANEL_INPUT_TTS_VIEW,"\0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end."
+        let mut s = get_tooltip("PIANO_ROLL_PANEL_INPUT_TTS_VIEW",                 &[
+            InputEvent::ViewUp,
+            InputEvent::ViewDown,
+            InputEvent::ViewLeft,
+            InputEvent::ViewRight,
+            InputEvent::ViewStart,
+            InputEvent::ViewEnd,
+        ], input, text);
+        s.push(' ');
+        s.push_str(&get_cycle_edit_mode_input_tts(&state.view.mode, input, text))  ;
+        s
     }
 }

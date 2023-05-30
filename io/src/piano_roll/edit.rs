@@ -1,24 +1,18 @@
-use super::EditModeDeltas;
-use crate::get_tooltip_with_values;
+use super::{EditModeDeltas, PianoRollSubPanel, get_edit_mode_status_tts, get_no_selection_status_tts, get_cycle_edit_mode_input_tts};
 use crate::panel::*;
 use common::ini::Ini;
-use common::Zero;
-use common::{Fraction, EDIT_MODES, MAX_NOTE, MAX_VOLUME, MIN_NOTE};
+use common::{Fraction, EDIT_MODES, MAX_NOTE, MAX_VOLUME, MIN_NOTE, Zero};
 
 /// Edit selected notes.
 pub(super) struct Edit {
     /// The edit mode deltas.
     deltas: EditModeDeltas,
-    /// The text-to-speech string if there are no notes.
-    no_selection_tts: String,
 }
 
 impl Edit {
-    pub fn new(config: &Ini, text: &Text) -> Self {
-        let no_selection_tts = text.get("EDIT_TTS_NO_SELECTION");
+    pub fn new(config: &Ini) -> Self {
         Self {
             deltas: EditModeDeltas::new(config),
-            no_selection_tts,
         }
     }
 }
@@ -29,8 +23,8 @@ impl Panel for Edit {
         state: &mut State,
         _: &mut Conn,
         input: &Input,
-        tts: &mut TTS,
-        text: &Text,
+        _: &mut TTS,
+        _: &Text,
     ) -> Option<UndoRedoState> {
         // Do nothing if there is no track.
         if state.music.selected.is_none() {
@@ -41,29 +35,6 @@ impl Panel for Edit {
             let s0 = state.clone();
             state.edit_mode.increment(true);
             Some(UndoRedoState::from((s0, state)))
-        } else if input.happened(&InputEvent::SubPanelTTS) {
-            let s = match state.select_mode.get_note_indices() {
-                Some(_) => get_tooltip_with_values(
-                    "EDIT_TTS",
-                    &[
-                        InputEvent::EditPitchUp,
-                        InputEvent::EditPitchDown,
-                        InputEvent::EditStartLeft,
-                        InputEvent::EditStartRight,
-                        InputEvent::EditDurationLeft,
-                        InputEvent::EditDurationRight,
-                        InputEvent::EditVolumeUp,
-                        InputEvent::EditVolumeDown,
-                        InputEvent::PianoRollCycleMode,
-                    ],
-                    &[&text.get_edit_mode(&EDIT_MODES[state.edit_mode.get()])],
-                    input,
-                    text,
-                ),
-                None => self.no_selection_tts.clone(),
-            };
-            tts.say(&s);
-            None
         } else {
             let mode = EDIT_MODES[state.edit_mode.get()];
             let s0 = state.clone();
@@ -155,5 +126,32 @@ impl Panel for Edit {
                 None => None,
             }
         }
+    }
+}
+
+impl PianoRollSubPanel for Edit {
+    fn get_status_tts(&self, state: &State, text: &Text) -> String {
+        get_edit_mode_status_tts(&EDIT_MODES[state.edit_mode.get()], text)
+    }
+
+    fn get_input_tts(&self, state: &State, input: &Input, text: &Text) -> String {
+        let mut s = match state.select_mode.get_note_indices() {
+            Some(_) => {
+                get_tooltip("PIANO_ROLL_PANEL_INPUT_TTS_EDIT", &[
+                    InputEvent::EditPitchUp,
+                    InputEvent::EditPitchDown,
+                    InputEvent::EditStartLeft,
+                    InputEvent::EditStartRight,
+                    InputEvent::EditDurationLeft,
+                    InputEvent::EditDurationRight,
+                    InputEvent::EditVolumeUp,
+                    InputEvent::EditVolumeDown,
+                ], input, text)
+            }
+            None => get_no_selection_status_tts(text)
+        };
+        s.push(' ');
+        s.push_str(&get_cycle_edit_mode_input_tts(&state.edit_mode, input, text));
+        s
     }
 }

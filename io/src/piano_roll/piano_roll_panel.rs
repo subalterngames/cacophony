@@ -22,8 +22,8 @@ pub struct PianoRollPanel {
 }
 
 impl PianoRollPanel {
-    pub fn new(beat: &Fraction, config: &Ini, text: &Text) -> Self {
-        let edit = Edit::new(config, text);
+    pub fn new(beat: &Fraction, config: &Ini) -> Self {
+        let edit = Edit::new(config);
         let select = Select {};
         let time = Time::new(config);
         let view = View::new(config);
@@ -65,6 +65,20 @@ impl PianoRollPanel {
         state.piano_roll_mode = mode;
         Some(UndoRedoState::from((s0, state)))
     }
+
+    /// Say this if there is no valid track.
+    fn tts_no_track(tts: &mut TTS, text: &Text) {
+        tts.say(&text.get("PIANO_ROLL_PANEL_TTS_NO_TRACK"))
+    }
+
+    fn get_sub_panel<'a>(&'a self, state: &State) -> &'a dyn PianoRollSubPanel {
+        match state.piano_roll_mode {
+            PianoRollMode::Edit => &self.edit,
+            PianoRollMode::Select => &self.select,
+            PianoRollMode::Time => &self.time,
+            PianoRollMode::View => &self.view,
+        }
+    }
 }
 
 impl Panel for PianoRollPanel {
@@ -78,8 +92,19 @@ impl Panel for PianoRollPanel {
     ) -> Option<UndoRedoState> {
         if state.music.selected.is_none() {
             None
-        } else if input.happened(&InputEvent::PanelTTS) {
-            panic!("TODO")
+        }
+        // Status TTS.
+        else if input.happened(&InputEvent::StatusTTS) {
+            match state.music.get_selected_track() {
+                Some(track) => match conn.state.programs.get(&track.channel) {
+                    Some(program) => {
+                        panic!("TODO")
+                    },
+                    None => PianoRollPanel::tts_no_track(tts, text)
+                }
+                None => PianoRollPanel::tts_no_track(tts, text)
+            };
+            None
         }
         // Toggle arm.
         else if input.happened(&InputEvent::Arm) {

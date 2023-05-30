@@ -90,8 +90,8 @@ impl IO {
         tts.insert(InputEvent::ConfigTTS, config_tts);
         let music_panel = MusicPanel {};
         let tracks_panel = TracksPanel {};
-        let open_file_panel = OpenFilePanel::new(input, text);
-        let piano_roll_panel = PianoRollPanel::new(&input_state.beat, config, text);
+        let open_file_panel = OpenFilePanel::default();
+        let piano_roll_panel = PianoRollPanel::new(&input_state.beat, config);
         Self {
             tts,
             music_panel,
