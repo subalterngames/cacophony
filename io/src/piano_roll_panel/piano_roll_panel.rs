@@ -1,7 +1,6 @@
 use super::*;
 use crate::panel::*;
-use common::config::{parse_fraction, parse_fractions};
-use common::hashbrown::HashMap;
+use common::config::parse_fractions;
 use common::ini::Ini;
 use common::{Fraction, Index, PianoRollMode};
 
@@ -18,23 +17,46 @@ pub struct PianoRollPanel {
     view: View,
     /// The beats that we can potentially input.
     beats: Vec<Fraction>,
+    /// The index of the current beat.
+    beat: Index,
 }
 
 impl PianoRollPanel {
-    pub fn new(config: &Ini, text: &Text) -> Self {
+    pub fn new(config: &Ini, text: &Text, beat: &Fraction) -> Self {
         let edit = Edit::new(config, text);
         let select = Select {};
         let time = Time::new(config);
         let view = View::new(config);
+        // Load the beats.
         let section = config.section(Some("PIANO_ROLL")).unwrap();
-        let beats = parse_fractions(section, "beats");
+        let mut beats = parse_fractions(section, "beats");
+        // Is the input beat in the list?
+        let beat_index = match beats.iter().position(|b| b == beat) {
+            Some(position) => position,
+            None => {
+                beats.push(beat.clone());
+                beats.len() - 1
+            }
+        };
+        let beat = Index::new(beat_index, beats.len());
         Self {
             edit,
             select,
             time,
             view,
             beats,
+            beat
         }
+    }
+
+    /// Set the input beat.
+    fn set_input_beat(&mut self, up: bool, state: &mut State) -> Option<UndoRedoState> {
+        let s0 = state.clone();
+        // Increment the beat.
+        self.beat.increment(up);
+        // Set the input beat.
+        state.input.beat = self.beats[self.beat.get()];
+        Some(UndoRedoState::from((s0, state)))
     }
 
     /// Set the piano roll mode.
@@ -68,14 +90,10 @@ impl Panel for PianoRollPanel {
         }
         // Set the input beat.
         else if input.happened(&InputEvent::InputBeatLeft) {
-            let s0 = state.clone();
-            state.input.beat.increment(false);
-            Some(UndoRedoState::from((s0, state)))
+            self.set_input_beat(false, state)
         }
         else if input.happened(&InputEvent::InputBeatRight) {
-            let s0 = state.clone();
-            state.input.beat.increment(true);
-            Some(UndoRedoState::from((s0, state)))
+            self.set_input_beat(true, state)
         }
         // Set the mode.
         else if input.happened(&InputEvent::PianoRollSetEdit) {
