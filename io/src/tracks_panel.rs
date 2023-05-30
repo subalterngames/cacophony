@@ -2,23 +2,9 @@ use crate::{panel::*, tooltip::get_tooltip, OpenFileType};
 use common::MidiTrack;
 use text::get_file_name_no_ex;
 
-pub(crate) struct TracksPanel {
-    /// The text-to-speech string for the panel if there is not a selected track.
-    tts_no_selection: String,
-}
+pub(crate) struct TracksPanel {}
 
 impl TracksPanel {
-    pub fn new(input: &Input, text: &Text) -> Self {
-        // TRACKS_LIST_PANEL_TTS_NO_SELECTION,\2 to add a track.
-        let tts_no_selection = get_tooltip(
-            "TRACKS_LIST_PANEL_TTS_NO_SELECTION",
-            &[InputEvent::AddTrack],
-            input,
-            text,
-        );
-        Self { tts_no_selection }
-    }
-
     /// Increment or decrement the preset index. Returns a new undo-redo state.
     fn set_preset(channel: u8, conn: &mut Conn, up: bool) -> UndoRedoState {
         let program = conn.state.programs.get(&channel).unwrap();
@@ -88,55 +74,83 @@ impl Panel for TracksPanel {
         tts: &mut TTS,
         text: &Text,
     ) -> Option<UndoRedoState> {
-        // Panel TTS.
-        if input.happened(&InputEvent::PanelTTS) {
+        // Status TTS.
+        if input.happened(&InputEvent::StatusTTS) {
             match state.music.get_selected_track() {
                 Some(track) => {
-                    let tts_text = get_tooltip_with_values(
-                        "TRACKS_LIST_PANEL_TTS_SELECTION",
-                        &[
-                            InputEvent::NextTrack,
-                            InputEvent::PreviousTrack,
-                            InputEvent::AddTrack,
-                            InputEvent::RemoveTrack,
-                        ],
+                    // Track ? is selected.
+                    let mut s = text.get_with_values(
+                        "TRACKS_PANEL_STATUS_TTS_PREFIX",
                         &[&track.channel.to_string()],
-                        input,
-                        text,
                     );
-                    tts.say(&tts_text)
+                    s.push(' ');
+                    // Is there a SoundFont?
+                    match conn.state.programs.get(&track.channel) {
+                        // Track staus.
+                        Some(program) => {
+                            s.push_str(&text.get_with_values(
+                                "TRACKS_PANEL_STATUS_TTS_SOUNDFONT",
+                                &[
+                                    &program.preset_name,
+                                    &program.bank.to_string(),
+                                    &track.gain.to_string(),
+                                    &get_file_name_no_ex(&program.path),
+                                ],
+                            ));
+                            // Muted.
+                            if track.mute {
+                                s.push(' ');
+                                s.push_str(&text.get("TRACKS_PANEL_STATUS_TTS_MUTED"))
+                            }
+                            // Soloed.
+                            if track.solo {
+                                s.push(' ');
+                                s.push_str(&text.get("TRACKS_PANEL_STATUS_TTS_SOLOED"))
+                            }
+                        }
+                        // No SoundFont.
+                        None => s.push_str(&"TRACKS_PANEL_STATUS_TTS_NO_SOUNDFONT"),
+                    }
+                    tts.say(&s)
                 }
-                None => tts.say(&self.tts_no_selection),
+                None => tts.say(&text.get("TRACKS_PANEL_STATUS_TTS_NO_SELECTION")),
             }
             None
         }
-        // Sub-panel TTS.
-        else if input.happened(&InputEvent::SubPanelTTS) {
+        // Input TTS.
+        else if input.happened(&InputEvent::InputTTS) {
+            let mut s = get_tooltip("TRACKS_PANEL_INPUT_TTS_ADD", &[InputEvent::AddTrack], input, text);
             // There is a selected track.
             if let Some(track) = state.music.get_selected_track() {
+                // Remove the track.
+                s.push(' ');
+                s.push_str(&get_tooltip_with_values("TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX", &[InputEvent::RemoveTrack, InputEvent::PreviousTrack, InputEvent::NextTrack, InputEvent::EnableSoundFontPanel], &[&track.channel.to_string()], input, text));
+                s.push(' ');
                 // Is there a program?
                 match conn.state.programs.get(&track.channel) {
                     // Program.
                     Some(program) => {
                         // Preset, bank, gain.
-                        let mut s = get_tooltip_with_values(
-                            "TRACKS_LIST_SUB_PANEL_TTS_SOUNDFONT_0",
-                            &[
-                                InputEvent::PreviousPreset,
-                                InputEvent::NextPreset,
-                                InputEvent::PreviousBank,
-                                InputEvent::NextBank,
-                                InputEvent::DecreaseTrackGain,
-                                InputEvent::IncreaseTrackGain,
-                            ],
-                            &[
-                                &program.preset_name,
-                                &program.bank.to_string(),
-                                &track.gain.to_string(),
-                            ],
-                            input,
-                            text,
-                        );
+                        s.push_str(&get_tooltip("TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX", &[InputEvent::PreviousPreset, InputEvent::NextPreset, InputEvent::PreviousBank, InputEvent::NextBank, InputEvent::DecreaseTrackGain, InputEvent::IncreaseTrackGain], input, text));
+                        // Mute.
+                        s.push(' ');
+                        let mute_key = if track.mute {
+                            "TRACKS_PANEL_INPUT_TTS_UNMUTE"
+                        }
+                        else {
+                            "TRACKS_PANEL_INPUT_TTS_MUTE"
+                        };
+                        s.push_str(&get_tooltip(mute_key, &[InputEvent::Mute], input, text));
+                        // Solo.
+                        s.push(' ');
+                        let solo_key = if track.solo {
+                            "TRACKS_PANEL_INPUT_TTS_UNSOLO"
+                        }
+                        else {
+                            "TRACKS_PANEL_INPUT_TTS_SOLO"
+                        };
+                        s.push_str(&get_tooltip(solo_key, &[InputEvent::Solo], input, text));
+
                         // Mute.
                         s.push(' ');
                         let mute_key = if track.mute {
@@ -153,16 +167,6 @@ impl Panel for TracksPanel {
                             "TRACKS_LIST_SUB_PANEL_TTS_NONSOLOED"
                         };
                         s.push_str(&get_tooltip(solo_key, &[InputEvent::Solo], input, text));
-                        // SoundFont.
-                        s.push(' ');
-                        let sf_name = get_file_name_no_ex(&program.path);
-                        s.push_str(&get_tooltip_with_values(
-                            "TRACKS_LIST_SUB_PANEL_TTS_SOUNDFONT_1",
-                            &[InputEvent::EnableSoundFontPanel],
-                            &[&sf_name],
-                            input,
-                            text,
-                        ));
                         // Say it.
                         tts.say(&s);
                     }

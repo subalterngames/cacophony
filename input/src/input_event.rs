@@ -7,8 +7,8 @@ pub enum InputEvent {
     NextPanel,
     PreviousPanel,
     // TTS.
-    PanelTTS,
-    SubPanelTTS,
+    StatusTTS,
+    InputTTS,
     AppTTS,
     FileTTS,
     ConfigTTS,

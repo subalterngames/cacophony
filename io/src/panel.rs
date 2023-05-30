@@ -1,5 +1,5 @@
 pub(crate) use crate::io_command::IOCommand;
-pub(crate) use crate::{get_tooltip_with_values, UndoRedoState};
+pub(crate) use crate::{get_tooltip, get_tooltip_with_values, UndoRedoState};
 pub(crate) use audio::{Command, Conn};
 pub(crate) use common::music_panel_field::MusicPanelField;
 pub(crate) use common::{Index, State};

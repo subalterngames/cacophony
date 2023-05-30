@@ -124,22 +124,30 @@ TIME_TTS,\0 minutes and \1 seconds
 TIME_TTS_HOURS,"\0 hours, \1 minutes, and \2 seconds"
 OR, or 
 MIDI_CONTROL,MIDI control \0 channel \1
-APP_TTS,"Hello world. I am Casey the Cacodemon. \0, \1, \2, \3, and \4 to ask for help. \5 to quit. \6 and \7 to cycle panels. \8 or \9 to undo or redo. \10 to ask me to stop talking."
+APP_TTS,"Hello world. I am Casey the Cacodemon. \0 to get the status of the current panel. \1 to ask me what the input controls are. \3 to ask me about files. \4 to ask me about the config file. \5 to quit. \6 and \7 to cycle panels. \8 or \9 to undo or redo. \10 to ask me to stop talking."
 FILE_TTS,\0 for new music. \1 to open a file. \2 to save. \3 to save as. \4 to export.
 CONFIG_TTS,\0 to edit the config file. \1 to overwrite the config file with default values. Restart Cacophony to apply your edits.
-MUSIC_PANEL_TTS,Set global values for the music.
-MUSIC_PANEL_TTS_BPM,The b p m is \0. Type to set the beats per minute.
-MUSIC_PANEL_TTS_GAIN,The gain is \2. \0 and \1 to set the gain.
-MUSIC_PANEL_TTS_NAME,The name is \0. Type to change the change of the music.
-TRACKS_LIST_PANEL_TTS_NO_SELECTION,\2 to add a track.
-TRACKS_LIST_PANEL_TTS_SELECTION,Track \4 is selected. \0 and \1 to scroll. \2 to add a track. \3 to remove track \4.
-TRACKS_LIST_SUB_PANEL_TTS_NO_SOUNDFONT,\0 to set the sound font for track \1.
-TRACKS_LIST_SUB_PANEL_TTS_SOUNDFONT_0,The preset is \6. \0 and \1 to set the preset. The bank is \7. \2 and \3 to set the bank. The gain is \8. \4 and \5 to set the gain.
-TRACKS_LIST_SUB_PANEL_TTS_MUTED,This track is muted. \0 to un mute.
-TRACKS_LIST_SUB_PANEL_TTS_UNMUTED,\0 to mute.
-TRACKS_LIST_SUB_PANEL_TTS_SOLOED,This track is solo. \0 to un solo.
-TRACKS_LIST_SUB_PANEL_TTS_NONSOLOED,\0 to solo.
-TRACKS_LIST_SUB_PANEL_TTS_SOUNDFONT_1,The sound font is \1. \0 to set the sound font.
+MUSIC_PANEL_STATUS_TTS,This music is named \0. The b p m is \1. The gain is \2.
+MUSIC_PANEL_INPUT_TTS,\0 and \1 to scroll. The current selection is \2.
+NAME,name
+BPM,b p m
+GAIN,gain
+MUSIC_PANEL_INPUT_TTS_BPM,Type to set the beats per minute.
+MUSIC_PANEL_INPUT_TTS_GAIN,\0 and \1 to set the gain.
+MUSIC_PANEL_INPUT_TTS_NAME,Type to change the change of the music.
+TRACKS_PANEL_STATUS_TTS_NO_SELECTION,There are no tracks.
+TRACKS_PANEL_STATUS_TTS_PREFIX,Track \0 is selected.
+TRACKS_PANEL_STATUS_TTS_SOUNDFONT,The preset is \0. The bank is \1. The gain is \2. The sound font is \3.
+TRACKS_PANEL_STATUS_TTS_MUTED,This track is muted.
+TRACKS_PANEL_STATUS_TTS_SOLOED,This track is soloed.
+TRACKS_PANEL_STATUS_TTS_NO_SOUNDFONT,This track does not have a sound font.
+TRACKS_PANEL_INPUT_TTS_ADD,\0 to add a track.
+TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX,\0 to remove the track \4. \1 and \2 to scroll. \3 to set the sound font.
+TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX,\0 and \1 to set the preset. \2 and \3 to set the bank. \4 and \5 to set the gain.
+TRACKS_PANEL_INPUT_TTS_MUTE,\0 to mute.
+TRACKS_PANEL_INPUT_TTS_UNMUTE,\0 to unmute.
+TRACKS_PANEL_INPUT_TTS_SOLO,\0 to solo.
+TRACKS_PANEL_INPUT_TTS_UNSOLO,\0 to unsolo.
 OPEN_FILE_TTS_DIRECTORY,The current directory is \0.
 OPEN_FILE_TTS_SELECTION,The current selection is \0.
 OPEN_FILE_TTS_NO_SELECTION,No file or folder is selected.

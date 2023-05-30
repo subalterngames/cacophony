@@ -3,17 +3,9 @@ use common::MAX_VOLUME;
 
 const MAX_GAIN: usize = MAX_VOLUME as usize;
 
-pub(crate) struct MusicPanel {
-    /// The text-to-speech string for the panel.
-    panel_tts: String,
-}
+pub(crate) struct MusicPanel {}
 
 impl MusicPanel {
-    pub fn new(text: &Text) -> Self {
-        let panel_tts = text.get("MUSIC_PANEL_TTS");
-        Self { panel_tts }
-    }
-
     /// Increment the current gain. Returns a new undo state.
     fn set_gain(conn: &mut Conn, up: bool) -> UndoRedoState {
         // Get undo commands.
@@ -52,62 +44,85 @@ impl Panel for MusicPanel {
     ) -> Option<UndoRedoState> {
         // Cycle fields.
         if input.happened(&InputEvent::NextMusicPanelField) {
-            return Some(MusicPanel::set_field(state, true));
+            Some(MusicPanel::set_field(state, true))
         } else if input.happened(&InputEvent::PreviousMusicPanelField) {
-            return Some(MusicPanel::set_field(state, false));
+            Some(MusicPanel::set_field(state, false))
         }
         // Panel TTS.
-        else if input.happened(&InputEvent::PanelTTS) {
-            tts.say(&self.panel_tts);
+        else if input.happened(&InputEvent::StatusTTS) {
+            tts.say(&text.get_with_values(
+                "MUSIC_PANEL_STATUS_TTS",
+                &[
+                    &state.music.name,
+                    &state.music.bpm.to_string(),
+                    &conn.state.gain.to_string(),
+                ],
+            ));
+            None
         }
         // Sub-panel TTS.
-        else if input.happened(&InputEvent::SubPanelTTS) {
+        else if input.happened(&InputEvent::InputTTS) {
+            let field_key = match state.get_music_panel_field() {
+                MusicPanelField::BPM => "BPM",
+                MusicPanelField::Gain => "GAIN",
+                MusicPanelField::Name => "NAME",
+            };
+            let field = text.get(field_key);
+            let mut s = get_tooltip_with_values(
+                "MUSIC_PANEL_INPUT_TTS",
+                &[
+                    InputEvent::PreviousMusicPanelField,
+                    InputEvent::NextMusicPanelField,
+                ],
+                &[&field],
+                input,
+                text,
+            );
+            s.push(' ');
             let tts_text = match state.get_music_panel_field() {
-                MusicPanelField::BPM => {
-                    text.get_with_values("MUSIC_PANEL_TTS_BPM", &[&state.music.bpm.to_string()])
-                }
-                MusicPanelField::Gain => get_tooltip_with_values(
-                    "MUSIC_PANEL_TTS_GAIN",
+                MusicPanelField::BPM => text.get("MUSIC_PANEL_INPUT_TTS_BPM"),
+                MusicPanelField::Gain => get_tooltip(
+                    "MUSIC_PANEL_INPUT_TTS_GAIN",
                     &[InputEvent::DecreaseMusicGain, InputEvent::IncreaseMusicGain],
-                    &[&conn.state.gain.to_string()],
                     input,
                     text,
                 ),
-                MusicPanelField::Name => {
-                    text.get_with_values("MUSIC_PANEL_TTS_NAME", &[&state.music.name])
-                }
+                MusicPanelField::Name => text.get("MUSIC_PANEL_INPUT_TTS_NAME"),
             };
-            tts.say(&tts_text);
+            s.push_str(&tts_text);
+            tts.say(&s);
+            None
+        } else {
+            // Field-specific actions.
+            match state.get_music_panel_field() {
+                // Modify the BPM.
+                MusicPanelField::BPM => {
+                    let mut bpm = state.music.bpm;
+                    if input.modify_u32(&mut bpm) {
+                        let s0 = state.clone();
+                        state.music.bpm = bpm;
+                        return Some(UndoRedoState::from((s0, state)));
+                    }
+                }
+                // Set the gain.
+                MusicPanelField::Gain => {
+                    if input.happened(&InputEvent::DecreaseMusicGain) {
+                        return Some(MusicPanel::set_gain(conn, false));
+                    } else if input.happened(&InputEvent::IncreaseMusicGain) {
+                        return Some(MusicPanel::set_gain(conn, true));
+                    }
+                }
+                // Modify the name.
+                MusicPanelField::Name => {
+                    let mut name = state.music.name.clone();
+                    if input.modify_string_abc123(&mut name) {
+                        let s0 = state.clone();
+                        state.music.name = name;
+                        return Some(UndoRedoState::from((s0, state)));
+                    }
+                }
+            }
+            None
         }
-        // Field-specific actions.
-        match state.get_music_panel_field() {
-            // Modify the BPM.
-            MusicPanelField::BPM => {
-                let mut bpm = state.music.bpm;
-                if input.modify_u32(&mut bpm) {
-                    let s0 = state.clone();
-                    state.music.bpm = bpm;
-                    return Some(UndoRedoState::from((s0, state)));
-                }
-            }
-            // Set the gain.
-            MusicPanelField::Gain => {
-                if input.happened(&InputEvent::DecreaseMusicGain) {
-                    return Some(MusicPanel::set_gain(conn, false));
-                } else if input.happened(&InputEvent::IncreaseMusicGain) {
-                    return Some(MusicPanel::set_gain(conn, true));
-                }
-            }
-            // Modify the name.
-            MusicPanelField::Name => {
-                let mut name = state.music.name.clone();
-                if input.modify_string_abc123(&mut name) {
-                    let s0 = state.clone();
-                    state.music.name = name;
-                    return Some(UndoRedoState::from((s0, state)));
-                }
-            }
-        }
-        None
     }
 }

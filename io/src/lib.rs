@@ -50,8 +50,8 @@ impl IO {
         let app = get_tooltip(
             "APP_TTS",
             &[
-                InputEvent::PanelTTS,
-                InputEvent::SubPanelTTS,
+                InputEvent::StatusTTS,
+                InputEvent::InputTTS,
                 InputEvent::AppTTS,
                 InputEvent::FileTTS,
                 InputEvent::ConfigTTS,
@@ -88,8 +88,8 @@ impl IO {
             text,
         );
         tts.insert(InputEvent::ConfigTTS, config_tts);
-        let music_panel = MusicPanel::new(text);
-        let tracks_panel = TracksPanel::new(input, text);
+        let music_panel = MusicPanel {};
+        let tracks_panel = TracksPanel {};
         let open_file_panel = OpenFilePanel::new(input, text);
         let piano_roll_panel = PianoRollPanel::new(&input_state.beat, config, text);
         Self {
