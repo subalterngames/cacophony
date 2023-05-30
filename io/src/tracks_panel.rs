@@ -119,25 +119,52 @@ impl Panel for TracksPanel {
         }
         // Input TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let mut s = get_tooltip("TRACKS_PANEL_INPUT_TTS_ADD", &[InputEvent::AddTrack], input, text);
+            let mut s = get_tooltip(
+                "TRACKS_PANEL_INPUT_TTS_ADD",
+                &[InputEvent::AddTrack],
+                input,
+                text,
+            );
             // There is a selected track.
             if let Some(track) = state.music.get_selected_track() {
                 // Remove the track.
                 s.push(' ');
-                s.push_str(&get_tooltip_with_values("TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX", &[InputEvent::RemoveTrack, InputEvent::PreviousTrack, InputEvent::NextTrack, InputEvent::EnableSoundFontPanel], &[&track.channel.to_string()], input, text));
+                s.push_str(&get_tooltip_with_values(
+                    "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX",
+                    &[
+                        InputEvent::RemoveTrack,
+                        InputEvent::PreviousTrack,
+                        InputEvent::NextTrack,
+                        InputEvent::EnableSoundFontPanel,
+                    ],
+                    &[&track.channel.to_string()],
+                    input,
+                    text,
+                ));
                 s.push(' ');
                 // Is there a program?
                 match conn.state.programs.get(&track.channel) {
                     // Program.
                     Some(program) => {
                         // Preset, bank, gain.
-                        s.push_str(&get_tooltip("TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX", &[InputEvent::PreviousPreset, InputEvent::NextPreset, InputEvent::PreviousBank, InputEvent::NextBank, InputEvent::DecreaseTrackGain, InputEvent::IncreaseTrackGain], input, text));
+                        s.push_str(&get_tooltip(
+                            "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX",
+                            &[
+                                InputEvent::PreviousPreset,
+                                InputEvent::NextPreset,
+                                InputEvent::PreviousBank,
+                                InputEvent::NextBank,
+                                InputEvent::DecreaseTrackGain,
+                                InputEvent::IncreaseTrackGain,
+                            ],
+                            input,
+                            text,
+                        ));
                         // Mute.
                         s.push(' ');
                         let mute_key = if track.mute {
                             "TRACKS_PANEL_INPUT_TTS_UNMUTE"
-                        }
-                        else {
+                        } else {
                             "TRACKS_PANEL_INPUT_TTS_MUTE"
                         };
                         s.push_str(&get_tooltip(mute_key, &[InputEvent::Mute], input, text));
@@ -145,8 +172,7 @@ impl Panel for TracksPanel {
                         s.push(' ');
                         let solo_key = if track.solo {
                             "TRACKS_PANEL_INPUT_TTS_UNSOLO"
-                        }
-                        else {
+                        } else {
                             "TRACKS_PANEL_INPUT_TTS_SOLO"
                         };
                         s.push_str(&get_tooltip(solo_key, &[InputEvent::Solo], input, text));

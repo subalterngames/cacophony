@@ -5,7 +5,7 @@ use common::{PanelType, Paths};
 use file_or_directory::FileOrDirectory;
 use open_file_type::OpenFileType;
 use std::path::PathBuf;
-use text::{get_file_name_no_ex, get_folder_name, push_space};
+use text::{get_file_name_no_ex, get_folder_name};
 
 const SOUNDFONT_EXTENSIONS: [&str; 2] = ["sf2", "sf3"];
 const SAVE_FILE_EXTENSIONS: [&str; 1] = ["cac"];
@@ -208,69 +208,88 @@ impl Panel for OpenFilePanel {
         tts: &mut TTS,
         text: &Text,
     ) -> Option<UndoRedoState> {
-        // Text-to-speech.
-        if input.happened(&InputEvent::PanelTTS) || input.happened(&InputEvent::SubPanelTTS) {
-            // The current directory.
+        // Status TTS.
+        if input.happened(&InputEvent::StatusTTS) {
             let mut s = text.get_with_values(
-                "OPEN_FILE_TTS_DIRECTORY",
+                "OPEN_FILE_PANEL_STATUS_TTS_CWD",
                 &[&get_folder_name(&self.directory)],
             );
             s.push(' ');
-            // Go up a directory.
-            if let Some(parent) = self.directory.parent() {
-                // OPEN_FILE_TTS_UP_DIRECTORY,\0 to go up to folder \1.
-                let parent_name = get_folder_name(parent);
-                s.push_str(&get_tooltip_with_values(
-                    "OPEN_FILE_TTS_UP_DIRECTORY",
-                    &[InputEvent::UpDirectory],
-                    &[&parent_name],
-                    input,
-                    text,
-                ));
-                s.push(' ');
-            }
-            // Describe the selection.
             match self.selected {
                 Some(selected) => {
                     let path = &self.paths[selected];
-                    let stem = if path.is_file {
-                        get_file_name_no_ex(&path.path)
+                    let name = if path.is_file {
+                        text.get_with_values("FILE", &[&get_file_name_no_ex(&path.path)])
                     } else {
-                        get_folder_name(&path.path)
+                        text.get_with_values("FILE", &[&get_folder_name(&path.path)])
                     };
-                    s.push_str(&text.get_with_values("OPEN_FILE_TTS_SELECTION", &[&stem]));
-                    // Do something with the file.
-                    if path.is_file {
-                        match self.open_file_type {
-                            OpenFileType::SoundFont => {
-                                s.push(' ');
-                                s.push_str(&self.tts_load_soundfont);
-                            }
-                            OpenFileType::ReadSave => {
-                                s.push(' ');
-                                s.push_str(&self.tts_read_save);
-                            }
-                            _ => (),
-                        }
-                    }
-                    // Down a directory.
-                    else {
-                        s.push(' ');
-                        s.push_str(&self.tts_down_directory);
-                    }
+                    s.push_str(
+                        &text.get_with_values("OPEN_FILE_PANEL_STATUS_TTS_SELECTION", &[&name]),
+                    );
                 }
-                None => s.push_str(&self.tts_no_selection),
+                None => s.push_str(&text.get("OPEN_FILE_PANEL_STATUS_TTS_NO_SELECTION")),
             }
-            // Write a save.
-            if let OpenFileType::WriteSave = self.open_file_type {
-                push_space(&mut s);
-                s.push_str(&self.tts_write_save);
+            tts.say(&s);
+        }
+        // Input TTS.
+        else if input.happened(&InputEvent::InputTTS) {
+            let mut strings = vec![];
+            // Up directory.
+            if let Some(parent) = self.directory.parent() {
+                strings.push(get_tooltip_with_values(
+                    "OPEN_FILE_PANEL_INPUT_TTS_UP_DIRECTORY",
+                    &[InputEvent::UpDirectory],
+                    &[&get_folder_name(&parent)],
+                    input,
+                    text,
+                ))
+            }
+            // Scroll.
+            if self.paths.len() > 1 {
+                strings.push(get_tooltip(
+                    "OPEN_FILE_PANEL_INPUT_TTS_SCROLL",
+                    &[InputEvent::PreviousPath, InputEvent::NextPath],
+                    input,
+                    text,
+                ));
+            }
+            if let Some(selected) = self.selected {
+                let events = vec![InputEvent::SelectFile];
+                let path = &self.paths[selected];
+                match path.is_file {
+                    // Select.
+                    true => {
+                        let open_file_key = match self.open_file_type {
+                            OpenFileType::ReadSave => "OPEN_FILE_PANEL_INPUT_TTS_READ_SAVE",
+                            OpenFileType::SoundFont => "OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT",
+                            OpenFileType::WriteSave => "OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE",
+                        };
+                        strings.push(get_tooltip_with_values(
+                            open_file_key,
+                            &events,
+                            &[&get_file_name_no_ex(&path.path)],
+                            input,
+                            text,
+                        ));
+                    }
+                    // Down directory.
+                    false => strings.push(get_tooltip_with_values(
+                        "OPEN_FILE_PANEL_INPUT_TTS_DOWN_DIRECTORY",
+                        &[InputEvent::DownDirectory],
+                        &[&get_folder_name(&path.path)],
+                        input,
+                        text,
+                    )),
+                }
             }
             // Close.
-            push_space(&mut s);
-            s.push_str(&self.tts_close);
-            // Say it!
-            tts.say(&s)
+            strings.push(get_tooltip(
+                "OPEN_FILE_PANEL_INPUT_TTS_CLOSE",
+                &[InputEvent::CloseOpenFile],
+                input,
+                text,
+            ));
+            tts.say(&strings.join(" "));
         }
         // Go up a directory.
         else if input.happened(&InputEvent::UpDirectory) {
