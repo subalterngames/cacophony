@@ -1,6 +1,6 @@
 use crate::{Fraction, Paths};
 use ini::{Ini, Properties};
-use serde_json::{from_str, Error};
+use serde_json::from_str;
 use std::fmt::Display;
 use std::str::FromStr;
 

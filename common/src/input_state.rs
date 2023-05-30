@@ -1,5 +1,7 @@
 use crate::note::SerializableNote;
-use crate::{Note, Index, Fraction, SerializableFraction, serialize_fraction, deserialize_fraction};
+use crate::{
+    deserialize_fraction, serialize_fraction, Fraction, Index, Note, SerializableFraction,
+};
 use serde::{Deserialize, Serialize};
 
 /// Booleans and numerical values describing the input state.

@@ -22,7 +22,7 @@ pub struct PianoRollPanel {
 }
 
 impl PianoRollPanel {
-    pub fn new(config: &Ini, text: &Text, beat: &Fraction) -> Self {
+    pub fn new(beat: &Fraction, config: &Ini, text: &Text) -> Self {
         let edit = Edit::new(config, text);
         let select = Select {};
         let time = Time::new(config);
@@ -34,7 +34,7 @@ impl PianoRollPanel {
         let beat_index = match beats.iter().position(|b| b == beat) {
             Some(position) => position,
             None => {
-                beats.push(beat.clone());
+                beats.push(*beat);
                 beats.len() - 1
             }
         };
@@ -45,7 +45,7 @@ impl PianoRollPanel {
             time,
             view,
             beats,
-            beat
+            beat,
         }
     }
 
@@ -78,8 +78,7 @@ impl Panel for PianoRollPanel {
     ) -> Option<UndoRedoState> {
         if state.music.selected.is_none() {
             None
-        }
-        else if input.happened(&InputEvent::PanelTTS) {
+        } else if input.happened(&InputEvent::PanelTTS) {
             panic!("TODO")
         }
         // Toggle arm.
@@ -91,8 +90,7 @@ impl Panel for PianoRollPanel {
         // Set the input beat.
         else if input.happened(&InputEvent::InputBeatLeft) {
             self.set_input_beat(false, state)
-        }
-        else if input.happened(&InputEvent::InputBeatRight) {
+        } else if input.happened(&InputEvent::InputBeatRight) {
             self.set_input_beat(true, state)
         }
         // Set the mode.
