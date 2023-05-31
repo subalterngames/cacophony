@@ -3,6 +3,7 @@ use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::time::bar_to_samples;
 use common::{Fraction, InputState, MidiTrack, Music, Note, PanelType, Paths, State, MAX_VOLUME};
+use edit::edit_file;
 use input::{Input, InputEvent};
 use std::path::PathBuf;
 use text::{Text, TTS};
@@ -60,7 +61,6 @@ impl IO {
                 InputEvent::InputTTS,
                 InputEvent::AppTTS,
                 InputEvent::FileTTS,
-                InputEvent::ConfigTTS,
                 InputEvent::Quit,
                 InputEvent::NextPanel,
                 InputEvent::PreviousPanel,
@@ -81,19 +81,12 @@ impl IO {
                 InputEvent::SaveFile,
                 InputEvent::SaveFileAs,
                 InputEvent::ExportFile,
+                InputEvent::EditConfig,
             ],
             input,
             text,
         );
         tts.insert(InputEvent::FileTTS, file);
-        // Config TTS.
-        let config_tts = get_tooltip(
-            "CONFIG_TTS",
-            &[InputEvent::EditConfig, InputEvent::OverwriteConfig],
-            input,
-            text,
-        );
-        tts.insert(InputEvent::ConfigTTS, config_tts);
         let music_panel = MusicPanel {};
         let tracks_panel = TracksPanel {};
         let open_file_panel = OpenFilePanel::default();
@@ -189,6 +182,15 @@ impl IO {
                     None => self.open_file_panel.export(paths, state),
                 }
             }
+        }
+        // Open config file.
+        else if input.happened(&InputEvent::EditConfig) {
+            // Create a user .ini file.
+            if !paths.user_ini_path.exists() {
+                paths.create_user_config();
+            }
+            // Edit.
+            if edit_file(&paths.user_ini_path).is_ok() {}
         }
         // Undo.
         else if input.happened(&InputEvent::Undo) && !self.undo.is_empty() {

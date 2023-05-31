@@ -11,7 +11,6 @@ pub enum InputEvent {
     InputTTS,
     AppTTS,
     FileTTS,
-    ConfigTTS,
     StopTTS,
     // Undo-redo.
     Undo,
@@ -23,7 +22,6 @@ pub enum InputEvent {
     SaveFileAs,
     ExportFile,
     EditConfig,
-    OverwriteConfig,
     // Quit.
     Quit,
     // Music panel.

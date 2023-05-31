@@ -6,7 +6,7 @@ mod piano_roll_panel;
 mod piano_roll_sub_panel;
 mod select;
 mod time;
-use edit::Edit;
+use self::edit::Edit;
 pub(crate) use piano_roll_panel::PianoRollPanel;
 pub(crate) use piano_roll_sub_panel::PianoRollSubPanel;
 pub(super) use piano_roll_sub_panel::{

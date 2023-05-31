@@ -1,6 +1,6 @@
 use directories::UserDirs;
 use std::env::current_dir;
-use std::fs::create_dir_all;
+use std::fs::{copy, create_dir_all};
 use std::path::{Path, PathBuf};
 
 const CONFIG_FILENAME: &str = "config.ini";
@@ -55,6 +55,16 @@ impl Paths {
             saves_directory,
             export_directory,
         }
+    }
+
+    /// Create the user .ini file by copying the default .ini file.
+    pub fn create_user_config(&self) {
+        let path = PathBuf::from(&self.user_directory)
+            .join(CONFIG_FILENAME)
+            .to_str()
+            .unwrap()
+            .to_string();
+        copy(&self.default_ini_path, path).unwrap();
     }
 }
 
