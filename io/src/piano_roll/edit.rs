@@ -1,7 +1,10 @@
-use super::{EditModeDeltas, PianoRollSubPanel, get_edit_mode_status_tts, get_no_selection_status_tts, get_cycle_edit_mode_input_tts};
+use super::{
+    get_cycle_edit_mode_input_tts, get_edit_mode_status_tts, get_no_selection_status_tts,
+    EditModeDeltas, PianoRollSubPanel,
+};
 use crate::panel::*;
 use common::ini::Ini;
-use common::{Fraction, EDIT_MODES, MAX_NOTE, MAX_VOLUME, MIN_NOTE, Zero};
+use common::{Fraction, Zero, EDIT_MODES, MAX_NOTE, MAX_VOLUME, MIN_NOTE};
 
 /// Edit selected notes.
 pub(super) struct Edit {
@@ -136,8 +139,9 @@ impl PianoRollSubPanel for Edit {
 
     fn get_input_tts(&self, state: &State, input: &Input, text: &Text) -> String {
         let mut s = match state.select_mode.get_note_indices() {
-            Some(_) => {
-                get_tooltip("PIANO_ROLL_PANEL_INPUT_TTS_EDIT", &[
+            Some(_) => get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_EDIT",
+                &[
                     InputEvent::EditPitchUp,
                     InputEvent::EditPitchDown,
                     InputEvent::EditStartLeft,
@@ -146,12 +150,18 @@ impl PianoRollSubPanel for Edit {
                     InputEvent::EditDurationRight,
                     InputEvent::EditVolumeUp,
                     InputEvent::EditVolumeDown,
-                ], input, text)
-            }
-            None => get_no_selection_status_tts(text)
+                ],
+                input,
+                text,
+            ),
+            None => get_no_selection_status_tts(text),
         };
         s.push(' ');
-        s.push_str(&get_cycle_edit_mode_input_tts(&state.edit_mode, input, text));
+        s.push_str(&get_cycle_edit_mode_input_tts(
+            &state.edit_mode,
+            input,
+            text,
+        ));
         s
     }
 }

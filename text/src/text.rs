@@ -37,7 +37,12 @@ impl Text {
             let value = record.get(column).unwrap().to_string();
             text.insert(key, value);
         }
-        let note_names: Vec<String> = text.remove("NOTE_NAMES").unwrap().split(", ").map(|s| s.to_string()).collect();
+        let note_names: Vec<String> = text
+            .remove("NOTE_NAMES")
+            .unwrap()
+            .split(", ")
+            .map(|s| s.to_string())
+            .collect();
         let keycodes = Text::get_keycode_map(&text);
         let edit_modes = Text::get_edit_mode_map(&text);
         let piano_roll_modes = Text::get_piano_roll_mode_map(&text);
@@ -86,13 +91,13 @@ impl Text {
         }
     }
 
-        /// Returns the string version of a piano roll mode.
-        pub fn get_piano_roll_mode(&self, mode: &PianoRollMode) -> String {
-            match self.piano_roll_modes.get(mode) {
-                Some(t) => t.clone(),
-                None => panic!("Invalid piano roll mode {:?}", mode),
-            }
+    /// Returns the string version of a piano roll mode.
+    pub fn get_piano_roll_mode(&self, mode: &PianoRollMode) -> String {
+        match self.piano_roll_modes.get(mode) {
+            Some(t) => t.clone(),
+            None => panic!("Invalid piano roll mode {:?}", mode),
         }
+    }
 
     /// Returns the string version of an edit mode.
     pub fn get_edit_mode(&self, mode: &EditMode) -> String {
@@ -153,9 +158,12 @@ impl Text {
                                 let fr = beat.fract();
                                 let n = fr.numer().unwrap();
                                 let d = fr.denom().unwrap();
-                                self.get_with_values("FRACTION_TTS_WHOLE", &[&u.to_string(), &n.to_string(), &d.to_string()])
+                                self.get_with_values(
+                                    "FRACTION_TTS_WHOLE",
+                                    &[&u.to_string(), &n.to_string(), &d.to_string()],
+                                )
                             }
-                            false =>   self.get_with_values(
+                            false => self.get_with_values(
                                 "FRACTION_TTS",
                                 &[&other.0.to_string(), &other.1.to_string()],
                             ),
@@ -312,12 +320,14 @@ impl Text {
         edit_modes
     }
 
-    
     /// Returns a HashMap of the piano roll modes.
     fn get_piano_roll_mode_map(text: &HashMap<String, String>) -> HashMap<PianoRollMode, String> {
         let mut piano_roll_modes = HashMap::new();
         piano_roll_modes.insert(PianoRollMode::Edit, text["PIANO_ROLL_MODE_EDIT"].clone());
-        piano_roll_modes.insert(PianoRollMode::Select, text["PIANO_ROLL_MODE_SELECT"].clone());
+        piano_roll_modes.insert(
+            PianoRollMode::Select,
+            text["PIANO_ROLL_MODE_SELECT"].clone(),
+        );
         piano_roll_modes.insert(PianoRollMode::Time, text["PIANO_ROLL_MODE_TIME"].clone());
         piano_roll_modes.insert(PianoRollMode::View, text["PIANO_ROLL_MODE_VIEW"].clone());
         piano_roll_modes

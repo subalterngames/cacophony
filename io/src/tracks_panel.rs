@@ -109,7 +109,7 @@ impl Panel for TracksPanel {
                             }
                         }
                         // No SoundFont.
-                        None => s.push_str(&"TRACKS_PANEL_STATUS_TTS_NO_SOUNDFONT"),
+                        None => s.push_str(&text.get("TRACKS_PANEL_STATUS_TTS_NO_SOUNDFONT")),
                     }
                     tts.say(&s)
                 }
@@ -145,7 +145,7 @@ impl Panel for TracksPanel {
                 // Is there a program?
                 match conn.state.programs.get(&track.channel) {
                     // Program.
-                    Some(program) => {
+                    Some(_) => {
                         // Preset, bank, gain.
                         s.push_str(&get_tooltip(
                             "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX",
@@ -180,17 +180,17 @@ impl Panel for TracksPanel {
                         // Mute.
                         s.push(' ');
                         let mute_key = if track.mute {
-                            "TRACKS_LIST_SUB_PANEL_TTS_MUTED"
+                            "TRACKS_PANEL_INPUT_TTS_UNMUTE"
                         } else {
-                            "TRACKS_LIST_SUB_PANEL_TTS_UNMUTED"
+                            "TRACKS_PANEL_INPUT_TTS_MUTE"
                         };
                         s.push_str(&get_tooltip(mute_key, &[InputEvent::Mute], input, text));
                         // Solo.
                         s.push(' ');
                         let solo_key = if track.solo {
-                            "TRACKS_LIST_SUB_PANEL_TTS_SOLOED"
+                            "TRACKS_PANEL_INPUT_TTS_UNSOLO"
                         } else {
-                            "TRACKS_LIST_SUB_PANEL_TTS_NONSOLOED"
+                            "TRACKS_PANEL_INPUT_TTS_SOLO"
                         };
                         s.push_str(&get_tooltip(solo_key, &[InputEvent::Solo], input, text));
                         // Say it.
@@ -199,7 +199,7 @@ impl Panel for TracksPanel {
                     // No program.
                     None => {
                         let tts_text = get_tooltip_with_values(
-                            "TRACKS_LIST_SUB_PANEL_TTS_NO_SOUNDFONT",
+                            "TRACKS_PANEL_INPUT_TTS_NO_SOUNDFONT",
                             &[InputEvent::EnableSoundFontPanel],
                             &[&track.channel.to_string()],
                             input,

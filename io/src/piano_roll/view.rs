@@ -1,4 +1,6 @@
-use super::{EditModeDeltas, PianoRollSubPanel, get_cycle_edit_mode_input_tts, get_edit_mode_status_tts};
+use super::{
+    get_cycle_edit_mode_input_tts, get_edit_mode_status_tts, EditModeDeltas, PianoRollSubPanel,
+};
 use crate::panel::*;
 use common::ini::Ini;
 use common::Zero;
@@ -146,27 +148,44 @@ impl Panel for View {
 
 impl PianoRollSubPanel for View {
     fn get_status_tts(&self, state: &State, text: &Text) -> String {
-        let mut s = text.get_with_values("PIANO_ROLL_PANEL_STATUS_TTS_VIEW", &[&text.get_fraction_tts(&state.view.dt[0]),
-        &text.get_fraction_tts(&state.view.dt[1]),
-        &text.get_note_name(state.view.dn[0]),
-        &text.get_note_name(state.view.dn[1])]);
+        let mut s = text.get_with_values(
+            "PIANO_ROLL_PANEL_STATUS_TTS_VIEW",
+            &[
+                &text.get_fraction_tts(&state.view.dt[0]),
+                &text.get_fraction_tts(&state.view.dt[1]),
+                &text.get_note_name(state.view.dn[0]),
+                &text.get_note_name(state.view.dn[1]),
+            ],
+        );
         s.push(' ');
-        s.push_str(&get_edit_mode_status_tts(&EDIT_MODES[state.view.mode.get()], text));
+        s.push_str(&get_edit_mode_status_tts(
+            &EDIT_MODES[state.view.mode.get()],
+            text,
+        ));
         s
     }
 
     fn get_input_tts(&self, state: &State, input: &Input, text: &Text) -> String {
         // PIANO_ROLL_PANEL_INPUT_TTS_VIEW,"\0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end."
-        let mut s = get_tooltip("PIANO_ROLL_PANEL_INPUT_TTS_VIEW",                 &[
-            InputEvent::ViewUp,
-            InputEvent::ViewDown,
-            InputEvent::ViewLeft,
-            InputEvent::ViewRight,
-            InputEvent::ViewStart,
-            InputEvent::ViewEnd,
-        ], input, text);
+        let mut s = get_tooltip(
+            "PIANO_ROLL_PANEL_INPUT_TTS_VIEW",
+            &[
+                InputEvent::ViewUp,
+                InputEvent::ViewDown,
+                InputEvent::ViewLeft,
+                InputEvent::ViewRight,
+                InputEvent::ViewStart,
+                InputEvent::ViewEnd,
+            ],
+            input,
+            text,
+        );
         s.push(' ');
-        s.push_str(&get_cycle_edit_mode_input_tts(&state.view.mode, input, text))  ;
+        s.push_str(&get_cycle_edit_mode_input_tts(
+            &state.view.mode,
+            input,
+            text,
+        ));
         s
     }
 }

@@ -184,7 +184,7 @@ impl Panel for OpenFilePanel {
                 strings.push(get_tooltip_with_values(
                     "OPEN_FILE_PANEL_INPUT_TTS_UP_DIRECTORY",
                     &[InputEvent::UpDirectory],
-                    &[&get_folder_name(&parent)],
+                    &[&get_folder_name(parent)],
                     input,
                     text,
                 ))

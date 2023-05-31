@@ -1,4 +1,4 @@
-use super::{EditModeDeltas, PianoRollSubPanel, get_edit_mode_status_tts};
+use super::{get_edit_mode_status_tts, EditModeDeltas, PianoRollSubPanel};
 use crate::panel::*;
 use common::ini::Ini;
 use common::Zero;
@@ -109,20 +109,31 @@ impl PianoRollSubPanel for Time {
     fn get_status_tts(&self, state: &State, text: &Text) -> String {
         let mut s = get_edit_mode_status_tts(&EDIT_MODES[state.time.mode.get()], text);
         s.push(' ');
-        s.push_str(&text.get_with_values("PIANO_ROLL_PANEL_STATUS_TTS_TIME", &[&text.get_fraction_tts(&state.time.cursor), &text.get_fraction_tts(&state.time.playback)]));
+        s.push_str(&text.get_with_values(
+            "PIANO_ROLL_PANEL_STATUS_TTS_TIME",
+            &[
+                &text.get_fraction_tts(&state.time.cursor),
+                &text.get_fraction_tts(&state.time.playback),
+            ],
+        ));
         s
     }
 
     fn get_input_tts(&self, _: &State, input: &Input, text: &Text) -> String {
-        get_tooltip("PIANO_ROLL_PANEL_INPUT_TTS_TIME", &[
-            InputEvent::TimeCursorLeft,
-            InputEvent::TimeCursorRight,
-            InputEvent::TimeCursorStart,
-            InputEvent::TimeCursorEnd,
-            InputEvent::TimePlaybackLeft,
-            InputEvent::TimePlaybackRight,
-            InputEvent::TimePlaybackStart,
-            InputEvent::TimePlaybackEnd,
-        ], input, text)
+        get_tooltip(
+            "PIANO_ROLL_PANEL_INPUT_TTS_TIME",
+            &[
+                InputEvent::TimeCursorLeft,
+                InputEvent::TimeCursorRight,
+                InputEvent::TimeCursorStart,
+                InputEvent::TimeCursorEnd,
+                InputEvent::TimePlaybackLeft,
+                InputEvent::TimePlaybackRight,
+                InputEvent::TimePlaybackStart,
+                InputEvent::TimePlaybackEnd,
+            ],
+            input,
+            text,
+        )
     }
 }
