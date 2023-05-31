@@ -67,8 +67,8 @@ impl PianoRollPanel {
     }
 
     /// Say this if there is no valid track.
-    fn tts_no_track(tts: &mut TTS, text: &Text) {
-        tts.say(&text.get("PIANO_ROLL_PANEL_TTS_NO_TRACK"))
+    fn tts_no_track(text: &Text) -> String {
+        text.get("PIANO_ROLL_PANEL_TTS_NO_TRACK")
     }
 
     fn get_sub_panel<'a>(&'a self, state: &State) -> &'a dyn PianoRollSubPanel {
@@ -95,15 +95,36 @@ impl Panel for PianoRollPanel {
         }
         // Status TTS.
         else if input.happened(&InputEvent::StatusTTS) {
-            match state.music.get_selected_track() {
+            let s = match state.music.get_selected_track() {
                 Some(track) => match conn.state.programs.get(&track.channel) {
-                    Some(program) => {
-                        panic!("TODO")
+                    Some(_) => {
+                        // The piano roll mode.
+                        let mut s = text.get_with_values("PIANO_ROLL_PANEL_STATUS_TTS_PIANO_ROLL_MODE", &[&text.get_piano_roll_mode(&state.piano_roll_mode)]);
+                        s.push(' ');
+                        match state.input.armed {
+                            // The beat and the volume.
+                            true => {
+                                let beat = text.get_fraction_tts(&state.input.beat);
+                                let v = state.input.volume.get().to_string();
+                                let volume = if state.input.use_volume { v } else { text.get_with_values("PIANO_ROLL_PANEL_STATUS_TTS_VOLUME", &[&v])};
+                                s.push_str(&text.get_with_values("PIANO_ROLL_PANEL_STATUS_TTS_ARMED", &[&beat, &volume]));
+                            // Not armed.
+                            }
+                            false => s.push_str(&text.get("PIANO_ROLL_PANEL_STATUS_TTS_NOT_ARMED"))
+                        }
+                        // Piano role mode.
+                        s.push(' ');
+                        s.push_str(&text.get_with_values("PIANO_ROLL_PANEL_STATUS_TTS_PIANO_ROLL_MODE", &[&text.get_piano_roll_mode(&state.piano_roll_mode)]));
+                        // Panel-specific status.
+                        s.push(' ');
+                        s.push_str(&self.get_sub_panel(state).get_status_tts(state, text));
+                        s
                     },
-                    None => PianoRollPanel::tts_no_track(tts, text)
+                    None => PianoRollPanel::tts_no_track(text)
                 }
-                None => PianoRollPanel::tts_no_track(tts, text)
+                None => PianoRollPanel::tts_no_track(text)
             };
+            tts.say(&s);
             None
         }
         // Toggle arm.

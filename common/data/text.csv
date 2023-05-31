@@ -200,14 +200,4 @@ PIANO_ROLL_PANEL_STATUS_TTS_TIME,"The cursor is at \0. Playback will start at \1
 PIANO_ROLL_PANEL_INPUT_TTS_TIME,\0 and \1 to move the cursor. \2 and \3 to set the cursor to the start and end. \4 and \5 to move the playback time. \6 and \7 to set the playback time to the start and end.
 PIANO_ROLL_PANEL_STATUS_TTS_VIEW,The view is from beats \0 to \1 and pitches \2 to \3.
 PIANO_ROLL_PANEL_INPUT_TTS_VIEW,"\0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end."
-VIEW_TTS,"View mode. The view is from beat \7 to \8 and note \9 to \10.   The edit mode is \11. \6 to change the edit mode."
-TIME_TTS,Time mode. The cursor is at \9 and playback will start at \10. \0 and \1 to move the cursor. \2 and \3 to set the cursor to the start and end. \4 and \5 to move the playback time. \6 and \7 to set the playback time to the start and end. The edit mode is \11. \8 to change the edit mode.
-EDIT_TTS_NO_SELECTION,Edit mode. No notes are selected. Toggle select mode to select notes.
-EDIT_TTS,"Edit mode.  The edit mode is \9. \8 to change the edit mode."
-SELECT_TTS_SINGLE,Select mode. \3 \0 and \1 to select a note. \2 to deselect. \3 to select all. The edit mode is Single. \4 to change the edit mode to Many.
-SELECT_TTS_SINGLE_NO_SELECTION,No note is selected.
-SELECT_TTS_SINGLE_SELECTION,"The selected note is: pitch \0, volume \1, at \2."
-SELECT_TTS_MANY, Select mode. \5 \0 and \1 to adjust the start of the selection. \2 and \3 to adjust the end of the selection. \4 to deselect. \5 to select all. The edit mode is Many. \6 to change the edit mode to Single.
-SELECT_TTS_MANY_NO_SELECTION,No notes are selected.
-SELECT_TTS_MANY_SELECTION,"The selected notes start at \0 and end at \1."
 ERROR,ERROR: \0
