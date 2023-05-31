@@ -1,0 +1,26 @@
+[package]
+name = "render"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde_json = "1.0"
+strum = "0.24"
+strum_macros = "0.24"
+
+[dependencies.audio]
+path = "../audio"
+
+[dependencies.common]
+path = "../common"
+
+[dependencies.input]
+path = "../input"
+
+[dependencies.text]
+path = "../text"
+
+[dependencies.serde]
+version = "1.0.153"
+default-features = false
+features = ["derive"]
