@@ -205,6 +205,108 @@ impl Panel for PianoRollPanel {
             None
         }
         // Input TTS.
+        else if input.happened(&InputEvent::InputTTS) {
+            let s = match state.music.get_selected_track() {
+                Some(track) => match conn.state.programs.get(&track.channel) {
+                    // Here we go...
+                    Some(_) => {
+                        let mut s = vec![get_tooltip(
+                            "PIANO_ROLL_PANEL_INPUT_TTS_PLAY",
+                            &[InputEvent::PlayStop],
+                            input,
+                            text,
+                        )];
+                        // Armed state, beat, volume.
+                        match state.input.armed {
+                            true => {
+                                s.push(get_tooltip(
+                                    "PIANO_ROLL_PANEL_INPUT_TTS_ARMED",
+                                    &[
+                                        InputEvent::Arm,
+                                        InputEvent::InputBeatLeft,
+                                        InputEvent::InputBeatRight,
+                                    ],
+                                    input,
+                                    text,
+                                ));
+                                match state.input.use_volume {
+                                    true => s.push(get_tooltip(
+                                        "PIANO_ROLL_PANEL_INPUT_TTS_DO_NOT_USE_VOLUME",
+                                        &[
+                                            InputEvent::DecreaseInputVolume,
+                                            InputEvent::IncreaseInputVolume,
+                                            InputEvent::ToggleInputVolume,
+                                        ],
+                                        input,
+                                        text,
+                                    )),
+                                    false => s.push(get_tooltip(
+                                        "PIANO_ROLL_PANEL_INPUT_TTS_USE_VOLUME",
+                                        &[InputEvent::ToggleInputVolume],
+                                        input,
+                                        text,
+                                    )),
+                                }
+                            }
+                            false => s.push(get_tooltip(
+                                "PIANO_ROLL_PANEL_INPUT_TTS_NOT_ARMED",
+                                &[InputEvent::Arm],
+                                input,
+                                text,
+                            )),
+                        }
+                        // Change the mode.
+                        s.push(get_tooltip(
+                            "PIANO_ROLL_PANEL_INPUT_TTS_MODES",
+                            &[
+                                InputEvent::PianoRollSetTime,
+                                InputEvent::PianoRollSetView,
+                                InputEvent::PianoRollSetSelect,
+                                InputEvent::PianoRollSetEdit,
+                            ],
+                            input,
+                            text,
+                        ));
+                        // Cut, copy.
+                        let selected_some = state.select_mode.get_note_indices().is_some();
+                        if selected_some {
+                            s.push(get_tooltip(
+                                "PIANO_ROLL_PANEL_INPUT_TTS_COPY_CUT",
+                                &[InputEvent::CopyNotes, InputEvent::CutNotes],
+                                input,
+                                text,
+                            ));
+                        }
+                        // Paste.
+                        if !self.copied_notes.is_empty() {
+                            s.push(get_tooltip(
+                                "PIANO_ROLL_PANEL_INPUT_TTS_PASTE",
+                                &[InputEvent::PasteNotes],
+                                input,
+                                text,
+                            ));
+                        }
+                        // Delete.
+                        if selected_some {
+                            s.push(get_tooltip(
+                                "PIANO_ROLL_PANEL_INPUT_TTS_DELETE",
+                                &[InputEvent::DeleteNotes],
+                                input,
+                                text,
+                            ));
+                        }
+                        // Sub-panel inputs.
+                        s.push(self.get_sub_panel(state).get_input_tts(state, input, text));
+                        s.join(" ")
+                    }
+                    None => PianoRollPanel::tts_no_track(text),
+                },
+                None => PianoRollPanel::tts_no_track(text),
+            };
+            tts.say(&s);
+            None
+        }
+        // Play and stop music.
         else if input.happened(&InputEvent::PlayStop) {
             match conn.state.time.music {
                 // Stop playing.

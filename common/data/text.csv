@@ -164,6 +164,15 @@ OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE,\0 to write save file \1.
 OPEN_FILE_PANEL_INPUT_TTS_CLOSE,\0 to close.
 PIANO_ROLL_PANEL_TTS_NO_TRACK,You cannot use this panel until you have added a track and loaded a sound font.
 PIANO_ROLL_PANEL_STATUS_TTS_MODE,The piano roll mode is \0.
+PIANO_ROLL_PANEL_INPUT_TTS_PLAY,\0 to play music.
+PIANO_ROLL_PANEL_INPUT_TTS_NOT_ARMED,\0 to arm the track.
+PIANO_ROLL_PANEL_INPUT_TTS_ARMED,\0 to disarm the track. \1 and \2 to set the input beat.
+PIANO_ROLL_PANEL_INPUT_TTS_DO_NOT_USE_VOLUME,\0 and \1 to set the input volume. \2 to start using MIDI input volume instead. 
+PIANO_ROLL_PANEL_INPUT_TTS_USE_VOLUME,\0 to make all new notes have the input volume value.
+PIANO_ROLL_PANEL_INPUT_TTS_MODES,"\0, \1, \2, or \3 to set the mode to time, view, select, or edit."
+PIANO_ROLL_PANEL_INPUT_TTS_COPY_CUT,\0 or \1 to copy or cut the selected notes.
+PIANO_ROLL_PANEL_INPUT_TTS_PASTE,\0 to paste notes.
+PIANO_ROLL_PANEL_INPUT_TTS_DELETE,\0 to delete the selected notes.
 PIANO_ROLL_MODE_TIME,Time
 PIANO_ROLL_MODE_VIEW,View
 PIANO_ROLL_MODE_SELECT,Select
@@ -178,9 +187,9 @@ FRACTION_TTS_ONE_HALF,one half
 FRACTION_TTS_ONE_AND_A_HALF,one and a half
 FRACTION_TTS_WHOLE,\0 and \1 over \2
 FRACTION_TTS,\0 over 1
-PIANO_ROLL_PANEL_STATUS_TTS_ARMED,"The track is armed and ready for your input. When you input new notes, their duration will be \1 beats and their volume will be \2."
+PIANO_ROLL_PANEL_STATUS_TTS_ARMED,"The track is armed. When you input new notes, their duration will be \1 beats and their volume will be \2."
 PIANO_ROLL_PANEL_STATUS_TTS_VOLUME,\0 if you use qwerty input otherwise the MIDI velocity value.
-PIANO_ROLL_PANEL_STATUS_TTS_NOT_ARMED,"The track is not armed, so you can't add notes."
+PIANO_ROLL_PANEL_STATUS_TTS_NOT_ARMED,"The track is not armed."
 EDIT_MODE_NORMAL,Normal
 EDIT_MODE_QUICK,Quick
 EDIT_MODE_PRECISE,Precise
