@@ -225,8 +225,21 @@ impl Panel for PianoRollPanel {
                 // Clone the state.
                 let s0 = state.clone();
                 if let Some(track) = state.music.get_selected_track_mut() {
+                    // Get the minimum start time.
+                    let min_time = self
+                        .copied_notes
+                        .iter()
+                        .min_by(|a, b| a.start.cmp(&b.start))
+                        .unwrap()
+                        .start;
+                    // Get the time delta.
+                    let dt = min_time - state.time.cursor;
+                    // Clone the copied notes.
+                    let mut notes = self.copied_notes.to_vec();
+                    // Adjust the start time.
+                    notes.iter_mut().for_each(|n| n.start -= dt);
                     // Add the notes.
-                    track.notes.extend(self.copied_notes.iter().copied());
+                    track.notes.append(&mut notes);
                     // Return the undo state.
                     Some(UndoRedoState::from((s0, state)))
                 } else {
