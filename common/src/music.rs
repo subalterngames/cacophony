@@ -19,9 +19,9 @@ pub struct Music {
 }
 
 impl Music {
-    pub fn new(name: String) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
-            name,
+            name: name.to_string(),
             midi_tracks: vec![],
             bpm: 120,
             playback_time: Fraction::zero(),
@@ -54,6 +54,12 @@ impl Music {
             playback_time: serialize_fraction(&self.playback_time),
             selected: self.selected,
         }
+    }
+}
+
+impl Default for Music {
+    fn default() -> Self {
+        Self::new("My Music")
     }
 }
 
@@ -93,7 +99,7 @@ mod tests {
 
     #[test]
     fn serialize() {
-        let mut music = Music::new("my music".to_string());
+        let mut music = Music::default();
         let mut track = MidiTrack::new(0);
         track.notes.push(Note {
             note: 60,

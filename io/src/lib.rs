@@ -1,7 +1,7 @@
 use audio::Conn;
 use common::hashbrown::HashMap;
 use common::ini::Ini;
-use common::{InputState, PanelType, Paths, State};
+use common::{InputState, Music, PanelType, Paths, State};
 use input::{Input, InputEvent};
 use std::path::PathBuf;
 use text::{Text, TTS};
@@ -123,9 +123,30 @@ impl IO {
         if input.happened(&InputEvent::Quit) {
             return true;
         }
-
+        // New file.
+        else if input.happened(&InputEvent::NewFile) {
+            self.path = None;
+            state.music = Music::default();
+        }
+        // Open file.
+        else if input.happened(&InputEvent::OpenFile) {
+            self.open_file_panel.read_save(paths, state);
+        }
+        // Save file.
+        else if input.happened(&InputEvent::SaveFile) {
+            match &self.path {
+                // Save to the existing path,
+                Some(path) => state.write(path),
+                // Set a new path.
+                None => self.open_file_panel.write_save(paths, state),
+            }
+        }
+        // Save to a new path.
+        else if input.happened(&InputEvent::SaveFileAs) {
+            self.open_file_panel.write_save(paths, state)
+        }
         // Undo.
-        if input.happened(&InputEvent::Undo) && !self.undo.is_empty() {
+        else if input.happened(&InputEvent::Undo) && !self.undo.is_empty() {
             // Get the first undo-redo state.
             let undo_redo = self.undo.remove(0);
             let redo = UndoRedoState::from((undo_redo.redo, &undo_redo.undo));
@@ -155,9 +176,8 @@ impl IO {
             // Push to the undo stack.
             self.undo.push(undo);
         }
-
         // Cycle panels.
-        if input.happened(&InputEvent::NextPanel) {
+        else if input.happened(&InputEvent::NextPanel) {
             let s0 = state.clone();
             state.focus.increment(true);
             self.push_state_to_undos(s0, state);
@@ -202,6 +222,7 @@ impl IO {
                         IOCommand::DisableOpenFile => {
                             self.open_file_panel.disable(state);
                         }
+                        IOCommand::SetPath(path) => self.path = path.clone(),
                     }
                 }
             }

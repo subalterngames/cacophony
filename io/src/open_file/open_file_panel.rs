@@ -4,7 +4,7 @@ use crate::{get_tooltip, get_tooltip_with_values};
 use common::{PanelType, Paths};
 use file_or_directory::FileOrDirectory;
 use open_file_type::OpenFileType;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use text::{get_file_name_no_ex, get_folder_name};
 
 const SOUNDFONT_EXTENSIONS: [&str; 2] = ["sf2", "sf3"];
@@ -141,6 +141,12 @@ impl OpenFilePanel {
             false => None,
         };
         (selected, paths)
+    }
+
+    fn set_save_path(path: &Path) -> Option<UndoRedoState> {
+        Some(UndoRedoState::from(Some(vec![IOCommand::SetPath(Some(
+            path.to_path_buf(),
+        ))])))
     }
 }
 
@@ -282,6 +288,7 @@ impl Panel for OpenFilePanel {
                     filename.push_str(".cac");
                     let path = self.directory.join(filename);
                     *state = State::read(&path);
+                    return OpenFilePanel::set_save_path(&path);
                 }
                 // Load a SoundFont.
                 OpenFileType::SoundFont => {
@@ -307,6 +314,7 @@ impl Panel for OpenFilePanel {
                     filename.push_str(".cac");
                     let path = self.directory.join(filename);
                     state.write(&path);
+                    return OpenFilePanel::set_save_path(&path);
                 }
             }
         }
