@@ -5,13 +5,11 @@ use std::path::PathBuf;
 #[derive(Eq, PartialEq, Clone)]
 pub enum Command {
     /// Send this to announce that we're playing music, as opposed to arbitrary user input audio.
-    PlayMusic,
+    PlayMusic { time: u64 },
     /// Send this to stop playing music.
     StopMusic,
-    /// Stop playing audio. Set the state to not-playing.
-    StopAll { channels: Vec<u8> },
     /// Schedule a stop-all event.
-    StopAllAt { channels: Vec<u8>, time: u64 },
+    StopMusicAt { time: u64 },
     /// Note-on ASAP.
     NoteOn {
         channel: u8,
@@ -29,8 +27,6 @@ pub enum Command {
     },
     /// Note-off ASAP.
     NoteOff { channel: u8, key: u8 },
-    /// Schedule a note-off event. `time` is the sample count from 0.
-    NoteOffAt { channel: u8, key: u8, time: u64 },
     /// Load a SoundFont file.
     LoadSoundFont { channel: u8, path: PathBuf },
     /// Set a program.
@@ -46,6 +42,4 @@ pub enum Command {
     SetGain { gain: u8 },
     /// Export audio.
     Export { path: PathBuf, state: ExportState },
-    /// Set the time.
-    SetTime { time: u64 },
 }

@@ -92,11 +92,14 @@ impl Synthesizer {
                         s.ready = false;
                         for command in commands.iter() {
                             match command {
-                                Command::PlayMusic => s.state.time.music = true,
-                                Command::StopMusic => s.state.time.music = false,
+                                Command::PlayMusic { time } => {
+                                    s.events_queue.clear();
+                                    s.state.time.music = true;
+                                    s.state.time.time = Some(*time);
+                                }
                                 // Stop all audio.
-                                Command::StopAll { channels } => {
-                                    channels.iter().for_each(|c| {
+                                Command::StopMusic => {
+                                    s.state.programs.keys().for_each(|c| {
                                         Synthesizer::send_event(
                                             MidiEvent::AllNotesOff { channel: *c },
                                             &mut s.synth,
@@ -109,8 +112,8 @@ impl Synthesizer {
                                     s.state.time.time = None;
                                 }
                                 // Schedule a stop-all event.
-                                Command::StopAllAt { channels, time } => {
-                                    channels.iter().for_each(|c| {
+                                Command::StopMusicAt { time } => {
+                                    s.state.programs.keys().for_each(|c| {
                                         s.events_queue.push(QueuedEvent {
                                             time: *time,
                                             event: MidiEvent::AllNotesOff { channel: *c },
@@ -174,16 +177,6 @@ impl Synthesizer {
                                     },
                                     &mut s.synth,
                                 ),
-                                // Schedule a note-off.
-                                Command::NoteOffAt { channel, key, time } => {
-                                    s.events_queue.push(QueuedEvent {
-                                        time: *time,
-                                        event: MidiEvent::NoteOff {
-                                            channel: *channel,
-                                            key: *key,
-                                        },
-                                    });
-                                }
                                 // Program select.
                                 Command::SetProgram {
                                     channel,
@@ -251,7 +244,6 @@ impl Synthesizer {
                                         panic!("Error converting export path to string: {:?}", path)
                                     }
                                 },
-                                Command::SetTime { time } => s.state.time.time = Some(*time),
                             }
                         }
                         // Try to send the state.
