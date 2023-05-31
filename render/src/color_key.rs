@@ -17,4 +17,5 @@ pub enum ColorKey {
     NotePlaying,
     TimeCursor,
     TimeT0,
+    Subtitle,
 }
