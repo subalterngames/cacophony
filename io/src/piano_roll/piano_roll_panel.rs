@@ -1,9 +1,9 @@
 use super::*;
 use crate::panel::*;
+use crate::tracks_to_commands;
 use common::config::parse_fractions;
 use common::ini::Ini;
-use common::time::bar_to_samples;
-use common::{Fraction, Index, Note, PianoRollMode, SelectMode, MAX_VOLUME};
+use common::{Fraction, Index, Note, PianoRollMode, SelectMode};
 
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.
@@ -317,44 +317,10 @@ impl Panel for PianoRollPanel {
                 // Stop playing.
                 true => conn.send(vec![Command::StopMusic]),
                 false => {
-                    // Get all tracks that can play music.
-                    let tracks = match state.music.midi_tracks.iter().find(|t| t.solo) {
-                        // Only include the solo track.
-                        Some(solo) => vec![solo],
-                        // Only include unmuted tracks.
-                        None => state.music.midi_tracks.iter().filter(|t| !t.mute).collect(),
-                    };
-                    if !tracks.is_empty() {
-                        // Get the bpm.
-                        let bpm = state.music.bpm;
-                        let t0 = bar_to_samples(&state.time.playback, bpm);
-                        // Get the commands to start playing music.
-                        let mut commands = vec![Command::PlayMusic { time: t0 }];
-                        let max_gain = MAX_VOLUME as f64;
-                        for track in tracks.iter() {
-                            let gain = track.gain as f64 / max_gain;
-                            // Add the note.
-                            for note in track
-                                .notes
-                                .iter()
-                                .filter(|n| n.start >= state.time.playback)
-                            {
-                                let start = bar_to_samples(&note.start, bpm) - t0;
-                                let duration = bar_to_samples(&note.duration, bpm);
-                                let velocity = (note.velocity as f64 * gain) as u8;
-                                commands.push(Command::NoteOnAt {
-                                    channel: track.channel,
-                                    key: note.note,
-                                    velocity,
-                                    time: start,
-                                    duration,
-                                });
-                            }
-                        }
-                        // We have some note-on commands.
-                        if commands.len() > 1 {
-                            conn.send(commands);
-                        }
+                    let commands = tracks_to_commands(&state.music, &state.time.playback);
+                    // We have some note-on commands.
+                    if commands.len() > 1 {
+                        conn.send(commands);
                     }
                 }
             }

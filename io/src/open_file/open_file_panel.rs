@@ -9,6 +9,7 @@ use text::{get_file_name_no_ex, get_folder_name};
 
 const SOUNDFONT_EXTENSIONS: [&str; 2] = ["sf2", "sf3"];
 const SAVE_FILE_EXTENSIONS: [&str; 1] = ["cac"];
+const EXPORT_FILE_EXTENSIONS: [&str; 1] = ["wav"];
 
 /// Data for an open-file panel.
 #[derive(Default)]
@@ -75,6 +76,19 @@ impl OpenFilePanel {
         self.open_file_type = OpenFileType::WriteSave;
     }
 
+    pub fn export(&mut self, paths: &Paths, state: &mut State) {
+        if self.open_file_type != OpenFileType::Export {
+            self.directory = paths.export_directory.clone();
+        }
+        self.open_file_type = OpenFileType::Export;
+        self.extensions = EXPORT_FILE_EXTENSIONS
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+        state.input.alphanumeric_input = true;
+        self.enable(state);
+    }
+
     fn enable_as_save(&mut self, paths: &Paths, state: &mut State) {
         // Get the initial working directory.
         if self.open_file_type != OpenFileType::ReadSave
@@ -82,12 +96,14 @@ impl OpenFilePanel {
         {
             self.directory = paths.saves_directory.clone();
         }
+        state.input.alphanumeric_input = true;
         self.extensions = SAVE_FILE_EXTENSIONS.iter().map(|s| s.to_string()).collect();
         self.enable(state);
     }
 
     /// Disable this panel.
     pub fn disable(&self, state: &mut State) {
+        state.input.alphanumeric_input = false;
         // Restore the panels.
         state.panels = self.previous_panels.clone();
         // Restore the focus.
@@ -144,9 +160,9 @@ impl OpenFilePanel {
     }
 
     fn set_save_path(path: &Path) -> Option<UndoRedoState> {
-        Some(UndoRedoState::from(Some(vec![IOCommand::SetPath(Some(
-            path.to_path_buf(),
-        ))])))
+        Some(UndoRedoState::from(Some(vec![IOCommand::SetSavePath(
+            Some(path.to_path_buf()),
+        )])))
     }
 }
 
@@ -212,6 +228,7 @@ impl Panel for OpenFilePanel {
                     true => {
                         let open_file_key = match self.open_file_type {
                             OpenFileType::ReadSave => "OPEN_FILE_PANEL_INPUT_TTS_READ_SAVE",
+                            OpenFileType::Export => "OPEN_FILE_PANEL_INPUT_TTS_EXPORT",
                             OpenFileType::SoundFont => "OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT",
                             OpenFileType::WriteSave => "OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE",
                         };
@@ -315,6 +332,15 @@ impl Panel for OpenFilePanel {
                     let path = self.directory.join(filename);
                     state.write(&path);
                     return OpenFilePanel::set_save_path(&path);
+                }
+                // Set an export file.
+                OpenFileType::Export => {
+                    let mut filename = self.filename.clone();
+                    filename.push_str(".wav");
+                    let path = self.directory.join(filename);
+                    return Some(UndoRedoState::from(Some(vec![IOCommand::SetExportPath(
+                        path,
+                    )])));
                 }
             }
         }

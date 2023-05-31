@@ -8,4 +8,6 @@ pub enum OpenFileType {
     SoundFont,
     /// Write a save file.
     WriteSave,
+    /// Set the export path.
+    Export,
 }

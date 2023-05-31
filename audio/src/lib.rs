@@ -15,7 +15,7 @@ use crate::program::Program;
 pub use crate::synth_state::SynthState;
 pub(crate) use crate::time_state::TimeState;
 use crossbeam_channel::{bounded, unbounded};
-pub(crate) use export_state::ExportState;
+pub use export_state::ExportState;
 use player::Player;
 use std::thread::spawn;
 

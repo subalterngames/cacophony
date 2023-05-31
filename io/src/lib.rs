@@ -1,7 +1,8 @@
-use audio::Conn;
+use audio::{Command, CommandsMessage, Conn, ExportState};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
-use common::{InputState, Music, PanelType, Paths, State};
+use common::time::bar_to_samples;
+use common::{Fraction, InputState, MidiTrack, Music, Note, PanelType, Paths, State, MAX_VOLUME};
 use input::{Input, InputEvent};
 use std::path::PathBuf;
 use text::{Text, TTS};
@@ -43,7 +44,9 @@ pub struct IO {
     /// The piano roll panel.
     piano_roll_panel: PianoRollPanel,
     /// The file path. If None, we haven't saved this music yet.
-    pub path: Option<PathBuf>,
+    pub save_path: Option<PathBuf>,
+    /// The export path, if any.
+    pub export_path: Option<PathBuf>,
 }
 
 impl IO {
@@ -103,7 +106,8 @@ impl IO {
             piano_roll_panel,
             redo: vec![],
             undo: vec![],
-            path: None,
+            save_path: None,
+            export_path: None,
         }
     }
 
@@ -125,7 +129,7 @@ impl IO {
         }
         // New file.
         else if input.happened(&InputEvent::NewFile) {
-            self.path = None;
+            self.save_path = None;
             state.music = Music::default();
         }
         // Open file.
@@ -134,7 +138,7 @@ impl IO {
         }
         // Save file.
         else if input.happened(&InputEvent::SaveFile) {
-            match &self.path {
+            match &self.save_path {
                 // Save to the existing path,
                 Some(path) => state.write(path),
                 // Set a new path.
@@ -144,6 +148,47 @@ impl IO {
         // Save to a new path.
         else if input.happened(&InputEvent::SaveFileAs) {
             self.open_file_panel.write_save(paths, state)
+        }
+        // Export.
+        else if input.happened(&InputEvent::ExportFile) {
+            // We aren't exporting already.
+            if conn.export_state.is_none() {
+                match &self.export_path {
+                    Some(path) => {
+                        let tracks = get_playable_tracks(&state.music);
+                        let notes = get_notes_per_track(&tracks, &state.time.playback);
+                        // We have notes we can export.
+                        if !notes.is_empty() {
+                            let mut commands =
+                                notes_to_commands(&notes, &state.time.playback, state.music.bpm);
+                            // Get the end time.
+                            let t1 = bar_to_samples(
+                                &notes
+                                    .values()
+                                    .map(|ns| {
+                                        ns.1.iter().map(|n| n.start + n.duration).max().unwrap()
+                                    })
+                                    .max()
+                                    .unwrap(),
+                                state.music.bpm,
+                            );
+                            // Define the export state.
+                            let export_state = ExportState::new(t1);
+                            // Insert the export command.
+                            commands.insert(
+                                0,
+                                Command::Export {
+                                    path: path.clone(),
+                                    state: export_state,
+                                },
+                            );
+                            // Begin exporting.
+                            conn.send(commands);
+                        }
+                    }
+                    None => self.open_file_panel.export(paths, state),
+                }
+            }
         }
         // Undo.
         else if input.happened(&InputEvent::Undo) && !self.undo.is_empty() {
@@ -213,6 +258,7 @@ impl IO {
                 for command in io_commands {
                     match command {
                         IOCommand::EnableOpenFile(open_file_type) => match open_file_type {
+                            OpenFileType::Export => self.open_file_panel.export(paths, state),
                             OpenFileType::ReadSave => self.open_file_panel.read_save(paths, state),
                             OpenFileType::SoundFont => self.open_file_panel.soundfont(paths, state),
                             OpenFileType::WriteSave => {
@@ -222,7 +268,8 @@ impl IO {
                         IOCommand::DisableOpenFile => {
                             self.open_file_panel.disable(state);
                         }
-                        IOCommand::SetPath(path) => self.path = path.clone(),
+                        IOCommand::SetSavePath(path) => self.save_path = path.clone(),
+                        IOCommand::SetExportPath(path) => self.export_path = Some(path.clone()),
                     }
                 }
             }
@@ -252,4 +299,77 @@ impl IO {
             self.undo.remove(0);
         }
     }
+}
+
+/// Returns all tracks that can be played.
+fn get_playable_tracks(music: &Music) -> Vec<&MidiTrack> {
+    // Get all tracks that can play music.
+    let tracks = match music.midi_tracks.iter().find(|t| t.solo) {
+        // Only include the solo track.
+        Some(solo) => vec![solo],
+        // Only include unmuted tracks.
+        None => music.midi_tracks.iter().filter(|t| !t.mute).collect(),
+    };
+    tracks
+}
+
+/// Returns all notes per track that start after the playback time.
+fn get_notes_per_track<'a>(
+    tracks: &[&'a MidiTrack],
+    playback: &Fraction,
+) -> HashMap<u8, (f64, Vec<&'a Note>)> {
+    let mut notes_per_track = HashMap::new();
+    let max_gain = MAX_VOLUME as f64;
+    for track in tracks.iter() {
+        let notes: Vec<&Note> = track
+            .notes
+            .iter()
+            .filter(|n| n.start >= *playback)
+            .collect();
+        if !notes.is_empty() {
+            let gain = track.gain as f64 * max_gain;
+            notes_per_track.insert(track.channel, (gain, notes));
+        }
+    }
+    notes_per_track
+}
+
+/// Converts all playable tracks to note-on commands.
+pub(crate) fn tracks_to_commands(music: &Music, playback: &Fraction) -> CommandsMessage {
+    let tracks = get_playable_tracks(music);
+    let notes = get_notes_per_track(&tracks, playback);
+    if notes.is_empty() {
+        vec![]
+    } else {
+        notes_to_commands(&notes, playback, music.bpm)
+    }
+}
+
+/// Converts playable notes to commands.
+fn notes_to_commands(
+    notes: &HashMap<u8, (f64, Vec<&Note>)>,
+    playback: &Fraction,
+    bpm: u32,
+) -> CommandsMessage {
+    let t0 = bar_to_samples(playback, bpm);
+    // Start playing music.
+    let mut commands = vec![Command::PlayMusic { time: t0 }];
+    // Add notes.
+    for channel in notes.keys() {
+        let ns = &notes[channel];
+        // Add the note.
+        for note in ns.1.iter() {
+            let start = bar_to_samples(&note.start, bpm);
+            let duration = bar_to_samples(&note.duration, bpm);
+            let velocity = (note.velocity as f64 * ns.0) as u8;
+            commands.push(Command::NoteOnAt {
+                channel: *channel,
+                key: note.note,
+                velocity,
+                time: start,
+                duration,
+            });
+        }
+    }
+    commands
 }

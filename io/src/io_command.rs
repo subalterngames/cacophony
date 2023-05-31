@@ -9,7 +9,9 @@ pub(crate) enum IOCommand {
     /// Disable the open-file panel.
     DisableOpenFile,
     /// Set the save file path.
-    SetPath(Option<PathBuf>),
+    SetSavePath(Option<PathBuf>),
+    /// Set the export file path.
+    SetExportPath(PathBuf),
 }
 
 pub(crate) type IOCommands = Option<Vec<IOCommand>>;

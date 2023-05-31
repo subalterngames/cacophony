@@ -1,7 +1,7 @@
 use directories::UserDirs;
 use std::env::current_dir;
 use std::fs::create_dir_all;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 const CONFIG_FILENAME: &str = "config.ini";
 
@@ -19,6 +19,8 @@ pub struct Paths {
     pub soundfonts_directory: PathBuf,
     /// The default save file directory.
     pub saves_directory: PathBuf,
+    /// The path to the exported audio files.
+    pub export_directory: PathBuf,
 }
 
 impl Paths {
@@ -41,14 +43,9 @@ impl Paths {
         let default_ini_path = data_directory.join(CONFIG_FILENAME);
         let text_path = data_directory.join("text.csv");
         // Get or create the default user sub-directories.
-        let soundfonts_directory = user_directory.join("soundfonts");
-        if !soundfonts_directory.exists() {
-            create_dir_all(&soundfonts_directory).unwrap();
-        }
-        let saves_directory = user_directory.join("saves");
-        if !saves_directory.exists() {
-            create_dir_all(&saves_directory).unwrap();
-        }
+        let soundfonts_directory = get_directory("sound_fonts", &user_directory);
+        let saves_directory = get_directory("saves", &user_directory);
+        let export_directory = get_directory("exports", &user_directory);
         Self {
             default_ini_path,
             user_directory,
@@ -56,6 +53,7 @@ impl Paths {
             text_path,
             soundfonts_directory,
             saves_directory,
+            export_directory,
         }
     }
 }
@@ -64,4 +62,13 @@ impl Default for Paths {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Returns a directory. Creates the directory if it doesn't exist.
+fn get_directory(folder: &str, user_directory: &Path) -> PathBuf {
+    let directory = user_directory.join(folder);
+    if !directory.exists() {
+        create_dir_all(&directory).unwrap();
+    }
+    directory
 }
