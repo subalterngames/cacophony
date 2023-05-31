@@ -3,7 +3,7 @@ use crate::panel::*;
 use common::config::parse_fractions;
 use common::ini::Ini;
 use common::time::bar_to_samples;
-use common::{Fraction, Index, Note, PianoRollMode, MAX_VOLUME};
+use common::{Fraction, Index, Note, PianoRollMode, MAX_VOLUME, SelectMode};
 
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.
@@ -106,6 +106,11 @@ impl PianoRollPanel {
                     .filter(|n| !indices.contains(&n.0))
                     .map(|n| *n.1)
                     .collect();
+                // Deselect.
+                state.select_mode = match &state.select_mode {
+                    SelectMode::Single(_) => SelectMode::Single(None),
+                    SelectMode::Many(_) => SelectMode::Many(None),
+                };
                 // Return the undo state.
                 return Some(UndoRedoState::from((s0, state)));
             }
