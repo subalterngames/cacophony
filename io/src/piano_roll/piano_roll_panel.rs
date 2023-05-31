@@ -2,7 +2,7 @@ use super::*;
 use crate::panel::*;
 use common::config::parse_fractions;
 use common::ini::Ini;
-use common::{Fraction, Index, PianoRollMode};
+use common::{Fraction, Index, PianoRollMode, Note};
 
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.
@@ -19,6 +19,8 @@ pub struct PianoRollPanel {
     beats: Vec<Fraction>,
     /// The index of the current beat.
     beat: Index,
+    /// A buffer of copied notes.
+    copied_notes: Vec<Note>
 }
 
 impl PianoRollPanel {
@@ -46,6 +48,7 @@ impl PianoRollPanel {
             view,
             beats,
             beat,
+            copied_notes: vec![],
         }
     }
 
@@ -66,17 +69,25 @@ impl PianoRollPanel {
         Some(UndoRedoState::from((s0, state)))
     }
 
-    /// Say this if there is no valid track.
+    /// Returns the text-to-speech string that will be said if there is no valid track.
     fn tts_no_track(text: &Text) -> String {
         text.get("PIANO_ROLL_PANEL_TTS_NO_TRACK")
     }
 
+    /// Returns the sub-panel corresponding to the current piano roll mode.
     fn get_sub_panel<'a>(&'a self, state: &State) -> &'a dyn PianoRollSubPanel {
         match state.piano_roll_mode {
             PianoRollMode::Edit => &self.edit,
             PianoRollMode::Select => &self.select,
             PianoRollMode::Time => &self.time,
             PianoRollMode::View => &self.view,
+        }
+    }
+
+    /// Copy the selected notes to the copy buffer.
+    fn copy_notes(&mut self, state: &State) {
+        if let Some(notes) = state.select_mode.get_notes(&state.music) {
+            self.copied_notes = notes.iter().map(|n| *n.clone()).collect()
         }
     }
 }
@@ -141,6 +152,11 @@ impl Panel for PianoRollPanel {
                 None => PianoRollPanel::tts_no_track(text),
             };
             tts.say(&s);
+            None
+        }
+        // Copy notes.
+        else if input.happened(&InputEvent::CopyNotes) {
+            self.copy_notes(state);
             None
         }
         // Toggle arm.

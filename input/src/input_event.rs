@@ -96,4 +96,9 @@ pub enum InputEvent {
     SelectEndRight,
     SelectAll,
     SelectNone,
+    // Copy, cut, paste, delete.
+    CopyNotes,
+    CutNotes,
+    PasteNotes,
+    DeleteNotes,
 }

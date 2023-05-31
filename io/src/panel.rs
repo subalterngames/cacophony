@@ -14,6 +14,7 @@ pub(crate) trait Panel {
     /// - `state` The current `State`.
     /// - `input` Input events, key presses, etc.
     /// - `tts` Text-to-speech.
+    /// - `text` The text.
     ///
     /// Returns: An `UndoRedoState`, implying that we modified `state`, or None.
     fn update(
