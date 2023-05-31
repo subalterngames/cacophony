@@ -2,7 +2,7 @@ use super::*;
 use crate::panel::*;
 use common::config::parse_fractions;
 use common::ini::Ini;
-use common::{Fraction, Index, PianoRollMode, Note};
+use common::{Fraction, Index, Note, PianoRollMode};
 
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.
@@ -20,7 +20,7 @@ pub struct PianoRollPanel {
     /// The index of the current beat.
     beat: Index,
     /// A buffer of copied notes.
-    copied_notes: Vec<Note>
+    copied_notes: Vec<Note>,
 }
 
 impl PianoRollPanel {
@@ -87,7 +87,43 @@ impl PianoRollPanel {
     /// Copy the selected notes to the copy buffer.
     fn copy_notes(&mut self, state: &State) {
         if let Some(notes) = state.select_mode.get_notes(&state.music) {
-            self.copied_notes = notes.iter().map(|n| *n.clone()).collect()
+            self.copied_notes = notes.iter().map(|&n| *n).collect()
+        }
+    }
+
+    /// Delete notes from the track.
+    fn delete_notes(state: &mut State) -> Option<UndoRedoState> {
+        // Clone the state.
+        let s0 = state.clone();
+        if let Some(indices) = state.select_mode.get_note_indices() {
+            if let Some(track) = state.music.get_selected_track_mut() {
+                // Remove the notes.
+                track.notes = track
+                    .notes
+                    .iter()
+                    .enumerate()
+                    .filter(|n| !indices.contains(&n.0))
+                    .map(|n| *n.1)
+                    .collect();
+                // Return the undo state.
+                return Some(UndoRedoState::from((s0, state)));
+            }
+        }
+        None
+    }
+
+    /// Add notes to the track.
+    fn add_notes(notes: &[Note], state: &mut State) -> Option<UndoRedoState> {
+        // Clone the state.
+        let s0 = state.clone();
+        if let Some(track) = state.music.get_selected_track_mut() {
+            // Add the notes.
+            track.notes.extend(notes.iter().copied());
+            // Sort.
+            // Return the undo state.
+            Some(UndoRedoState::from((s0, state)))
+        } else {
+            None
         }
     }
 }
@@ -158,6 +194,21 @@ impl Panel for PianoRollPanel {
         else if input.happened(&InputEvent::CopyNotes) {
             self.copy_notes(state);
             None
+        }
+        // Cut notes.
+        else if input.happened(&InputEvent::CutNotes) {
+            // Copy.
+            self.copy_notes(state);
+            // Delete.
+            PianoRollPanel::delete_notes(state)
+        }
+        // Delete notes.
+        else if input.happened(&InputEvent::DeleteNotes) {
+            PianoRollPanel::delete_notes(state)
+        }
+        // Paste notes.
+        else if input.happened(&InputEvent::PasteNotes) {
+            PianoRollPanel::add_notes(&self.copied_notes, state)
         }
         // Toggle arm.
         else if input.happened(&InputEvent::Arm) {
