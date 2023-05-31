@@ -3,6 +3,7 @@ use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::{InputState, PanelType, Paths, State};
 use input::{Input, InputEvent};
+use std::path::PathBuf;
 use text::{Text, TTS};
 mod io_command;
 mod music_panel;
@@ -41,6 +42,8 @@ pub struct IO {
     open_file_panel: OpenFilePanel,
     /// The piano roll panel.
     piano_roll_panel: PianoRollPanel,
+    /// The file path. If None, we haven't saved this music yet.
+    pub path: Option<PathBuf>,
 }
 
 impl IO {
@@ -100,6 +103,7 @@ impl IO {
             piano_roll_panel,
             redo: vec![],
             undo: vec![],
+            path: None,
         }
     }
 

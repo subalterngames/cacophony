@@ -3,7 +3,7 @@ use crate::panel::*;
 use common::config::parse_fractions;
 use common::ini::Ini;
 use common::time::bar_to_samples;
-use common::{Fraction, Index, Note, PianoRollMode, MAX_VOLUME, SelectMode};
+use common::{Fraction, Index, Note, PianoRollMode, SelectMode, MAX_VOLUME};
 
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.

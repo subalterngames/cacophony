@@ -2,15 +2,12 @@ use super::midi_track::{MidiTrack, SerializableTrack};
 use crate::{serialize_fraction, Fraction, SerializableFraction};
 use fraction::Zero;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 
 /// Tracks, notes, and metadata.
 #[derive(Clone)]
 pub struct Music {
     /// The name of the music.
     pub name: String,
-    /// The file path. If None, we haven't saved this music yet.
-    pub path: Option<PathBuf>,
     /// The music tracks.
     pub midi_tracks: Vec<MidiTrack>,
     /// The beats per minute.
@@ -29,7 +26,6 @@ impl Music {
             bpm: 120,
             playback_time: Fraction::zero(),
             selected: None,
-            path: None,
         }
     }
 
@@ -57,7 +53,6 @@ impl Music {
             bpm: self.bpm,
             playback_time: serialize_fraction(&self.playback_time),
             selected: self.selected,
-            path: self.path.clone(),
         }
     }
 }
@@ -67,8 +62,6 @@ impl Music {
 pub(crate) struct SerializableMusic {
     /// The name of the music.
     name: String,
-    /// The file path. If None, we haven't saved this music yet.
-    path: Option<PathBuf>,
     /// The serializable tracks.
     midi_tracks: Vec<SerializableTrack>,
     /// The beats per minute.
@@ -88,7 +81,6 @@ impl SerializableMusic {
             bpm: self.bpm,
             playback_time: Fraction::new(self.playback_time[0], self.playback_time[1]),
             selected: self.selected,
-            path: self.path.clone(),
         }
     }
 }
