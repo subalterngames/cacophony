@@ -137,8 +137,22 @@ impl Panel for PianoRollPanel {
         tts: &mut TTS,
         text: &Text,
     ) -> Option<UndoRedoState> {
+        // Do nothing.
         if state.music.selected.is_none() {
             None
+        }
+        // Add notes.
+        else if state.input.armed && input.new_notes.len() > 0 {
+            let track = state.music.get_selected_track().unwrap();
+            match conn.state.programs.get(&track.channel) {
+                Some(_) => {
+                    // Get the notes.
+                    let notes: Vec<Note> = input.new_notes.iter().map(|n| Note { note: n[1], velocity: n[2], start: state.time.cursor, duration: state.input.beat}).collect();
+                    // Add the notes.
+                    PianoRollPanel::add_notes(&notes, state)
+                }
+                None => None
+            }
         }
         // Status TTS.
         else if input.happened(&InputEvent::StatusTTS) {
