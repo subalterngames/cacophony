@@ -10,6 +10,7 @@ use text::Text;
 const TEXTURE_COLOR: Color = common::macroquad::color::colors::WHITE;
 type Focus = [bool; 2];
 
+/// Draw shapes and text. This also stores colors, fonts, etc.
 pub struct Renderer {
     /// Color key - Macroquad color map.
     colors: HashMap<ColorKey, Color>,
