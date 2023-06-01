@@ -458,7 +458,7 @@ impl Renderer {
     /// - `value` The string that will be rendered.
     /// - `position` The top-left position in grid coordinates.
     /// - `width` The width of the space used to render the value.
-    /// - `focus` If true, the panel has focus.
+    /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
     pub fn list(&self, value: &str, position: [u32; 2], width: u32, focus: Focus) {
         // Draw the arrows.
         if focus[1] {
@@ -482,6 +482,55 @@ impl Renderer {
             [position[0] + 1, position[1]],
             &Self::get_value_color(focus),
         );
+    }
+
+    /// An input box.
+    ///
+    /// - `text` The text.
+    /// - `position` The top-left position in grid coordinates.
+    /// - `width` The width of the widget in grid coordinates.
+    /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
+    pub fn input(&self, text: &str, position: [u32; 2], width: u32, focus: Focus) {
+        let text_position = [position[0] + 1, position[1]];
+        // Draw indicators of widget focus.
+        if focus[1] {
+            // Draw corners.
+            self.corners(position, [width, 1], focus[0]);
+            // Draw a rectangle.
+            self.rectangle(text_position, [width - 2, 1], &ColorKey::TextFieldBG);
+        }
+        self.text(text, text_position, &Self::get_key_color(focus[0]));
+    }
+
+    /// Draw a key + value text input field.
+    ///
+    /// - `key` The key text.
+    /// - `value` The value text.
+    /// - `position` The top-left position in grid coordinates.
+    /// - `width` The total width of the key-list pair. The `key` will be rendered at an offset from the left and the `value` at an offset from the right.
+    /// - `value_width` The width of the value field.
+    /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
+    pub fn key_input(
+        &self,
+        key: &str,
+        value: &str,
+        position: [u32; 2],
+        width: u32,
+        value_width: u32,
+        focus: Focus,
+    ) {
+        let key_position = [position[0] + 1, position[1]];
+        let value_position = [position[0] + width - value_width - 1, position[1]];
+        // Draw indicators of widget focus.
+        if focus[1] {
+            // Draw corners.
+            self.corners(position, [width, 1], focus[0]);
+            // Draw a rectangle.
+            self.rectangle(value_position, [value_width, 1], &ColorKey::TextFieldBG);
+        }
+        // Draw the key text.
+        self.text(key, key_position, &Self::get_key_color(focus[0]));
+        self.text(value, value_position, &Self::get_value_color(focus));
     }
 
     /// Returns the color of the value text.
