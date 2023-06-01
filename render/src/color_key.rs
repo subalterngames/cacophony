@@ -18,4 +18,5 @@ pub enum ColorKey {
     TimeCursor,
     TimeT0,
     Subtitle,
+    Separator,
 }

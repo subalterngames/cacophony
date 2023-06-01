@@ -7,6 +7,7 @@ mod panel;
 mod panels;
 mod renderer;
 mod sizes;
+mod tracks_panel;
 pub(crate) use color_key::ColorKey;
 use common::get_bytes;
 pub(crate) use common::ini::Ini;

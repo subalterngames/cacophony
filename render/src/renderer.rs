@@ -584,11 +584,7 @@ impl Renderer {
         self.text(
             v,
             [position[0] + width - v.chars().count() as u32, position[1]],
-            if value {
-                &ColorKey::True
-            } else {
-                &ColorKey::False
-            },
+            &Renderer::get_boolean_color(focus, value)
         );
     }
 
@@ -607,11 +603,22 @@ impl Renderer {
     /// Returns the color of the key text.
     ///
     /// - `focus` If true, the panel has focus.
-    fn get_key_color(focus: bool) -> ColorKey {
+    pub fn get_key_color(focus: bool) -> ColorKey {
         if focus {
             ColorKey::Key
         } else {
             ColorKey::NoFocus
+        }
+    }
+
+    pub fn get_boolean_color(focus: bool, value: bool) -> ColorKey {
+        if !focus {
+            ColorKey::NoFocus
+        }
+        else if value {
+            ColorKey::True
+        } else {
+            ColorKey::False
         }
     }
 

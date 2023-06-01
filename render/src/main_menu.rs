@@ -5,7 +5,7 @@ const PADDING: u32 = 3;
 /// The color of the panel and the text.
 const COLOR: ColorKey = ColorKey::Key;
 
-/// The main menu panel.
+/// The main menu panel. This panel is always in ghostly not-quite-focus.
 pub(crate) struct MainMenu {
     /// The panel background.
     panel: Panel,
