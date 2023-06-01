@@ -13,12 +13,5 @@ pub(crate) trait Drawable {
     /// - `conn` The synthesizer-player connection.
     /// - `input` Input events, key presses, etc.
     /// - `text` The text.
-    fn update(
-        &self,
-        renderer: &Renderer,
-        state: &State,
-        conn: &Conn,
-        input: &Input,
-        text: &Text,
-    );
+    fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, input: &Input, text: &Text);
 }
