@@ -27,7 +27,7 @@ pub(crate) fn get_window_grid_size(config: &Ini) -> [u32; 2] {
     let section = config.section(Some("RENDER")).unwrap();
     [
         parse(section, "window_width"),
-        parse(section, "window)height"),
+        parse(section, "window_height"),
     ]
 }
 
