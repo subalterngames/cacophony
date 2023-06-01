@@ -1,5 +1,6 @@
 mod color_key;
 mod drawable;
+mod field;
 mod music_panel;
 mod panel;
 mod panels;
