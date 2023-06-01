@@ -2,6 +2,7 @@ use crate::panel::*;
 
 /// Padding between text.
 const PADDING: u32 = 3;
+/// The color of the panel and the text.
 const COLOR: ColorKey = ColorKey::Key;
 
 /// The main menu panel.
