@@ -1,5 +1,6 @@
 mod color_key;
 mod drawable;
+mod music_panel;
 mod panel;
 mod renderer;
 mod sizes;
@@ -8,7 +9,6 @@ use common::get_bytes;
 pub(crate) use common::ini::Ini;
 use common::ini::Properties;
 use common::macroquad::prelude::*;
-pub(crate) use panel::Panel;
 pub use renderer::Renderer;
 
 /// Returns the font data section in the config file.

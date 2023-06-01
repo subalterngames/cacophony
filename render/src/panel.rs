@@ -1,6 +1,12 @@
-use crate::{ColorKey, Renderer};
+pub(crate) use crate::drawable::*;
+pub(crate) use crate::sizes::*;
+pub(crate) use crate::ColorKey;
+pub(crate) use crate::Ini;
+pub(crate) use common::PanelType;
 
-pub struct Panel {
+pub(crate) struct Panel {
+    /// The type of panel.
+    panel_type: PanelType,
     /// The title string for the panel.
     title: String,
     /// The position of the panel in grid units.
@@ -14,10 +20,20 @@ pub struct Panel {
 }
 
 impl Panel {
-    fn new(title: String, position: [u32; 2], size: [u32; 2]) -> Self {
+    pub fn new(panel_type: PanelType, position: [u32; 2], size: [u32; 2], text: &Text) -> Self {
+        // Get the title from the panel type.
+        let title_key = match panel_type {
+            PanelType::MainMenu => "TITLE_MAIN_MENU",
+            PanelType::Music => "TITLE_MUSIC",
+            PanelType::OpenFile => "TITLE_OPEN_FILE",
+            PanelType::PianoRoll => "TITLE_PIANO_ROLL",
+            PanelType::Tracks => "TITLE_TRACKS",
+        };
+        let title = text.get(title_key);
         let title_position = [position[0] + 2, position[1]];
         let title_size = [title.chars().count() as u32, 1];
         Self {
+            panel_type,
             title,
             position,
             size,
@@ -42,5 +58,10 @@ impl Panel {
         renderer.border(self.position, self.size, color);
         renderer.rectangle(self.title_position, self.title_size, &ColorKey::Background);
         renderer.text(&self.title, self.title_position, color);
+    }
+
+    /// Returns true if this panel has focus.
+    pub fn has_focus(&self, state: &State) -> bool {
+        self.panel_type == state.panels[state.focus.get()]
     }
 }

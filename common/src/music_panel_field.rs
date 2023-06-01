@@ -1,4 +1,5 @@
 /// Enum values defining the music panel fields.
+#[derive(Eq, PartialEq, Copy, Clone, Hash)]
 pub enum MusicPanelField {
     Name,
     BPM,
