@@ -2,15 +2,19 @@ mod color_key;
 mod renderer;
 mod sizes;
 pub(crate) use color_key::ColorKey;
+pub(crate) use common::ini::Ini;
+use common::ini::Properties;
+use common::macroquad::prelude::*;
 pub use renderer::Renderer;
-use std::fs::{metadata, File};
-use std::io::Read;
+use common::get_bytes;
 
-/// Read bytes from a file.
-pub(crate) fn get_bytes(path: &str) -> Vec<u8> {
-    let metadata = metadata(path).unwrap();
-    let mut f = File::open(path).unwrap();
-    let mut buffer = vec![0; metadata.len() as usize];
-    f.read_exact(&mut buffer).unwrap();
-    buffer
+/// Returns the font data section in the config file.
+fn get_font_section(config: &Ini) -> &Properties {
+    config.section(Some("FONTS")).unwrap()
+}
+
+/// Returns the main font.
+fn get_font(config: &Ini) -> Font {
+    let bytes = get_bytes(get_font_section(config).get("font").unwrap());
+    load_ttf_font_from_bytes(&bytes).unwrap()
 }

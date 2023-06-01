@@ -1,5 +1,5 @@
 use crate::sizes::*;
-use crate::ColorKey;
+use crate::{ColorKey, get_bytes, get_font, get_font_section};
 use common::config::{parse, parse_bool};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
@@ -38,7 +38,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub async fn new(config: &Ini) -> Self {
+    pub fn new(config: &Ini) -> Self {
         // Get the color aliases.
         let aliases_section = config.section(Some("COLOR_ALIASES")).unwrap();
         let mut aliases = HashMap::new();
@@ -63,10 +63,7 @@ impl Renderer {
 
         // Fonts.
         let font = get_font(config);
-        let fonts_section = config.section(Some("FONTS")).unwrap();
-        let subtitle_font = load_ttf_font(fonts_section.get("subtitle_font").unwrap())
-            .await
-            .unwrap();
+        let subtitle_font = load_ttf_font_from_bytes(&get_bytes(get_font_section(config).get("subtitle_font").unwrap())).unwrap();
 
         // Sizes.
         let font_size = get_font_size(config);

@@ -36,3 +36,14 @@ mod select_mode;
 pub use select_mode::SelectMode;
 mod piano_roll_mode;
 pub use piano_roll_mode::PianoRollMode;
+use std::fs::{metadata, File};
+use std::io::Read;
+
+/// Read bytes from a file.
+pub fn get_bytes(path: &str) -> Vec<u8> {
+    let metadata = metadata(path).unwrap();
+    let mut f = File::open(path).unwrap();
+    let mut buffer = vec![0; metadata.len() as usize];
+    f.read_exact(&mut buffer).unwrap();
+    buffer
+}
