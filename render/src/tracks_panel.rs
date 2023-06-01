@@ -1,5 +1,5 @@
 use crate::panel::*;
-use text::{truncate, get_file_name};
+use text::{get_file_name, truncate};
 
 /// The list of tracks.
 pub struct TracksPanel {
@@ -176,10 +176,7 @@ impl Drawable for TracksPanel {
                     );
                     // Mute.
                     if track.mute {
-                        let mute_position = [
-                            x + self.field_width - 1,
-                            y,
-                        ];
+                        let mute_position = [x + self.field_width - 1, y];
                         renderer.text(
                             &self.mute_text,
                             mute_position,
@@ -189,9 +186,7 @@ impl Drawable for TracksPanel {
                     // Solo.
                     if track.solo {
                         let solo_position = [
-                            x + self.field_width - 1
-                                - self.mute_text.chars().count() as u32
-                                - 1,
+                            x + self.field_width - 1 - self.mute_text.chars().count() as u32 - 1,
                             y,
                         ];
                         renderer.text(
@@ -202,8 +197,11 @@ impl Drawable for TracksPanel {
                     }
                     y += 1;
                     // Draw the file.
-                    let file_text =
-                        truncate(&get_file_name(&program.path),self.field_width as usize, true);
+                    let file_text = truncate(
+                        &get_file_name(&program.path),
+                        self.field_width as usize,
+                        true,
+                    );
                     let file_color = match (focus, track_focus) {
                         (true, true) => ColorKey::Arrow,
                         (true, false) => ColorKey::Key,

@@ -584,7 +584,7 @@ impl Renderer {
         self.text(
             v,
             [position[0] + width - v.chars().count() as u32, position[1]],
-            &Renderer::get_boolean_color(focus, value)
+            &Renderer::get_boolean_color(focus, value),
         );
     }
 
@@ -614,8 +614,7 @@ impl Renderer {
     pub fn get_boolean_color(focus: bool, value: bool) -> ColorKey {
         if !focus {
             ColorKey::NoFocus
-        }
-        else if value {
+        } else if value {
             ColorKey::True
         } else {
             ColorKey::False

@@ -1,7 +1,7 @@
 use crate::main_menu::MainMenu;
 use crate::music_panel::MusicPanel;
-use crate::tracks_panel::TracksPanel;
 use crate::panel::*;
+use crate::tracks_panel::TracksPanel;
 
 /// Every panel.
 pub struct Panels {
