@@ -1,5 +1,5 @@
 use crate::sizes::*;
-use crate::{ColorKey, get_bytes, get_font, get_font_section};
+use crate::{get_bytes, get_font, get_font_section, ColorKey};
 use common::config::{parse, parse_bool};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
@@ -7,6 +7,7 @@ use common::macroquad::prelude::*;
 use serde_json::{from_str, Error};
 
 const TEXTURE_COLOR: Color = common::macroquad::color::colors::WHITE;
+type Focus = [bool; 2];
 
 pub struct Renderer {
     /// Color key - Macroquad color map.
@@ -63,7 +64,10 @@ impl Renderer {
 
         // Fonts.
         let font = get_font(config);
-        let subtitle_font = load_ttf_font_from_bytes(&get_bytes(get_font_section(config).get("subtitle_font").unwrap())).unwrap();
+        let subtitle_font = load_ttf_font_from_bytes(&get_bytes(
+            get_font_section(config).get("subtitle_font").unwrap(),
+        ))
+        .unwrap();
 
         // Sizes.
         let font_size = get_font_size(config);
@@ -409,6 +413,110 @@ impl Renderer {
             ..Default::default()
         };
         (texture, params)
+    }
+
+    /// Draw a value with left and right arrows with a key.
+    ///
+    /// - `key` The key text.
+    /// - `value` The value text.
+    /// - `position` The top-left position in grid coordinates.
+    /// - `width` The total width of the key-list pair.
+    /// - `value_width The width of the space used to render the value.
+    /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
+    pub fn key_list(
+        &self,
+        key: &str,
+        value: &str,
+        position: [u32; 2],
+        width: u32,
+        value_width: u32,
+        focus: Focus,
+    ) {
+        // Draw the key.
+        self.text(key, position, &Renderer::get_key_color(focus[0]));
+
+        // Get the position of the value.
+        let value_x = position[0] + width - value_width - 1;
+
+        // Draw the arrows.
+        if focus[1] {
+            let arrow_color = if focus[0] {
+                ColorKey::Arrow
+            } else {
+                ColorKey::NoFocus
+            };
+            self.text("<", [value_x - 1, position[1]], &arrow_color);
+            self.text(">", [value_x + value_width, position[1]], &arrow_color);
+        }
+
+        // Draw the value.
+        self.text(value, [value_x, position[1]], &Self::get_value_color(focus));
+    }
+
+    /// Draw a value with left and right arrows.
+    ///
+    /// - `value` The string that will be rendered.
+    /// - `position` The top-left position in grid coordinates.
+    /// - `width` The width of the space used to render the value.
+    /// - `focus` If true, the panel has focus.
+    pub fn list(&self, value: &str, position: [u32; 2], width: u32, focus: Focus) {
+        // Draw the arrows.
+        if focus[1] {
+            let arrow_color = if focus[0] {
+                ColorKey::Arrow
+            } else {
+                ColorKey::NoFocus
+            };
+            self.text("<", position, &arrow_color);
+            self.text(">", [position[0] + width + 1, position[1]], &arrow_color);
+        }
+        // Truncate text.
+        let mut text = value.to_string();
+        let len = value.chars().count();
+        if len as u32 >= width {
+            text = value[0..width as usize].to_string();
+        }
+        // Draw the value.
+        self.text(
+            text.as_str(),
+            [position[0] + 1, position[1]],
+            &Self::get_value_color(focus),
+        );
+    }
+
+    /// Returns the color of the value text.
+    ///
+    /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
+    pub fn get_value_color(focus: Focus) -> ColorKey {
+        match (focus[0], focus[1]) {
+            (true, true) => ColorKey::Value,
+            (true, false) => ColorKey::Key,
+            (false, true) => ColorKey::NoFocus,
+            (false, false) => ColorKey::NoFocus,
+        }
+    }
+
+    /// Returns the color of the key text.
+    ///
+    /// - `focus` If true, the panel has focus.
+    pub fn get_key_color(focus: bool) -> ColorKey {
+        if focus {
+            ColorKey::Key
+        } else {
+            ColorKey::NoFocus
+        }
+    }
+
+    /// Returns the color of boolean text.
+    ///
+    /// - `value` The boolean value.
+    /// - `focus` If true, the panel/widget has focus.
+    pub fn get_boolean_color(value: bool, focus: bool) -> ColorKey {
+        match (value, focus) {
+            (true, true) => ColorKey::Yes,
+            (false, true) => ColorKey::No,
+            _ => ColorKey::NoFocus,
+        }
     }
 
     /// Converts a grid point to a pixel point.

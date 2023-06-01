@@ -1,4 +1,4 @@
-use crate::{get_font_section, get_font, Ini};
+use crate::{get_font, get_font_section, Ini};
 use common::config::parse;
 use common::macroquad::prelude::*;
 
