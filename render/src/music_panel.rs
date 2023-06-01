@@ -36,11 +36,11 @@ impl MusicPanel {
         fields.insert(MusicPanelField::Name, Field::new_no_label([x, y]));
         fields.insert(
             MusicPanelField::BPM,
-            Field::new_with_label([x, y + 1], "TITLE_BPM", kv_width, text),
+            Field::new_with_label([x, y + 1], "TITLE_BPM", text),
         );
         fields.insert(
             MusicPanelField::Gain,
-            Field::new_with_label([x, y + 2], "TITLE_GAIN", kv_width, text),
+            Field::new_with_label([x, y + 2], "TITLE_GAIN", text),
         );
 
         // Define the size of the fields.

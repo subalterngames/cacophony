@@ -1,4 +1,4 @@
-use text::{truncate, Text};
+use text::Text;
 
 /// A field has a position and a label for the value.
 pub(crate) struct Field {
@@ -12,10 +12,9 @@ impl Field {
     pub fn new_with_label(
         position: [u32; 2],
         key: &str,
-        max_label_length: usize,
         text: &Text,
     ) -> Self {
-        let label = Some(truncate(&text.get(key), max_label_length, false));
+        let label = Some(text.get(key));
         Self { position, label }
     }
 
