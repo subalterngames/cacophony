@@ -20,6 +20,9 @@ path = "../input"
 [dependencies.text]
 path = "../text"
 
+[dependencies.tooltip]
+path = "../tooltip"
+
 [dependencies.serde]
 version = "1.0.153"
 default-features = false

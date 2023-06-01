@@ -1,4 +1,4 @@
-use crate::{panel::*, tooltip::get_tooltip, OpenFileType};
+use crate::{panel::*, OpenFileType};
 use common::MidiTrack;
 use text::get_file_name_no_ex;
 

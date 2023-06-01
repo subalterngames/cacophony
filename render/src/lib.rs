@@ -1,8 +1,8 @@
 mod color_key;
 mod drawable;
 mod field;
-mod music_panel;
 mod main_menu;
+mod music_panel;
 mod panel;
 mod panels;
 mod renderer;

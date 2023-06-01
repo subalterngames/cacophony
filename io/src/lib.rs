@@ -12,7 +12,6 @@ mod music_panel;
 mod open_file;
 mod panel;
 mod piano_roll;
-mod tooltip;
 mod tracks_panel;
 mod undo_state;
 use io_command::IOCommand;
@@ -22,7 +21,7 @@ use open_file::open_file_panel::OpenFilePanel;
 use open_file::open_file_type::OpenFileType;
 pub(crate) use panel::Panel;
 use piano_roll::PianoRollPanel;
-pub(crate) use tooltip::{get_tooltip, get_tooltip_with_values};
+use tooltip::*;
 use tracks_panel::TracksPanel;
 pub(crate) use undo_state::UndoRedoState;
 

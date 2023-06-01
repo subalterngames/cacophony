@@ -9,11 +9,7 @@ pub(crate) struct Field {
 }
 
 impl Field {
-    pub fn new_with_label(
-        position: [u32; 2],
-        key: &str,
-        text: &Text,
-    ) -> Self {
+    pub fn new_with_label(position: [u32; 2], key: &str, text: &Text) -> Self {
         let label = Some(text.get(key));
         Self { position, label }
     }

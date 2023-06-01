@@ -718,6 +718,7 @@ dependencies = [
  "edit",
  "input",
  "text",
+ "tooltip",
 ]
 
 [[package]]
@@ -1470,6 +1471,7 @@ dependencies = [
  "strum",
  "strum_macros",
  "text",
+ "tooltip",
 ]
 
 [[package]]
@@ -1751,6 +1753,14 @@ dependencies = [
  "indexmap",
  "toml_datetime",
  "winnow",
+]
+
+[[package]]
+name = "tooltip"
+version = "0.1.0"
+dependencies = [
+ "input",
+ "text",
 ]
 
 [[package]]
