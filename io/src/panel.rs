@@ -10,8 +10,8 @@ pub(crate) use text::{Text, TTS};
 pub(crate) trait Panel {
     /// Apply panel-specific updates to the state.
     ///
+    /// - `state` The state of the app..
     /// - `conn` The synthesizer-player connection.
-    /// - `state` The current `State`.
     /// - `input` Input events, key presses, etc.
     /// - `tts` Text-to-speech.
     /// - `text` The text.

@@ -1,4 +1,5 @@
 mod color_key;
+mod drawable;
 mod renderer;
 mod sizes;
 pub(crate) use color_key::ColorKey;
