@@ -40,6 +40,8 @@ impl Panels {
         input: &Input,
         text: &Text,
     ) {
+        // Draw the main panel.
+        self.main_menu.update(renderer, state, conn, input, text);
         for panel_type in &state.panels {
             // Get the panel.
             let panel: &dyn Drawable = match panel_type {

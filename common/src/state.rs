@@ -39,6 +39,17 @@ pub struct State {
 }
 
 impl State {
+    pub fn new() -> State {
+        let music = Music::default();
+        let time = Time::default();
+        let panels = vec![PanelType::Music, PanelType::Tracks, PanelType::PianoRoll];
+        let focus = Index::new(0, panels.len());
+        let music_panel_field = Index::new(0, MUSIC_PANEL_FIELDS.len());
+        let piano_roll_mode = PianoRollMode::Time;
+        let edit_mode = Index::new(0, EDIT_MODES.len());
+        let select_mode = SelectMode::Single(None);
+    }
+
     /// Write this state to a file.
     pub fn write(&self, path: &PathBuf) {
         match OpenOptions::new()

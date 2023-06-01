@@ -21,14 +21,6 @@ pub struct Time {
 }
 
 impl Time {
-    pub fn new() -> Self {
-        Self {
-            cursor: Fraction::zero(),
-            playback: Fraction::zero(),
-            mode: get_index(),
-        }
-    }
-
     pub(crate) fn serialize(&self) -> SerializableTime {
         SerializableTime {
             cursor: serialize_fraction(&self.cursor),
@@ -40,7 +32,11 @@ impl Time {
 
 impl Default for Time {
     fn default() -> Self {
-        Self::new()
+        Self {
+            cursor: Fraction::zero(),
+            playback: Fraction::zero(),
+            mode: get_index(),
+        }
     }
 }
 
