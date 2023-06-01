@@ -5,6 +5,7 @@ use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::prelude::*;
 use serde_json::{from_str, Error};
+use text::Text;
 
 const TEXTURE_COLOR: Color = common::macroquad::color::colors::WHITE;
 type Focus = [bool; 2];
@@ -20,8 +21,6 @@ pub struct Renderer {
     cell_size: [f32; 2],
     /// The font size.
     font_size: u16,
-    /// The size of the window in grid units.
-    grid_size: [u32; 2],
     /// The size of the window in pixels.
     pixel_size: [f32; 2],
     /// The top-left pixel position of the subtitle text.
@@ -36,10 +35,14 @@ pub struct Renderer {
     corner_line_length: f32,
     /// This is used to flip captured textures.
     flip_y: bool,
+    /// Text for a true boolean value.
+    boolean_text_true: String,
+    /// Text for a false boolean value.
+    boolean_text_false: String,
 }
 
 impl Renderer {
-    pub fn new(config: &Ini) -> Self {
+    pub fn new(config: &Ini, text: &Text) -> Self {
         // Get the color aliases.
         let aliases_section = config.section(Some("COLOR_ALIASES")).unwrap();
         let mut aliases = HashMap::new();
@@ -89,12 +92,15 @@ impl Renderer {
         let half_line_width = line_width / 2.0;
         let flip_y = parse_bool(render_section, "flip_y");
 
+        // Text.
+        let boolean_text_true = text.get("TRUE");
+        let boolean_text_false = text.get("FALSE");
+
         Self {
             colors,
             font,
             subtitle_font,
             font_size,
-            grid_size,
             pixel_size,
             cell_size,
             line_width,
@@ -103,6 +109,8 @@ impl Renderer {
             border_offsets,
             flip_y,
             subtitle_position,
+            boolean_text_true,
+            boolean_text_false,
         }
     }
 
@@ -533,10 +541,60 @@ impl Renderer {
         self.text(value, value_position, &Self::get_value_color(focus));
     }
 
+    /// Draw a horizontally-aligned key-value pair.
+    ///
+    /// - `key` The key text.
+    /// - `value` The value text.
+    /// - `position` The top-left position in grid coordinates.
+    /// - `width` The width of the widget. `key` will start at the left and `value` will start at an offset from the right.
+    /// - `colors` The key and value colors.
+    pub fn key_value_horizontal(
+        &self,
+        key: &str,
+        value: &str,
+        position: [u32; 2],
+        width: u32,
+        colors: [&ColorKey; 2],
+    ) {
+        self.text(key, position, colors[0]);
+        self.text(
+            value,
+            [
+                position[0] + width - value.chars().count() as u32,
+                position[1],
+            ],
+            colors[1],
+        );
+    }
+
+    /// Draw a horizontally-aligned key-value boolean pair.
+    ///
+    /// - `key` The key text.
+    /// - `value` The value.
+    /// - `position` The top-left position in grid coordinates.
+    /// - `focus` If true, the panel has focus.
+    pub fn boolean(&self, key: &str, value: bool, position: [u32; 2], width: u32, focus: bool) {
+        self.text(key, position, &Renderer::get_key_color(focus));
+        let v = if value {
+            &self.boolean_text_true
+        } else {
+            &self.boolean_text_false
+        };
+        self.text(
+            v,
+            [position[0] + width - v.chars().count() as u32, position[1]],
+            if value {
+                &ColorKey::True
+            } else {
+                &ColorKey::False
+            },
+        );
+    }
+
     /// Returns the color of the value text.
     ///
     /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
-    pub fn get_value_color(focus: Focus) -> ColorKey {
+    fn get_value_color(focus: Focus) -> ColorKey {
         match (focus[0], focus[1]) {
             (true, true) => ColorKey::Value,
             (true, false) => ColorKey::Key,
@@ -548,23 +606,11 @@ impl Renderer {
     /// Returns the color of the key text.
     ///
     /// - `focus` If true, the panel has focus.
-    pub fn get_key_color(focus: bool) -> ColorKey {
+    fn get_key_color(focus: bool) -> ColorKey {
         if focus {
             ColorKey::Key
         } else {
             ColorKey::NoFocus
-        }
-    }
-
-    /// Returns the color of boolean text.
-    ///
-    /// - `value` The boolean value.
-    /// - `focus` If true, the panel/widget has focus.
-    pub fn get_boolean_color(value: bool, focus: bool) -> ColorKey {
-        match (value, focus) {
-            (true, true) => ColorKey::Yes,
-            (false, true) => ColorKey::No,
-            _ => ColorKey::NoFocus,
         }
     }
 

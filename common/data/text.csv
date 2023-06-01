@@ -211,3 +211,5 @@ PIANO_ROLL_PANEL_INPUT_TTS_TIME,\0 and \1 to move the cursor. \2 and \3 to set t
 PIANO_ROLL_PANEL_STATUS_TTS_VIEW,The view is from beats \0 to \1 and pitches \2 to \3.
 PIANO_ROLL_PANEL_INPUT_TTS_VIEW,"\0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end."
 ERROR,ERROR: \0
+TRUE,Y
+FALSE,N
