@@ -32,7 +32,7 @@ pub(crate) fn get_window_grid_size(config: &Ini) -> [u32; 2] {
 }
 
 /// Returns the window size in pixels.
-pub(crate) fn get_window_pixel_size(config: &Ini) -> [f32; 2] {
+pub fn get_window_pixel_size(config: &Ini) -> [f32; 2] {
     let grid_size = get_window_grid_size(config);
     let cell_size = get_cell_size(config);
     [

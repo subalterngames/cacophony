@@ -38,6 +38,8 @@ mod piano_roll_mode;
 pub use piano_roll_mode::PianoRollMode;
 use std::fs::{metadata, File};
 use std::io::Read;
+pub use serde;
+pub use serde_json;
 
 /// Read bytes from a file.
 pub fn get_bytes(path: &str) -> Vec<u8> {

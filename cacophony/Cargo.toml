@@ -1,11 +1,7 @@
 [package]
-name = "render"
+name = "cacophony"
 version = "0.1.0"
 edition = "2021"
-
-[dependencies]
-strum = "0.24"
-strum_macros = "0.24"
 
 [dependencies.audio]
 path = "../audio"
@@ -15,6 +11,12 @@ path = "../common"
 
 [dependencies.input]
 path = "../input"
+
+[dependencies.io]
+path = "../io"
+
+[dependencies.render]
+path = "../render"
 
 [dependencies.text]
 path = "../text"

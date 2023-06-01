@@ -4,7 +4,7 @@ use common::config::{parse, parse_bool};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::prelude::*;
-use serde_json::{from_str, Error};
+use common::serde_json;
 use text::Text;
 
 const TEXTURE_COLOR: Color = common::macroquad::color::colors::WHITE;
@@ -633,7 +633,7 @@ impl Renderer {
 
     /// Parse a serialized 3-element array as an RGBA color.
     fn parse_color(value: &str) -> Color {
-        let c: Result<[u8; 3], Error> = from_str(value);
+        let c: Result<[u8; 3], serde_json::Error> = serde_json::from_str(value);
         match c {
             Ok(c) => color_u8!(c[0], c[1], c[2], 255),
             Err(error) => panic!("Invalid color alias: {} {}", value, error),

@@ -44,9 +44,9 @@ pub struct IO {
     /// The piano roll panel.
     piano_roll_panel: PianoRollPanel,
     /// The file path. If None, we haven't saved this music yet.
-    pub save_path: Option<PathBuf>,
+    save_path: Option<PathBuf>,
     /// The export path, if any.
-    pub export_path: Option<PathBuf>,
+    export_path: Option<PathBuf>,
 }
 
 impl IO {

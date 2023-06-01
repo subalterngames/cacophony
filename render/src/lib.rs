@@ -14,7 +14,8 @@ pub(crate) use common::ini::Ini;
 use common::ini::Properties;
 use common::macroquad::prelude::*;
 pub use panels::Panels;
-pub(crate) use renderer::Renderer;
+pub use sizes::*;
+pub use renderer::Renderer;
 
 /// Returns the font data section in the config file.
 fn get_font_section(config: &Ini) -> &Properties {
