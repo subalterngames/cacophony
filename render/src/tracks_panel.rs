@@ -136,7 +136,7 @@ impl Drawable for TracksPanel {
                 None => {
                     renderer.text(
                         &text.get_with_values(
-                            "TRACKS_LIST_PANEL_TRACK_TITLE",
+                            "TRACKS_PANEL_TRACK_TITLE",
                             &[&channel.to_string()],
                         ),
                         [x, y],
