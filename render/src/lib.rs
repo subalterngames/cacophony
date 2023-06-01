@@ -2,6 +2,7 @@ mod color_key;
 mod drawable;
 mod music_panel;
 mod panel;
+mod panels;
 mod renderer;
 mod sizes;
 pub(crate) use color_key::ColorKey;
@@ -9,7 +10,8 @@ use common::get_bytes;
 pub(crate) use common::ini::Ini;
 use common::ini::Properties;
 use common::macroquad::prelude::*;
-pub use renderer::Renderer;
+pub use panels::Panels;
+pub(crate) use renderer::Renderer;
 
 /// Returns the font data section in the config file.
 fn get_font_section(config: &Ini) -> &Properties {

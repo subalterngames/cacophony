@@ -1,8 +1,6 @@
 use crate::{get_font, get_font_section, Ini};
 use common::config::parse;
-use common::hashbrown::HashMap;
 use common::macroquad::prelude::*;
-use common::PanelType;
 
 /// The height of the main menu in grid units.
 pub(crate) const MAIN_MENU_HEIGHT: u32 = 3;
