@@ -17,9 +17,9 @@ pub struct Panels {
 }
 
 impl Panels {
-    pub fn new(config: &Ini, text: &Text) -> Self {
+    pub fn new(config: &Ini, input: &Input, text: &Text) -> Self {
         let music_panel = MusicPanel::new(config, text);
-        let main_menu = MainMenu::new(config, text);
+        let main_menu = MainMenu::new(config, input, text);
         let tracks_panel = TracksPanel::new(config, text);
         let open_file_panel = OpenFilePanel::new(config, text);
         Self {

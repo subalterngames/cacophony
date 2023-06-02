@@ -70,7 +70,7 @@ impl Text {
             Some(t) => {
                 let mut text = t.clone();
                 for (i, v) in values.iter().enumerate() {
-                    let mut k = String::from("\\");
+                    let mut k: String = String::from("\\");
                     k.push_str(i.to_string().as_str());
                     let vv = v.to_string();
                     text = text.replace(&k, vv.as_str());

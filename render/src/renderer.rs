@@ -1,4 +1,4 @@
-use crate::ColorKey;
+use crate::{BooleanText, ColorKey};
 use common::config::{parse, parse_bool};
 use common::font::*;
 use common::get_bytes;
@@ -38,10 +38,8 @@ pub struct Renderer {
     corner_line_length: f32,
     /// This is used to flip captured textures.
     flip_y: bool,
-    /// Text for a true boolean value.
-    boolean_text_true: String,
-    /// Text for a false boolean value.
-    boolean_text_false: String,
+    /// Text for a boolean value.
+    boolean_text: BooleanText,
 }
 
 impl Renderer {
@@ -96,8 +94,7 @@ impl Renderer {
         let flip_y = parse_bool(render_section, "flip_y");
 
         // Text.
-        let boolean_text_true = text.get("TRUE");
-        let boolean_text_false = text.get("FALSE");
+        let boolean_text = BooleanText::new(text);
 
         Self {
             colors,
@@ -112,8 +109,7 @@ impl Renderer {
             border_offsets,
             flip_y,
             subtitle_position,
-            boolean_text_true,
-            boolean_text_false,
+            boolean_text,
         }
     }
 
@@ -579,9 +575,9 @@ impl Renderer {
     pub fn boolean(&self, key: &str, value: bool, position: [u32; 2], width: u32, focus: bool) {
         self.text(key, position, &Renderer::get_key_color(focus));
         let v = if value {
-            &self.boolean_text_true
+            &self.boolean_text.yes
         } else {
-            &self.boolean_text_false
+            &self.boolean_text
         };
         self.text(
             v,

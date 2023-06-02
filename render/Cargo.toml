@@ -6,6 +6,9 @@ edition = "2021"
 [dependencies]
 strum = "0.24"
 strum_macros = "0.24"
+imageproc = "0.23.0"
+image = "0.24.6"
+rusttype = "0.9.3"
 
 [dependencies.audio]
 path = "../audio"

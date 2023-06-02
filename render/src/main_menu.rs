@@ -1,7 +1,6 @@
 use crate::panel::*;
+use input::InputEvent;
 
-/// Padding between text.
-const PADDING: u32 = 3;
 /// The color of the panel and the text.
 const COLOR: ColorKey = ColorKey::Key;
 
@@ -14,7 +13,7 @@ pub(crate) struct MainMenu {
 }
 
 impl MainMenu {
-    pub fn new(config: &Ini, text: &Text) -> Self {
+    pub fn new(config: &Ini, input: &Input, text: &Text) -> Self {
         // Get the width of the panel.
         let tracks_panel_width = get_tracks_panel_width(config);
         let window_grid_size = get_window_grid_size(config);
@@ -31,22 +30,15 @@ impl MainMenu {
         // Get the fields.
         let mut x = panel.position[0] + 1;
         let y = panel.position[1] + 1;
-        let help = MainMenu::get_field("MAIN_MENU_HELP", &mut x, y, text);
-        let status = MainMenu::get_field("MAIN_MENU_STATUS", &mut x, y, text);
-        let input = MainMenu::get_field("MAIN_MENU_INPUT", &mut x, y, text);
-        let app = MainMenu::get_field("MAIN_MENU_APP", &mut x, y, text);
-        let file = MainMenu::get_field("MAIN_MENU_FILE", &mut x, y, text);
-        let stop = MainMenu::get_field("MAIN_MENU_STOP", &mut x, y, text);
-        let fields = [help, status, input, app, file, stop];
+        let help = Field::horizontal("MAIN_MENU_HELP", &mut x, y, text);
+        let status = Field::horizontal_tooltip("MAIN_MENU_STATUS",  InputEvent::StatusTTS, &mut x, y, input, text);
+        let input_field = Field::horizontal_tooltip("MAIN_MENU_INPUT", InputEvent::InputTTS, &mut x, y, input, text);
+        let app = Field::horizontal_tooltip("MAIN_MENU_APP", InputEvent::AppTTS, &mut x, y, input, text);
+        let file = Field::horizontal_tooltip("MAIN_MENU_FILE", InputEvent::FileTTS, &mut x, y, input, text);
+        let stop = Field::horizontal_tooltip("MAIN_MENU_STOP", InputEvent::StopTTS, &mut x, y, input, text);
+        let fields = [help, status, input_field, app, file, stop];
 
         Self { panel, fields }
-    }
-
-    /// Returns a new field. Moves the x value by the length of the field's title plus padding.
-    fn get_field(key: &str, x: &mut u32, y: u32, text: &Text) -> Field {
-        let field = Field::new_with_label([*x, y], key, text);
-        *x += field.label.as_ref().unwrap().chars().count() as u32 + PADDING;
-        field
     }
 }
 
