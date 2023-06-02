@@ -36,10 +36,12 @@ mod select_mode;
 pub use select_mode::SelectMode;
 mod piano_roll_mode;
 pub use piano_roll_mode::PianoRollMode;
-use std::fs::{metadata, File};
-use std::io::Read;
 pub use serde;
 pub use serde_json;
+use std::fs::{metadata, File};
+use std::io::Read;
+pub mod font;
+pub mod sizes;
 
 /// Read bytes from a file.
 pub fn get_bytes(path: &str) -> Vec<u8> {

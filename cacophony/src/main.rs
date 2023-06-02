@@ -1,12 +1,13 @@
-use common::{Paths, State};
-use common::macroquad::prelude::*;
-use common::macroquad as macroquad;
-use common::config::{load, parse_bool};
-use render::*;
 use audio::connect;
-use text::{Text, TTS};
-use io::IO;
+use common::config::{load, parse_bool};
+use common::macroquad;
+use common::macroquad::prelude::*;
+use common::sizes::get_window_pixel_size;
+use common::{Paths, State};
 use input::Input;
+use io::IO;
+use render::{Panels, Renderer};
+use text::{Text, TTS};
 
 #[macroquad::main(window_conf)]
 async fn main() {
@@ -14,7 +15,9 @@ async fn main() {
     let paths = Paths::new();
 
     // Load the splash image.
-    let splash = load_texture(paths.splash_path.as_os_str().to_str().unwrap()).await.unwrap();
+    let splash = load_texture(paths.splash_path.as_os_str().to_str().unwrap())
+        .await
+        .unwrap();
     draw_texture(splash, 0.0, 0.0, WHITE);
     next_frame().await;
 
@@ -25,16 +28,19 @@ async fn main() {
     let text = Text::new(&config, &paths);
 
     // Try to load the text-to-speech engine.
-    let tts = TTS::new(&config);
+    let mut tts = TTS::new(&config);
 
     // Get the input object.
-    let input = Input::new(&config);
+    let mut input = Input::new(&config);
 
     // Create the audio connection.
-    let conn = connect();
+    let mut conn = connect();
+
+    // Create the state.
+    let mut state = State::new(&config);
 
     // Get the IO state.
-    let io = IO::new(&config, &input, &state.input, &text);
+    let mut io = IO::new(&config, &input, &state.input, &text);
 
     // Load the renderer.
     let renderer = Renderer::new(&config, &text);

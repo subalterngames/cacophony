@@ -1,10 +1,12 @@
-use crate::sizes::*;
-use crate::{get_bytes, get_font, get_font_section, ColorKey};
+use crate::ColorKey;
 use common::config::{parse, parse_bool};
+use common::font::*;
+use common::get_bytes;
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::prelude::*;
 use common::serde_json;
+use common::sizes::*;
 use text::Text;
 
 const TEXTURE_COLOR: Color = common::macroquad::color::colors::WHITE;

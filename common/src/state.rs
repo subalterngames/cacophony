@@ -5,6 +5,7 @@ use crate::music_panel_field::{MusicPanelField, MUSIC_PANEL_FIELDS};
 use crate::time::{SerializableTime, Time};
 use crate::view::SerializableViewport;
 use crate::{Index, InputState, Music, PanelType, PianoRollMode, SelectMode, View};
+use ini::Ini;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
@@ -39,15 +40,29 @@ pub struct State {
 }
 
 impl State {
-    pub fn new() -> State {
+    pub fn new(config: &Ini) -> State {
         let music = Music::default();
+        let view = View::new(config);
         let time = Time::default();
+        let input = InputState::default();
         let panels = vec![PanelType::Music, PanelType::Tracks, PanelType::PianoRoll];
         let focus = Index::new(0, panels.len());
         let music_panel_field = Index::new(0, MUSIC_PANEL_FIELDS.len());
         let piano_roll_mode = PianoRollMode::Time;
         let edit_mode = Index::new(0, EDIT_MODES.len());
         let select_mode = SelectMode::Single(None);
+        Self {
+            music,
+            view,
+            time,
+            input,
+            panels,
+            focus,
+            music_panel_field,
+            piano_roll_mode,
+            edit_mode,
+            select_mode,
+        }
     }
 
     /// Write this state to a file.

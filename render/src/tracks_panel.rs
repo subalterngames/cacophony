@@ -135,10 +135,7 @@ impl Drawable for TracksPanel {
                 // No program. No SoundFont.
                 None => {
                     renderer.text(
-                        &text.get_with_values(
-                            "TRACKS_PANEL_TRACK_TITLE",
-                            &[&channel.to_string()],
-                        ),
+                        &text.get_with_values("TRACKS_PANEL_TRACK_TITLE", &[&channel.to_string()]),
                         [x, y],
                         &Renderer::get_key_color(focus),
                     );

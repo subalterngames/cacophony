@@ -1,8 +1,8 @@
 pub(crate) use crate::drawable::*;
 pub(crate) use crate::field::Field;
-pub(crate) use crate::sizes::*;
 pub(crate) use crate::ColorKey;
 pub(crate) use crate::Ini;
+pub(crate) use common::sizes::*;
 pub(crate) use common::PanelType;
 
 pub(crate) struct Panel {

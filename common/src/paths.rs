@@ -57,7 +57,7 @@ impl Paths {
             soundfonts_directory,
             saves_directory,
             export_directory,
-            splash_path
+            splash_path,
         }
     }
 
