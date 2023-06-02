@@ -17,7 +17,7 @@ use io_command::IOCommand;
 pub(crate) use io_command::IOCommands;
 use music_panel::MusicPanel;
 mod open_file_panel;
-use open_file::OpenFileType;
+use common::open_file::OpenFileType;
 use open_file_panel::OpenFilePanel;
 pub(crate) use panel::Panel;
 use piano_roll::PianoRollPanel;

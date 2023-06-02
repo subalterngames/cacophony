@@ -1,4 +1,4 @@
-use open_file::OpenFileType;
+use common::open_file::OpenFileType;
 use std::path::PathBuf;
 
 /// Commands for the IO struct.

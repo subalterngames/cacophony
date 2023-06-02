@@ -1,3 +1,6 @@
+//! This crate contains a variety of types that are shared throughout Cacophony.
+//! 
+
 pub mod config;
 mod fraction_utils;
 mod index;
@@ -42,6 +45,7 @@ use std::fs::{metadata, File};
 use std::io::Read;
 pub mod font;
 pub mod sizes;
+pub mod open_file;
 
 /// Read bytes from a file.
 pub fn get_bytes(path: &str) -> Vec<u8> {

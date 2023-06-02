@@ -15,9 +15,6 @@ path = "../common"
 [dependencies.input]
 path = "../input"
 
-[dependencies.open_file]
-path = "../open_file"
-
 [dependencies.text]
 path = "../text"
 

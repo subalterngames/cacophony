@@ -1,7 +1,7 @@
 use crate::panel::*;
 use crate::{get_tooltip, get_tooltip_with_values};
 use common::{PanelType, Paths};
-use open_file::*;
+use common::open_file::*;
 use std::path::Path;
 use text::{get_file_name_no_ex, get_folder_name};
 

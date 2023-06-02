@@ -1,6 +1,6 @@
-use crate::open_file_type::OpenFileType;
-use crate::FileOrDirectory;
-use common::Paths;
+use super::OpenFileType;
+use super::FileOrDirectory;
+use crate::Paths;
 use std::path::PathBuf;
 
 const SOUNDFONT_EXTENSIONS: [&str; 2] = ["sf2", "sf3"];

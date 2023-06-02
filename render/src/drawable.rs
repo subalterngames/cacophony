@@ -2,7 +2,7 @@ pub(crate) use crate::Renderer;
 pub(crate) use audio::Conn;
 pub(crate) use common::State;
 pub(crate) use input::Input;
-pub(crate) use open_file::OpenFile;
+pub(crate) use common::open_file::OpenFile;
 pub(crate) use text::Text;
 
 /// A drawable region.
