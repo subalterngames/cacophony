@@ -1,5 +1,11 @@
 //! This crate contains a variety of types that are shared throughout Cacophony.
-//! 
+//!
+//! The most important struct by far is `State`, which stores the entire app state.
+//! `State` can be serialized and written to disk.
+//!
+//! Most of the external crates, e.g. macroquad and fraction, can be referenced elsewhere from this crate.
+//!
+//! `common` is designed such that any Cacophony crate can use it, but itself does not depend on any Cacophony crates.
 
 pub mod config;
 mod fraction_utils;
@@ -17,7 +23,7 @@ pub use crossbeam_channel;
 pub use csv;
 pub use fraction::{ToPrimitive, Zero};
 pub use fraction_utils::Fraction;
-pub(crate) use fraction_utils::{deserialize_fraction, serialize_fraction, SerializableFraction};
+use fraction_utils::{deserialize_fraction, serialize_fraction, SerializableFraction};
 pub use hashbrown;
 pub use index::Index;
 pub use ini;
@@ -31,8 +37,8 @@ pub use panel_type::PanelType;
 pub use paths::Paths;
 pub use state::State;
 pub use tts;
-pub(crate) use view::View;
-pub(crate) mod edit_mode;
+use view::View;
+mod edit_mode;
 pub mod music_panel_field;
 pub use edit_mode::{EditMode, EDIT_MODES};
 mod select_mode;
@@ -44,8 +50,8 @@ pub use serde_json;
 use std::fs::{metadata, File};
 use std::io::Read;
 pub mod font;
-pub mod sizes;
 pub mod open_file;
+pub mod sizes;
 
 /// Read bytes from a file.
 pub fn get_bytes(path: &str) -> Vec<u8> {

@@ -9,6 +9,7 @@ use common::{EditMode, Paths, PianoRollMode, ToPrimitive, MIN_NOTE};
 
 const LANGUAGES: [&str; 1] = ["en"];
 
+/// Localized text lookup.
 pub struct Text {
     /// The text key-value map.
     text: HashMap<String, String>,

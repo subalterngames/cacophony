@@ -6,7 +6,7 @@ use common::sizes::get_window_pixel_size;
 use common::{Paths, State};
 use input::Input;
 use io::IO;
-use render::{Panels, Renderer};
+use render::{draw_subtitles, Panels, Renderer};
 use text::{Text, TTS};
 
 #[macroquad::main(window_conf)]
@@ -76,6 +76,9 @@ async fn main() {
             &text,
             &io.open_file_panel.open_file,
         );
+
+        // Draw subtitles.
+        draw_subtitles(&renderer, &tts);
 
         // Receive input. Possible say something or do an audio operation. Modify the state.
         done = io.update(&mut state, &mut conn, &mut input, &mut tts, &text, &paths);

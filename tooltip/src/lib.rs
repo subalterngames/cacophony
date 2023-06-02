@@ -1,3 +1,10 @@
+//! This is a small crate for generating tooltip text-to-speech text.
+//!
+//! It needs to be it's own crate because of its dependencies:
+//! It can't be in `text` because it requires the user input bindings (`input`).
+//! It can't be in `input` because it requires text lookup (`text`).
+//! It can't be in `io` because it's also needed in `render` for the main menu.
+
 use input::{Input, InputEvent};
 use text::Text;
 

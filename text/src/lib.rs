@@ -1,3 +1,9 @@
+//! This crate handles three related, but separate, tasks:
+//!
+//! 1. `Text` stores localized text. Throughout Cacophony, all strings that will be spoken or drawn are referenced via lookup keys. The text data is in `data/text.csv`.
+//! 2. `TTS` converts text-to-speech strings into spoken audio.
+//! 3. This crate also contains language-agnostic string manipulation functions e.g. `truncate`.
+
 mod text;
 mod tts;
 pub use self::tts::TTS;

@@ -14,7 +14,7 @@ pub struct TTS {
     /// The text-to-speech engine.
     tts: Option<Tts>,
     /// What text, if any, Casey is saying.
-    speech: Option<String>,
+    pub speech: Option<String>,
     /// If true, return subtitle text.
     subtitles: bool,
 }

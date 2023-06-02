@@ -1,6 +1,6 @@
 use crate::panel::*;
-use common::MidiTrack;
 use common::open_file::OpenFileType;
+use common::MidiTrack;
 use text::get_file_name_no_ex;
 
 pub(crate) struct TracksPanel {}

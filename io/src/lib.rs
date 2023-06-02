@@ -1,3 +1,20 @@
+//! This crate handles essentially all of Cacophony's functionality except the rendering (see the `render` crate).
+//!
+//! The only public struct is `IO`.
+//!
+//! Per frame, `IO` listens for user input via an `Input` (see the `input` crate), and then does any of the following:
+//!
+//! - Update `State` (see the `common` crate), for example add a new track.
+//! - Send a list of `Command` to the `Conn` (see the `audio` crate).
+//! - Send an internal `IOCommand` to itself.
+//! - Play text-to-speech audio (see the `text` crate).
+//!
+//! The first two options (state and command) will create a copy of the current `State` which will be added to an undo stack.
+//! Undoing an action reverts the app to that state, pops it from the undo stack, and pushes it to the redo stack.
+//!
+//! `IO` divides input listening into discrete panels, e.g. the music panel and the tracks panel.
+//! Each panel implements the `Panel` trait.
+
 use audio::{Command, CommandsMessage, Conn, ExportState};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
@@ -14,16 +31,16 @@ mod piano_roll;
 mod tracks_panel;
 mod undo_state;
 use io_command::IOCommand;
-pub(crate) use io_command::IOCommands;
+use io_command::IOCommands;
 use music_panel::MusicPanel;
 mod open_file_panel;
 use common::open_file::OpenFileType;
 use open_file_panel::OpenFilePanel;
-pub(crate) use panel::Panel;
+use panel::Panel;
 use piano_roll::PianoRollPanel;
 use tooltip::*;
 use tracks_panel::TracksPanel;
-pub(crate) use undo_state::UndoRedoState;
+use undo_state::UndoRedoState;
 
 /// The maximum size of the undo stack.
 const MAX_UNDOS: usize = 100;
