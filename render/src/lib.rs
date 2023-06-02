@@ -11,3 +11,4 @@ pub(crate) use color_key::ColorKey;
 pub(crate) use common::ini::Ini;
 pub use panels::Panels;
 pub use renderer::Renderer;
+mod open_file_panel;
