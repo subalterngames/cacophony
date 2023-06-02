@@ -1,6 +1,6 @@
 use crate::note::SerializableNote;
 use crate::{
-    deserialize_fraction, serialize_fraction, Fraction, Index, Note, SerializableFraction,
+    deserialize_fraction, serialize_fraction, Fraction, Index, Note, SerializableFraction, MAX_VOLUME
 };
 use serde::{Deserialize, Serialize};
 
@@ -24,6 +24,18 @@ pub struct InputState {
 }
 
 impl InputState {
+    pub fn new() -> Self {
+        Self {
+            armed: false,
+            alphanumeric_input: false,
+            volume: Index::new(MAX_VOLUME as usize, MAX_VOLUME as usize + 1),
+            use_volume: true,
+            beat: Fraction::from(1u8),
+            can_undo: true,
+            copied: vec![]
+        }
+    }
+
     pub(crate) fn serialize(&self) -> SerializableInputState {
         SerializableInputState {
             armed: self.armed,
