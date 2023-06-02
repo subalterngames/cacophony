@@ -217,8 +217,7 @@ impl Drawable for TopBar {
         let focus = state.panels[state.focus.get()] = PanelType::PianoRoll;
 
         // Input fields.
-        renderer.boolean(&self.armed.label.as_ref().unwrap(), state.input.armed, self.armed.position, None, focus);
-        renderer.key_value_horizontal(key, value, position, colors)
+        renderer.boolean(&self.armed.label.as_ref().unwrap(), state.input.armed, self.armed.position, , focus);
         //
     }
 }
