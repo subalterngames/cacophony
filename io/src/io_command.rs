@@ -1,4 +1,4 @@
-use crate::open_file::open_file_type::OpenFileType;
+use open_file::OpenFileType;
 use std::path::PathBuf;
 
 /// Commands for the IO struct.

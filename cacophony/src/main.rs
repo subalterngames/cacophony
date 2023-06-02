@@ -68,7 +68,14 @@ async fn main() {
         clear_background(clear_color);
 
         // Draw.
-        panels.update(&renderer, &state, &conn, &input, &text);
+        panels.update(
+            &renderer,
+            &state,
+            &conn,
+            &input,
+            &text,
+            &io.open_file_panel.open_file,
+        );
 
         // Receive input. Possible say something or do an audio operation. Modify the state.
         done = io.update(&mut state, &mut conn, &mut input, &mut tts, &text, &paths);

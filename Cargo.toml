@@ -1,2 +1,2 @@
 [workspace]
-members = ["audio", "cacophony", "common", "input", "io", "render", "text", "tooltip"]
+members = ["audio", "cacophony", "common", "input", "io", "open_file", "render", "text", "tooltip"]

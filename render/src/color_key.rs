@@ -19,4 +19,5 @@ pub enum ColorKey {
     TimeT0,
     Subtitle,
     Separator,
+    TextInput,
 }

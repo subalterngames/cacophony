@@ -5,6 +5,7 @@
         ".\\common\\Cargo.toml",
         ".\\input\\Cargo.toml",
         ".\\io\\Cargo.toml",
+        ".\\open_file\\Cargo.toml",
         ".\\render\\Cargo.toml",
         ".\\text\\Cargo.toml",
         ".\\tooltip\\Cargo.toml",

@@ -51,7 +51,7 @@ impl MainMenu {
 }
 
 impl Drawable for MainMenu {
-    fn update(&self, renderer: &Renderer, _: &State, _: &Conn, _: &Input, _: &Text) {
+    fn update(&self, renderer: &Renderer, _: &State, _: &Conn, _: &Input, _: &Text, _: &OpenFile) {
         self.panel.draw_ex(&COLOR, renderer);
         for field in self.fields.iter() {
             renderer.text(field.label.as_ref().unwrap(), field.position, &COLOR)

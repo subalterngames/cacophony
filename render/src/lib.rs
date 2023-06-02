@@ -12,3 +12,5 @@ pub(crate) use common::ini::Ini;
 pub use panels::Panels;
 pub use renderer::Renderer;
 mod open_file_panel;
+mod scroll_page;
+pub(crate) use scroll_page::get_page;

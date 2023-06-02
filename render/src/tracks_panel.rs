@@ -1,3 +1,4 @@
+use crate::get_page;
 use crate::panel::*;
 use text::{get_file_name, truncate};
 
@@ -58,48 +59,29 @@ impl TracksPanel {
 }
 
 impl Drawable for TracksPanel {
-    fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, _: &Input, text: &Text) {
+    fn update(
+        &self,
+        renderer: &Renderer,
+        state: &State,
+        conn: &Conn,
+        _: &Input,
+        text: &Text,
+        _: &OpenFile,
+    ) {
         // Get the focus,
         let focus = self.panel.has_focus(state);
         // Draw the panel.
         self.panel.draw(focus, renderer);
 
-        // Generate a page of tracks.
-        let mut track_page: Vec<usize> = vec![];
-        let mut page_h = 0;
-        let mut this_page = false;
-        for (i, track) in state.music.midi_tracks.iter().enumerate() {
-            // Get the height of this track.
-            let track_h = match conn.state.programs.get(&track.channel) {
+        // Get a list of track element heights.
+        let mut elements = vec![];
+        for track in state.music.midi_tracks.iter() {
+            elements.push(match conn.state.programs.get(&track.channel) {
                 Some(_) => self.track_size_sf[1],
                 None => self.track_size_no_sf[1],
-            };
-            // There is room for this track. Add it.
-            if page_h + track_h <= self.page_height {
-                track_page.push(i);
-                // Increment.
-                page_h += track_h;
-            } else {
-                // It's this page. Stop here.
-                if this_page {
-                    break;
-                }
-                // New page.
-                track_page.clear();
-                track_page.push(i);
-                page_h = track_h;
-            }
-            // This is the page!
-            if let Some(selected) = state.music.selected {
-                if selected == i {
-                    this_page = true;
-                }
-            }
+            });
         }
-        // We couldn't find the any selected track.
-        if !this_page {
-            track_page.clear();
-        }
+        let track_page = get_page(&state.music.selected, &elements, self.page_height);
         // Get the color of the separator.
         let separator_color = if focus {
             ColorKey::Separator

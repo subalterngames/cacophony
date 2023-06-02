@@ -9,7 +9,6 @@ use std::path::PathBuf;
 use text::{Text, TTS};
 mod io_command;
 mod music_panel;
-mod open_file;
 mod panel;
 mod piano_roll;
 mod tracks_panel;
@@ -17,8 +16,9 @@ mod undo_state;
 use io_command::IOCommand;
 pub(crate) use io_command::IOCommands;
 use music_panel::MusicPanel;
-use open_file::open_file_panel::OpenFilePanel;
-use open_file::open_file_type::OpenFileType;
+mod open_file_panel;
+use open_file::OpenFileType;
+use open_file_panel::OpenFilePanel;
 pub(crate) use panel::Panel;
 use piano_roll::PianoRollPanel;
 use tooltip::*;
@@ -40,7 +40,7 @@ pub struct IO {
     /// The tracks panel.
     tracks_panel: TracksPanel,
     /// The open-file panel.
-    open_file_panel: OpenFilePanel,
+    pub open_file_panel: OpenFilePanel,
     /// The piano roll panel.
     piano_roll_panel: PianoRollPanel,
     /// The file path. If None, we haven't saved this music yet.

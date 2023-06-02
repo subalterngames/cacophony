@@ -175,7 +175,6 @@ dependencies = [
  "io",
  "render",
  "text",
- "tooltip",
 ]
 
 [[package]]
@@ -730,6 +729,7 @@ dependencies = [
  "common",
  "edit",
  "input",
+ "open_file",
  "text",
  "tooltip",
 ]
@@ -1266,6 +1266,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b7e5500299e16ebb147ae15a00a942af264cf3688f47923b8fc2cd5858f23ad3"
 
 [[package]]
+name = "open_file"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "text",
+]
+
+[[package]]
 name = "option-ext"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1479,6 +1487,7 @@ dependencies = [
  "audio",
  "common",
  "input",
+ "open_file",
  "strum",
  "strum_macros",
  "text",

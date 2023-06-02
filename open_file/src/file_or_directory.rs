@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 /// Cached data for a file or directory.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct FileOrDirectory {
     /// The file.
     pub path: PathBuf,

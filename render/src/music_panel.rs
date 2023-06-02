@@ -60,7 +60,15 @@ impl MusicPanel {
 }
 
 impl Drawable for MusicPanel {
-    fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, _: &Input, _: &Text) {
+    fn update(
+        &self,
+        renderer: &Renderer,
+        state: &State,
+        conn: &Conn,
+        _: &Input,
+        _: &Text,
+        _: &OpenFile,
+    ) {
         // Get the focus,
         let focus = self.panel.has_focus(state);
         // Draw the rect.

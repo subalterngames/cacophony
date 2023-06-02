@@ -20,6 +20,3 @@ path = "../render"
 
 [dependencies.text]
 path = "../text"
-
-[dependencies.tooltip]
-path = "../tooltip"
