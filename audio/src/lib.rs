@@ -1,3 +1,25 @@
+//! This crate handles all audio output in Cacophony:
+//!
+//! - `Player` handles the cpal audio output stream. It receives audio samples.
+//! - `Synthesizer` handles the audio generator synthesizer. It runs in its own thread. It can receive commands and will try to send audio samples.
+//! - `Conn` manages the connection between external crates (command input), the synthesizer (audio sample output), and the audio player.
+//!
+//! It is possible to rout synthesizer output to either a `Player` (to play the audio) or to a file buffer (to write to disk).
+//!
+//! There is one way to input:
+//!
+//! - `Command` is the enum value describing a synthesizer command.
+//!
+//! There are four data struct outputs that other crates in Cacophony can read:
+//!
+//! - `SynthState` describes the state of the synthesizer.
+//! - `Program` is a struct found within `SynthState` that describes a single program (preset, bank, etc.).
+//! - `TimeState` describes the current playback time.
+//! - `ExportState` can be used to monitor how many bytes have been exported to a .wav file.
+//!
+//! As far as external crates are concerned, it's only necessary to call `connect()`, which sets everything up and returns a `Conn`.
+//! The `Conn` accepts command input and stores each of the four data structs listed above.
+
 mod command;
 mod conn;
 mod export_state;
@@ -7,7 +29,6 @@ mod program;
 mod synth_state;
 mod synthesizer;
 mod time_state;
-
 pub use crate::command::Command;
 pub use crate::conn::Conn;
 pub use crate::message::{AudioMessage, CommandsMessage};

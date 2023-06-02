@@ -5,7 +5,7 @@ use crossbeam_channel::Receiver;
 
 const ERROR_MESSAGE: &str = "Failed to create an audio output stream: ";
 
-/// Try to start an audoi stream and play audio.
+/// Try to start an audio stream and play audio.
 /// Source: https://github.com/PolyMeilex/OxiSynth/blob/master/examples/real-time/src/main.rs
 pub(crate) struct Player {
     _host: Host,
