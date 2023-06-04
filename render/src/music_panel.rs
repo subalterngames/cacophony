@@ -1,5 +1,4 @@
 use crate::panel::*;
-use common::hashbrown::HashMap;
 use common::music_panel_field::MusicPanelField;
 use text::truncate;
 
@@ -7,10 +6,10 @@ use text::truncate;
 pub(crate) struct MusicPanel {
     /// The panel background.
     panel: Panel,
-    /// Each field type and field.
-    fields: HashMap<MusicPanelField, Field>,
-    /// The width of each field in grid units.
-    field_width: u32,
+    /// The BPM field.
+    bpm: KeyValue,
+    /// The gain field.
+    gain: KeyValue,
     /// The maximum length of the name text.
     max_name_length: usize,
     /// The width of a key-value pair.
@@ -19,29 +18,24 @@ pub(crate) struct MusicPanel {
 
 impl MusicPanel {
     pub fn new(config: &Ini, text: &Text) -> Self {
-        let width = get_tracks_panel_width(config);
+        let mut width = get_tracks_panel_width(config);
         let panel = Panel::new(
             PanelType::Music,
             MUSIC_PANEL_POSITION,
             [width, MUSIC_PANEL_HEIGHT],
             text,
         );
-        let kv_width: usize = (width / 2 - 1) as usize;
-
-        // Define x, y coordinates for the fields.
-        let mut fields = HashMap::new();
+        width -= 2;
         let x = panel.position[0] + 1;
-        let y = panel.position[1] + 1;
+        let mut y = panel.position[1] + 1;
 
-        fields.insert(MusicPanelField::Name, Field::new_no_label([x, y]));
-        fields.insert(
-            MusicPanelField::BPM,
-            Field::new_with_label([x, y + 1], "TITLE_BPM", text),
-        );
-        fields.insert(
-            MusicPanelField::Gain,
-            Field::new_with_label([x, y + 2], "TITLE_GAIN", text),
-        );
+        // TODO
+        y += 1;
+
+        let bpm = KeyValue::from_width_and_value_width(&text.get("TITLE_BPM"), [x, y], width, 3);
+        y += 1;
+        let gain = KeyValue::from_width_and_value_width(&text.get("TITLE_GAIN"), [x, y], width, 3);
+
 
         // Define the size of the fields.
         let width = panel.size[0] - 2;
@@ -51,10 +45,9 @@ impl MusicPanel {
         // Return.
         Self {
             panel,
-            fields,
-            field_width,
+            bpm,
+            gain,
             max_name_length,
-            kv_width,
         }
     }
 }

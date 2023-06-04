@@ -1,3 +1,4 @@
+use tooltip::get_tooltip;
 use crate::panel::*;
 use input::InputEvent;
 
@@ -9,7 +10,7 @@ pub(crate) struct MainMenu {
     /// The panel background.
     panel: Panel,
     /// The fields.
-    fields: [Field; 6],
+    labels: [Label; 6],
 }
 
 impl MainMenu {
@@ -30,23 +31,42 @@ impl MainMenu {
         // Get the fields.
         let mut x = panel.position[0] + 1;
         let y = panel.position[1] + 1;
-        let help = Field::horizontal("MAIN_MENU_HELP", &mut x, y, text);
-        let status = Field::horizontal_tooltip("MAIN_MENU_STATUS",  InputEvent::StatusTTS, &mut x, y, input, text);
-        let input_field = Field::horizontal_tooltip("MAIN_MENU_INPUT", InputEvent::InputTTS, &mut x, y, input, text);
-        let app = Field::horizontal_tooltip("MAIN_MENU_APP", InputEvent::AppTTS, &mut x, y, input, text);
-        let file = Field::horizontal_tooltip("MAIN_MENU_FILE", InputEvent::FileTTS, &mut x, y, input, text);
-        let stop = Field::horizontal_tooltip("MAIN_MENU_STOP", InputEvent::StopTTS, &mut x, y, input, text);
+        let help = Self::label_from_key("MAIN_MENU_HELP", &mut x, y, text);
+        let status = Self::tooltip("MAIN_MENU_STATUS",  InputEvent::StatusTTS, &mut x, y, input, text);
+        let input_field = Self::tooltip("MAIN_MENU_INPUT", InputEvent::InputTTS, &mut x, y, input, text);
+        let app = Self::tooltip("MAIN_MENU_APP", InputEvent::AppTTS, &mut x, y, input, text);
+        let file = Self::tooltip("MAIN_MENU_FILE", InputEvent::FileTTS, &mut x, y, input, text);
+        let stop = Self::tooltip("MAIN_MENU_STOP", InputEvent::StopTTS, &mut x, y, input, text);
         let fields = [help, status, input_field, app, file, stop];
 
-        Self { panel, fields }
+        Self { panel, labels: fields }
+    }
+
+    fn label(key: String, x: &mut u32, y: u32) -> Label {
+        let width = key.chars().count() as u32;
+        let position = [*x, y];
+        x += width;
+        Label { text: key, position }
+    }
+
+    fn label_from_key(key: &str, x: &mut u32, y: u32, text: &Text) -> Label {
+        Self::label(&text.get(key), x, y)
+    }
+
+    fn tooltip(key: &str, event: InputEvent, x: &mut u32, y: u32, input: &Input, text: &Text) -> Label {
+        let text = get_tooltip(key, &[event], input, text);
+        let width = key.chars().count() as u32;
+        let position = [*x, y];
+        x += width;
+        Label { text, position }
     }
 }
 
 impl Drawable for MainMenu {
     fn update(&self, renderer: &Renderer, _: &State, _: &Conn, _: &Input, _: &Text, _: &OpenFile) {
         self.panel.draw_ex(&COLOR, renderer);
-        for field in self.fields.iter() {
-            renderer.text(field.label.as_ref().unwrap(), field.position, &COLOR)
+        for label in self.labels.iter() {
+            renderer.text(&label, &COLOR)
         }
     }
 }

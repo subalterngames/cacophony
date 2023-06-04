@@ -1,5 +1,5 @@
 pub(crate) use crate::drawable::*;
-pub(crate) use crate::field::Field;
+pub(crate) use crate::field_params::*;
 pub(crate) use crate::ColorKey;
 pub(crate) use crate::Ini;
 pub(crate) use common::sizes::*;
@@ -8,14 +8,12 @@ pub(crate) use common::PanelType;
 pub(crate) struct Panel {
     /// The type of panel.
     panel_type: PanelType,
-    /// The title string for the panel.
-    title: String,
+    /// The title label for the panel.
+    title: Label,
     /// The position of the panel in grid units.
     pub position: [u32; 2],
     /// The size of the panel in grid units.
     pub size: [u32; 2],
-    /// The position of the title in grid units.
-    title_position: [u32; 2],
     /// The size of the title in grid units.
     title_size: [u32; 2],
 }
@@ -35,10 +33,9 @@ impl Panel {
         let title_size = [title.chars().count() as u32, 1];
         Self {
             panel_type,
-            title,
+            title: Label { position: title_position, text: title },
             position,
             size,
-            title_position,
             title_size,
         }
     }
@@ -57,8 +54,8 @@ impl Panel {
     pub fn draw_ex(&self, color: &ColorKey, renderer: &Renderer) {
         renderer.rectangle(self.position, self.size, &ColorKey::Background);
         renderer.border(self.position, self.size, color);
-        renderer.rectangle(self.title_position, self.title_size, &ColorKey::Background);
-        renderer.text(&self.title, self.title_position, color);
+        renderer.rectangle(self.title.position, self.title_size, &ColorKey::Background);
+        renderer.text(&self.title, color);
     }
 
     /// Returns true if this panel has focus.

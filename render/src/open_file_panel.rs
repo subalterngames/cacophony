@@ -40,12 +40,12 @@ impl Drawable for OpenFilePanel {
         let mut length = (self.panel.size[0] - 2) as usize;
 
         // Show the current directory.
-        let cwd = truncate(
+        let cwd = Label { position: [x, y], text: truncate(
             &open_file.directory.to_str().unwrap().replace('\\', "/"),
             length,
             true,
-        );
-        renderer.text(&cwd, [x, y], &ColorKey::Key);
+        )};
+        renderer.text(&cwd, &ColorKey::Key);
 
         // Prepare to show the children.
         x += 1;
@@ -85,7 +85,8 @@ impl Drawable for OpenFilePanel {
                 length,
                 true,
             );
-            renderer.text(&s, position, &text_color);
+            let p = Label { position, text: s};
+            renderer.text(&p, &text_color);
         }
 
         // Possibly show the input dialogue.
@@ -110,9 +111,11 @@ impl Drawable for OpenFilePanel {
             // Truncate the filename.
             let s = truncate(filename, length + extension_length, true);
             // Render the filename.
-            renderer.text(&s, [position[0] + 1, position[1] + 1], &ColorKey::TextInput);
+            let filename = Label { position: [position[0] + 1, position[1] + 1], text: s };
+            renderer.text(&filename, &ColorKey::TextInput);
             // Render the prompt.
-            renderer.text(&extension, prompt_position, &ColorKey::Key);
+            let prompt = Label { position: prompt_position, text: extension };
+            renderer.text(&prompt, &ColorKey::Key);
         }
     }
 }

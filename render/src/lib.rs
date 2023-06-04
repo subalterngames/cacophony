@@ -13,7 +13,7 @@
 
 mod color_key;
 mod drawable;
-mod field;
+mod field_params;
 mod main_menu;
 mod music_panel;
 mod panel;
