@@ -20,10 +20,15 @@ impl MainMenu {
         let window_grid_size = get_window_grid_size(config);
         let width = window_grid_size[0] - tracks_panel_width;
 
+        let position = [
+            MUSIC_PANEL_POSITION[0] + tracks_panel_width,
+            MUSIC_PANEL_POSITION[1],
+        ];
+
         // Get the panel.
         let panel = Panel::new(
             PanelType::MainMenu,
-            MUSIC_PANEL_POSITION,
+            position,
             [width, MAIN_MENU_HEIGHT],
             text,
         );
@@ -32,6 +37,7 @@ impl MainMenu {
         let mut x = panel.position[0] + 1;
         let y = panel.position[1] + 1;
         let help = Self::label_from_key("MAIN_MENU_HELP", &mut x, y, text);
+        x += 4;
         let status = Self::tooltip(
             "MAIN_MENU_STATUS",
             InputEvent::StatusTTS,

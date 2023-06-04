@@ -33,7 +33,7 @@ impl Drawable for OpenFilePanel {
         open_file: &OpenFile,
     ) {
         // Draw the panel background.
-        self.panel.draw(true, renderer);
+        self.panel.update(true, renderer);
         // Draw the working directory.
         let mut x = self.panel.position[0] + 1;
         let mut y = self.panel.position[1] + 1;

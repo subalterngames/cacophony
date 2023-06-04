@@ -87,7 +87,7 @@ impl Text {
     /// Returns the string version of a key code.
     pub fn get_keycode(&self, key: &KeyCode) -> String {
         match self.keycodes.get(key) {
-            Some(t) => t.clone(),
+            Some(t) => t.to_uppercase(),
             None => panic!("Invalid key code {:?}", key),
         }
     }

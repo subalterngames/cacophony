@@ -31,7 +31,7 @@ impl TracksPanel {
         let grid_size = get_window_grid_size(config);
         let height = grid_size[1] - MUSIC_PANEL_HEIGHT;
         let x = MUSIC_PANEL_POSITION[0];
-        let y = MUSIC_PANEL_POSITION[1] + MAIN_MENU_HEIGHT;
+        let y = MUSIC_PANEL_POSITION[1] + MUSIC_PANEL_HEIGHT;
         let panel = Panel::new(PanelType::Tracks, [x, y], [width, height], text);
         // Get the sizes.
         let track_width = width - 2;
@@ -71,7 +71,7 @@ impl Drawable for TracksPanel {
         // Get the focus,
         let focus = self.panel.has_focus(state);
         // Draw the panel.
-        self.panel.draw(focus, renderer);
+        self.panel.update(focus, renderer);
 
         // Get a list of track element heights.
         let mut elements = vec![];
@@ -132,21 +132,11 @@ impl Drawable for TracksPanel {
                     renderer.list(&program.preset_name, &list, f);
                     y += 1;
                     // Draw the bank.
-                    let bank = KeyList::from_width_and_value_width(
-                        &self.bank_key,
-                        [x, y],
-                        self.field_width,
-                        3,
-                    );
+                    let bank = KeyList::new(&self.bank_key, [x, y], self.field_width, 3);
                     renderer.key_list(&program.bank.to_string(), &bank, f);
                     y += 1;
                     // Draw the gain.
-                    let gain = KeyList::from_width_and_value_width(
-                        &self.gain_key,
-                        [x, y],
-                        self.field_width,
-                        3,
-                    );
+                    let gain = KeyList::new(&self.gain_key, [x, y], self.field_width, 3);
                     renderer.key_list(&track.gain.to_string(), &gain, f);
                     // Mute.
                     if track.mute {

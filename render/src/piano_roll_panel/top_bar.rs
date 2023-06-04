@@ -4,6 +4,8 @@ use common::hashbrown::HashMap;
 use common::{EditMode, Index, PianoRollMode, SelectMode, EDIT_MODES};
 use text::fraction;
 
+const PADDING: u32 = 4;
+
 /// Render the top bar.
 pub(super) struct TopBar {
     /// The top-left position.
@@ -29,7 +31,8 @@ pub(super) struct TopBar {
 }
 
 impl TopBar {
-    pub fn new(boolean_text: &BooleanText, config: &Ini, text: &Text) -> Self {
+    pub fn new(config: &Ini, text: &Text) -> Self {
+        let boolean_text = BooleanText::new(text);
         let piano_roll_panel_size = get_piano_roll_panel_size(config);
         let size = [piano_roll_panel_size[0], PIANO_ROLL_PANEL_TOP_BAR_HEIGHT];
         let piano_roll_panel_position = get_piano_roll_panel_position(config);
@@ -38,48 +41,39 @@ impl TopBar {
         let y = piano_roll_panel_position[1] + 1;
         let position = [x, piano_roll_panel_position[1]];
 
-        // The width of all of the input fields.
-        let total_inputs_width = (piano_roll_panel_size[0] as f64 * 0.6) as u32 - 2;
-        // The width of each input field.
-        let input_width = total_inputs_width / 4 - 3;
-
         x += 1;
 
         // Get the fields.
-        let dx = input_width + 1;
         let armed = Boolean::new(
             &text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"),
             [x, y],
-            input_width,
-            boolean_text,
+            &boolean_text,
         );
-        x += dx;
+        x += armed.width + PADDING;
         let beat = KeyWidth::new(
             &text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"),
             [x, y],
-            input_width,
             4,
         );
-        x += dx;
+        // Only increment by 1 because beat has a long value space.
+        x += beat.width + 1;
         let use_volume = Boolean::new(
             &text.get("PIANO_ROLL_PANEL_TOP_BAR_USE_VOLUME"),
             [x, y],
-            input_width,
-            boolean_text,
+            &boolean_text,
         );
-        x += dx;
+        x += use_volume.width + PADDING;
         let volume = KeyWidth::new(
             &text.get("PIANO_ROLL_PANEL_TOP_BAR_VOLUME"),
             [x, y],
-            input_width,
             3,
         );
-        x += dx;
+        x += volume.width + PADDING;
 
         // Get the separator position.
         let inputs_separator_position = [x, y];
 
-        x += 2;
+        x += PADDING + 3;
 
         // Get the modes.
         let total_modes_width = (((piano_roll_panel_size[0] - 2) - (x - x0)) as f64 * 0.75) as u32;
@@ -140,7 +134,7 @@ impl TopBar {
         }
     }
 
-    pub fn update(&self, renderer: &Renderer, state: &State, text: &Text, focus: bool) {
+    pub fn update(&self, state: &State, renderer: &Renderer, text: &Text, focus: bool) {
         // Draw the fields.
         renderer.boolean(state.input.armed, &self.armed, focus);
         let value_color = Renderer::get_value_color([focus, true]);
@@ -207,9 +201,9 @@ impl TopBar {
         // Horizontal line.
         renderer.horizontal_line(
             self.position[0],
-            self.position[0] + self.width,
-            [-0.5, 0.5],
-            self.position[1] + 1,
+            self.position[0] + self.width + 2,
+            [0.45, -0.45],
+            self.position[1] + 2,
             0.4,
             line_color,
         );
@@ -230,8 +224,8 @@ impl TopBar {
             position[0],
             0.5,
             position[1],
-            position[1],
-            [-0.5, 1.0],
+            position[1] + 1,
+            [-0.6, 0.4],
             color,
         );
     }

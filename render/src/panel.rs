@@ -44,7 +44,7 @@ impl Panel {
     }
 
     /// Draw an empty panel. The color will be defined by the value of `focus`.
-    pub fn draw(&self, focus: bool, renderer: &Renderer) {
+    pub fn update(&self, focus: bool, renderer: &Renderer) {
         let color: ColorKey = if focus {
             ColorKey::FocusDefault
         } else {

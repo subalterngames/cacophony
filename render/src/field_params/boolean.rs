@@ -1,7 +1,6 @@
-use super::util::get_half_width;
+use super::util::KV_PADDING;
 use super::Label;
 use crate::BooleanText;
-use text::truncate;
 
 /// A key-boolean pair.
 pub(crate) struct Boolean {
@@ -14,20 +13,19 @@ pub(crate) struct Boolean {
 }
 
 impl Boolean {
-    /// The `key` will be at `position` and the boolean value will be at a position that tries to fill `width`.
-    /// The `key` text will be truncated. The boolean position will be set to aligned-right.
-    pub fn new(key: &str, position: [u32; 2], width: u32, boolean_text: &BooleanText) -> Self {
-        let half_width = get_half_width(width);
+    pub fn new(key: &str, position: [u32; 2], boolean_text: &BooleanText) -> Self {
+        let key_width =  key.chars().count() as u32 + KV_PADDING;
+        let width = key_width + boolean_text.get_max_length() as u32;
 
         // The key is on the left.
         let key = Label {
             position,
-            text: truncate(key, half_width, true),
+            text: key.to_string(),
         };
 
         // The value is on the right.
         let value_position = [
-            position[0] + width - boolean_text.get_max_length() as u32,
+            position[0] + key_width,
             position[1],
         ];
 

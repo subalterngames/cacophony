@@ -1,4 +1,4 @@
-use super::util::get_half_width;
+use super::util::{get_half_width, KV_PADDING};
 use super::{Label, Width};
 use text::truncate;
 
@@ -13,15 +13,33 @@ pub(crate) struct KeyWidth {
 }
 
 impl KeyWidth {
+    pub fn new(key: &str, position: [u32; 2], value_width: u32) -> Self {
+        let width = key.chars().count() as u32 + KV_PADDING + value_width;
+        // The key is on the left.
+        let key = Label {
+            position,
+            text: key.to_string(),
+        };
+
+        // The value is on the right.
+        let value_position = [position[0] + width - value_width, position[1]];
+        let value = Width {
+            position: value_position,
+            width: value_width as usize,
+        };
+
+        Self { key, value, width }
+    }
+
     /// The `key` will be at `position` and the `value` will be at a position that tries to fill `width`.
     /// `key` will be truncated and `value` will match `value_width`.
-    pub fn new(key: &str, position: [u32; 2], width: u32, value_width: u32) -> Self {
+    pub fn new_from_width(key: &str, position: [u32; 2], width: u32, value_width: u32) -> Self {
         let half_width = get_half_width(width);
 
         // The key is on the left.
         let key = Label {
             position,
-            text: truncate(key, half_width, true),
+            text: truncate(key, half_width, false),
         };
 
         // The value is on the right.

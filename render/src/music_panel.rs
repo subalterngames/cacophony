@@ -28,9 +28,9 @@ impl MusicPanel {
 
         let name = TextWidth::new([x, y], width);
         y += 1;
-        let bpm = KeyWidth::new(&text.get("TITLE_BPM"), [x, y], width, 3);
+        let bpm = KeyWidth::new_from_width(&text.get("TITLE_BPM"), [x, y], width, 3);
         y += 1;
-        let gain = KeyList::from_width_and_value_width(&text.get("TITLE_GAIN"), [x, y], width, 3);
+        let gain = KeyList::new(&text.get("TITLE_GAIN"), [x, y], width, 3);
 
         // Return.
         Self {
@@ -55,7 +55,7 @@ impl Drawable for MusicPanel {
         // Get the focus,
         let focus = self.panel.has_focus(state);
         // Draw the rect.
-        self.panel.draw(focus, renderer);
+        self.panel.update(focus, renderer);
         // Get the enum value of the focused widget.
         let focused_field = *state.get_music_panel_field();
 
