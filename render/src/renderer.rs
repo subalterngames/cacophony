@@ -520,11 +520,6 @@ impl Renderer {
     /// - `focus` If true, the panel has focus.
     pub(crate) fn boolean(&self, value: bool, boolean: &Boolean, focus: bool) {
         self.text(&boolean.key, &Renderer::get_key_color(focus));
-        let v = if value {
-            &self.boolean_text.yes
-        } else {
-            &self.boolean_text.no
-        };
         self.text(
             &boolean.get_boolean_label(value, &self.boolean_text),
             &Renderer::get_boolean_color(focus, value),

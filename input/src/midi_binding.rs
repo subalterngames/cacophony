@@ -9,13 +9,11 @@ pub struct MidiBinding {
     /// An alias name for the MIDI binding.
     #[serde(default)]
     pub alias: Option<String>,
-    /// If true, this is a positive delta. If false, this is a negative delta.
-    positive: bool,
-    /// A value that controls the sensitivity of the events. Check for events every `nth` consecutive inputs.
-    sensitivity: u8,
+    /// A value that controls the sensitivity of the events. Check for events every `nth` consecutive inputs. The sign defines positive or negative input.
+    dt: i16,
     /// A counter for tracking sensitivity.
     #[serde(default)]
-    counter: u8,
+    counter: i16,
 }
 
 impl MidiBinding {
@@ -42,8 +40,8 @@ impl MidiBinding {
                 self.counter += 1;
             }
             // Did this trigger the event?
-            if (self.positive && b[2] != 127) || (!self.positive && b[2] == 127) {
-                self.counter % self.sensitivity == 0
+            if (self.dt > 0 && b[2] != 127) || (!self.dt < 0 && b[2] == 127) {
+                self.counter % self.dt.abs() == 0
             } else {
                 false
             }
