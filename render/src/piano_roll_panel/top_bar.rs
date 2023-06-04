@@ -1,5 +1,4 @@
 use crate::panel::*;
-use crate::BooleanText;
 use common::hashbrown::HashMap;
 use common::{EditMode, Index, PianoRollMode, SelectMode, EDIT_MODES};
 use text::fraction;
@@ -32,7 +31,6 @@ pub(super) struct TopBar {
 
 impl TopBar {
     pub fn new(config: &Ini, text: &Text) -> Self {
-        let boolean_text = BooleanText::new(text);
         let piano_roll_panel_size = get_piano_roll_panel_size(config);
         let size = [piano_roll_panel_size[0], PIANO_ROLL_PANEL_TOP_BAR_HEIGHT];
         let piano_roll_panel_position = get_piano_roll_panel_position(config);
@@ -44,30 +42,18 @@ impl TopBar {
         x += 1;
 
         // Get the fields.
-        let armed = Boolean::new(
-            &text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"),
-            [x, y],
-            &boolean_text,
-        );
+        let armed = Boolean::new(&text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"), [x, y], text);
         x += armed.width + PADDING;
-        let beat = KeyWidth::new(
-            &text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"),
-            [x, y],
-            4,
-        );
+        let beat = KeyWidth::new(&text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"), [x, y], 4);
         // Only increment by 1 because beat has a long value space.
         x += beat.width + 1;
         let use_volume = Boolean::new(
             &text.get("PIANO_ROLL_PANEL_TOP_BAR_USE_VOLUME"),
             [x, y],
-            &boolean_text,
+            text,
         );
         x += use_volume.width + PADDING;
-        let volume = KeyWidth::new(
-            &text.get("PIANO_ROLL_PANEL_TOP_BAR_VOLUME"),
-            [x, y],
-            3,
-        );
+        let volume = KeyWidth::new(&text.get("PIANO_ROLL_PANEL_TOP_BAR_VOLUME"), [x, y], 3);
         x += volume.width + PADDING;
 
         // Get the separator position.
@@ -136,12 +122,12 @@ impl TopBar {
 
     pub fn update(&self, state: &State, renderer: &Renderer, text: &Text, focus: bool) {
         // Draw the fields.
-        renderer.boolean(state.input.armed, &self.armed, focus);
+        renderer.boolean(state.input.armed, &self.armed, focus, text);
         let value_color = Renderer::get_value_color([focus, true]);
         let key_color = Renderer::get_key_color(focus);
         let colors = [&key_color, &value_color];
         renderer.key_value(&fraction(&state.input.beat), &self.beat, colors);
-        renderer.boolean(state.input.use_volume, &self.use_volume, focus);
+        renderer.boolean(state.input.use_volume, &self.use_volume, focus, text);
         renderer.key_value(&state.input.volume.get().to_string(), &self.volume, colors);
 
         // Separator.

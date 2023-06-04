@@ -1,6 +1,6 @@
 use super::util::KV_PADDING;
 use super::Label;
-use crate::BooleanText;
+use text::Text;
 
 /// A key-boolean pair.
 pub(crate) struct Boolean {
@@ -13,9 +13,9 @@ pub(crate) struct Boolean {
 }
 
 impl Boolean {
-    pub fn new(key: &str, position: [u32; 2], boolean_text: &BooleanText) -> Self {
-        let key_width =  key.chars().count() as u32 + KV_PADDING;
-        let width = key_width + boolean_text.get_max_length() as u32;
+    pub fn new(key: &str, position: [u32; 2], text: &Text) -> Self {
+        let key_width = key.chars().count() as u32 + KV_PADDING;
+        let width = key_width + text.get_max_boolean_length() as u32;
 
         // The key is on the left.
         let key = Label {
@@ -24,10 +24,7 @@ impl Boolean {
         };
 
         // The value is on the right.
-        let value_position = [
-            position[0] + key_width,
-            position[1],
-        ];
+        let value_position = [position[0] + key_width, position[1]];
 
         Self {
             key,
@@ -37,14 +34,10 @@ impl Boolean {
     }
 
     /// Converts a boolean `value` into a `Label`.
-    pub fn get_boolean_label(&self, value: bool, boolean_text: &BooleanText) -> Label {
+    pub fn get_boolean_label(&self, value: bool, text: &Text) -> Label {
         Label {
             position: self.value_position,
-            text: if value {
-                boolean_text.yes.clone()
-            } else {
-                boolean_text.no.clone()
-            },
+            text: text.get_boolean(value),
         }
     }
 }

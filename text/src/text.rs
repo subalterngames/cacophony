@@ -21,6 +21,8 @@ pub struct Text {
     piano_roll_modes: HashMap<PianoRollMode, String>,
     /// The name of each MIDI note.
     note_names: Vec<String>,
+    /// Boolean dislay
+    booleans: HashMap<bool, String>,
 }
 
 impl Text {
@@ -47,12 +49,16 @@ impl Text {
         let keycodes = Text::get_keycode_map(&text);
         let edit_modes = Text::get_edit_mode_map(&text);
         let piano_roll_modes = Text::get_piano_roll_mode_map(&text);
+        let mut booleans = HashMap::new();
+        booleans.insert(true, text["TRUE"].clone());
+        booleans.insert(false, text["FALSE"].clone());
         Self {
             text,
             keycodes,
             edit_modes,
             piano_roll_modes,
             note_names,
+            booleans,
         }
     }
 
@@ -106,6 +112,19 @@ impl Text {
             Some(t) => t.clone(),
             None => panic!("Invalid edit mode {:?}", mode),
         }
+    }
+
+    /// Returns boolean text.
+    pub fn get_boolean(&self, value: bool) -> String {
+        self.booleans[&value].clone()
+    }
+
+    pub fn get_max_boolean_length(&self) -> usize {
+        self.booleans
+            .iter()
+            .map(|kv| kv.1.chars().count())
+            .max()
+            .unwrap()
     }
 
     /// Converts a beat fraction into a time string.

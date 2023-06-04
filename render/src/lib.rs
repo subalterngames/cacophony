@@ -24,11 +24,9 @@ use color_key::ColorKey;
 use common::ini::Ini;
 pub use panels::Panels;
 pub use renderer::Renderer;
-mod boolean_text;
 mod open_file_panel;
 mod piano_roll_panel;
 mod scroll_page;
-use boolean_text::BooleanText;
 use scroll_page::get_page;
 use text::TTS;
 

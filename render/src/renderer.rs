@@ -1,5 +1,5 @@
 use crate::field_params::*;
-use crate::{BooleanText, ColorKey};
+use crate::ColorKey;
 use common::config::{parse, parse_bool};
 use common::font::*;
 use common::get_bytes;
@@ -39,12 +39,10 @@ pub struct Renderer {
     corner_line_length: f32,
     /// This is used to flip captured textures.
     flip_y: bool,
-    /// Text for a boolean value.
-    boolean_text: BooleanText,
 }
 
 impl Renderer {
-    pub fn new(config: &Ini, text: &Text) -> Self {
+    pub fn new(config: &Ini) -> Self {
         // Get the color aliases.
         let aliases_section = config.section(Some("COLOR_ALIASES")).unwrap();
         let mut aliases = HashMap::new();
@@ -94,9 +92,6 @@ impl Renderer {
         let half_line_width = line_width / 2.0;
         let flip_y = parse_bool(render_section, "flip_y");
 
-        // Text.
-        let boolean_text = BooleanText::new(text);
-
         Self {
             colors,
             font,
@@ -110,7 +105,6 @@ impl Renderer {
             border_offsets,
             flip_y,
             subtitle_position,
-            boolean_text,
         }
     }
 
@@ -518,10 +512,11 @@ impl Renderer {
     /// - `value` The value of the boolean.
     /// - `boolean` Parameters for drawing a key-value string-bool pair.
     /// - `focus` If true, the panel has focus.
-    pub(crate) fn boolean(&self, value: bool, boolean: &Boolean, focus: bool) {
+    /// - `text` This is used to get the boolean data.
+    pub(crate) fn boolean(&self, value: bool, boolean: &Boolean, focus: bool, text: &Text) {
         self.text(&boolean.key, &Renderer::get_key_color(focus));
         self.text(
-            &boolean.get_boolean_label(value, &self.boolean_text),
+            &boolean.get_boolean_label(value, text),
             &Renderer::get_boolean_color(focus, value),
         );
     }

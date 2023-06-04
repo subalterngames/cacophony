@@ -43,7 +43,7 @@ async fn main() {
     let mut io = IO::new(&config, &input, &state.input, &text);
 
     // Load the renderer.
-    let renderer = Renderer::new(&config, &text);
+    let renderer = Renderer::new(&config);
 
     // Load the panels.
     let panels = Panels::new(&config, &input, &text);
