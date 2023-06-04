@@ -1,19 +1,16 @@
 use crate::panel::*;
 use common::music_panel_field::MusicPanelField;
-use text::truncate;
 
 /// The music panel.
 pub(crate) struct MusicPanel {
     /// The panel background.
     panel: Panel,
+    /// The name field.
+    name: TextWidth,
     /// The BPM field.
-    bpm: KeyValue,
+    bpm: KeyWidth,
     /// The gain field.
-    gain: KeyValue,
-    /// The maximum length of the name text.
-    max_name_length: usize,
-    /// The width of a key-value pair.
-    kv_width: usize,
+    gain: KeyList,
 }
 
 impl MusicPanel {
@@ -29,25 +26,18 @@ impl MusicPanel {
         let x = panel.position[0] + 1;
         let mut y = panel.position[1] + 1;
 
-        // TODO
+        let name = TextWidth::new([x, y], width);
         y += 1;
-
-        let bpm = KeyValue::from_width_and_value_width(&text.get("TITLE_BPM"), [x, y], width, 3);
+        let bpm = KeyWidth::new(&text.get("TITLE_BPM"), [x, y], width, 3);
         y += 1;
-        let gain = KeyValue::from_width_and_value_width(&text.get("TITLE_GAIN"), [x, y], width, 3);
-
-
-        // Define the size of the fields.
-        let width = panel.size[0] - 2;
-        let field_width = width - 2;
-        let max_name_length = field_width as usize - 4;
+        let gain = KeyList::from_width_and_value_width(&text.get("TITLE_GAIN"), [x, y], width, 3);
 
         // Return.
         Self {
             panel,
+            name,
             bpm,
             gain,
-            max_name_length,
         }
     }
 }
@@ -67,46 +57,25 @@ impl Drawable for MusicPanel {
         // Draw the rect.
         self.panel.draw(focus, renderer);
         // Get the enum value of the focused widget.
-        let focused_field = state.get_music_panel_field();
+        let focused_field = *state.get_music_panel_field();
 
-        for field in self.fields.iter() {
-            let field_focus = focused_field == field.0;
-            match field.0 {
-                MusicPanelField::Name => {
-                    renderer.input(
-                        &truncate(&state.music.name, self.max_name_length, true),
-                        field.1.position,
-                        self.field_width,
-                        [focus, field_focus],
-                    );
-                }
-                MusicPanelField::BPM => renderer.key_input(
-                    field.1.label.as_ref().unwrap(),
-                    &truncate(&state.music.bpm.to_string(), self.kv_width, true),
-                    field.1.position,
-                    self.field_width,
-                    3,
-                    [focus, field_focus],
-                ),
-                MusicPanelField::Gain => {
-                    if field_focus {
-                        renderer.corners(field.1.position, [self.field_width, 1], focus);
-                    }
-                    let w = self.field_width - 2;
-                    renderer.key_list(
-                        field.1.label.as_ref().unwrap(),
-                        &truncate(
-                            conn.state.gain.to_string().as_str(),
-                            self.kv_width - 2,
-                            true,
-                        ),
-                        field.1.position,
-                        w,
-                        3,
-                        [focus, field_focus],
-                    );
-                }
-            }
-        }
+        // Name.
+        renderer.input(
+            &state.music.name,
+            &self.name,
+            [focus, focused_field == MusicPanelField::Name],
+        );
+        // BPM.
+        renderer.key_input(
+            &state.music.bpm.to_string(),
+            &self.bpm,
+            [focus, focused_field == MusicPanelField::BPM],
+        );
+        // Gain.
+        renderer.key_list(
+            &conn.state.gain.to_string(),
+            &self.gain,
+            [focus, focused_field == MusicPanelField::Gain],
+        );
     }
 }

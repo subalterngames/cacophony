@@ -49,7 +49,7 @@ pub fn get_window_pixel_size(config: &Ini) -> [f32; 2] {
 /// Returns the size of the piano roll panel.
 pub fn get_piano_roll_panel_position(config: &Ini) -> [u32; 2] {
     let tracks_panel_width = get_tracks_panel_width(config);
-    [ tracks_panel_width, MAIN_MENU_HEIGHT ]
+    [tracks_panel_width, MAIN_MENU_HEIGHT]
 }
 
 /// Returns the size of the piano roll panel.

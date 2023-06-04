@@ -1,5 +1,5 @@
-use text::truncate;
 use super::{Label, Width};
+use text::truncate;
 
 /// This is basically the same as a `Width` but it knows it can accept truncated text.
 /// The text length and the field length might not be the same.
@@ -13,13 +13,19 @@ pub(crate) struct TextWidth {
 impl TextWidth {
     pub fn new(position: [u32; 2], width: u32) -> Self {
         let w = width as usize;
-        let width = Width {position, width: w };
-        let value = Width { position: [position[0] + 1, position[1]], width: w - 2};
+        let width = Width { position, width: w };
+        let value = Width {
+            position: [position[0] + 1, position[1]],
+            width: w - 2,
+        };
         Self { width, value }
     }
 
     /// Truncates a value string to `self.width` and converts it into a `Label`.
     pub fn get_value(&self, value: &str) -> Label {
-        Label { position: self.value.position, text: truncate(&value, self.value, true)}
+        Label {
+            position: self.value.position,
+            text: truncate(value, self.value.width, true),
+        }
     }
 }

@@ -24,13 +24,13 @@ use color_key::ColorKey;
 use common::ini::Ini;
 pub use panels::Panels;
 pub use renderer::Renderer;
+mod boolean_text;
 mod open_file_panel;
 mod piano_roll_panel;
 mod scroll_page;
-mod boolean_text;
+use boolean_text::BooleanText;
 use scroll_page::get_page;
 use text::TTS;
-use boolean_text::BooleanText;
 
 /// If subtitles are enabled and Casey is speaking, draw the subtitles.
 pub fn draw_subtitles(renderer: &Renderer, tts: &TTS) {

@@ -116,62 +116,63 @@ impl Drawable for TracksPanel {
             match conn.state.programs.get(&channel) {
                 // No program. No SoundFont.
                 None => {
-                    renderer.text(
-                        &text.get_with_values("TRACKS_PANEL_TRACK_TITLE", &[&channel.to_string()]),
-                        [x, y],
-                        &Renderer::get_key_color(focus),
-                    );
+                    let label = Label {
+                        text: text
+                            .get_with_values("TRACKS_PANEL_TRACK_TITLE", &[&channel.to_string()]),
+                        position: [x, y],
+                    };
+                    renderer.text(&label, &Renderer::get_key_color(focus));
                     y += 1;
                 }
                 // There is a program. Draw the properties.
                 Some(program) => {
                     let f = [focus, track_focus];
+                    let list = List::new([x, y], self.field_width);
                     // Draw the preset.
-                    renderer.list(
-                        program.preset_name.as_str(),
-                        [x, y],
-                        self.field_width - 2,
-                        f,
-                    );
+                    renderer.list(&program.preset_name, &list, f);
                     y += 1;
                     // Draw the bank.
-                    renderer.key_list(
+                    let bank = KeyList::from_width_and_value_width(
                         &self.bank_key,
-                        &program.bank.to_string(),
                         [x, y],
                         self.field_width,
                         3,
-                        f,
                     );
+                    renderer.key_list(&program.bank.to_string(), &bank, f);
                     y += 1;
                     // Draw the gain.
-                    renderer.key_list(
+                    let gain = KeyList::from_width_and_value_width(
                         &self.gain_key,
-                        &track.gain.to_string(),
                         [x, y],
                         self.field_width,
                         3,
-                        f,
                     );
+                    renderer.key_list(&track.gain.to_string(), &gain, f);
                     // Mute.
                     if track.mute {
                         let mute_position = [x + self.field_width - 1, y];
+                        let label = Label {
+                            text: self.mute_text.clone(),
+                            position: mute_position,
+                        };
                         renderer.text(
-                            &self.mute_text,
-                            mute_position,
+                            &label,
                             &Renderer::get_boolean_color(track_focus && focus, track.mute),
                         );
                     }
                     // Solo.
                     if track.solo {
                         let solo_position = [
-                            x + self.field_width - 1 - self.mute_text.chars().count() as u32 - 1,
+                            x + self.field_width - 1 - self.solo_text.chars().count() as u32 - 1,
                             y,
                         ];
+                        let label = Label {
+                            text: self.solo_text.clone(),
+                            position: solo_position,
+                        };
                         renderer.text(
-                            &self.solo_text,
-                            solo_position,
-                            &Renderer::get_boolean_color(track_focus && focus, track.solo),
+                            &label,
+                            &Renderer::get_boolean_color(track_focus && focus, track.mute),
                         );
                     }
                     y += 1;
@@ -186,7 +187,11 @@ impl Drawable for TracksPanel {
                         (true, false) => ColorKey::Key,
                         _ => ColorKey::NoFocus,
                     };
-                    renderer.text(&file_text, [x, y], &file_color);
+                    let file_label = Label {
+                        text: file_text,
+                        position: [x, y],
+                    };
+                    renderer.text(&file_label, &file_color);
                     y += 1;
                     // Draw a line separator.
                     renderer.horizontal_line(

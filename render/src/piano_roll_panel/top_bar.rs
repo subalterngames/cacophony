@@ -1,7 +1,8 @@
 use crate::panel::*;
 use crate::BooleanText;
-
-const PADDING: u32 = 3;
+use common::hashbrown::HashMap;
+use common::{EditMode, Index, PianoRollMode, SelectMode, EDIT_MODES};
+use text::fraction;
 
 /// Render the top bar.
 pub(super) struct TopBar {
@@ -10,13 +11,21 @@ pub(super) struct TopBar {
     /// The width of the bar.
     width: u32,
     /// The armed toggle.
-    armed: Field,
+    armed: Boolean,
     /// The input beat value.
-    beat: Field,
+    beat: KeyWidth,
     /// The use-volume toggle.
-    use_volume: Field,
+    use_volume: Boolean,
     /// The input volume value.
-    volume: Field,
+    volume: KeyWidth,
+    /// The position of the vertical separator line to the right of the inputs.
+    inputs_separator_position: [u32; 2],
+    /// The position of the vertical separator line to the right of the modes.
+    modes_separator_position: [u32; 2],
+    /// The piano roll mode labels.
+    modes: HashMap<PianoRollMode, Label>,
+    /// The position of the sub-mode label.
+    edit_mode_position: [u32; 2],
 }
 
 impl TopBar {
@@ -25,115 +34,143 @@ impl TopBar {
         let size = [piano_roll_panel_size[0], PIANO_ROLL_PANEL_TOP_BAR_HEIGHT];
         let piano_roll_panel_position = get_piano_roll_panel_position(config);
         let mut x = piano_roll_panel_position[0];
+        let x0 = x;
         let y = piano_roll_panel_position[1] + 1;
         let position = [x, piano_roll_panel_position[1]];
+
+        // The width of all of the input fields.
+        let total_inputs_width = (piano_roll_panel_size[0] as f64 * 0.6) as u32 - 2;
+        // The width of each input field.
+        let input_width = total_inputs_width / 4 - 3;
+
         x += 1;
 
-        let armed = Field::horizontal_boolean("PIANO_ROLL_PANEL_TOP_BAR_ARMED", boolean_text, &mut x, y, text);
-        let beat = Field::horizontal_value("PIANO_ROLL_PANEL_TOP_BAR_BEAT", 3, &mut x, y, text);
-        let use_volume = Field::horizontal_boolean("PIANO_ROLL_PANEL_TOP_BAR_USE_VOLUME", boolean_text, &mut x, y, text);
-        let volume = Field::horizontal_value("PIANO_ROLL_PANEL_TOP_BAR_VOLUME", 3, &mut x, y, text);
+        // Get the fields.
+        let dx = input_width + 1;
+        let armed = Boolean::new(
+            &text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"),
+            [x, y],
+            input_width,
+            boolean_text,
+        );
+        x += dx;
+        let beat = KeyWidth::new(
+            &text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"),
+            [x, y],
+            input_width,
+            4,
+        );
+        x += dx;
+        let use_volume = Boolean::new(
+            &text.get("PIANO_ROLL_PANEL_TOP_BAR_USE_VOLUME"),
+            [x, y],
+            input_width,
+            boolean_text,
+        );
+        x += dx;
+        let volume = KeyWidth::new(
+            &text.get("PIANO_ROLL_PANEL_TOP_BAR_VOLUME"),
+            [x, y],
+            input_width,
+            3,
+        );
+        x += dx;
+
+        // Get the separator position.
+        let inputs_separator_position = [x, y];
+
+        x += 2;
+
+        // Get the modes.
+        let total_modes_width = (((piano_roll_panel_size[0] - 2) - (x - x0)) as f64 * 0.75) as u32;
+        let dx = total_modes_width / 4;
+        let mut modes = HashMap::new();
+        modes.insert(
+            PianoRollMode::Time,
+            Label {
+                text: text.get("PIANO_ROLL_PANEL_TOP_BAR_TIME"),
+                position: [x, y],
+            },
+        );
+        x += dx;
+        modes.insert(
+            PianoRollMode::View,
+            Label {
+                text: text.get("PIANO_ROLL_PANEL_TOP_BAR_VIEW"),
+                position: [x, y],
+            },
+        );
+        x += dx;
+        modes.insert(
+            PianoRollMode::Select,
+            Label {
+                text: text.get("PIANO_ROLL_PANEL_TOP_BAR_SELECT"),
+                position: [x, y],
+            },
+        );
+        x += dx;
+        modes.insert(
+            PianoRollMode::Edit,
+            Label {
+                text: text.get("PIANO_ROLL_PANEL_TOP_BAR_EDIT"),
+                position: [x, y],
+            },
+        );
+        x += dx;
+
+        // Get the separator position.
+        let modes_separator_position = [x, y];
+
+        x += 2;
+
+        let edit_mode_position = [x, y];
+
         let width = size[0] - 2;
         Self {
             position,
             width,
-            armed, 
+            armed,
             beat,
             use_volume,
             volume,
+            modes,
+            inputs_separator_position,
+            modes_separator_position,
+            edit_mode_position,
         }
     }
 
-    pub fn draw(&self, renderer: &Renderer, state: &State) {
+    pub fn update(&self, renderer: &Renderer, state: &State, text: &Text, focus: bool) {
+        // Draw the fields.
+        renderer.boolean(state.input.armed, &self.armed, focus);
+        let value_color = Renderer::get_value_color([focus, true]);
+        let key_color = Renderer::get_key_color(focus);
+        let colors = [&key_color, &value_color];
+        renderer.key_value(&fraction(&state.input.beat), &self.beat, colors);
+        renderer.boolean(state.input.use_volume, &self.use_volume, focus);
+        renderer.key_value(&state.input.volume.get().to_string(), &self.volume, colors);
 
-    }
-
-    pub fn draw(&self, piano_roll: &PianoRollPanel, focus: bool, state: &State) {
-        let mut position = self.position;
-        let value_color = &Renderer::get_value_color(focus, true);
-        // Armed.
-        let key_color = &Renderer::get_key_color(focus);
-        let (armed_value, armed_value_width) = if state.input.armed {
-            (&self.yes, self.yes_width)
-        } else {
-            (&self.no, self.no_width)
-        };
-        let armed_width = (self.armed_key_width + armed_value_width) + 3;
-        state.renderer.key_value_horizontal(
-            &self.armed_key,
-            armed_value,
-            position,
-            armed_width,
-            key_color,
-            &Renderer::get_boolean_color(state.input.armed, focus),
-        );
-        position[0] += armed_width + PADDING;
-
-        // Beat.
-        state.renderer.key_value_horizontal(
-            &self.beat,
-            Text::fraction(&state.input.beat).as_str(),
-            position,
-            self.beat_width,
-            key_color,
-            value_color,
-        );
-        position[0] += self.beat_width + PADDING;
-
-        // Volume.
-        state.renderer.key_value_horizontal(
-            &self.volume,
-            &state.input.volume.to_string(),
-            position,
-            self.volume_width,
-            key_color,
-            value_color,
-        );
-        position[0] += self.volume_width + PADDING;
-
-        // Use volume.
-        let use_volume_value = if state.input.use_volume {
-            &self.yes
-        } else {
-            &self.no
-        };
-        state.renderer.key_value_horizontal(
-            &self.use_volume,
-            use_volume_value,
-            position,
-            self.use_volume_width,
-            key_color,
-            &Renderer::get_boolean_color(state.input.use_volume, focus),
-        );
-        position[0] += self.use_volume_width + PADDING;
-
-        // Vertical line.
-        let top_bar_line_color = if focus {
+        // Separator.
+        let line_color = if focus {
             &ColorKey::FocusDefault
         } else {
             &ColorKey::NoFocus
         };
+        Self::vertical_line(self.inputs_separator_position, line_color, renderer);
 
-        TopBar::vertical_line(position, top_bar_line_color, &state.renderer);
-
-        position[0] += PADDING;
-
-        // Mode.
-        for mode in PIANO_ROLL_MODES.iter() {
-            let mode_string = mode.to_string(&state.text);
-            let mode_width = mode_string.chars().count() as u32;
+        // Draw the modes.
+        for mode in self.modes.iter() {
             // Reverse the colors.
-            if focus && *mode == PIANO_ROLL_MODES[piano_roll.mode] {
-                state
-                    .renderer
-                    .rectangle(position, [mode_width, 1], &ColorKey::FocusDefault);
-                state
-                    .renderer
-                    .text(mode_string.as_str(), position, &ColorKey::Background);
+            if focus && *mode.0 == state.piano_roll_mode {
+                renderer.rectangle(
+                    mode.1.position,
+                    [mode.1.text.chars().count() as u32, 1],
+                    &ColorKey::FocusDefault,
+                );
+                renderer.text(mode.1, &ColorKey::Background);
             } else {
-                state.renderer.text(
-                    mode_string.as_str(),
-                    position,
+                renderer.text(
+                    mode.1,
                     &(if focus {
                         ColorKey::FocusDefault
                     } else {
@@ -141,55 +178,51 @@ impl TopBar {
                     }),
                 );
             }
-            position[0] += mode_width + PADDING * 3;
         }
 
-        // Vertical line.
-        TopBar::vertical_line(position, top_bar_line_color, &state.renderer);
-        position[0] += PADDING;
+        // Separator.
+        Self::vertical_line(self.modes_separator_position, line_color, renderer);
 
-        // Sub-mode.
-        let (key, value) = match PIANO_ROLL_MODES[piano_roll.mode] {
-            PianoRollMode::Edit => (
-                state.text.get("PIANO_ROLL_EDIT_MODE_PREFIX"),
-                TIME_MODES[piano_roll.edit.mode].to_string(&state.text),
-            ),
-            PianoRollMode::Select => (
-                state.text.get("PIANO_ROLL_SELECT_MODE_PREFIX"),
-                piano_roll.select.mode.to_string(&state.text),
-            ),
-            PianoRollMode::Time => (
-                state.text.get("PIANO_ROLL_TIME_MODE_PREFIX"),
-                TIME_MODES[piano_roll.time.mode].to_string(&state.text),
-            ),
-            PianoRollMode::View => (
-                state.text.get("PIANO_ROLL_VIEW_MODE_PREFIX"),
-                TIME_MODES[piano_roll.view.mode].to_string(&state.text),
-            ),
+        // Edit mode.
+        let edit_mode = match state.piano_roll_mode {
+            PianoRollMode::Edit => Self::get_edit_mode_text(&state.edit_mode, text),
+            PianoRollMode::Select => match state.select_mode {
+                SelectMode::Single(_) => text.get("PIANO_ROLL_PANEL_EDIT_MODE_SINGLE"),
+                SelectMode::Many(_) => text.get("PIANO_ROLL_PANEL_EDIT_MODE_MANY"),
+            },
+            PianoRollMode::Time => Self::get_edit_mode_text(&state.view.mode, text),
+            PianoRollMode::View => Self::get_edit_mode_text(&state.view.mode, text),
         };
-        let width = (key.chars().count() + value.chars().count() + 1) as u32;
-        let position = [self.position[0] + self.width - width, self.position[1]];
-        let key_color = &Renderer::get_key_color(focus);
-        let value_color = &Renderer::get_key_color(focus);
-        state.renderer.key_value_horizontal(
-            key.as_str(),
-            value.as_str(),
-            position,
-            width,
-            key_color,
-            value_color,
-        );
+        let edit_mode = Label {
+            text: edit_mode,
+            position: self.edit_mode_position,
+        };
+        let edit_mode_color = if focus {
+            ColorKey::Key
+        } else {
+            ColorKey::NoFocus
+        };
+        renderer.text(&edit_mode, &edit_mode_color);
 
         // Horizontal line.
-        state.renderer.horizontal_line(
+        renderer.horizontal_line(
             self.position[0],
             self.position[0] + self.width,
             [-0.5, 0.5],
             self.position[1] + 1,
             0.4,
-            0.5,
-            top_bar_line_color,
+            line_color,
         );
+    }
+
+    fn get_edit_mode_text(edit_mode: &Index, text: &Text) -> String {
+        let edit_mode = EDIT_MODES[edit_mode.get()];
+        let key = match edit_mode {
+            EditMode::Normal => "PIANO_ROLL_PANEL_EDIT_MODE_NORMAL",
+            EditMode::Quick => "PIANO_ROLL_PANEL_EDIT_MODE_QUICK",
+            EditMode::Precise => "PIANO_ROLL_PANEL_EDIT_MODE_PRECISE",
+        };
+        text.get(key)
     }
 
     fn vertical_line(position: [u32; 2], color: &ColorKey, renderer: &Renderer) {
@@ -201,23 +234,5 @@ impl TopBar {
             [-0.5, 1.0],
             color,
         );
-    }
-}
-
-impl Drawable for TopBar {
-    fn update(
-            &self,
-            renderer: &Renderer,
-            state: &State,
-            conn: &Conn,
-            input: &Input,
-            text: &Text,
-            open_file: &OpenFile,
-        ) {
-        let focus = state.panels[state.focus.get()] = PanelType::PianoRoll;
-
-        // Input fields.
-        renderer.boolean(&self.armed.label.as_ref().unwrap(), state.input.armed, self.armed.position, , focus);
-        //
     }
 }

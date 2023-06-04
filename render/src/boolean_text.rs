@@ -14,6 +14,10 @@ impl BooleanText {
     }
 
     pub fn get_max_length(&self) -> usize {
-        [self.yes, self.no].iter().map(|s| s.chars().count()).max().unwrap()
+        [&self.yes, &self.no]
+            .iter()
+            .map(|s| s.chars().count())
+            .max()
+            .unwrap()
     }
 }

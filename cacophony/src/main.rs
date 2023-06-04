@@ -46,7 +46,7 @@ async fn main() {
     let renderer = Renderer::new(&config, &text);
 
     // Load the panels.
-    let panels = Panels::new(&config, &text);
+    let panels = Panels::new(&config, &input, &text);
 
     // Resize the screen.
     let window_size = get_window_pixel_size(&config);

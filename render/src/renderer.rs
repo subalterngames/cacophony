@@ -1,5 +1,5 @@
-use crate::{BooleanText, ColorKey};
 use crate::field_params::*;
+use crate::{BooleanText, ColorKey};
 use common::config::{parse, parse_bool};
 use common::font::*;
 use common::get_bytes;
@@ -171,7 +171,7 @@ impl Renderer {
     ///
     /// - `label` Parameters for drawing text.
     /// - `color` A `ColorKey` for the rectangle.
-    pub fn text(&self, label: &Label, text_color: &ColorKey) {
+    pub(crate) fn text(&self, label: &Label, text_color: &ColorKey) {
         let mut xy = self.grid_to_pixel(label.position);
         let dim = measure_text(&label.text, Some(self.font), self.font_size, 1.0);
         xy[1] += self.cell_size[1] - dim.offset_y / 3.0;
@@ -424,27 +424,22 @@ impl Renderer {
 
     /// Draw a value with left and right arrows with a key.
     ///
+    /// - `text` The value text.
     /// - `key_list` The key-list parameters pair.
-    /// - `value` The value text.
     /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
-    pub fn key_list(
-        &self,
-        key_list: &KeyList,
-        value: &str,
-        focus: Focus,
-    ) {
+    pub(crate) fn key_list(&self, text: &str, key_list: &KeyList, focus: Focus) {
         // Draw the key.
         self.text(&key_list.key, &Renderer::get_key_color(focus[0]));
         // Draw the value.
-        self.list(&key_list.value, value, focus);
+        self.list(text, &key_list.value, focus);
     }
 
     /// Draw a value with left and right arrows.
     ///
-    /// - `list` The `List` draw parameters.
     /// - `text` The text in the label.
+    /// - `list` The `List` draw parameters.
     /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
-    pub fn list(&self, list: &List, text: &str, focus: Focus) {
+    pub(crate) fn list(&self, text: &str, list: &List, focus: Focus) {
         // Draw the arrows.
         if focus[1] {
             let arrow_color = if focus[0] {
@@ -458,25 +453,29 @@ impl Renderer {
         // Get the label.
         let value = list.get_value(text);
         // Draw the value.
-        self.text(
-            &value,
-            &Self::get_value_color(focus),
-        );
+        self.text(&value, &Self::get_value_color(focus));
     }
 
     /// An input box.
     ///
     /// - `text` The text.
     /// - `position` The top-left position in grid coordinates.
-    /// - `width` The width of the widget in grid coordinates.
     /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
-    pub fn input(&self, text: &str, input: &TextWidth, focus: Focus) {
+    pub(crate) fn input(&self, text: &str, input: &TextWidth, focus: Focus) {
         // Draw indicators of widget focus.
         if focus[1] {
             // Draw corners.
-            self.corners(input.width.position, [input.width.width as u32, 1], focus[0]);
+            self.corners(
+                input.width.position,
+                [input.width.width as u32, 1],
+                focus[0],
+            );
             // Draw a rectangle.
-            self.rectangle(input.value.position, [input.value.width as u32, 1], &ColorKey::TextFieldBG);
+            self.rectangle(
+                input.value.position,
+                [input.value.width as u32, 1],
+                &ColorKey::TextFieldBG,
+            );
         }
         let value = input.get_value(text);
         self.text(&value, &Self::get_key_color(focus[0]));
@@ -484,53 +483,47 @@ impl Renderer {
 
     /// Draw a key + value text input field.
     ///
-    /// - `key` The key text.
-    /// - `value` The value text.
+    /// - `text` The value text.s
+    /// - `kv` The key label and the value width.
     /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
-    pub fn key_input(
-        &self,
-        kv: &KeyValue,
-        value: &str,
-        focus: Focus,
-    ) {
+    pub(crate) fn key_input(&self, text: &str, kv: &KeyWidth, focus: Focus) {
         // Draw indicators of widget focus.
         if focus[1] {
             // Draw corners.
-            self.corners(kv.position, [kv.width, 1], focus[0]);
+            self.corners(kv.key.position, [kv.width, 1], focus[0]);
             // Draw a rectangle.
-            self.rectangle(kv.value.position, [kv.value.width as u32, 1], &ColorKey::TextFieldBG);
+            self.rectangle(
+                kv.value.position,
+                [kv.value.width as u32, 1],
+                &ColorKey::TextFieldBG,
+            );
         }
         // Draw the key text.
         self.text(&kv.key, &Self::get_key_color(focus[0]));
-        self.text(&kv.get_value(value), &Self::get_value_color(focus));
+        self.text(&kv.get_value(text), &Self::get_value_color(focus));
     }
 
     /// Draw a key-value pair.
     ///
+    /// - `text` The value text.
     /// - `kv` Draw parameters for the key-value pair.
-    /// - `value` The value string.
     /// - `colors` The key and value colors.
-    pub fn key_value(
-        &self,
-        kv: &KeyValue,
-        value: &str,
-        colors: [&ColorKey; 2],
-    ) {
+    pub(crate) fn key_value(&self, text: &str, kv: &KeyWidth, colors: [&ColorKey; 2]) {
         self.text(&kv.key, colors[0]);
-        self.text(&kv.get_value(&value), colors[1]);
+        self.text(&kv.get_value(text), colors[1]);
     }
 
     /// Draw a horizontally-aligned key-value boolean pair.
     ///
-    /// - `boolean` Parameters for drawing a key-value string-bool pair.
     /// - `value` The value of the boolean.
+    /// - `boolean` Parameters for drawing a key-value string-bool pair.
     /// - `focus` If true, the panel has focus.
-    pub fn boolean(&self, boolean: &Boolean, value: bool, focus: bool) {
+    pub(crate) fn boolean(&self, value: bool, boolean: &Boolean, focus: bool) {
         self.text(&boolean.key, &Renderer::get_key_color(focus));
         let v = if value {
             &self.boolean_text.yes
         } else {
-            &self.boolean_text
+            &self.boolean_text.no
         };
         self.text(
             &boolean.get_boolean_label(value, &self.boolean_text),
@@ -541,7 +534,7 @@ impl Renderer {
     /// Returns the color of the value text.
     ///
     /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
-    fn get_value_color(focus: Focus) -> ColorKey {
+    pub fn get_value_color(focus: Focus) -> ColorKey {
         match (focus[0], focus[1]) {
             (true, true) => ColorKey::Value,
             (true, false) => ColorKey::Key,

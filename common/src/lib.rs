@@ -5,7 +5,7 @@
 //!
 //! Most of the external crates, e.g. macroquad and fraction, can be referenced elsewhere from this crate.
 //! There are a few notable exceptions:
-//! 
+//!
 //! - `strum` and `serde` (and their respective derived crates) apparently need to be in a given crate's Cargo.toml to allow the macros to work.
 //! - There are a few crates that are referenced by only 1 Cacophony crate and the dependency is therefore over in that Cacophony crate.
 //!

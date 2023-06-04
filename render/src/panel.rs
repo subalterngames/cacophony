@@ -33,7 +33,10 @@ impl Panel {
         let title_size = [title.chars().count() as u32, 1];
         Self {
             panel_type,
-            title: Label { position: title_position, text: title },
+            title: Label {
+                position: title_position,
+                text: title,
+            },
             position,
             size,
             title_size,
