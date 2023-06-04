@@ -134,7 +134,7 @@ BPM,b p m
 GAIN,gain
 MUSIC_PANEL_INPUT_TTS_BPM,Type to set the beats per minute.
 MUSIC_PANEL_INPUT_TTS_GAIN,\0 and \1 to set the gain.
-MUSIC_PANEL_INPUT_TTS_NAME,Type to change the change of the music.
+MUSIC_PANEL_INPUT_TTS_NAME,Type to change the name of the music.
 TRACKS_PANEL_STATUS_TTS_NO_SELECTION,There are no tracks.
 TRACKS_PANEL_STATUS_TTS_PREFIX,Track \0 is selected.
 TRACKS_PANEL_STATUS_TTS_SOUNDFONT,The preset is \0. The bank is \1. The gain is \2. The sound font is \3.
