@@ -1,4 +1,7 @@
 use crate::panel::*;
+mod image;
+mod note_names;
+use note_names::NoteNames;
 mod top_bar;
 use top_bar::TopBar;
 

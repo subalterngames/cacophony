@@ -14,6 +14,7 @@
 mod color_key;
 mod drawable;
 mod field_params;
+mod focusable_texture;
 mod main_menu;
 mod music_panel;
 mod panel;
@@ -27,6 +28,7 @@ pub use renderer::Renderer;
 mod open_file_panel;
 mod piano_roll_panel;
 mod scroll_page;
+use focusable_texture::FocusableTexture;
 use scroll_page::get_page;
 use text::TTS;
 

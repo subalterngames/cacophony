@@ -7,8 +7,12 @@ pub fn get_font_section(config: &Ini) -> &Properties {
     config.section(Some("FONTS")).unwrap()
 }
 
+/// Reads the font to a byte buffer.
+pub fn get_font_bytes(config: &Ini) -> Vec<u8> {
+    get_bytes(get_font_section(config).get("font").unwrap())
+}
+
 /// Returns the main font.
 pub fn get_font(config: &Ini) -> Font {
-    let bytes = get_bytes(get_font_section(config).get("font").unwrap());
-    load_ttf_font_from_bytes(&bytes).unwrap()
+    load_ttf_font_from_bytes(&get_font_bytes(config)).unwrap()
 }

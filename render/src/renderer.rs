@@ -554,6 +554,11 @@ impl Renderer {
         }
     }
 
+    /// Returns a color.
+    pub fn get_color(&self, color_key: &ColorKey) -> Color {
+        self.colors[color_key]
+    }
+
     /// Converts a grid point to a pixel point.
     ///
     /// - `point` The point in grid coordinates.
