@@ -34,9 +34,9 @@ impl View {
         // Get the time delta.
         let dt = [t0, t1];
         // Get the notes delta.
-        let h = (piano_roll_panel_size[1] - PIANO_ROLL_PANEL_TOP_BAR_HEIGHT - 2) as u8;
+        let h = (piano_roll_panel_size[1] - PIANO_ROLL_PANEL_TOP_BAR_HEIGHT - 1) as u8;
         let n0 = MIDDLE_C + h / 2;
-        let n1 = MIDDLE_C - (h - h / 2);
+        let n1 = n0 + h;
         let dn = [n0, n1];
         let mode = Index::new(0, EDIT_MODES.len());
         Self {

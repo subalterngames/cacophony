@@ -55,7 +55,7 @@ impl NoteNames {
             get_color(&ColorKey::NoFocus, renderer),
             bg_color,
         );
-        let texture = FocusableTexture { focus, no_focus };
+        let texture = FocusableTexture::new(focus, no_focus);
         Self { texture }
     }
 
