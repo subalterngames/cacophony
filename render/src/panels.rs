@@ -1,10 +1,10 @@
-use common::State;
 use crate::main_menu::MainMenu;
 use crate::music_panel::MusicPanel;
 use crate::open_file_panel::OpenFilePanel;
 use crate::panel::*;
 use crate::piano_roll_panel::PianoRollPanel;
 use crate::tracks_panel::TracksPanel;
+use common::State;
 
 /// Every panel.
 pub struct Panels {
@@ -21,7 +21,13 @@ pub struct Panels {
 }
 
 impl Panels {
-    pub fn new(config: &Ini, state: &State, input: &Input, text: &Text, renderer: &Renderer) -> Self {
+    pub fn new(
+        config: &Ini,
+        state: &State,
+        input: &Input,
+        text: &Text,
+        renderer: &Renderer,
+    ) -> Self {
         let music_panel = MusicPanel::new(config, text);
         let main_menu = MainMenu::new(config, input, text);
         let tracks_panel = TracksPanel::new(config, text);

@@ -69,3 +69,8 @@ pub fn get_tracks_panel_width(config: &Ini) -> u32 {
         "tracks_panel_width",
     )
 }
+
+/// Returns the pixel width of all lines.
+pub fn get_line_width(config: &Ini) -> f32 {
+    parse(config.section(Some("RENDER")).unwrap(), "line_width")
+}

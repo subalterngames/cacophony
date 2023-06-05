@@ -1,6 +1,6 @@
 use crate::field_params::*;
 use crate::ColorKey;
-use common::config::{parse, parse_bool};
+use common::config::parse_bool;
 use common::font::*;
 use common::get_bytes;
 use common::hashbrown::HashMap;
@@ -88,7 +88,7 @@ impl Renderer {
 
         // Render settings.
         let render_section = config.section(Some("RENDER")).unwrap();
-        let line_width = parse(render_section, "line_width");
+        let line_width = get_line_width(config);
         let half_line_width = line_width / 2.0;
         let flip_y = parse_bool(render_section, "flip_y");
 
