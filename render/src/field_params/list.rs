@@ -17,18 +17,16 @@ pub(crate) struct List {
 impl List {
     /// Fit the text, with the arrows, within the `width`.
     pub fn new(position: [u32; 2], width: u32) -> Self {
-        let label_width = width - 2;
-        let text_position = [position[0] + 1, position[1]];
         let label = Width {
-            position: text_position,
-            width: label_width as usize,
+            position: [position[0] + 1, position[1]],
+            width: width as usize,
         };
         let left_arrow = Label {
             position,
             text: LEFT_ARROW.to_string(),
         };
         let right_arrow = Label {
-            position: [position[0] + width - 1, position[1]],
+            position: [position[0] + width + 1, position[1]],
             text: RIGHT_ARROW.to_string(),
         };
         Self {

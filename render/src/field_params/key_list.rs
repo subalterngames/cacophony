@@ -16,7 +16,7 @@ impl KeyList {
             position,
             text: key.to_string(),
         };
-        let value_position = [position[0] + width - value_width, position[1]];
+        let value_position = [position[0] + width - value_width - 2, position[1]];
         let value = List::new(value_position, value_width);
         Self { key, value }
     }

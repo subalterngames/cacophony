@@ -58,7 +58,7 @@ impl TracksPanel {
     fn set_gain(state: &mut State, up: bool) -> UndoRedoState {
         let s0 = state.clone();
         let track = state.music.get_selected_track_mut().unwrap();
-        let mut index = Index::new(track.gain as usize, 127);
+        let mut index = Index::new(track.gain as usize, 128);
         index.increment(up);
         let gain = index.get() as u8;
         track.gain = gain;
