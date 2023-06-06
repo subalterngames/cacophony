@@ -9,6 +9,7 @@ use super::FocusableTexture;
 use common::time::samples_to_bar;
 use common::State;
 use common::{Fraction, ToPrimitive, MAX_NOTE, MIN_NOTE};
+use text::fraction;
 use top_bar::TopBar;
 
 /// Draw the piano roll panel.
@@ -31,6 +32,10 @@ pub struct PianoRollPanel {
     piano_roll_rows_rect: [f32; 4],
     /// The height of every note.
     note_height: f32,
+    /// The y coordinate of the time labels in grid units.
+    time_y: u32,
+    /// The time horizontal line y pixel coordinate.
+    time_horizontal_line_y: f32,
 }
 
 impl PianoRollPanel {
@@ -64,6 +69,8 @@ impl PianoRollPanel {
             tex.height(),
         ];
         let note_height = renderer.get_cell_height();
+        let time_y = note_names_position[1] - 1;
+        let time_horizontal_line_y = note_height * (time_y + 1) as f32;
         Self {
             panel,
             top_bar,
@@ -74,9 +81,12 @@ impl PianoRollPanel {
             piano_roll_rows_position,
             piano_roll_rows_rect,
             note_height,
+            time_y,
+            time_horizontal_line_y,
         }
     }
 
+    /// Converts a time fraction to a note x pixel coordinate.
     fn get_note_x(&self, t: Fraction, view_dt: Fraction, state: &State) -> f32 {
         self.piano_roll_rows_rect[0]
             + self.piano_roll_rows_rect[2] * ((state.view.dt[1] - t) / view_dt).to_f32().unwrap()
@@ -118,6 +128,53 @@ impl Drawable for PianoRollPanel {
         // Piano roll rows.
         let texture = self.piano_roll_rows.get(focus);
         renderer.texture(texture, self.piano_roll_rows_position, None);
+
+        // Cursor label.
+        let cursor_color = if focus {
+            ColorKey::TimeCursor
+        } else {
+            ColorKey::NoFocus
+        };
+        let cursor_x = self.panel.position[0] + 1;
+        let cursor_string = text.get_with_values(
+            "PIANO_ROLL_PANEL_CURSOR_TIME",
+            &[&fraction(&state.time.cursor)],
+        );
+        let playback_x = cursor_x + cursor_string.chars().count() as u32 + 3;
+        let cursor_label = Label {
+            text: cursor_string,
+            position: [cursor_x, self.time_y],
+        };
+        renderer.text(&cursor_label, &cursor_color);
+
+        // Playback label.
+        let playback_color = if focus {
+            ColorKey::TimePlayback
+        } else {
+            ColorKey::NoFocus
+        };
+        let playback_string = text.get_with_values(
+            "PIANO_ROLL_PANEL_PLAYBACK_TIME",
+            &[&fraction(&state.time.playback)],
+        );
+        let playback_label = Label {
+            text: playback_string,
+            position: [playback_x, self.time_y],
+        };
+        renderer.text(&playback_label, &playback_color);
+
+        // Time delta label.
+        let dt_string = text.get_with_values(
+            "PIANO_ROLL_PANEL_VIEW_DT",
+            &[&fraction(&state.view.dt[0]), &fraction(&state.view.dt[1])],
+        );
+        let dt_x =
+            self.panel.position[0] + self.panel.size[0] - dt_string.chars().count() as u32 - 1;
+        let dt_label = Label {
+            text: dt_string,
+            position: [dt_x, self.time_y],
+        };
+        renderer.text(&dt_label, &Renderer::get_key_color(focus));
 
         // Notes.
         if let Some(track) = state.music.get_selected_track() {

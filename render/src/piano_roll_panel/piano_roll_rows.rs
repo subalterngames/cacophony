@@ -13,10 +13,8 @@ pub(crate) fn get_piano_roll_rows(config: &Ini, renderer: &Renderer) -> Focusabl
 
     // Get the image size.
     let viewport_size = get_viewport_size(config);
-    let height_pixels = (viewport_size[1] as f32
-        * cell_size[1]) as u32;
-    let width_pixels = (viewport_size[0] as f32
-        * cell_size[0]) as u32;
+    let height_pixels = (viewport_size[1] as f32 * cell_size[1]) as u32;
+    let width_pixels = (viewport_size[0] as f32 * cell_size[0]) as u32;
 
     // Get the background color.
     let bg_color = get_color(&ColorKey::Background, renderer);

@@ -7,7 +7,7 @@
 mod text;
 mod tts;
 pub use self::tts::TTS;
-use common::Fraction;
+use common::{Fraction, ToPrimitive, Zero};
 use std::path::Path;
 pub use text::Text;
 
@@ -15,14 +15,23 @@ pub use text::Text;
 pub fn fraction(fraction: &Fraction) -> String {
     if fraction.is_nan() {
         return "NaN".to_string();
+    } else if fraction.is_zero() {
+        return "0".to_string();
     }
-    let numer = fraction.numer().unwrap();
-    match fraction.denom().unwrap() {
-        // If the denominator is 1, return a whole number.
-        1 => numer.to_string(),
-        // Format as a fraction.
-        other => format!("{}/{}", numer, other),
+    let mut s = vec![];
+    // Get the integer part.
+    let trunc = fraction.trunc();
+    if !trunc.is_zero() {
+        s.push(trunc.to_i64().unwrap().to_string());
     }
+    // Get the fractional part.
+    let fract = fraction.fract();
+    if !fract.is_zero() {
+        let numer = fract.numer().unwrap();
+        let denom = fract.denom().unwrap();
+        s.push(format!("{}/{}", numer, denom));
+    }
+    s.join(" ")
 }
 
 /// Truncate a string to fit a specified length.

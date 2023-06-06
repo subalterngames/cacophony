@@ -16,7 +16,7 @@ pub enum ColorKey {
     NoteSelected,
     NotePlaying,
     TimeCursor,
-    TimeT0,
+    TimePlayback,
     Subtitle,
     Separator,
     TextInput,
