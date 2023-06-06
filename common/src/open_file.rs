@@ -17,7 +17,7 @@ pub struct OpenFile {
     /// The current directory we're in.
     pub directory: PathBuf,
     /// This defines what we're using the panel for.
-    pub open_file_type: OpenFileType,
+    pub open_file_type: Option<OpenFileType>,
     /// The index of the selected file or folder.
     pub selected: Option<usize>,
     /// The folders and files in the directory.
@@ -37,11 +37,15 @@ impl OpenFile {
 
     /// Enable a panel that can read SoundFonts.
     pub fn soundfont(&mut self, paths: &Paths) {
+        let set_directory = match &self.open_file_type {
+            Some(oft) => *oft != OpenFileType::SoundFont,
+            None => true,
+        };
+        self.open_file_type = Some(OpenFileType::SoundFont);
         // Get the initial working directory.
-        if self.open_file_type != OpenFileType::SoundFont {
+        if set_directory {
             self.directory = paths.soundfonts_directory.clone();
         }
-        self.open_file_type = OpenFileType::SoundFont;
         self.extensions = SOUNDFONT_EXTENSIONS.iter().map(|s| s.to_string()).collect();
         self.filename = None;
         self.enable();
@@ -51,22 +55,26 @@ impl OpenFile {
     pub fn read_save(&mut self, paths: &Paths) {
         self.filename = None;
         self.enable_as_save(paths);
-        self.open_file_type = OpenFileType::ReadSave;
+        self.open_file_type = Some(OpenFileType::ReadSave);
     }
 
     /// Enable a panel that can write save files.
     pub fn write_save(&mut self, paths: &Paths) {
         self.filename = Some(String::new());
         self.enable_as_save(paths);
-        self.open_file_type = OpenFileType::WriteSave;
+        self.open_file_type = Some(OpenFileType::WriteSave);
     }
 
     pub fn export(&mut self, paths: &Paths) {
         self.filename = Some(String::new());
-        if self.open_file_type != OpenFileType::Export {
+        let set_directory = match &self.open_file_type {
+            Some(oft) => *oft != OpenFileType::Export,
+            None => true,
+        };
+        if set_directory {
             self.directory = paths.export_directory.clone();
         }
-        self.open_file_type = OpenFileType::Export;
+        self.open_file_type = Some(OpenFileType::Export);
         self.extensions = EXPORT_FILE_EXTENSIONS
             .iter()
             .map(|s| s.to_string())
@@ -75,10 +83,12 @@ impl OpenFile {
     }
 
     pub fn enable_as_save(&mut self, paths: &Paths) {
+        let set_directory = match &self.open_file_type {
+            Some(oft) => *oft != OpenFileType::ReadSave && *oft != OpenFileType::WriteSave,
+            None => true,
+        };
         // Get the initial working directory.
-        if self.open_file_type != OpenFileType::ReadSave
-            && self.open_file_type != OpenFileType::WriteSave
-        {
+        if set_directory {
             self.directory = paths.saves_directory.clone();
         }
         self.extensions = SAVE_FILE_EXTENSIONS.iter().map(|s| s.to_string()).collect();

@@ -139,7 +139,7 @@ impl Panel for OpenFilePanel {
                 match path.is_file {
                     // Select.
                     true => {
-                        let open_file_key = match self.open_file.open_file_type {
+                        let open_file_key = match self.open_file.open_file_type.as_ref().unwrap() {
                             OpenFileType::ReadSave => "OPEN_FILE_PANEL_INPUT_TTS_READ_SAVE",
                             OpenFileType::Export => "OPEN_FILE_PANEL_INPUT_TTS_EXPORT",
                             OpenFileType::SoundFont => "OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT",
@@ -211,7 +211,7 @@ impl Panel for OpenFilePanel {
         // We selected something.
         else if input.happened(&InputEvent::SelectFile) {
             self.disable(state);
-            match self.open_file.open_file_type {
+            match self.open_file.open_file_type.as_ref().unwrap() {
                 // Load a save file.
                 OpenFileType::ReadSave => {
                     let path = &self.open_file.paths[self.open_file.selected.unwrap()].path;
