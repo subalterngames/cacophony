@@ -90,7 +90,7 @@ impl Drawable for TracksPanel {
         };
 
         // Draw the tracks.
-        let x = self.panel.position[0] + 1;
+        let x = self.panel.position[0] + 2;
         let mut y = self.panel.position[1] + 1;
         for i in track_page {
             let track = &state.music.midi_tracks[i];
@@ -106,12 +106,11 @@ impl Drawable for TracksPanel {
                         None => self.track_size_no_sf,
                     };
                     // Draw corners.
-                    renderer.corners([x, y], track_size, focus);
+                    renderer.corners([x - 1, y], track_size, focus);
                     // This widget has focus.
                     track_focus = true;
                 }
             }
-            y += 1;
             // Draw the track.
             match conn.state.programs.get(&channel) {
                 // No program. No SoundFont.
