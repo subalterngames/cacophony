@@ -266,6 +266,18 @@ impl Panel for TracksPanel {
                 return Some(UndoRedoState::from(Some(vec![IOCommand::EnableOpenFile(
                     OpenFileType::SoundFont,
                 )])));
+            }
+            // Next track.
+            else if input.happened(&InputEvent::NextTrack)
+                && selected < state.music.midi_tracks.len() - 1
+            {
+                let s0 = state.clone();
+                state.music.selected = Some(selected + 1);
+                return Some(UndoRedoState::from((s0, state)));
+            } else if input.happened(&InputEvent::PreviousTrack) && selected > 0 {
+                let s0 = state.clone();
+                state.music.selected = Some(selected - 1);
+                return Some(UndoRedoState::from((s0, state)));
             } else {
                 let track = state.music.get_selected_track().unwrap();
                 let channel = track.channel;

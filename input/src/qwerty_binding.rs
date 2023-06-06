@@ -28,7 +28,9 @@ impl QwertyBinding {
         let q: Result<SerializableQwertyBinding, Error> = from_str(string);
         match q {
             Ok(q) => {
-                if q.keys.iter().any(|k| keycode_from_str(k).is_none()) || q.mods.iter().any(|k| keycode_from_str(k).is_none()) {
+                if q.keys.iter().any(|k| keycode_from_str(k).is_none())
+                    || q.mods.iter().any(|k| keycode_from_str(k).is_none())
+                {
                     panic!("Invalid qwerty binding: {}", string)
                 }
                 let keys = q
@@ -262,6 +264,6 @@ fn keycode_from_str(s: &str) -> Option<KeyCode> {
         other => {
             dbg!("Warning! Invalid key code: {}", other);
             None
-        },
+        }
     }
 }
