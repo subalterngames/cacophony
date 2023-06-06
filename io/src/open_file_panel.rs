@@ -260,7 +260,6 @@ impl Panel for OpenFilePanel {
         }
         // Close this.
         else if input.happened(&InputEvent::CloseOpenFile) {
-            self.disable(state);
             return Some(UndoRedoState::from(Some(vec![IOCommand::DisableOpenFile])));
         }
         None
