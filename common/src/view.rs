@@ -22,9 +22,9 @@ pub struct View {
 
 impl View {
     pub fn new(config: &Ini) -> Self {
-        // Get the width of the tracks panel.
-        let piano_roll_panel_size = get_piano_roll_panel_size(config);
-        let w = piano_roll_panel_size[0] - 2 - PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH;
+        // Get the width of the viewport.
+        let viewport_size = get_viewport_size(config);
+        let w = viewport_size[0];
         // Get the beats per cell.
         let beats_per_cell = Fraction::one();
         // Get the start time.
@@ -34,7 +34,7 @@ impl View {
         // Get the time delta.
         let dt = [t0, t1];
         // Get the notes delta.
-        let h = (piano_roll_panel_size[1] - PIANO_ROLL_PANEL_TOP_BAR_HEIGHT - 1) as u8;
+        let h = viewport_size[1] as u8;
         let n0 = MIDDLE_C + h / 2;
         let n1 = n0 + h;
         let dn = [n0, n1];

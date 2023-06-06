@@ -12,10 +12,10 @@ pub(crate) fn get_piano_roll_rows(config: &Ini, renderer: &Renderer) -> Focusabl
     let cell_size = get_cell_size(config);
 
     // Get the image size.
-    let piano_roll_panel_size = get_piano_roll_panel_size(config);
-    let height_pixels = ((piano_roll_panel_size[1] - PIANO_ROLL_PANEL_TOP_BAR_HEIGHT - 1) as f32
+    let viewport_size = get_viewport_size(config);
+    let height_pixels = (viewport_size[1] as f32
         * cell_size[1]) as u32;
-    let width_pixels = ((piano_roll_panel_size[0] - PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH - 2) as f32
+    let width_pixels = (viewport_size[0] as f32
         * cell_size[0]) as u32;
 
     // Get the background color.
@@ -25,7 +25,7 @@ pub(crate) fn get_piano_roll_rows(config: &Ini, renderer: &Renderer) -> Focusabl
     let font_size = get_font(config).2;
     let line_width = get_line_width(config) as usize;
     let pixel_size = [width_pixels, height_pixels];
-    let grid_height = piano_roll_panel_size[1] as i64;
+    let grid_height = viewport_size[1] as i64;
     let cell_height = cell_size[1] as u32;
 
     let focus = get_texture(

@@ -560,6 +560,11 @@ impl Renderer {
         ]
     }
 
+    /// Returns the height of a grid cell in pixels.
+    pub fn get_cell_height(&self) -> f32 {
+        self.cell_size[1]
+    }
+
     /// Parse a serialized 3-element array as an RGBA color.
     fn parse_color(value: &str) -> Color {
         let c: Result<[u8; 3], serde_json::Error> = serde_json::from_str(value);

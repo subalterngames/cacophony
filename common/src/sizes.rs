@@ -74,3 +74,11 @@ pub fn get_tracks_panel_width(config: &Ini) -> u32 {
 pub fn get_line_width(config: &Ini) -> f32 {
     parse(config.section(Some("RENDER")).unwrap(), "line_width")
 }
+
+/// Returns the size of the piano roll viewport.
+pub fn get_viewport_size(config: &Ini) -> [u32; 2] {
+    let piano_roll_panel_size = get_piano_roll_panel_size(config);
+    let width = piano_roll_panel_size[0] - PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH - 2;
+    let height = piano_roll_panel_size[1] - PIANO_ROLL_PANEL_TOP_BAR_HEIGHT - 2;
+    [width, height]
+}
