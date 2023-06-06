@@ -15,22 +15,22 @@ pub(crate) struct MusicPanel {
 
 impl MusicPanel {
     pub fn new(config: &Ini, text: &Text) -> Self {
-        let mut width = get_tracks_panel_width(config);
+        let width = get_tracks_panel_width(config);
         let panel = Panel::new(
             PanelType::Music,
             MUSIC_PANEL_POSITION,
             [width, MUSIC_PANEL_HEIGHT],
             text,
         );
-        width -= 2;
         let x = panel.position[0] + 1;
         let mut y = panel.position[1] + 1;
 
         let name = TextWidth::new([x, y], width);
         y += 1;
-        let bpm = KeyWidth::new_from_width(&text.get("TITLE_BPM"), [x, y], width, 3);
+        let mut bpm = KeyWidth::new_from_width(&text.get("TITLE_BPM"), [x, y], width - 2, 3);
+        bpm.value.position[0] -= 1;
         y += 1;
-        let gain = KeyList::new(&text.get("TITLE_GAIN"), [x, y], width, 3);
+        let gain = KeyList::new(&text.get("TITLE_GAIN"), [x, y], width - 2, 3);
 
         // Return.
         Self {

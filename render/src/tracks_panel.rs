@@ -90,7 +90,7 @@ impl Drawable for TracksPanel {
         };
 
         // Draw the tracks.
-        let x = self.panel.position[0] + 2;
+        let x = self.panel.position[0] + 1;
         let mut y = self.panel.position[1] + 1;
         for i in track_page {
             let track = &state.music.midi_tracks[i];
@@ -106,7 +106,7 @@ impl Drawable for TracksPanel {
                         None => self.track_size_no_sf,
                     };
                     // Draw corners.
-                    renderer.corners([x - 1, y], track_size, focus);
+                    renderer.corners([x, y], track_size, focus);
                     // This widget has focus.
                     track_focus = true;
                 }
@@ -118,7 +118,7 @@ impl Drawable for TracksPanel {
                     let label = Label {
                         text: text
                             .get_with_values("TRACKS_PANEL_TRACK_TITLE", &[&channel.to_string()]),
-                        position: [x, y],
+                        position: [x + 1, y],
                     };
                     renderer.text(&label, &Renderer::get_key_color(focus));
                     y += 1;
@@ -131,11 +131,11 @@ impl Drawable for TracksPanel {
                     renderer.list(&program.preset_name, &list, f);
                     y += 1;
                     // Draw the bank.
-                    let bank = KeyList::new(&self.bank_key, [x, y], self.field_width, 3);
+                    let bank = KeyList::new(&self.bank_key, [x + 1, y], self.field_width + 1, 3);
                     renderer.key_list(&program.bank.to_string(), &bank, f);
                     y += 1;
                     // Draw the gain.
-                    let gain = KeyList::new(&self.gain_key, [x, y], self.field_width, 3);
+                    let gain = KeyList::new(&self.gain_key, [x + 1, y], self.field_width + 1, 3);
                     renderer.key_list(&track.gain.to_string(), &gain, f);
                     // Mute.
                     if track.mute {
@@ -169,7 +169,7 @@ impl Drawable for TracksPanel {
                     let file_text = truncate(
                         &get_file_name(&program.path),
                         self.field_width as usize,
-                        true,
+                        false,
                     );
                     let file_color = match (focus, track_focus) {
                         (true, true) => ColorKey::Arrow,
@@ -178,7 +178,7 @@ impl Drawable for TracksPanel {
                     };
                     let file_label = Label {
                         text: file_text,
-                        position: [x, y],
+                        position: [x + 1, y],
                     };
                     renderer.text(&file_label, &file_color);
                     y += 1;
