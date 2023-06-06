@@ -30,8 +30,8 @@ pub struct PianoRollPanel {
     piano_roll_rows_position: [u32; 2],
     /// The (x, y, w, h) values of the piano row rolls rect.
     piano_roll_rows_rect: [f32; 4],
-    /// The height of every note.
-    note_height: f32,
+    /// The size of a cell.
+    cell_size: [f32; 2],
     /// The y coordinate of the time labels in grid units.
     time_y: u32,
     /// The time horizontal line y pixel coordinate.
@@ -68,9 +68,9 @@ impl PianoRollPanel {
             tex.width(),
             tex.height(),
         ];
-        let note_height = renderer.get_cell_height();
+        let cell_size = get_cell_size(config);
         let time_y = note_names_position[1] - 1;
-        let time_horizontal_line_y = note_height * (time_y + 1) as f32;
+        let time_horizontal_line_y = cell_size[1] * (time_y + 1) as f32;
         Self {
             panel,
             top_bar,
@@ -80,16 +80,58 @@ impl PianoRollPanel {
             piano_roll_rows,
             piano_roll_rows_position,
             piano_roll_rows_rect,
-            note_height,
+            cell_size,
             time_y,
             time_horizontal_line_y,
         }
     }
 
     /// Converts a time fraction to a note x pixel coordinate.
-    fn get_note_x(&self, t: Fraction, view_dt: Fraction, state: &State) -> f32 {
+    fn get_note_x(&self, t: Fraction, state: &State) -> f32 {
         self.piano_roll_rows_rect[0]
-            + self.piano_roll_rows_rect[2] * ((state.view.dt[1] - t) / view_dt).to_f32().unwrap()
+            + self.piano_roll_rows_rect[2]
+                * ((t - state.view.dt[0]) / state.view.dt[1])
+                    .to_f32()
+                    .unwrap()
+    }
+
+    /// Draw a horizontal line from a time label and optionally a vertical line down the rows.
+    fn draw_time_lines(
+        &self,
+        x: u32,
+        time: &Fraction,
+        color: &ColorKey,
+        state: &State,
+        renderer: &Renderer,
+    ) {
+        // Get the pixel position of the start coordinate.
+        let x0 = x as f32 * self.cell_size[0];
+        // The time is before the start time.
+        let (x1, vertical) = if time < &state.view.dt[0] {
+            (self.piano_roll_rows_rect[0], false)
+        }
+        // The time is after the end time.
+        else if time > &state.view.dt[1] {
+            (
+                self.piano_roll_rows_rect[0] + self.piano_roll_rows_rect[2],
+                false,
+            )
+        }
+        // The time is within the viewport.
+        else {
+            (self.get_note_x(*time, state), true)
+        };
+        // Draw a horizontal line.
+        renderer.horizontal_line_pixel(x0, x1, self.time_horizontal_line_y, color);
+        // Draw a vertical line.
+        if vertical {
+            renderer.vertical_line_pixel(
+                x1,
+                self.piano_roll_rows_rect[1],
+                self.piano_roll_rows_rect[1] + self.piano_roll_rows_rect[3],
+                color,
+            );
+        }
     }
 }
 
@@ -103,14 +145,16 @@ impl Drawable for PianoRollPanel {
         text: &Text,
         _: &OpenFile,
     ) {
+        let focus = self.panel.has_focus(state);
+
+        // Panel background.
+        self.panel.update(focus, renderer);
+
         let program_exists = match state.music.get_selected_track() {
             Some(track) => conn.state.programs.contains_key(&track.channel),
             None => false,
         };
-        let focus = self.panel.has_focus(state) && program_exists;
-
-        // Panel background.
-        self.panel.update(focus, renderer);
+        let focus = focus && program_exists;
 
         // Top bar.
         self.top_bar.update(state, renderer, text, focus);
@@ -135,17 +179,21 @@ impl Drawable for PianoRollPanel {
         } else {
             ColorKey::NoFocus
         };
-        let cursor_x = self.panel.position[0] + 1;
+        let cursor_x = self.panel.position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH + 1;
         let cursor_string = text.get_with_values(
             "PIANO_ROLL_PANEL_CURSOR_TIME",
             &[&fraction(&state.time.cursor)],
         );
-        let playback_x = cursor_x + cursor_string.chars().count() as u32 + 3;
+        let cursor_string_width = cursor_string.chars().count() as u32;
+        let playback_x = cursor_x + cursor_string_width + 3;
         let cursor_label = Label {
             text: cursor_string,
             position: [cursor_x, self.time_y],
         };
         renderer.text(&cursor_label, &cursor_color);
+
+        // Cursor horizontal line.
+        let cursor_line_x0 = cursor_x + cursor_string_width / 2;
 
         // Playback label.
         let playback_color = if focus {
@@ -157,6 +205,7 @@ impl Drawable for PianoRollPanel {
             "PIANO_ROLL_PANEL_PLAYBACK_TIME",
             &[&fraction(&state.time.playback)],
         );
+        let playback_line_x0 = playback_x + playback_string.chars().count() as u32 / 2;
         let playback_label = Label {
             text: playback_string,
             position: [playback_x, self.time_y],
@@ -203,7 +252,6 @@ impl Drawable for PianoRollPanel {
                 },
                 false => vec![],
             };
-            let view_dt = state.view.dt[1] - state.view.dt[0];
             // Draw the notes.
             for note in track.notes.iter().enumerate() {
                 // Ignore notes that aren't in the viewport.
@@ -223,7 +271,7 @@ impl Drawable for PianoRollPanel {
                 };
 
                 // Get the x coordinate.
-                let x = self.get_note_x(t0, view_dt, state);
+                let x = self.get_note_x(t0, state);
 
                 // Get the end time of the note. This could be the end of the viewport.
                 let t1 = if end_times[note.0] > state.view.dt[1] {
@@ -233,7 +281,7 @@ impl Drawable for PianoRollPanel {
                 };
 
                 // Get the end x coordinate.
-                let x1 = self.get_note_x(t1, view_dt, state);
+                let x1 = self.get_note_x(t1, state);
 
                 // Get the width.
                 let w = if x1 <= x { 1.0 } else { x1 - x };
@@ -253,8 +301,24 @@ impl Drawable for PianoRollPanel {
                     false => &ColorKey::NoFocus,
                 };
 
-                renderer.rectangle_pixel([x, y], [w, self.note_height], color)
+                renderer.rectangle_pixel([x, y], [w, self.cell_size[1]], color)
             }
         }
+
+        // Draw time lines.
+        self.draw_time_lines(
+            cursor_line_x0,
+            &state.time.cursor,
+            &cursor_color,
+            state,
+            renderer,
+        );
+        self.draw_time_lines(
+            playback_line_x0,
+            &state.time.playback,
+            &playback_color,
+            state,
+            renderer,
+        );
     }
 }

@@ -316,6 +316,16 @@ impl Renderer {
         draw_line(x, top, x, bottom, self.line_width, self.colors[color]);
     }
 
+    /// Draw a line from top to bottom in pixel coordinates.
+    ///
+    /// - `x` The x pixel coordinate.
+    /// - `top` The top y pixel coordinate.
+    /// - `bottom` The bottom y pixel coordinate.
+    /// - `color` A `ColorKey` for the rectangle.
+    pub fn vertical_line_pixel(&self, x: f32, top: f32, bottom: f32, color: &ColorKey) {
+        draw_line(x, top, x, bottom, self.line_width, self.colors[color]);
+    }
+
     /// Draw a line from left to right.
     ///
     /// - `left` The left grid coordinate.
@@ -336,6 +346,16 @@ impl Renderer {
         let left = left as f32 * self.cell_size[0] + x_offsets[0] * self.cell_size[0];
         let right = right as f32 * self.cell_size[0] + x_offsets[1] * self.cell_size[0];
         let y = y as f32 * self.cell_size[1] + y_offset * self.cell_size[1];
+        draw_line(left, y, right, y, self.half_line_width, self.colors[color]);
+    }
+
+    /// Draw a line from left to right using pixel coordinates.
+    ///
+    /// - `left` The left pixel coordinate.
+    /// - `right` The right pixel coordinate.
+    /// - `y` The y pixel coordinate.
+    /// - `color` A `ColorKey` for the rectangle.
+    pub fn horizontal_line_pixel(&self, left: f32, right: f32, y: f32, color: &ColorKey) {
         draw_line(left, y, right, y, self.half_line_width, self.colors[color]);
     }
 
@@ -558,11 +578,6 @@ impl Renderer {
             point[0] as f32 * self.cell_size[0],
             point[1] as f32 * self.cell_size[1],
         ]
-    }
-
-    /// Returns the height of a grid cell in pixels.
-    pub fn get_cell_height(&self) -> f32 {
-        self.cell_size[1]
     }
 
     /// Parse a serialized 3-element array as an RGBA color.
