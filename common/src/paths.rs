@@ -45,7 +45,7 @@ impl Paths {
         let default_ini_path = data_directory.join(CONFIG_FILENAME);
         let text_path = data_directory.join("text.csv");
         // Get or create the default user sub-directories.
-        let soundfonts_directory = get_directory("sound_fonts", &user_directory);
+        let soundfonts_directory = get_directory("soundfonts", &user_directory);
         let saves_directory = get_directory("saves", &user_directory);
         let export_directory = get_directory("exports", &user_directory);
         let splash_path = data_directory.join("splash.png");
