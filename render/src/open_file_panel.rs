@@ -90,6 +90,7 @@ impl Drawable for OpenFilePanel {
             );
             let p = Label { position, text: s };
             renderer.text(&p, &text_color);
+            y += 1;
         }
 
         // Possibly show the input dialogue.
