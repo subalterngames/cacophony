@@ -120,29 +120,20 @@ impl Renderer {
         draw_rectangle(xy[0], xy[1], wh[0], wh[1], color);
     }
 
-    /// Draw a rectangle with a pixel offset.
+    /// Draw a rectangle using pixel coordinates instead of grid coordinates.
+    /// This is used to draw notes.
     ///
-    /// - `position` The top-left position in grid coordinates.
-    /// - `position_offset` Floats between 0.0 and 1.0 to offset `position` in pixel coordinates.
-    /// - `size` The width-height in grid coordinates.
-    /// - `size_offset` Floats between 0.0 and 1.0 to offset `size` in pixel coordinates.
+    /// - `position` The top-left position in pixel coordinates.
+    /// - `size` The width-height in pixel coordinates.
     /// - `color` A `ColorKey` for the rectangle.
-    pub fn rectangle_offset(
-        &self,
-        position: [u32; 2],
-        position_offset: [f32; 2],
-        size: [u32; 2],
-        size_offset: [f32; 2],
-        color: &ColorKey,
-    ) {
-        let xy = self.grid_to_pixel(position);
-        let x = xy[0] + self.cell_size[0] * position_offset[0];
-        let y = xy[1] + self.cell_size[1] * position_offset[1];
-        let wh = self.grid_to_pixel(size);
-        let w = wh[0] + self.cell_size[0] * size_offset[0];
-        let h = wh[1] + self.cell_size[1] * size_offset[1];
-        let color = self.colors[color];
-        draw_rectangle(x, y, w, h, color);
+    pub fn rectangle_pixel(&self, position: [f32; 2], size: [f32; 2], color: &ColorKey) {
+        draw_rectangle(
+            position[0],
+            position[1],
+            size[0],
+            size[1],
+            self.colors[color],
+        )
     }
 
     /// Draw a border that is slightly offset from the edges of the cells.
@@ -562,7 +553,7 @@ impl Renderer {
     /// Converts a grid point to a pixel point.
     ///
     /// - `point` The point in grid coordinates.
-    fn grid_to_pixel(&self, point: [u32; 2]) -> [f32; 2] {
+    pub fn grid_to_pixel(&self, point: [u32; 2]) -> [f32; 2] {
         [
             point[0] as f32 * self.cell_size[0],
             point[1] as f32 * self.cell_size[1],

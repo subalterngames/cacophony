@@ -26,6 +26,8 @@ pub struct PianoRollPanel {
     piano_roll_rows: FocusableTexture,
     /// The position of the piano roll rows.
     piano_roll_rows_position: [u32; 2],
+    /// The (x, y, w, h) values of the piano row rolls rect.
+    piano_roll_rows_rect: [f32; 4],
 }
 
 impl PianoRollPanel {
@@ -50,6 +52,14 @@ impl PianoRollPanel {
             note_names_position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
             note_names_position[1],
         ];
+        let tex = &piano_roll_rows.get(true);
+        let piano_roll_rows_position_f = renderer.grid_to_pixel(piano_roll_rows_position);
+        let piano_roll_rows_rect = [
+            piano_roll_rows_position_f[0],
+            piano_roll_rows_position_f[1],
+            tex.width(),
+            tex.height(),
+        ];
         Self {
             panel,
             top_bar,
@@ -58,6 +68,7 @@ impl PianoRollPanel {
             piano_roll_height,
             piano_roll_rows,
             piano_roll_rows_position,
+            piano_roll_rows_rect,
         }
     }
 }
@@ -72,7 +83,7 @@ impl Drawable for PianoRollPanel {
         text: &Text,
         _: &OpenFile,
     ) {
-        let focus = self.panel.has_focus(state);
+        let focus = self.panel.has_focus(state) && state.music.selected.is_some();
 
         // Panel background.
         self.panel.update(focus, renderer);
