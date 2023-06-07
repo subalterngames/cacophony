@@ -2,10 +2,20 @@ use crate::get_page;
 use crate::panel::*;
 use text::truncate;
 
+const EXTENSION_WIDTH: u32 = 4;
+
 /// The open-file dialogue box.
 pub struct OpenFilePanel {
     /// The panel.
     panel: Panel,
+    /// The background of the filename prompt.
+    prompt: Rectangle,
+    /// The filename extension.
+    extension: Width,
+    /// The filename input.
+    input: Width,
+    /// The filename input background rectangle.
+    input_rect: Rectangle,
 }
 
 impl OpenFilePanel {
@@ -18,7 +28,34 @@ impl OpenFilePanel {
         ];
         let panel = Panel::new(PanelType::OpenFile, position, size, text);
 
-        Self { panel }
+        let prompt = Rectangle::new(
+            [
+                panel.rect.position[0],
+                panel.rect.position[1] + panel.rect.size[1],
+            ],
+            [panel.rect.size[0], 3],
+        );
+        let extension = Width::new(
+            [
+                prompt.position[0] + prompt.size[0] - EXTENSION_WIDTH - 1,
+                prompt.position[1],
+            ],
+            EXTENSION_WIDTH as usize,
+        );
+
+        let input = Width::new(
+            [prompt.position[0] + 1, prompt.position[1]],
+            (prompt.size[0] - EXTENSION_WIDTH - 2) as usize,
+        );
+        let input_rect = Rectangle::new(input.position, [input.width_u32, 1]);
+
+        Self {
+            panel,
+            prompt,
+            extension,
+            input,
+            input_rect,
+        }
     }
 }
 
@@ -35,9 +72,9 @@ impl Drawable for OpenFilePanel {
         // Draw the panel background.
         self.panel.update(true, renderer);
         // Draw the working directory.
-        let mut x = self.panel.position[0] + 1;
-        let mut y = self.panel.position[1] + 1;
-        let mut length = (self.panel.size[0] - 2) as usize;
+        let mut x = self.panel.rect.position[0] + 1;
+        let mut y = self.panel.rect.position[1] + 1;
+        let mut length = (self.panel.rect.size[0] - 2) as usize;
 
         // Show the current directory.
         let cwd = Label {
@@ -52,7 +89,7 @@ impl Drawable for OpenFilePanel {
 
         // Prepare to show the children.
         x += 1;
-        let height: u32 = self.panel.size[1] - 2;
+        let height: u32 = self.panel.rect.size[1] - 2;
         y += 1;
         length -= 1;
         let width = length as u32;
@@ -80,7 +117,7 @@ impl Drawable for OpenFilePanel {
             let position = [x, y];
             // Draw the background.
             if let Some(bg_color) = bg_color {
-                renderer.rectangle(position, [width, 1], &bg_color);
+                renderer.rectangle(&Rectangle::new(position, [width, 1]), &bg_color);
             }
             // Draw the text.
             let s = truncate(
@@ -95,37 +132,21 @@ impl Drawable for OpenFilePanel {
 
         // Possibly show the input dialogue.
         if let Some(filename) = &open_file.filename {
-            let position = [
-                self.panel.position[0],
-                self.panel.position[1] + self.panel.size[1],
-            ];
-            let size = [self.panel.size[0], 3];
-            let mut extension = open_file.extensions[0].clone();
-            extension.insert(0, '.');
-            let extension_length = extension.chars().count();
-            let prompt_width = size[0] - extension_length as u32;
-            let prompt_position = [position[0] + prompt_width - 1, position[1]];
-            let prompt_size = [extension_length as u32, size[1]];
-            // The background of the panel.
-            renderer.rectangle(position, size, &ColorKey::Background);
-            // The background of the prompt.
-            renderer.rectangle(prompt_position, prompt_size, &ColorKey::TextFieldBG);
-            // Draw the border.
-            renderer.border(position, size, &ColorKey::FocusDefault);
-            // Truncate the filename.
-            let s = truncate(filename, length + extension_length, true);
-            // Render the filename.
-            let filename = Label {
-                position: [position[0] + 1, position[1] + 1],
-                text: s,
-            };
-            renderer.text(&filename, &ColorKey::TextInput);
-            // Render the prompt.
-            let prompt = Label {
-                position: prompt_position,
-                text: extension,
-            };
-            renderer.text(&prompt, &ColorKey::Key);
+            // Draw the background of the prompt.
+            renderer.rectangle(&self.prompt, &ColorKey::Background);
+            renderer.border(&self.prompt, &ColorKey::FocusDefault);
+
+            // Draw the extension.
+            renderer.text(
+                &self.extension.to_label(&open_file.extensions[0]),
+                &ColorKey::Key,
+            );
+
+            // Draw the input background.
+            renderer.rectangle(&self.input_rect, &ColorKey::TextFieldBG);
+
+            // Draw the input text.
+            renderer.text(&self.input.to_label(filename), &ColorKey::TextInput);
         }
     }
 }

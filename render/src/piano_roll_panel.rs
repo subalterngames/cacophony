@@ -51,8 +51,8 @@ impl PianoRollPanel {
         let top_bar = TopBar::new(config, text);
         let note_names = get_note_names(config, renderer);
         let note_names_position = [
-            panel.position[0] + 1,
-            panel.position[1] + PIANO_ROLL_PANEL_TOP_BAR_HEIGHT + 1,
+            panel.rect.position[0] + 1,
+            panel.rect.position[1] + PIANO_ROLL_PANEL_TOP_BAR_HEIGHT + 1,
         ];
         let piano_roll_height = (state.view.dn[1] - state.view.dn[0]) as u32;
         let piano_roll_rows = get_piano_roll_rows(config, renderer);
@@ -179,7 +179,7 @@ impl Drawable for PianoRollPanel {
         } else {
             ColorKey::NoFocus
         };
-        let cursor_x = self.panel.position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH + 1;
+        let cursor_x = self.panel.rect.position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH + 1;
         let cursor_string = text.get_with_values(
             "PIANO_ROLL_PANEL_CURSOR_TIME",
             &[&fraction(&state.time.cursor)],
@@ -217,8 +217,9 @@ impl Drawable for PianoRollPanel {
             "PIANO_ROLL_PANEL_VIEW_DT",
             &[&fraction(&state.view.dt[0]), &fraction(&state.view.dt[1])],
         );
-        let dt_x =
-            self.panel.position[0] + self.panel.size[0] - dt_string.chars().count() as u32 - 1;
+        let dt_x = self.panel.rect.position[0] + self.panel.rect.size[0]
+            - dt_string.chars().count() as u32
+            - 1;
         let dt_label = Label {
             text: dt_string,
             position: [dt_x, self.time_y],

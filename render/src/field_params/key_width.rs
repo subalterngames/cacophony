@@ -23,10 +23,7 @@ impl KeyWidth {
 
         // The value is on the right.
         let value_position = [position[0] + width - value_width, position[1]];
-        let value = Width {
-            position: value_position,
-            width: value_width as usize,
-        };
+        let value = Width::new(value_position, value_width as usize);
 
         Self { key, value, width }
     }
@@ -44,10 +41,7 @@ impl KeyWidth {
 
         // The value is on the right.
         let value_position = [position[0] + width - value_width, position[1]];
-        let value = Width {
-            position: value_position,
-            width: value_width as usize,
-        };
+        let value = Width::new(value_position, value_width as usize);
 
         Self { key, value, width }
     }

@@ -6,11 +6,21 @@ pub(crate) struct MusicPanel {
     /// The panel background.
     panel: Panel,
     /// The name field.
-    name: TextWidth,
+    name: Width,
+    /// The total span of the name field, including where the corners are renderered.
+    name_rect: Rectangle,
+    /// The rectangle of the backround of the namefield.
+    name_input_rect: Rectangle,
     /// The BPM field.
     bpm: KeyWidth,
+    /// The total span of the BPM field, including where the corners are renderered.
+    bpm_rect: Rectangle,
+    /// The rectangle of the backround of the BPM field.
+    bpm_input_rect: Rectangle,
     /// The gain field.
     gain: KeyList,
+    /// The rectangle of the background of the name field.
+    gain_rect: Rectangle,
 }
 
 impl MusicPanel {
@@ -26,26 +36,36 @@ impl MusicPanel {
         );
 
         // Move the (x, y) coordinates inward by 1.
-        let x = panel.position[0] + 1;
-        let mut y = panel.position[1] + 1;
+        let x = panel.rect.position[0] + 1;
+        let mut y = panel.rect.position[1] + 1;
         // Shorten the width for the fields.
         width -= 2;
+        let w_usize = width as usize;
 
         // Set the fields.
-        let name = TextWidth::new([x, y], width);
+        let name = Width::new([x + 1, y], w_usize - 2);
+        let name_rect = Rectangle::new([x, y], [width, 1]);
+        let name_input_rect = Rectangle::new(name.position, [name.width_u32, 1]);
         y += 1;
-        let mut bpm = KeyWidth::new_from_width(&text.get("TITLE_BPM"), [x, y], width, 3);
+        let bpm = KeyWidth::new_from_width(&text.get("TITLE_BPM"), [x + 1, y], width - 2, 4);
+        let bpm_rect = Rectangle::new([x, y], [width, 1]);
+        let bpm_input_rect = Rectangle::new(bpm.value.position, [bpm.value.width_u32, 1]);
         // Move the position of the value to align it with the gain field.
-        bpm.value.position[0] -= 1;
         y += 1;
-        let gain = KeyList::new(&text.get("TITLE_GAIN"), [x, y], width, 3);
+        let gain = KeyList::new(&text.get("TITLE_GAIN"), [x + 1, y], width - 2, 3);
+        let gain_rect = Rectangle::new([x, y], [width, 1]);
 
         // Return.
         Self {
             panel,
             name,
+            name_rect,
+            name_input_rect,
             bpm,
+            bpm_rect,
+            bpm_input_rect,
             gain,
+            gain_rect,
         }
     }
 }
@@ -67,23 +87,46 @@ impl Drawable for MusicPanel {
         // Get the enum value of the focused widget.
         let focused_field = *state.get_music_panel_field();
 
+        let key_color = Renderer::get_key_color(focus);
+
         // Name.
-        renderer.input(
-            &state.music.name,
-            &self.name,
-            [focus, focused_field == MusicPanelField::Name],
+        let name_focus = focused_field == MusicPanelField::Name;
+        if name_focus {
+            // Draw corners.
+            renderer.corners(&self.name_rect, focus);
+            // Draw a rectangle for input.
+            renderer.rectangle(&self.name_input_rect, &ColorKey::TextFieldBG);
+        }
+        // Draw the name.
+        renderer.text(
+            &self.name.to_label(&state.music.name),
+            &Renderer::get_value_color([focus, name_focus]),
         );
+
         // BPM.
-        renderer.key_input(
+        let bpm_focus = focused_field == MusicPanelField::BPM;
+        if bpm_focus {
+            // Draw corners.
+            renderer.corners(&self.bpm_rect, focus);
+            // Draw a rectangle for input.
+            renderer.rectangle(&self.bpm_input_rect, &ColorKey::TextFieldBG);
+        }
+        // Draw the BPM.
+        renderer.key_value(
             &state.music.bpm.to_string(),
             &self.bpm,
-            [focus, focused_field == MusicPanelField::BPM],
+            [&key_color, &Renderer::get_value_color([focus, bpm_focus])],
         );
+
         // Gain.
+        let gain_focus = focused_field == MusicPanelField::Gain;
+        if gain_focus {
+            renderer.corners(&self.gain_rect, focus);
+        }
         renderer.key_list(
             &conn.state.gain.to_string(),
             &self.gain,
-            [focus, focused_field == MusicPanelField::Gain],
-        );
+            [focus, gain_focus],
+        )
     }
 }

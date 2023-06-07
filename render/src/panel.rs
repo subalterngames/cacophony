@@ -1,21 +1,18 @@
 pub(crate) use crate::drawable::*;
 pub(crate) use crate::field_params::*;
-pub(crate) use crate::ColorKey;
-pub(crate) use crate::Ini;
+pub(crate) use crate::{ColorKey, Ini};
 pub(crate) use common::sizes::*;
 pub(crate) use common::PanelType;
 
 pub(crate) struct Panel {
     /// The type of panel.
     panel_type: PanelType,
+    /// The position and size of the panel in grid units.
+    pub rect: Rectangle,
     /// The title label for the panel.
     title: Label,
-    /// The position of the panel in grid units.
-    pub position: [u32; 2],
-    /// The size of the panel in grid units.
-    pub size: [u32; 2],
-    /// The size of the title in grid units.
-    title_size: [u32; 2],
+    /// The position and size of the title in grid units.
+    title_rect: Rectangle,
 }
 
 impl Panel {
@@ -30,16 +27,15 @@ impl Panel {
         };
         let title = text.get(title_key);
         let title_position = [position[0] + 2, position[1]];
-        let title_size = [title.chars().count() as u32, 1];
+        let title_width = title.chars().count() as u32;
         Self {
             panel_type,
             title: Label {
                 position: title_position,
                 text: title,
             },
-            position,
-            size,
-            title_size,
+            rect: Rectangle::new(position, size),
+            title_rect: Rectangle::new(title_position, [title_width, 1]),
         }
     }
 
@@ -55,9 +51,9 @@ impl Panel {
 
     /// Draw an empty panel. The border and title text will be an explicitly defined color.
     pub fn draw_ex(&self, color: &ColorKey, renderer: &Renderer) {
-        renderer.rectangle(self.position, self.size, &ColorKey::Background);
-        renderer.border(self.position, self.size, color);
-        renderer.rectangle(self.title.position, self.title_size, &ColorKey::Background);
+        renderer.rectangle(&self.rect, &ColorKey::Background);
+        renderer.border(&self.rect, color);
+        renderer.rectangle(&self.title_rect, &ColorKey::Background);
         renderer.text(&self.title, color);
     }
 

@@ -90,8 +90,8 @@ impl Drawable for TracksPanel {
         };
 
         // Draw the tracks.
-        let x = self.panel.position[0] + 1;
-        let mut y = self.panel.position[1] + 1;
+        let x = self.panel.rect.position[0] + 1;
+        let mut y = self.panel.rect.position[1] + 1;
         for i in track_page {
             let track = &state.music.midi_tracks[i];
             let channel = track.channel;
@@ -105,8 +105,9 @@ impl Drawable for TracksPanel {
                         Some(_) => self.track_size_sf,
                         None => self.track_size_no_sf,
                     };
+                    let rect = Rectangle::new([x, y], track_size);
                     // Draw corners.
-                    renderer.corners([x, y], track_size, focus);
+                    renderer.corners(&rect, focus);
                     // This widget has focus.
                     track_focus = true;
                 }
@@ -126,16 +127,16 @@ impl Drawable for TracksPanel {
                 // There is a program. Draw the properties.
                 Some(program) => {
                     let f = [focus, track_focus];
-                    let list = List::new([x, y], self.field_width);
+                    let list = List::new([x, y], self.field_width - 1);
                     // Draw the preset.
                     renderer.list(&program.preset_name, &list, f);
                     y += 1;
                     // Draw the bank.
-                    let bank = KeyList::new(&self.bank_key, [x + 1, y], self.field_width + 1, 3);
+                    let bank = KeyList::new(&self.bank_key, [x + 1, y], self.field_width, 3);
                     renderer.key_list(&program.bank.to_string(), &bank, f);
                     y += 1;
                     // Draw the gain.
-                    let gain = KeyList::new(&self.gain_key, [x + 1, y], self.field_width + 1, 3);
+                    let gain = KeyList::new(&self.gain_key, [x + 1, y], self.field_width, 3);
                     renderer.key_list(&track.gain.to_string(), &gain, f);
                     // Mute.
                     if track.mute {

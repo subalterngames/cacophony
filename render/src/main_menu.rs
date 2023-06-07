@@ -34,8 +34,8 @@ impl MainMenu {
         );
 
         // Get the fields.
-        let mut x = panel.position[0] + 1;
-        let y = panel.position[1] + 1;
+        let mut x = panel.rect.position[0] + 1;
+        let y = panel.rect.position[1] + 1;
         let help = Self::label_from_key("MAIN_MENU_HELP", &mut x, y, text);
         x += 4;
         let status = Self::tooltip(

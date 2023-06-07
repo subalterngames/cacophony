@@ -4,6 +4,7 @@ use common::{EditMode, Index, PianoRollMode, SelectMode, EDIT_MODES};
 use text::fraction;
 
 const PADDING: u32 = 4;
+type ModesMap = HashMap<PianoRollMode, (Label, Rectangle)>;
 
 /// Render the top bar.
 pub(super) struct TopBar {
@@ -24,7 +25,7 @@ pub(super) struct TopBar {
     /// The position of the vertical separator line to the right of the modes.
     modes_separator_position: [u32; 2],
     /// The piano roll mode labels.
-    modes: HashMap<PianoRollMode, Label>,
+    modes: ModesMap,
     /// The position of the sub-mode label.
     edit_mode_position: [u32; 2],
 }
@@ -65,36 +66,36 @@ impl TopBar {
         let total_modes_width = (((piano_roll_panel_size[0] - 2) - (x - x0)) as f64 * 0.75) as u32;
         let dx = total_modes_width / 4;
         let mut modes = HashMap::new();
-        modes.insert(
+        TopBar::insert_mode(
+            "PIANO_ROLL_PANEL_TOP_BAR_TIME",
             PianoRollMode::Time,
-            Label {
-                text: text.get("PIANO_ROLL_PANEL_TOP_BAR_TIME"),
-                position: [x, y],
-            },
+            [x, y],
+            &mut modes,
+            text,
         );
         x += dx;
-        modes.insert(
+        TopBar::insert_mode(
+            "PIANO_ROLL_PANEL_TOP_BAR_VIEW",
             PianoRollMode::View,
-            Label {
-                text: text.get("PIANO_ROLL_PANEL_TOP_BAR_VIEW"),
-                position: [x, y],
-            },
+            [x, y],
+            &mut modes,
+            text,
         );
         x += dx;
-        modes.insert(
+        TopBar::insert_mode(
+            "PIANO_ROLL_PANEL_TOP_BAR_SELECT",
             PianoRollMode::Select,
-            Label {
-                text: text.get("PIANO_ROLL_PANEL_TOP_BAR_SELECT"),
-                position: [x, y],
-            },
+            [x, y],
+            &mut modes,
+            text,
         );
         x += dx;
-        modes.insert(
+        TopBar::insert_mode(
+            "PIANO_ROLL_PANEL_TOP_BAR_EDIT",
             PianoRollMode::Edit,
-            Label {
-                text: text.get("PIANO_ROLL_PANEL_TOP_BAR_EDIT"),
-                position: [x, y],
-            },
+            [x, y],
+            &mut modes,
+            text,
         );
         x += dx;
 
@@ -142,15 +143,11 @@ impl TopBar {
         for mode in self.modes.iter() {
             // Reverse the colors.
             if focus && *mode.0 == state.piano_roll_mode {
-                renderer.rectangle(
-                    mode.1.position,
-                    [mode.1.text.chars().count() as u32, 1],
-                    &ColorKey::FocusDefault,
-                );
-                renderer.text(mode.1, &ColorKey::Background);
+                renderer.rectangle(&mode.1 .1, &ColorKey::FocusDefault);
+                renderer.text(&mode.1 .0, &ColorKey::Background);
             } else {
                 renderer.text(
-                    mode.1,
+                    &mode.1 .0,
                     &(if focus {
                         ColorKey::FocusDefault
                     } else {
@@ -214,5 +211,20 @@ impl TopBar {
             [-0.6, 0.4],
             color,
         );
+    }
+
+    fn insert_mode(
+        key: &str,
+        mode: PianoRollMode,
+        position: [u32; 2],
+        modes: &mut ModesMap,
+        text: &Text,
+    ) {
+        let label = Label {
+            text: text.get(key),
+            position,
+        };
+        let rect = Rectangle::new(position, [label.text.chars().count() as u32, 1]);
+        modes.insert(mode, (label, rect));
     }
 }

@@ -110,12 +110,11 @@ impl Renderer {
 
     /// Draw a rectangle.
     ///
-    /// - `position` The top-left position in grid coordinates.
-    /// - `size` The width-height in grid coordinates.
+    /// - `rectangle` The position and size of the bordered area.
     /// - `color` A `ColorKey` for the rectangle.
-    pub fn rectangle(&self, position: [u32; 2], size: [u32; 2], color: &ColorKey) {
-        let xy = self.grid_to_pixel(position);
-        let wh = self.grid_to_pixel(size);
+    pub(crate) fn rectangle(&self, rect: &Rectangle, color: &ColorKey) {
+        let xy = self.grid_to_pixel(rect.position);
+        let wh = self.grid_to_pixel(rect.size);
         let color = self.colors[color];
         draw_rectangle(xy[0], xy[1], wh[0], wh[1], color);
     }
@@ -138,14 +137,13 @@ impl Renderer {
 
     /// Draw a border that is slightly offset from the edges of the cells.
     ///
-    /// - `position` The top-left position in grid coordinates.
-    /// - `size` The width-height in grid coordinates.
+    /// - `rectangle` The position and size of the bordered area.
     /// - `color` A `ColorKey` for the rectangle.
-    pub fn border(&self, position: [u32; 2], size: [u32; 2], color: &ColorKey) {
-        let mut xy = self.grid_to_pixel(position);
+    pub(crate) fn border(&self, rect: &Rectangle, color: &ColorKey) {
+        let mut xy = self.grid_to_pixel(rect.position);
         xy[0] += self.border_offsets[0];
         xy[1] += self.border_offsets[1];
-        let mut wh = self.grid_to_pixel(size);
+        let mut wh = self.grid_to_pixel(rect.size);
         wh[0] += self.border_offsets[2];
         wh[1] += self.border_offsets[3];
         let color = self.colors[color];
@@ -172,12 +170,11 @@ impl Renderer {
         draw_text_ex(&label.text, xy[0], xy[1], text_params);
     }
 
-    /// Draw corner borders around a row.
+    /// Draw corner borders around a rectangle.
     ///
-    /// - `position` The top-left position in grid coordinates.
-    /// - `size` The width-height in grid coordinates.
+    /// - `rectangle` The position and size of the bordered area.
     /// - `focus` If true, the panel has focus. This determines the color of the corners.
-    pub fn corners(&self, position: [u32; 2], size: [u32; 2], focus: bool) {
+    pub(crate) fn corners(&self, rect: &Rectangle, focus: bool) {
         // Get the color.
         let color = self.colors[&if focus {
             ColorKey::FocusDefault
@@ -185,7 +182,7 @@ impl Renderer {
             ColorKey::NoFocus
         }];
         // Top-left.
-        let mut p = self.grid_to_pixel(position);
+        let mut p = self.grid_to_pixel(rect.position);
         draw_line(
             p[0] - self.half_line_width,
             p[1],
@@ -203,7 +200,7 @@ impl Renderer {
             color,
         );
         // Top-right.
-        p = self.grid_to_pixel([position[0] + size[0], position[1]]);
+        p = self.grid_to_pixel([rect.position[0] + rect.size[0], rect.position[1]]);
         draw_line(
             p[0] - self.corner_line_length,
             p[1],
@@ -221,7 +218,10 @@ impl Renderer {
             color,
         );
         // Bottom-right.
-        p = self.grid_to_pixel([position[0] + size[0], position[1] + size[1]]);
+        p = self.grid_to_pixel([
+            rect.position[0] + rect.size[0],
+            rect.position[1] + rect.size[1],
+        ]);
         draw_line(
             p[0] - self.corner_line_length,
             p[1],
@@ -239,7 +239,7 @@ impl Renderer {
             color,
         );
         // Bottom-left.
-        p = self.grid_to_pixel([position[0], position[1] + size[1]]);
+        p = self.grid_to_pixel([rect.position[0], rect.position[1] + rect.size[1]]);
         draw_line(
             p[0] - self.half_line_width,
             p[1],
@@ -459,53 +459,6 @@ impl Renderer {
         let value = list.get_value(text);
         // Draw the value.
         self.text(&value, &Self::get_value_color(focus));
-    }
-
-    /// An input box.
-    ///
-    /// - `text` The text.
-    /// - `position` The top-left position in grid coordinates.
-    /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
-    pub(crate) fn input(&self, text: &str, input: &TextWidth, focus: Focus) {
-        // Draw indicators of widget focus.
-        if focus[1] {
-            // Draw corners.
-            self.corners(
-                input.width.position,
-                [input.width.width as u32, 1],
-                focus[0],
-            );
-            // Draw a rectangle.
-            self.rectangle(
-                input.value.position,
-                [input.value.width as u32, 1],
-                &ColorKey::TextFieldBG,
-            );
-        }
-        let value = input.get_value(text);
-        self.text(&value, &Self::get_key_color(focus[0]));
-    }
-
-    /// Draw a key + value text input field.
-    ///
-    /// - `text` The value text.s
-    /// - `kv` The key label and the value width.
-    /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
-    pub(crate) fn key_input(&self, text: &str, kv: &KeyWidth, focus: Focus) {
-        // Draw indicators of widget focus.
-        if focus[1] {
-            // Draw corners.
-            self.corners(kv.key.position, [kv.width, 1], focus[0]);
-            // Draw a rectangle.
-            self.rectangle(
-                kv.value.position,
-                [kv.value.width as u32, 1],
-                &ColorKey::TextFieldBG,
-            );
-        }
-        // Draw the key text.
-        self.text(&kv.key, &Self::get_key_color(focus[0]));
-        self.text(&kv.get_value(text), &Self::get_value_color(focus));
     }
 
     /// Draw a key-value pair.
