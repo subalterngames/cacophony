@@ -46,7 +46,7 @@ async fn main() {
     let renderer = Renderer::new(&config);
 
     // Load the panels.
-    let panels = Panels::new(&config, &state, &input, &text, &renderer);
+    let mut panels = Panels::new(&config, &state, &input, &text, &renderer);
 
     // Resize the screen.
     let window_size = get_window_pixel_size(&config);
@@ -82,6 +82,9 @@ async fn main() {
 
         // Receive input. Possible say something or do an audio operation. Modify the state.
         done = io.update(&mut state, &mut conn, &mut input, &mut tts, &text, &paths);
+
+        // Late update to do stuff like screen capture.
+        panels.late_update(&mut io.open_file_panel.open_file, &renderer);
 
         // Wait.
         next_frame().await;

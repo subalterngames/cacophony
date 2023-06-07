@@ -7,7 +7,7 @@
 
 ## Bugs
 
-- [ ] Open file panel background screen capture
+- [x] Open file panel background screen capture
 
 ## Misc.
 

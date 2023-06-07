@@ -75,4 +75,13 @@ impl Panels {
             panel.update(renderer, state, conn, input, text, open_file);
         }
     }
+
+    /// Do something after input is received from elsewhere.
+    pub fn late_update(&mut self, open_file: &mut OpenFile, renderer: &Renderer) {
+        // The open-file panel was enabled on this frame. Capture the screen.
+        if open_file.enabled {
+            self.open_file_panel.set_background(renderer);
+            open_file.enabled = false;
+        }
+    }
 }

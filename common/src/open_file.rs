@@ -24,6 +24,8 @@ pub struct OpenFile {
     pub paths: Vec<FileOrDirectory>,
     /// The filename. This is used for write operations.
     pub filename: Option<String>,
+    /// If true, this was enabled on this frame.
+    pub enabled: bool,
 }
 
 impl OpenFile {
@@ -33,6 +35,7 @@ impl OpenFile {
         let (selected, paths) = self.get_paths();
         self.selected = selected;
         self.paths = paths;
+        self.enabled = true;
     }
 
     /// Enable a panel that can read SoundFonts.
