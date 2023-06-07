@@ -15,8 +15,8 @@ impl TextWidth {
         let w = width as usize;
         let width = Width { position, width: w };
         let value = Width {
-            position: [position[0] + 1, position[1]],
-            width: w - 2,
+            position: [position[0], position[1]],
+            width: w,
         };
         Self { width, value }
     }
