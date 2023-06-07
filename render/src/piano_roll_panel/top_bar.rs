@@ -167,7 +167,7 @@ impl TopBar {
                 SelectMode::Single(_) => text.get("PIANO_ROLL_PANEL_EDIT_MODE_SINGLE"),
                 SelectMode::Many(_) => text.get("PIANO_ROLL_PANEL_EDIT_MODE_MANY"),
             },
-            PianoRollMode::Time => Self::get_edit_mode_text(&state.view.mode, text),
+            PianoRollMode::Time => Self::get_edit_mode_text(&state.time.mode, text),
             PianoRollMode::View => Self::get_edit_mode_text(&state.view.mode, text),
         };
         let edit_mode = Label {

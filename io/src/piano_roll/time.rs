@@ -30,7 +30,7 @@ impl Time {
 
     /// Move the time left.
     fn get_left(&self, t: &Fraction, state: &State) -> Fraction {
-        let mode = EDIT_MODES[state.view.mode.get()];
+        let mode = EDIT_MODES[state.time.mode.get()];
         let dt = self.deltas.get_dt(&mode, &state.input);
         let t1 = t - dt;
         if t1.is_sign_negative() {
@@ -74,7 +74,7 @@ impl Panel for Time {
             state.time.cursor = self.get_left(&state.time.cursor, state);
             Some(UndoRedoState::from((s0, state)))
         } else if input.happened(&InputEvent::TimeCursorRight) {
-            let mode = EDIT_MODES[state.view.mode.get()];
+            let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
             let dt = self.deltas.get_dt(&mode, &state.input);
             state.time.cursor += dt;
@@ -93,8 +93,8 @@ impl Panel for Time {
             let s0 = state.clone();
             state.time.playback = self.get_left(&state.time.playback, state);
             Some(UndoRedoState::from((s0, state)))
-        } else if input.happened(&InputEvent::TimeCursorRight) {
-            let mode = EDIT_MODES[state.view.mode.get()];
+        } else if input.happened(&InputEvent::TimePlaybackRight) {
+            let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
             let dt = self.deltas.get_dt(&mode, &state.input);
             state.time.playback += dt;
