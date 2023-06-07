@@ -89,7 +89,7 @@ impl Drawable for OpenFilePanel {
 
         // Prepare to show the children.
         x += 1;
-        let height: u32 = self.panel.rect.size[1] - 2;
+        let height: u32 = self.panel.rect.size[1] - 3;
         y += 1;
         length -= 1;
         let width = length as u32;

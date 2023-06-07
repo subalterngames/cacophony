@@ -3,7 +3,7 @@ mod file_or_directory;
 mod open_file_type;
 pub use file_or_directory::FileOrDirectory;
 pub use open_file_type::OpenFileType;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 const SOUNDFONT_EXTENSIONS: [&str; 2] = ["sf2", "sf3"];
 const SAVE_FILE_EXTENSIONS: [&str; 1] = ["cac"];
@@ -95,10 +95,48 @@ impl OpenFile {
         self.enable();
     }
 
+    /// Go up to the parent directory.
+    pub fn up_directory(&mut self) {
+        // There is a parent directory.
+        if let Some(parent) = &self.directory.parent() {
+            let paths = self.get_paths_in_directory(parent);
+            let selected = paths
+                .iter()
+                .enumerate()
+                .filter(|p| p.1.path == self.directory)
+                .map(|p| p.0)
+                .next();
+            self.paths = paths;
+            self.selected = selected;
+            self.directory = parent.to_path_buf();
+        }
+    }
+
     /// Get the child paths.
     pub fn get_paths(&self) -> (Option<usize>, Vec<FileOrDirectory>) {
+        let paths = self.get_paths_in_directory(&self.directory);
+        let folders: Vec<&FileOrDirectory> = paths.iter().filter(|p| !p.is_file).collect();
+        let files: Vec<&FileOrDirectory> = paths.iter().filter(|p| p.is_file).collect();
+        // Set the selection index.
+        let selected: Option<usize> = match !paths.is_empty() {
+            true => {
+                // Start at the first file.
+                match (!folders.is_empty(), !files.is_empty()) {
+                    (true, true) => Some(folders.len()),
+                    (true, false) => Some(0),
+                    (false, true) => Some(0),
+                    (false, false) => None,
+                }
+            }
+            false => None,
+        };
+        (selected, paths)
+    }
+
+    /// Get the child paths of a directory.
+    fn get_paths_in_directory(&self, directory: &Path) -> Vec<FileOrDirectory> {
         // Find all valid paths.
-        let valid_paths: Vec<PathBuf> = match self.directory.read_dir() {
+        let valid_paths: Vec<PathBuf> = match directory.read_dir() {
             Ok(read) => read
                 .filter(|e| e.is_ok())
                 .map(|e| e.unwrap().path())
@@ -125,20 +163,6 @@ impl OpenFile {
         let mut paths: Vec<FileOrDirectory> =
             folders.iter().map(|f| FileOrDirectory::new(f)).collect();
         paths.append(&mut files.iter().map(|f| FileOrDirectory::new(f)).collect());
-
-        // Set the selection index.
-        let selected: Option<usize> = match !paths.is_empty() {
-            true => {
-                // Start at the first file.
-                match (!folders.is_empty(), !files.is_empty()) {
-                    (true, true) => Some(folders.len()),
-                    (true, false) => Some(0),
-                    (false, true) => Some(0),
-                    (false, false) => None,
-                }
-            }
-            false => None,
-        };
-        (selected, paths)
+        paths
     }
 }

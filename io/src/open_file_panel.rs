@@ -174,12 +174,7 @@ impl Panel for OpenFilePanel {
         }
         // Go up a directory.
         else if input.happened(&InputEvent::UpDirectory) {
-            if let Some(parent) = self.open_file.directory.parent() {
-                self.open_file.directory = parent.to_path_buf();
-                let (selected, paths) = self.open_file.get_paths();
-                self.open_file.selected = selected;
-                self.open_file.paths = paths;
-            }
+            self.open_file.up_directory();
         }
         // Go down a directory.
         else if input.happened(&InputEvent::DownDirectory) {
