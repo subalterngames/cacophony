@@ -1,5 +1,6 @@
 use crate::get_page;
 use crate::panel::*;
+use common::macroquad::texture::{Texture2D, DrawTextureParams};
 use text::truncate;
 
 const EXTENSION_WIDTH: u32 = 4;
@@ -16,6 +17,8 @@ pub struct OpenFilePanel {
     input: Width,
     /// The filename input background rectangle.
     input_rect: Rectangle,
+    /// The background texture (screen capture).
+    background: Option<(Texture2D, DrawTextureParams)>,
 }
 
 impl OpenFilePanel {
@@ -55,7 +58,13 @@ impl OpenFilePanel {
             extension,
             input,
             input_rect,
+            background: None
         }
+    }
+
+    /// Capture the screen and set it as the background.
+    pub fn set_background(&mut self, renderer: &Renderer) {
+        self.background = Some(renderer.screen_capture())
     }
 }
 
@@ -69,6 +78,9 @@ impl Drawable for OpenFilePanel {
         _: &Text,
         open_file: &OpenFile,
     ) {
+        if let Some(background) = &self.background {
+            renderer.texture_ex(background.0, [0, 0], background.1.clone());
+        }
         // Draw the panel background.
         self.panel.update(true, renderer);
         // Draw the working directory.
