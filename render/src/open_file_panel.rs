@@ -1,6 +1,6 @@
 use crate::get_page;
 use crate::panel::*;
-use common::macroquad::texture::{Texture2D, DrawTextureParams};
+use common::macroquad::texture::{DrawTextureParams, Texture2D};
 use text::truncate;
 
 const EXTENSION_WIDTH: u32 = 4;
@@ -58,7 +58,7 @@ impl OpenFilePanel {
             extension,
             input,
             input_rect,
-            background: None
+            background: None,
         }
     }
 

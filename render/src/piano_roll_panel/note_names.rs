@@ -10,7 +10,7 @@ use rusttype::{Font, Scale};
 
 const OCTAVES: i8 = 9;
 const NOTES: [&str; 12] = [
-    "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G",
+    "G", "F#", "F", "E", "D#", "D", "C#", "C", "B", "A#", "A", "G#",
 ];
 
 pub(crate) fn get_note_names(config: &Ini, renderer: &Renderer) -> FocusableTexture {
