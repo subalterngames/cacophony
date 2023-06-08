@@ -84,6 +84,7 @@ impl<'a> ViewableNotes<'a> {
     }
 }
 
+/// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
 pub(crate) fn get_note_x(t: Fraction, x: f32, w: f32, dt: &[Fraction; 2]) -> f32 {
     x + w * ((t - dt[0]) / dt[1]).to_f32().unwrap()
 }
