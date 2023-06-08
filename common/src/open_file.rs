@@ -123,11 +123,11 @@ impl OpenFile {
         let selected: Option<usize> = match !paths.is_empty() {
             true => {
                 // Start at the first file.
-                match (!folders.is_empty(), !paths.iter().any(|p| p.is_file)) {
-                    (true, true) => Some(folders.len()),
+                match (folders.is_empty(), !paths.iter().any(|p| p.is_file)) {
+                    (true, true) => None,
                     (true, false) => Some(0),
                     (false, true) => Some(0),
-                    (false, false) => None,
+                    (false, false) => Some(folders.len()),
                 }
             }
             false => None,
