@@ -149,17 +149,18 @@ impl Input {
             for midi in midi.iter() {
                 // Note-on.
                 if midi[0] >= 144 && midi[0] <= 159 {
+                    // Set the volume.
+                    let midi = if state.input.use_volume {
+                        [midi[0], midi[1], volume]
+                    } else {
+                        *midi
+                    };
+                    // Remember the note-on for piano roll input.
                     if state.input.armed {
-                        // Remember the note-on for piano roll input.
-                        let midi = if state.input.use_volume {
-                            [midi[0], midi[1], volume]
-                        } else {
-                            *midi
-                        };
                         self.note_on_events.push(NoteOn::new(&midi));
                     }
                     // Copy this note to the immediate note-on array.
-                    self.play_now.push(*midi);
+                    self.play_now.push(midi);
                 }
                 // Note-off.
                 if state.input.armed && midi[0] >= 128 && midi[0] <= 143 {
