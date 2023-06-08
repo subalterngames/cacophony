@@ -141,18 +141,16 @@ impl IO {
         if !&input.note_ons.is_empty() {
             if let Some(track) = state.music.get_selected_track() {
                 if conn.state.programs.get(&track.channel).is_some() {
-                    let track_gain = track.gain as f32 / 127.0;
-                    let music_gain = conn.state.gain as f32 / 127.0;
+                    let gain = track.gain as f64 / 127.0;
                     let mut commands = vec![];
                     let duration = bar_to_samples(&state.input.beat, state.music.bpm);
                     for note in input.note_ons.iter() {
                         // Set the volume.
                         let volume = (if state.input.use_volume {
-                            state.input.volume.get() as f32
+                            state.input.volume.get() as f64
                         } else {
-                            note[2] as f32
-                        } * track_gain
-                            * music_gain) as u8;
+                            note[2] as f64
+                        } * gain) as u8;
                         commands.push(Command::NoteOn {
                             channel: track.channel,
                             key: note[1],
