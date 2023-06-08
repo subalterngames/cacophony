@@ -1,12 +1,11 @@
 use crate::panel::*;
 mod image;
 mod note_names;
-mod notes;
-use notes::*;
 mod piano_roll_rows;
 use note_names::get_note_names;
 use piano_roll_rows::get_piano_roll_rows;
 mod top_bar;
+mod viewable_notes;
 mod volume;
 use super::FocusableTexture;
 use common::time::samples_to_bar;
@@ -14,6 +13,7 @@ use common::State;
 use common::{Fraction, MAX_NOTE, MIN_NOTE};
 use text::fraction;
 use top_bar::TopBar;
+use viewable_notes::*;
 use volume::Volume;
 
 /// Draw the piano roll panel.
@@ -118,7 +118,15 @@ impl PianoRollPanel {
         }
         // The time is within the viewport.
         else {
-            (get_note_x(*time, &self.piano_roll_rows_rect, state), true)
+            (
+                get_note_x(
+                    *time,
+                    self.piano_roll_rows_rect[0],
+                    self.piano_roll_rows_rect[2],
+                    &state.view.dt,
+                ),
+                true,
+            )
         };
         // Draw a horizontal line.
         renderer.horizontal_line_pixel(x0, x1, self.time_horizontal_line_y, color);
@@ -225,6 +233,12 @@ impl Drawable for PianoRollPanel {
         };
         renderer.text(&dt_label, &Renderer::get_key_color(focus));
 
+        let notes = ViewableNotes::new(
+            self.piano_roll_rows_rect[0],
+            self.piano_roll_rows_rect[2],
+            state,
+        );
+
         // Notes.
         if let Some(track) = state.music.get_selected_track() {
             // Get the end times to avoid redundant math.
@@ -252,27 +266,22 @@ impl Drawable for PianoRollPanel {
                 },
                 false => vec![],
             };
-            // Draw the notes.
-            for note in track.notes.iter().enumerate() {
-                if !is_note_in_view(note.1, end_times[note.0], state) {
-                    continue;
-                }
 
-                let x = get_note_x0(note.1, &self.piano_roll_rows_rect, state);
-                let x1 = get_note_x1(end_times[note.0], &self.piano_roll_rows_rect, state);
-
-                // Get the width.
-                let w = if x1 <= x { 1.0 } else { x1 - x };
+            // Get the viewable notes.
+            for i in 0..notes.get_num() {
+                let x = notes.get_note_x(i);
+                let w = notes.get_note_w(x, i);
 
                 // Get the y value from the pitch.
+                let note = notes.get_note(i);
                 let y = self.piano_roll_rows_rect[1]
-                    + ((state.view.dn[0] - note.1.note) as f32) * self.cell_size[1];
+                    + ((state.view.dn[0] - note.note) as f32) * self.cell_size[1];
 
                 // Get the color.
                 let color = match focus {
-                    true => match playing.contains(&note.1) {
+                    true => match playing.contains(&note) {
                         true => &ColorKey::NotePlaying,
-                        false => match selected.contains(&note.1) {
+                        false => match selected.contains(&note) {
                             true => &ColorKey::NoteSelected,
                             false => &ColorKey::Note,
                         },
@@ -301,6 +310,6 @@ impl Drawable for PianoRollPanel {
         );
 
         // Volume.
-        self.volume.update(renderer, state);
+        self.volume.update(&notes, renderer, state);
     }
 }
