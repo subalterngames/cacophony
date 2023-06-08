@@ -69,7 +69,7 @@ impl Volume {
             let h = self.line_extents[2] * (notes.get_note(i).velocity as f32 / 127.0);
             let bottom = self.line_extents[0];
             let top = bottom - h;
-            renderer.vertical_line_pixel(x, top, bottom, &notes.get_color(i))
+            renderer.vertical_line_pixel(x, top, bottom, notes.get_color(i))
         }
     }
 }

@@ -238,7 +238,7 @@ impl Drawable for PianoRollPanel {
             self.piano_roll_rows_rect[2],
             state,
             conn,
-            focus
+            focus,
         );
         // Draw the notes.
         for i in 0..notes.get_num() {

@@ -1,5 +1,5 @@
-use common::time::samples_to_bar;
 use crate::panel::*;
+use common::time::samples_to_bar;
 use common::*;
 
 /// A viewable note.
@@ -31,11 +31,12 @@ impl<'a> ViewableNotes<'a> {
     pub(crate) fn new(x: f32, w: f32, state: &'a State, conn: &Conn, focus: bool) -> Self {
         // Get any notes being played.
         let playtime = match conn.state.time.music {
-            true => match conn.state.time.time {
-                Some(time) => Some(samples_to_bar(time, state.music.bpm)),
-                None => None
-            },
-            false => None
+            true => conn
+                .state
+                .time
+                .time
+                .map(|time| samples_to_bar(time, state.music.bpm)),
+            false => None,
         };
 
         let dt = &state.view.dt;
@@ -71,25 +72,27 @@ impl<'a> ViewableNotes<'a> {
                     // Is this note being played?
                     let playing = match playtime {
                         Some(playtime) => note.start <= playtime && end >= playtime,
-                        None => false
+                        None => false,
                     };
                     // Get the color of the note.
                     let color = if focus {
                         if playing {
                             ColorKey::NotePlaying
-                        }
-                        else if selected {
+                        } else if selected {
                             ColorKey::NoteSelected
-                        }
-                        else {
+                        } else {
                             ColorKey::Note
                         }
-                    }
-                    else {
+                    } else {
                         ColorKey::NoFocus
                     };
                     // Add the note.
-                    notes.push(ViewableNote { note, end, x, color });
+                    notes.push(ViewableNote {
+                        note,
+                        end,
+                        x,
+                        color,
+                    });
                 }
                 notes
             }
@@ -116,7 +119,11 @@ impl<'a> ViewableNotes<'a> {
             self.notes[index].end
         };
         let x1 = get_note_x(t, self.x, self.w, self.dt);
-        if x1 <= x { 1.0 } else { x1 - x }
+        if x1 <= x {
+            1.0
+        } else {
+            x1 - x
+        }
     }
 
     /// Returns the note at `index`.
@@ -125,7 +132,7 @@ impl<'a> ViewableNotes<'a> {
     }
 
     /// Returns the color of the note at `index`.
-    pub(crate) fn get_color(&self, index: usize) -> &ColorKey{
+    pub(crate) fn get_color(&self, index: usize) -> &ColorKey {
         &self.notes[index].color
     }
 }
