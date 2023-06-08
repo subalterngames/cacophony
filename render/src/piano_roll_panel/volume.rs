@@ -55,10 +55,10 @@ impl Volume {
         // Get focus.
         let focus = state.panels[state.focus.get()] == PanelType::PianoRoll;
         // Draw the panel background.
-        let (bg_color, line_color) = if focus {
-            (ColorKey::FocusDefault, ColorKey::Note)
+        let bg_color = if focus {
+            ColorKey::FocusDefault
         } else {
-            (ColorKey::NoFocus, ColorKey::NoFocus)
+            ColorKey::NoFocus
         };
         renderer.rectangle(&self.rect, &ColorKey::Background);
         renderer.border(&self.rect, &bg_color);
@@ -69,7 +69,7 @@ impl Volume {
             let h = self.line_extents[2] * (notes.get_note(i).velocity as f32 / 127.0);
             let bottom = self.line_extents[0];
             let top = bottom - h;
-            renderer.vertical_line_pixel(x, top, bottom, &line_color)
+            renderer.vertical_line_pixel(x, top, bottom, &notes.get_color(i))
         }
     }
 }

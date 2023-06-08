@@ -1,3 +1,4 @@
+use common::time::samples_to_bar;
 use crate::panel::*;
 use common::*;
 
@@ -9,6 +10,8 @@ struct ViewableNote<'a> {
     end: Fraction,
     /// The x pixel coordinate of the note.
     x: f32,
+    /// The color of this note.
+    color: ColorKey,
 }
 
 /// Render information for all notes that are in the viewport.
@@ -25,10 +28,24 @@ pub(crate) struct ViewableNotes<'a> {
 }
 
 impl<'a> ViewableNotes<'a> {
-    pub(crate) fn new(x: f32, w: f32, state: &'a State) -> Self {
+    pub(crate) fn new(x: f32, w: f32, state: &'a State, conn: &Conn, focus: bool) -> Self {
+        // Get any notes being played.
+        let playtime = match conn.state.time.music {
+            true => match conn.state.time.time {
+                Some(time) => Some(samples_to_bar(time, state.music.bpm)),
+                None => None
+            },
+            false => None
+        };
+
         let dt = &state.view.dt;
         let notes = match &state.music.get_selected_track() {
             Some(track) => {
+                // Get the selected notes.
+                let selected = match state.select_mode.get_notes(&state.music) {
+                    Some(selected) => selected,
+                    None => vec![],
+                };
                 let mut notes = vec![];
                 for note in track.notes.iter() {
                     // Get the end time.
@@ -47,8 +64,32 @@ impl<'a> ViewableNotes<'a> {
                     } else {
                         note.start
                     };
+                    // Get the x coordinate of the note.
                     let x = get_note_x(t, x, w, dt);
-                    notes.push(ViewableNote { note, end, x });
+                    // Is this note in the selection?
+                    let selected = selected.contains(&note);
+                    // Is this note being played?
+                    let playing = match playtime {
+                        Some(playtime) => note.start <= playtime && end >= playtime,
+                        None => false
+                    };
+                    // Get the color of the note.
+                    let color = if focus {
+                        if playing {
+                            ColorKey::NotePlaying
+                        }
+                        else if selected {
+                            ColorKey::NoteSelected
+                        }
+                        else {
+                            ColorKey::Note
+                        }
+                    }
+                    else {
+                        ColorKey::NoFocus
+                    };
+                    // Add the note.
+                    notes.push(ViewableNote { note, end, x, color });
                 }
                 notes
             }
@@ -81,6 +122,11 @@ impl<'a> ViewableNotes<'a> {
     /// Returns the note at `index`.
     pub(crate) fn get_note(&self, index: usize) -> &'a Note {
         self.notes[index].note
+    }
+
+    /// Returns the color of the note at `index`.
+    pub(crate) fn get_color(&self, index: usize) -> &ColorKey{
+        &self.notes[index].color
     }
 }
 

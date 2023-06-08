@@ -8,7 +8,6 @@ mod top_bar;
 mod viewable_notes;
 mod volume;
 use super::FocusableTexture;
-use common::time::samples_to_bar;
 use common::State;
 use common::{Fraction, MAX_NOTE, MIN_NOTE};
 use text::fraction;
@@ -233,64 +232,25 @@ impl Drawable for PianoRollPanel {
         };
         renderer.text(&dt_label, &Renderer::get_key_color(focus));
 
+        // Get the viewable notes.
         let notes = ViewableNotes::new(
             self.piano_roll_rows_rect[0],
             self.piano_roll_rows_rect[2],
             state,
+            conn,
+            focus
         );
+        // Draw the notes.
+        for i in 0..notes.get_num() {
+            let x = notes.get_note_x(i);
+            let w = notes.get_note_w(x, i);
 
-        // Notes.
-        if let Some(track) = state.music.get_selected_track() {
-            // Get the end times to avoid redundant math.
-            let end_times: Vec<Fraction> =
-                track.notes.iter().map(|n| n.start + n.duration).collect();
-            // Get the selected notes.
-            let selected = match state.select_mode.get_notes(&state.music) {
-                Some(selected) => selected,
-                None => vec![],
-            };
-            // Get any notes being played.
-            let playing = match conn.state.time.music {
-                true => match conn.state.time.time {
-                    Some(time) => {
-                        let time = samples_to_bar(time, state.music.bpm);
-                        track
-                            .notes
-                            .iter()
-                            .enumerate()
-                            .filter(|n| n.1.start <= time && end_times[n.0] >= time)
-                            .map(|n| n.1)
-                            .collect()
-                    }
-                    None => vec![],
-                },
-                false => vec![],
-            };
-
-            // Get the viewable notes.
-            for i in 0..notes.get_num() {
-                let x = notes.get_note_x(i);
-                let w = notes.get_note_w(x, i);
-
-                // Get the y value from the pitch.
-                let note = notes.get_note(i);
-                let y = self.piano_roll_rows_rect[1]
-                    + ((state.view.dn[0] - note.note) as f32) * self.cell_size[1];
-
-                // Get the color.
-                let color = match focus {
-                    true => match playing.contains(&note) {
-                        true => &ColorKey::NotePlaying,
-                        false => match selected.contains(&note) {
-                            true => &ColorKey::NoteSelected,
-                            false => &ColorKey::Note,
-                        },
-                    },
-                    false => &ColorKey::NoFocus,
-                };
-
-                renderer.rectangle_pixel([x, y], [w, self.cell_size[1]], color)
-            }
+            // Get the y value from the pitch.
+            let note = notes.get_note(i);
+            let y = self.piano_roll_rows_rect[1]
+                + ((state.view.dn[0] - note.note) as f32) * self.cell_size[1];
+            let color = notes.get_color(i);
+            renderer.rectangle_pixel([x, y], [w, self.cell_size[1]], color)
         }
 
         // Draw time lines.
