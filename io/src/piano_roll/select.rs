@@ -132,7 +132,7 @@ impl Panel for Select {
                                 .iter()
                                 .enumerate()
                                 .filter(|n| n.1.gt(&track.notes[index]))
-                                .max_by(|a, b| a.1.cmp(b.1))
+                                .min_by(|a, b| a.1.cmp(b.1))
                             {
                                 state.select_mode = SelectMode::Single(Some(max.0));
                                 return Some(UndoRedoState::from((s0, state)));
