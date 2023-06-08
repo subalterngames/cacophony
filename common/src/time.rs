@@ -8,7 +8,8 @@ use time::Duration;
 const BPM_TO_SECONDS: f64 = 60.0;
 /// The framerate as a f64 value.
 const FRAMERATE: f64 = 44100.0;
-pub const FRAMERATE_U64: u64 = FRAMERATE as u64;
+const FRAMERATE_U32: u32 = FRAMERATE as u32;
+const BPM_TO_SECONDS_U32: u32 = 60;
 
 /// The time state.
 #[derive(Clone)]
@@ -63,14 +64,9 @@ impl SerializableTime {
     }
 }
 
-/// Converts a time duration into a bar length.
-pub fn duration_to_bar(time: Duration, bpm: u32) -> Fraction {
-    Fraction::from(time.as_seconds_f64() * (bpm as f64 / BPM_TO_SECONDS))
-}
-
 /// Converts a number of samples to a bar length.
 pub fn samples_to_bar(samples: u64, bpm: u32) -> Fraction {
-    duration_to_bar(Duration::seconds_f64(samples as f64 / FRAMERATE), bpm)
+    Fraction::new(samples as u32, FRAMERATE_U32) * Fraction::new(bpm, BPM_TO_SECONDS_U32)
 }
 
 /// Converts a beats value (bar length) to a time value in seconds.
