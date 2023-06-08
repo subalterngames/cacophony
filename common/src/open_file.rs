@@ -119,12 +119,11 @@ impl OpenFile {
     pub fn get_paths(&self) -> (Option<usize>, Vec<FileOrDirectory>) {
         let paths = self.get_paths_in_directory(&self.directory);
         let folders: Vec<&FileOrDirectory> = paths.iter().filter(|p| !p.is_file).collect();
-        let files: Vec<&FileOrDirectory> = paths.iter().filter(|p| p.is_file).collect();
         // Set the selection index.
         let selected: Option<usize> = match !paths.is_empty() {
             true => {
                 // Start at the first file.
-                match (!folders.is_empty(), !files.is_empty()) {
+                match (!folders.is_empty(), !paths.iter().any(|p| p.is_file)) {
                     (true, true) => Some(folders.len()),
                     (true, false) => Some(0),
                     (false, true) => Some(0),

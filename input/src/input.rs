@@ -67,7 +67,7 @@ impl Input {
     pub fn update(&mut self, state: &State) {
         // Clear the old new notes.
         self.new_notes.clear();
-        
+
         // QWERTY INPUT.
 
         // Was backspace pressed?
