@@ -336,13 +336,16 @@ fn get_playable_tracks(music: &Music) -> Vec<&MidiTrack> {
     tracks
 }
 
-
 /// Returns all notes in the track that can be played (they are after t0).
 fn get_playback_notes(state: &State, track: &MidiTrack) -> Vec<Note> {
     let gain = track.gain as f64 / MAX_VOLUME as f64;
     let mut notes = vec![];
-    for note in track.notes.iter().filter(|n| n.start >= state.time.playback) {
-        let mut n1 = note.clone();
+    for note in track
+        .notes
+        .iter()
+        .filter(|n| n.start >= state.time.playback)
+    {
+        let mut n1 = *note;
         n1.velocity = (n1.velocity as f64 * gain) as u8;
         notes.push(n1);
     }
@@ -369,7 +372,13 @@ fn tracks_to_commands(state: &State) -> (CommandsMessage, u64) {
                 t1 = note_t1;
             }
             // Add the command.
-            commands.push(Command::NoteOnAt { channel: track.channel, key: note.note, velocity: note.velocity, time: start, duration })
+            commands.push(Command::NoteOnAt {
+                channel: track.channel,
+                key: note.note,
+                velocity: note.velocity,
+                time: start,
+                duration,
+            })
         }
     }
     // Add some decay time silence.

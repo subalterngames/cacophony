@@ -140,9 +140,9 @@ impl Drawable for PianoRollPanel {
         renderer: &Renderer,
         state: &State,
         conn: &Conn,
-        input: &Input,
+        _: &Input,
         text: &Text,
-        open_file: &OpenFile,
+        _: &OpenFile,
     ) {
         let focus = self.panel.has_focus(state);
 
@@ -254,11 +254,11 @@ impl Drawable for PianoRollPanel {
             };
             // Draw the notes.
             for note in track.notes.iter().enumerate() {
-                if !is_note_in_view(note.1, end_times[note.0], state){
-                    continue
+                if !is_note_in_view(note.1, end_times[note.0], state) {
+                    continue;
                 }
 
-                let x = get_note_x0(&note.1, &self.piano_roll_rows_rect, state);
+                let x = get_note_x0(note.1, &self.piano_roll_rows_rect, state);
                 let x1 = get_note_x1(end_times[note.0], &self.piano_roll_rows_rect, state);
 
                 // Get the width.
@@ -301,6 +301,6 @@ impl Drawable for PianoRollPanel {
         );
 
         // Volume.
-        self.volume.update(renderer, state, conn, input, text, open_file);
+        self.volume.update(renderer, state);
     }
 }

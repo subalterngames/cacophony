@@ -1,5 +1,5 @@
-use crate::panel::*;
 use super::notes::*;
+use crate::panel::*;
 
 /// The piano roll volume sub-panel.
 pub(crate) struct Volume {
@@ -12,44 +12,50 @@ pub(crate) struct Volume {
     /// The panel pixel dimensions.
     rect_f: [f32; 4],
     /// The min and max extents of the lines.
-    line_extents: [f32; 3]
+    line_extents: [f32; 3],
 }
 
 impl Volume {
     pub fn new(config: &Ini, text: &Text, renderer: &Renderer) -> Self {
         let piano_roll_panel_position = get_piano_roll_panel_position(config);
         let piano_roll_panel_size = get_piano_roll_panel_size(config);
-        let position = [piano_roll_panel_position[0], piano_roll_panel_position[1] + piano_roll_panel_size[1]];
+        let position = [
+            piano_roll_panel_position[0],
+            piano_roll_panel_position[1] + piano_roll_panel_size[1],
+        ];
         let size = [piano_roll_panel_size[0], PIANO_ROLL_PANEL_VOLUME_HEIGHT];
         let rect = Rectangle::new(position, size);
         let title_position = [position[0] + 2, position[1]];
         let title_text = text.get("PIANO_ROLL_PANEL_VOLUME_TITLE");
         let title_width = title_text.chars().count() as u32;
-        let title = Label { text: title_text, position: title_position};
+        let title = Label {
+            text: title_text,
+            position: title_position,
+        };
         let title_rect = Rectangle::new(title_position, [title_width, 1]);
 
-        let position_f = renderer.grid_to_pixel([position[0] + 1 + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH, position[1] + 1]);
-        let size_f = renderer.grid_to_pixel([size[0] - 2 - PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH, size[1] - 2]);
+        let position_f = renderer.grid_to_pixel([
+            position[0] + 1 + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
+            position[1] + 1,
+        ]);
+        let size_f =
+            renderer.grid_to_pixel([size[0] - 2 - PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH, size[1] - 2]);
         let rect_f = [position_f[0], position_f[1], size_f[0], size_f[1]];
 
         let line_y1 = position_f[1];
         let line_y0 = position_f[1] + size_f[1];
         let line_extents = [line_y1, line_y0, line_y1 - line_y0];
 
-        Self { rect, title, title_rect, rect_f, line_extents }
+        Self {
+            rect,
+            title,
+            title_rect,
+            rect_f,
+            line_extents,
+        }
     }
-}
 
-impl Drawable for Volume {
-    fn update(
-            &self,
-            renderer: &Renderer,
-            state: &State,
-            _: &Conn,
-            _: &Input,
-            _: &Text,
-            _: &OpenFile,
-        ) {
+    pub fn update(&self, renderer: &Renderer, state: &State) {
         // Get focus.
         let focus = state.panels[state.focus.get()] == PanelType::PianoRoll;
         // Draw the panel background.
@@ -66,8 +72,8 @@ impl Drawable for Volume {
         if let Some(track) = state.music.get_selected_track() {
             for note in track.notes.iter() {
                 // Ignore notes that aren't in the viewport.
-                if !is_note_in_view(note, note.start + note.duration, state){
-                    continue
+                if !is_note_in_view(note, note.start + note.duration, state) {
+                    continue;
                 }
                 // Get the x coordinate of the volume line.
                 let x = get_note_x(note.start, &self.rect_f, state);

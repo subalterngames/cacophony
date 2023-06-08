@@ -153,8 +153,7 @@ impl Input {
                         // Remember the note-on for piano roll input.
                         let midi = if state.input.use_volume {
                             [midi[0], midi[1], volume]
-                        }
-                        else {
+                        } else {
                             *midi
                         };
                         self.note_on_events.push(NoteOn::new(&midi));
