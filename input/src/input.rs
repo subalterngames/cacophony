@@ -67,6 +67,7 @@ impl Input {
     pub fn update(&mut self, state: &State) {
         // Clear the old new notes.
         self.new_notes.clear();
+        self.note_ons.clear();
 
         // QWERTY INPUT.
 

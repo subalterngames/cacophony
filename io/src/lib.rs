@@ -136,8 +136,26 @@ impl IO {
         if input.happened(&InputEvent::Quit) {
             return true;
         }
+
+        // Play notes.
+        if !&input.note_ons.is_empty() {
+            if let Some(track) = state.music.get_selected_track() {
+                if let Some(_) = conn.state.programs.get(&track.channel) {
+                    let track_gain = track.gain as f32 / 127.0;
+                    let music_gain = conn.state.gain as f32 / 127.0;
+                    let mut commands = vec![];
+                    let duration = bar_to_samples(&state.input.beat, state.music.bpm);
+                    for note in input.note_ons.iter() {
+                        // Set the volume.
+                        let volume = (if state.input.use_volume { state.input.volume.get() as f32 } else { note[2] as f32 } * track_gain * music_gain) as u8;
+                        commands.push(Command::NoteOn { channel: track.channel, key: note[1], velocity: volume, duration });
+                    }
+                    conn.send(commands);
+                }
+            }
+        }
         // New file.
-        else if input.happened(&InputEvent::NewFile) {
+        if input.happened(&InputEvent::NewFile) {
             self.save_path = None;
             state.music = Music::default();
         }

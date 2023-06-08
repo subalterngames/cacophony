@@ -137,6 +137,7 @@ impl Synthesizer {
                                         },
                                         &mut s.synth,
                                     );
+                                    s.state.time.time = Some(0);
                                     // Queue a note-off event.
                                     s.events_queue.push(QueuedEvent {
                                         time: s.state.time() + duration,
