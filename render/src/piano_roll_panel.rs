@@ -1,16 +1,20 @@
 use crate::panel::*;
 mod image;
 mod note_names;
+mod notes;
+use notes::*;
 mod piano_roll_rows;
 use note_names::get_note_names;
 use piano_roll_rows::get_piano_roll_rows;
 mod top_bar;
+mod volume;
 use super::FocusableTexture;
 use common::time::samples_to_bar;
 use common::State;
-use common::{Fraction, ToPrimitive, MAX_NOTE, MIN_NOTE};
+use common::{Fraction, MAX_NOTE, MIN_NOTE};
 use text::fraction;
 use top_bar::TopBar;
+use volume::Volume;
 
 /// Draw the piano roll panel.
 pub struct PianoRollPanel {
@@ -18,6 +22,8 @@ pub struct PianoRollPanel {
     panel: Panel,
     /// Data for the top bar sub-panel.
     top_bar: TopBar,
+    /// The volume sub-panel.
+    volume: Volume,
     /// The note names textures.
     note_names: FocusableTexture,
     /// The position of the note names.
@@ -71,6 +77,7 @@ impl PianoRollPanel {
         let cell_size = get_cell_size(config);
         let time_y = note_names_position[1] - 1;
         let time_horizontal_line_y = cell_size[1] * (time_y + 1) as f32;
+        let volume = Volume::new(config, text, renderer);
         Self {
             panel,
             top_bar,
@@ -83,16 +90,8 @@ impl PianoRollPanel {
             cell_size,
             time_y,
             time_horizontal_line_y,
+            volume,
         }
-    }
-
-    /// Converts a time fraction to a note x pixel coordinate.
-    fn get_note_x(&self, t: Fraction, state: &State) -> f32 {
-        self.piano_roll_rows_rect[0]
-            + self.piano_roll_rows_rect[2]
-                * ((t - state.view.dt[0]) / state.view.dt[1])
-                    .to_f32()
-                    .unwrap()
     }
 
     /// Draw a horizontal line from a time label and optionally a vertical line down the rows.
@@ -119,7 +118,7 @@ impl PianoRollPanel {
         }
         // The time is within the viewport.
         else {
-            (self.get_note_x(*time, state), true)
+            (get_note_x(*time, &self.piano_roll_rows_rect, state), true)
         };
         // Draw a horizontal line.
         renderer.horizontal_line_pixel(x0, x1, self.time_horizontal_line_y, color);
@@ -141,9 +140,9 @@ impl Drawable for PianoRollPanel {
         renderer: &Renderer,
         state: &State,
         conn: &Conn,
-        _: &Input,
+        input: &Input,
         text: &Text,
-        _: &OpenFile,
+        open_file: &OpenFile,
     ) {
         let focus = self.panel.has_focus(state);
 
@@ -255,34 +254,12 @@ impl Drawable for PianoRollPanel {
             };
             // Draw the notes.
             for note in track.notes.iter().enumerate() {
-                // Ignore notes that aren't in the viewport.
-                if end_times[note.0] < state.view.dt[0]
-                    || note.1.start > state.view.dt[1]
-                    || note.1.note > state.view.dn[0]
-                    || note.1.note < state.view.dn[1]
-                {
-                    continue;
+                if !is_note_in_view(note.1, end_times[note.0], state){
+                    continue
                 }
 
-                // Get the start time of the note. This could be the start of the viewport.
-                let t0 = if note.1.start < state.view.dt[0] {
-                    state.view.dt[0]
-                } else {
-                    note.1.start
-                };
-
-                // Get the x coordinate.
-                let x = self.get_note_x(t0, state);
-
-                // Get the end time of the note. This could be the end of the viewport.
-                let t1 = if end_times[note.0] > state.view.dt[1] {
-                    state.view.dt[1]
-                } else {
-                    end_times[note.0]
-                };
-
-                // Get the end x coordinate.
-                let x1 = self.get_note_x(t1, state);
+                let x = get_note_x0(&note.1, &self.piano_roll_rows_rect, state);
+                let x1 = get_note_x1(end_times[note.0], &self.piano_roll_rows_rect, state);
 
                 // Get the width.
                 let w = if x1 <= x { 1.0 } else { x1 - x };
@@ -322,5 +299,8 @@ impl Drawable for PianoRollPanel {
             state,
             renderer,
         );
+
+        // Volume.
+        self.volume.update(renderer, state, conn, input, text, open_file);
     }
 }

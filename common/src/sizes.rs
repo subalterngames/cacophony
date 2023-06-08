@@ -13,6 +13,8 @@ pub const MUSIC_PANEL_HEIGHT: u32 = 5;
 pub const PIANO_ROLL_PANEL_TOP_BAR_HEIGHT: u32 = 3;
 /// The width of the column of note names.
 pub const PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH: u32 = 3;
+/// The height of the piano roll volume sub-panel.
+pub const PIANO_ROLL_PANEL_VOLUME_HEIGHT: u32 = 5;
 
 /// Returns the font height.
 pub fn get_font_size(config: &Ini) -> u16 {
@@ -58,7 +60,7 @@ pub fn get_piano_roll_panel_size(config: &Ini) -> [u32; 2] {
     let window_grid_size = get_window_grid_size(config);
     [
         window_grid_size[0] - tracks_panel_width,
-        window_grid_size[1] - MAIN_MENU_HEIGHT,
+        window_grid_size[1] - MAIN_MENU_HEIGHT - PIANO_ROLL_PANEL_VOLUME_HEIGHT,
     ]
 }
 

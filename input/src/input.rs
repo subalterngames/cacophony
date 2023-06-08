@@ -15,7 +15,7 @@ pub struct Input {
     /// The MIDI connection.
     midi_conn: Option<MidiConn>,
     // Note-on MIDI messages. These will be sent immediately to the synthesizer to be played.
-    pub note_ons: Vec<[u8; 3]>,
+    pub play_now: Vec<[u8; 3]>,
     /// Note-on events that don't have corresponding off events.
     note_on_events: Vec<NoteOn>,
     /// Notes that were added after all note-off events are done.
@@ -67,7 +67,7 @@ impl Input {
     pub fn update(&mut self, state: &State) {
         // Clear the old new notes.
         self.new_notes.clear();
-        self.note_ons.clear();
+        self.play_now.clear();
 
         // QWERTY INPUT.
 
@@ -145,15 +145,22 @@ impl Input {
             }
 
             // Get note-on and note-off events.
+            let volume = state.input.volume.get() as u8;
             for midi in midi.iter() {
                 // Note-on.
                 if midi[0] >= 144 && midi[0] <= 159 {
                     if state.input.armed {
                         // Remember the note-on for piano roll input.
-                        self.note_on_events.push(NoteOn::new(midi));
+                        let midi = if state.input.use_volume {
+                            [midi[0], midi[1], volume]
+                        }
+                        else {
+                            *midi
+                        };
+                        self.note_on_events.push(NoteOn::new(&midi));
                     }
                     // Copy this note to the immediate note-on array.
-                    self.note_ons.push(*midi);
+                    self.play_now.push(*midi);
                 }
                 // Note-off.
                 if state.input.armed && midi[0] >= 128 && midi[0] <= 143 {

@@ -138,20 +138,15 @@ impl IO {
         }
 
         // Play notes.
-        if !&input.note_ons.is_empty() {
+        if !&input.play_now.is_empty() {
             if let Some(track) = state.music.get_selected_track() {
                 if conn.state.programs.get(&track.channel).is_some() {
                     let gain = track.gain as f64 / 127.0;
-                    let input_volume = state.input.volume.get() as f64;
                     let mut commands = vec![];
                     let duration = bar_to_samples(&state.input.beat, state.music.bpm);
-                    for note in input.note_ons.iter() {
+                    for note in input.play_now.iter() {
                         // Set the volume.
-                        let volume = (if state.input.use_volume {
-                            input_volume
-                        } else {
-                            note[2] as f64
-                        } * gain) as u8;
+                        let volume = (note[2] as f64 * gain) as u8;
                         commands.push(Command::NoteOn {
                             channel: track.channel,
                             key: note[1],
@@ -345,11 +340,10 @@ fn get_playable_tracks(music: &Music) -> Vec<&MidiTrack> {
 /// Returns all notes in the track that can be played (they are after t0).
 fn get_playback_notes(state: &State, track: &MidiTrack) -> Vec<Note> {
     let gain = track.gain as f64 / MAX_VOLUME as f64;
-    let volume = state.input.volume.get() as f64;
     let mut notes = vec![];
     for note in track.notes.iter().filter(|n| n.start >= state.time.playback) {
         let mut n1 = note.clone();
-        n1.velocity = if state.input.use_volume { (volume * gain) as u8 } else { (n1.velocity as f64 * gain) as u8 };
+        n1.velocity = (n1.velocity as f64 * gain) as u8;
         notes.push(n1);
     }
     notes
