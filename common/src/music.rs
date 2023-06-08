@@ -54,7 +54,7 @@ impl Music {
             playback_time: serialize_fraction(&self.playback_time),
             selected: self.selected,
         }
-    } 
+    }
 }
 
 impl Default for Music {
