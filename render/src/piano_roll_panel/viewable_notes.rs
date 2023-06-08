@@ -102,7 +102,7 @@ impl<'a> ViewableNotes<'a> {
                         end,
                         x,
                         color,
-                        state: note_state
+                        state: note_state,
                     });
                 }
                 notes
