@@ -8,6 +8,7 @@ use time::Duration;
 const BPM_TO_SECONDS: f64 = 60.0;
 /// The framerate as a f64 value.
 const FRAMERATE: f64 = 44100.0;
+pub const FRAMERATE_U64: u64 = FRAMERATE as u64;
 
 /// The time state.
 #[derive(Clone)]

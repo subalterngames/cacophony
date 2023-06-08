@@ -317,11 +317,7 @@ impl Panel for PianoRollPanel {
                 // Stop playing.
                 true => conn.send(vec![Command::StopMusic]),
                 false => {
-                    let commands = tracks_to_commands(&state.music, &state.time.playback);
-                    // We have some note-on commands.
-                    if commands.len() > 1 {
-                        conn.send(commands);
-                    }
+                    conn.send(tracks_to_commands(state).0);
                 }
             }
             None

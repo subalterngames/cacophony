@@ -18,8 +18,8 @@
 use audio::{Command, CommandsMessage, Conn, ExportState};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
-use common::time::bar_to_samples;
-use common::{Fraction, InputState, MidiTrack, Music, Note, PanelType, Paths, State, MAX_VOLUME};
+use common::time::{bar_to_samples, FRAMERATE_U64};
+use common::{InputState, MidiTrack, Music, Note, PanelType, Paths, State, MAX_VOLUME};
 use edit::edit_file;
 use input::{Input, InputEvent};
 use std::path::PathBuf;
@@ -142,12 +142,13 @@ impl IO {
             if let Some(track) = state.music.get_selected_track() {
                 if conn.state.programs.get(&track.channel).is_some() {
                     let gain = track.gain as f64 / 127.0;
+                    let input_volume = state.input.volume.get() as f64;
                     let mut commands = vec![];
                     let duration = bar_to_samples(&state.input.beat, state.music.bpm);
                     for note in input.note_ons.iter() {
                         // Set the volume.
                         let volume = (if state.input.use_volume {
-                            state.input.volume.get() as f64
+                            input_volume
                         } else {
                             note[2] as f64
                         } * gain) as u8;
@@ -190,36 +191,19 @@ impl IO {
             if conn.export_state.is_none() {
                 match &self.export_path {
                     Some(path) => {
-                        let tracks = get_playable_tracks(&state.music);
-                        let notes = get_notes_per_track(&tracks, &state.time.playback);
-                        // We have notes we can export.
-                        if !notes.is_empty() {
-                            let mut commands =
-                                notes_to_commands(&notes, &state.time.playback, state.music.bpm);
-                            // Get the end time.
-                            let t1 = bar_to_samples(
-                                &notes
-                                    .values()
-                                    .map(|ns| {
-                                        ns.1.iter().map(|n| n.start + n.duration).max().unwrap()
-                                    })
-                                    .max()
-                                    .unwrap(),
-                                state.music.bpm,
-                            );
-                            // Define the export state.
-                            let export_state = ExportState::new(t1);
-                            // Insert the export command.
-                            commands.insert(
-                                0,
-                                Command::Export {
-                                    path: path.clone(),
-                                    state: export_state,
-                                },
-                            );
-                            // Begin exporting.
-                            conn.send(commands);
-                        }
+                        let (mut commands, t1) = tracks_to_commands(state);
+                        // Define the export state.
+                        let export_state = ExportState::new(t1);
+                        // Insert the export command.
+                        commands.insert(
+                            0,
+                            Command::Export {
+                                path: path.clone(),
+                                state: export_state,
+                            },
+                        );
+                        // Send the commands.
+                        conn.send(commands);
                     }
                     None => self.open_file_panel.export(paths, state),
                 }
@@ -357,63 +341,46 @@ fn get_playable_tracks(music: &Music) -> Vec<&MidiTrack> {
     tracks
 }
 
-/// Returns all notes per track that start after the playback time.
-fn get_notes_per_track<'a>(
-    tracks: &[&'a MidiTrack],
-    playback: &Fraction,
-) -> HashMap<u8, (f64, Vec<&'a Note>)> {
-    let mut notes_per_track = HashMap::new();
-    let max_gain = MAX_VOLUME as f64;
-    for track in tracks.iter() {
-        let notes: Vec<&Note> = track
-            .notes
-            .iter()
-            .filter(|n| n.start >= *playback)
-            .collect();
-        if !notes.is_empty() {
-            let gain = track.gain as f64 * max_gain;
-            notes_per_track.insert(track.channel, (gain, notes));
-        }
+
+/// Returns all notes in the track that can be played (they are after t0).
+fn get_playback_notes(state: &State, track: &MidiTrack) -> Vec<Note> {
+    let gain = track.gain as f64 / MAX_VOLUME as f64;
+    let volume = state.input.volume.get() as f64;
+    let mut notes = vec![];
+    for note in track.notes.iter().filter(|n| n.start >= state.time.playback) {
+        let mut n1 = note.clone();
+        n1.velocity = if state.input.use_volume { (volume * gain) as u8 } else { (n1.velocity as f64 * gain) as u8 };
+        notes.push(n1);
     }
-    notes_per_track
+    notes
 }
 
 /// Converts all playable tracks to note-on commands.
-pub(crate) fn tracks_to_commands(music: &Music, playback: &Fraction) -> CommandsMessage {
-    let tracks = get_playable_tracks(music);
-    let notes = get_notes_per_track(&tracks, playback);
-    if notes.is_empty() {
-        vec![]
-    } else {
-        notes_to_commands(&notes, playback, music.bpm)
-    }
-}
-
-/// Converts playable notes to commands.
-fn notes_to_commands(
-    notes: &HashMap<u8, (f64, Vec<&Note>)>,
-    playback: &Fraction,
-    bpm: u32,
-) -> CommandsMessage {
-    let t0 = bar_to_samples(playback, bpm);
+fn tracks_to_commands(state: &State) -> (CommandsMessage, u64) {
+    let bpm = state.music.bpm;
     // Start playing music.
+    let t0 = bar_to_samples(&state.time.playback, bpm);
+    let mut t1 = t0;
     let mut commands = vec![Command::PlayMusic { time: t0 }];
-    // Add notes.
-    for channel in notes.keys() {
-        let ns = &notes[channel];
-        // Add the note.
-        for note in ns.1.iter() {
+    // Get playable tracks.
+    for track in get_playable_tracks(&state.music) {
+        let notes = get_playback_notes(state, track);
+        for note in notes.iter() {
+            // Convert the start and duration to sample lengths.
             let start = bar_to_samples(&note.start, bpm);
             let duration = bar_to_samples(&note.duration, bpm);
-            let velocity = (note.velocity as f64 * ns.0) as u8;
-            commands.push(Command::NoteOnAt {
-                channel: *channel,
-                key: note.note,
-                velocity,
-                time: start,
-                duration,
-            });
+            // Is this the last note?
+            let note_t1 = start + duration;
+            if note_t1 > t1 {
+                t1 = note_t1;
+            }
+            // Add the command.
+            commands.push(Command::NoteOnAt { channel: track.channel, key: note.note, velocity: note.velocity, time: start, duration })
         }
     }
-    commands
+    // Add some decay time silence.
+    t1 += FRAMERATE_U64;
+    // All-off.
+    commands.push(Command::StopMusicAt { time: t1 });
+    (commands, t1)
 }

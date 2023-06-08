@@ -245,7 +245,7 @@ impl Drawable for PianoRollPanel {
                             .notes
                             .iter()
                             .enumerate()
-                            .filter(|n| n.1.start <= time && end_times[n.0] <= time)
+                            .filter(|n| n.1.start <= time && end_times[n.0] >= time)
                             .map(|n| n.1)
                             .collect()
                     }
