@@ -54,7 +54,7 @@ impl PianoRollPanel {
             panel.rect.position[0] + 1,
             panel.rect.position[1] + PIANO_ROLL_PANEL_TOP_BAR_HEIGHT + 1,
         ];
-        let piano_roll_height = (state.view.dn[1] - state.view.dn[0]) as u32;
+        let piano_roll_height = (state.view.dn[0] - state.view.dn[1]) as u32;
         let piano_roll_rows = get_piano_roll_rows(config, renderer);
         let piano_roll_rows_position = [
             note_names_position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
@@ -288,7 +288,7 @@ impl Drawable for PianoRollPanel {
                 let w = if x1 <= x { 1.0 } else { x1 - x };
 
                 // Get the y value from the pitch.
-                let y = self.piano_roll_rows_rect[1] + (state.view.dn[0] - note.1.note) as f32;
+                let y = self.piano_roll_rows_rect[1] + ((state.view.dn[0] - note.1.note) as f32) * self.cell_size[1];
 
                 // Get the color.
                 let color = match focus {

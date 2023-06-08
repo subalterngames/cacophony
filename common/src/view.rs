@@ -36,7 +36,7 @@ impl View {
         // Get the notes delta.
         let h = viewport_size[1] as u8;
         let n0 = MIDDLE_C + h / 2;
-        let n1 = n0 + h;
+        let n1 = n0 - h;
         let dn = [n0, n1];
         let mode = Index::new(0, EDIT_MODES.len());
         Self {
