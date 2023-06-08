@@ -2,23 +2,33 @@ use crate::panel::*;
 use common::time::samples_to_bar;
 use common::*;
 
+/// This determines the render order for the volume.
+#[derive(Eq, PartialEq)]
+pub(crate) enum NoteState {
+    Note,
+    Selected,
+    Playing,
+}
+
 /// A viewable note.
-struct ViewableNote<'a> {
+pub(crate) struct ViewableNote<'a> {
     /// The note.
-    note: &'a Note,
+    pub note: &'a Note,
     /// Cached end time of the note.
-    end: Fraction,
+    pub end: Fraction,
     /// The x pixel coordinate of the note.
-    x: f32,
+    pub(crate) x: f32,
+    /// The state of the note. This determines render order.
+    pub(crate) state: NoteState,
     /// The color of this note.
-    color: ColorKey,
+    pub(crate) color: ColorKey,
 }
 
 /// Render information for all notes that are in the viewport.
 /// This information is shared between the piano roll and volume sub-panels.
 pub(crate) struct ViewableNotes<'a> {
     /// The notes that are in view.
-    notes: Vec<ViewableNote<'a>>,
+    pub(crate) notes: Vec<ViewableNote<'a>>,
     /// Cached viewport dt.
     dt: &'a [Fraction; 2],
     /// The x pixel coordinate of the viewport.
@@ -75,16 +85,16 @@ impl<'a> ViewableNotes<'a> {
                         None => false,
                     };
                     // Get the color of the note.
-                    let color = if focus {
+                    let (color, note_state) = if focus {
                         if playing {
-                            ColorKey::NotePlaying
+                            (ColorKey::NotePlaying, NoteState::Playing)
                         } else if selected {
-                            ColorKey::NoteSelected
+                            (ColorKey::NoteSelected, NoteState::Selected)
                         } else {
-                            ColorKey::Note
+                            (ColorKey::Note, NoteState::Note)
                         }
                     } else {
-                        ColorKey::NoFocus
+                        (ColorKey::NoFocus, NoteState::Note)
                     };
                     // Add the note.
                     notes.push(ViewableNote {
@@ -92,6 +102,7 @@ impl<'a> ViewableNotes<'a> {
                         end,
                         x,
                         color,
+                        state: note_state
                     });
                 }
                 notes
@@ -101,39 +112,19 @@ impl<'a> ViewableNotes<'a> {
         Self { notes, x, w, dt }
     }
 
-    /// Returns the number of viewable notes.
-    pub(crate) fn get_num(&self) -> usize {
-        self.notes.len()
-    }
-
-    /// Returns the x coordinate of the note at `index`.
-    pub(crate) fn get_note_x(&self, index: usize) -> f32 {
-        self.notes[index].x
-    }
-
     /// Returns the width of the note at `index`.
-    pub(crate) fn get_note_w(&self, x: f32, index: usize) -> f32 {
-        let t = if self.notes[index].end > self.dt[1] {
+    pub(crate) fn get_note_w(&self, note: &ViewableNote) -> f32 {
+        let t = if note.end > self.dt[1] {
             self.dt[1]
         } else {
-            self.notes[index].end
+            note.end
         };
         let x1 = get_note_x(t, self.x, self.w, self.dt);
-        if x1 <= x {
+        if x1 <= note.x {
             1.0
         } else {
-            x1 - x
+            x1 - note.x
         }
-    }
-
-    /// Returns the note at `index`.
-    pub(crate) fn get_note(&self, index: usize) -> &'a Note {
-        self.notes[index].note
-    }
-
-    /// Returns the color of the note at `index`.
-    pub(crate) fn get_color(&self, index: usize) -> &ColorKey {
-        &self.notes[index].color
     }
 }
 

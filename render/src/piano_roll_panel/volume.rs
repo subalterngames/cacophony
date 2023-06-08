@@ -1,6 +1,8 @@
 use super::viewable_notes::*;
 use crate::panel::*;
 
+const RENDER_LAYERS: [NoteState; 3] = [NoteState::Note, NoteState::Selected, NoteState::Playing];
+
 /// The piano roll volume sub-panel.
 pub(crate) struct Volume {
     /// The position and size of the panel in grid units.
@@ -64,12 +66,15 @@ impl Volume {
         renderer.border(&self.rect, &bg_color);
         renderer.rectangle(&self.title_rect, &ColorKey::Background);
         renderer.text(&self.title, &bg_color);
-        for i in 0..notes.get_num() {
-            let x = notes.get_note_x(i);
-            let h = self.line_extents[2] * (notes.get_note(i).velocity as f32 / 127.0);
-            let bottom = self.line_extents[0];
-            let top = bottom - h;
-            renderer.vertical_line_pixel(x, top, bottom, notes.get_color(i))
+        // Render the lines in layers.
+        // This forces selected notes and playing notes to render on top.
+        for layer in RENDER_LAYERS.iter() {
+            for note in notes.notes.iter().filter(|n| &n.state == layer) {
+                let h = self.line_extents[2] * (note.note.velocity as f32 / 127.0);
+                let bottom = self.line_extents[0];
+                let top = bottom - h;
+                renderer.vertical_line_pixel(note.x, top, bottom, &note.color)
+            }
         }
     }
 }

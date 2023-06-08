@@ -241,16 +241,12 @@ impl Drawable for PianoRollPanel {
             focus,
         );
         // Draw the notes.
-        for i in 0..notes.get_num() {
-            let x = notes.get_note_x(i);
-            let w = notes.get_note_w(x, i);
-
+        for note in notes.notes.iter() {
+            let w = notes.get_note_w(note);
             // Get the y value from the pitch.
-            let note = notes.get_note(i);
             let y = self.piano_roll_rows_rect[1]
-                + ((state.view.dn[0] - note.note) as f32) * self.cell_size[1];
-            let color = notes.get_color(i);
-            renderer.rectangle_pixel([x, y], [w, self.cell_size[1]], color)
+                + ((state.view.dn[0] - note.note.note) as f32) * self.cell_size[1];
+            renderer.rectangle_pixel([note.x, y], [w, self.cell_size[1]], &note.color)
         }
 
         // Draw time lines.
