@@ -1,3 +1,10 @@
+#[cfg(debug_assertions)]
+use std::env;
+#[cfg(debug_assertions)]
+use std::fs::File;
+#[cfg(debug_assertions)]
+use std::io::Read;
+
 use crate::{InputEvent, MidiBinding, MidiConn, NoteOn, QwertyBinding, KEYS};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
@@ -30,6 +37,8 @@ pub struct Input {
     backspace: bool,
     /// Characters pressed on this frame.
     pub pressed_chars: Vec<char>,
+    /// Debug input events.
+    debug_inputs: Vec<InputEvent>,
 }
 
 impl Input {
@@ -55,11 +64,32 @@ impl Input {
             midi_events.insert(k_input.0, k_input.1);
         }
 
+        let debug_inputs = if cfg!(debug_assertions) {
+            let args: Vec<String> = env::args().collect();
+            if args.len() >= 3 && args[1] == "--events" {
+                match File::open(&args[2]) {
+                    Ok(mut file) => {
+                        let mut s = String::new();
+                        file.read_to_string(&mut s).unwrap();
+                        s.split('\n')
+                            .map(|s| s.parse::<InputEvent>().unwrap())
+                            .collect::<Vec<InputEvent>>()
+                    }
+                    Err(error) => panic!("Failed to open file {}: {}", &args[2], error),
+                }
+            } else {
+                vec![]
+            }
+        } else {
+            vec![]
+        };
+
         Self {
             midi_conn,
             qwerty_events,
             midi_events,
             qwerty_octave: 4,
+            debug_inputs,
             ..Default::default()
         }
     }
@@ -131,6 +161,12 @@ impl Input {
             }
         }
         self.events = events;
+
+        // DEBUG.
+        if cfg!(debug_assertions) && !&self.debug_inputs.is_empty() {
+            let e = self.debug_inputs.remove(0);
+            self.events.push(e);
+        }
 
         // MIDI INPUT.
         let mut midi = vec![];
