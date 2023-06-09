@@ -128,12 +128,18 @@ impl Input {
             .iter_mut()
             .for_each(|q| q.1.update(&pressed, &down, state.input.alphanumeric_input));
         // Get the key presses.
-        let events: Vec<InputEvent> = self
+        let mut events: Vec<InputEvent> = self
             .qwerty_events
             .iter()
             .filter(|q| q.1.pressed)
             .map(|q| *q.0)
             .collect();
+        // DEBUG.
+        if cfg!(debug_assertions) && !&self.debug_inputs.is_empty() {
+            let e = self.debug_inputs.remove(0);
+            events.push(e);
+        }
+
         // Qwerty note input.
         for event in events.iter() {
             match event {
@@ -165,12 +171,6 @@ impl Input {
             }
         }
         self.events = events;
-
-        // DEBUG.
-        if cfg!(debug_assertions) && !&self.debug_inputs.is_empty() {
-            let e = self.debug_inputs.remove(0);
-            self.events.push(e);
-        }
 
         // MIDI INPUT.
         let mut midi = vec![];
