@@ -135,35 +135,33 @@ impl Input {
             .map(|q| *q.0)
             .collect();
         // Qwerty note input.
-        if state.input.armed {
-            for event in events.iter() {
-                match event {
-                    InputEvent::G => self.qwerty_note(0, state),
-                    InputEvent::FSharp => self.qwerty_note(1, state),
-                    InputEvent::F => self.qwerty_note(2, state),
-                    InputEvent::E => self.qwerty_note(3, state),
-                    InputEvent::DSharp => self.qwerty_note(4, state),
-                    InputEvent::D => self.qwerty_note(5, state),
-                    InputEvent::CSharp => self.qwerty_note(6, state),
-                    InputEvent::C => self.qwerty_note(7, state),
-                    InputEvent::B => self.qwerty_note(8, state),
-                    InputEvent::ASharp => self.qwerty_note(9, state),
-                    InputEvent::A => self.qwerty_note(10, state),
-                    InputEvent::GSharp => self.qwerty_note(11, state),
-                    // Octave up.
-                    InputEvent::OctaveUp => {
-                        if self.qwerty_octave < MAX_OCTAVE {
-                            self.qwerty_octave += 1;
-                        }
+        for event in events.iter() {
+            match event {
+                InputEvent::G => self.qwerty_note(7, state),
+                InputEvent::FSharp => self.qwerty_note(6, state),
+                InputEvent::F => self.qwerty_note(5, state),
+                InputEvent::E => self.qwerty_note(4, state),
+                InputEvent::DSharp => self.qwerty_note(3, state),
+                InputEvent::D => self.qwerty_note(2, state),
+                InputEvent::CSharp => self.qwerty_note(1, state),
+                InputEvent::C => self.qwerty_note(0, state),
+                InputEvent::B => self.qwerty_note(11, state),
+                InputEvent::ASharp => self.qwerty_note(10, state),
+                InputEvent::A => self.qwerty_note(9, state),
+                InputEvent::GSharp => self.qwerty_note(8, state),
+                // Octave up.
+                InputEvent::OctaveUp => {
+                    if self.qwerty_octave < MAX_OCTAVE {
+                        self.qwerty_octave += 1;
                     }
-                    // Octave down.
-                    InputEvent::OctaveDown => {
-                        if self.qwerty_octave > 0 {
-                            self.qwerty_octave -= 1;
-                        }
-                    }
-                    _ => (),
                 }
+                // Octave down.
+                InputEvent::OctaveDown => {
+                    if self.qwerty_octave > 0 {
+                        self.qwerty_octave -= 1;
+                    }
+                }
+                _ => (),
             }
         }
         self.events = events;
@@ -316,8 +314,12 @@ impl Input {
 
     /// Push a new note from qwerty input.
     fn qwerty_note(&mut self, note: u8, state: &State) {
-        let pitch = 127 + ((9 - self.qwerty_octave) * 12 + note);
-        self.new_notes
-            .push([144, pitch, state.input.volume.get() as u8])
+        let pitch = (9 - self.qwerty_octave) * 12 + note;
+        let note = [144, pitch, state.input.volume.get() as u8];
+        if state.input.armed {
+            self.new_notes
+            .push(note.clone());
+        }
+        self.play_now.push(note.clone());
     }
 }
