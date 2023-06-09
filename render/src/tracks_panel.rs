@@ -2,6 +2,8 @@ use crate::get_page;
 use crate::panel::*;
 use text::{get_file_name, truncate};
 
+const MUTE_OFFSET: u32 = 6;
+
 /// The list of tracks.
 pub struct TracksPanel {
     /// The panel.
@@ -140,7 +142,7 @@ impl Drawable for TracksPanel {
                     renderer.key_list(&track.gain.to_string(), &gain, f);
                     // Mute.
                     if track.mute {
-                        let mute_position = [x + self.field_width - 1, y];
+                        let mute_position = [x + self.field_width - MUTE_OFFSET, y];
                         let label = Label {
                             text: self.mute_text.clone(),
                             position: mute_position,
@@ -153,7 +155,10 @@ impl Drawable for TracksPanel {
                     // Solo.
                     if track.solo {
                         let solo_position = [
-                            x + self.field_width - 1 - self.solo_text.chars().count() as u32 - 1,
+                            x + self.field_width
+                                - MUTE_OFFSET
+                                - self.solo_text.chars().count() as u32
+                                - 1,
                             y,
                         ];
                         let label = Label {
@@ -162,7 +167,7 @@ impl Drawable for TracksPanel {
                         };
                         renderer.text(
                             &label,
-                            &Renderer::get_boolean_color(track_focus && focus, track.mute),
+                            &Renderer::get_boolean_color(track_focus && focus, track.solo),
                         );
                     }
                     y += 1;

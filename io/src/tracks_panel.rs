@@ -274,11 +274,15 @@ impl Panel for TracksPanel {
                 let s0 = state.clone();
                 state.music.selected = Some(selected + 1);
                 return Some(UndoRedoState::from((s0, state)));
-            } else if input.happened(&InputEvent::PreviousTrack) && selected > 0 {
+            }
+            // Previous track.
+            else if input.happened(&InputEvent::PreviousTrack) && selected > 0 {
                 let s0 = state.clone();
                 state.music.selected = Some(selected - 1);
                 return Some(UndoRedoState::from((s0, state)));
-            } else {
+            }
+            // Track-specific operations.
+            else {
                 let track = state.music.get_selected_track().unwrap();
                 let channel = track.channel;
                 // Set the program.
@@ -296,6 +300,24 @@ impl Panel for TracksPanel {
                             Some(TracksPanel::set_gain(state, true))
                         } else if input.happened(&InputEvent::DecreaseTrackGain) {
                             Some(TracksPanel::set_gain(state, false))
+                        } else if input.happened(&InputEvent::Mute) {
+                            let s0 = state.clone();
+                            let track = state.music.get_selected_track_mut().unwrap();
+                            track.mute = !track.mute;
+                            // Un-solo.
+                            if track.mute && track.solo {
+                                track.solo = false;
+                            }
+                            Some(UndoRedoState::from((s0, state)))
+                        } else if input.happened(&InputEvent::Solo) {
+                            let s0 = state.clone();
+                            let track = state.music.get_selected_track_mut().unwrap();
+                            track.solo = !track.solo;
+                            // Un-mute.
+                            if track.mute && track.solo {
+                                track.mute = false;
+                            }
+                            Some(UndoRedoState::from((s0, state)))
                         } else {
                             None
                         }
