@@ -214,35 +214,36 @@ impl IO {
             if edit_file(&paths.user_ini_path).is_ok() {}
         }
         // Undo.
-        else if input.happened(&InputEvent::Undo) && !self.undo.is_empty() {
-            // Get the first undo-redo state.
-            let undo_redo = self.undo.remove(0);
-            let redo = UndoRedoState::from((undo_redo.redo, &undo_redo.undo));
-            // Assign the undo state to the current state.
-            if let Some(s1) = undo_redo.undo.state {
-                *state = s1;
+        else if input.happened(&InputEvent::Undo) {
+            if let Some(undo_redo) = self.undo.pop() {
+                // Get the first undo-redo state.
+                let redo = UndoRedoState::from((undo_redo.redo, &undo_redo.undo));
+                // Assign the undo state to the current state.
+                if let Some(s1) = undo_redo.undo.state {
+                    *state = s1;
+                }
+                // Send the commands.
+                if let Some(commands) = undo_redo.undo.commands {
+                    conn.send(commands);
+                }
+                // Push to the redo stack.
+                self.redo.push(redo);
             }
-            // Send the commands.
-            if let Some(commands) = undo_redo.undo.commands {
-                conn.send(commands);
-            }
-            // Push to the redo stack.
-            self.redo.push(redo);
         // Redo.
-        } else if input.happened(&InputEvent::Redo) && !self.redo.is_empty() {
-            // Get the first undo-redo state.
-            let undo_redo = self.redo.remove(0);
-            let undo = UndoRedoState::from((undo_redo.undo, &undo_redo.redo));
-            // Assign the redo state to the current state.
-            if let Some(s1) = undo_redo.redo.state {
-                *state = s1;
+        } else if input.happened(&InputEvent::Redo) {
+            if let Some(undo_redo) = self.redo.pop() {
+                let undo = UndoRedoState::from((undo_redo.undo, &undo_redo.redo));
+                // Assign the redo state to the current state.
+                if let Some(s1) = undo_redo.redo.state {
+                    *state = s1;
+                }
+                // Send the commands.
+                if let Some(commands) = undo_redo.redo.commands {
+                    conn.send(commands);
+                }
+                // Push to the undo stack.
+                self.undo.push(undo);
             }
-            // Send the commands.
-            if let Some(commands) = undo_redo.redo.commands {
-                conn.send(commands);
-            }
-            // Push to the undo stack.
-            self.undo.push(undo);
         }
         // Cycle panels.
         else if input.happened(&InputEvent::NextPanel) {

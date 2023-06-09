@@ -3,6 +3,7 @@ use crate::Fraction;
 use serde::{Deserialize, Serialize};
 
 /// A MIDI track has some notes.
+#[derive(Debug)]
 pub struct MidiTrack {
     /// The channel used for audio synthesis.
     pub channel: u8,

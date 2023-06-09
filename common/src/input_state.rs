@@ -7,7 +7,7 @@ use fraction::One;
 use serde::{Deserialize, Serialize};
 
 /// Booleans and numerical values describing the input state.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct InputState {
     /// If true, we will accept musical input.
     pub armed: bool,

@@ -12,7 +12,7 @@ const FRAMERATE_U32: u32 = FRAMERATE as u32;
 const BPM_TO_SECONDS_U32: u32 = 60;
 
 /// The time state.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Time {
     /// The time defining the position of the cursor.
     pub cursor: Fraction,

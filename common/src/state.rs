@@ -15,7 +15,7 @@ use std::path::PathBuf;
 const READ_ERROR: &str = "Error reading file: ";
 const WRITE_ERROR: &str = "Error writing file: ";
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct State {
     /// The music.
     pub music: Music,

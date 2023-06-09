@@ -2,7 +2,7 @@ use crate::{Music, Note};
 use serde::{Deserialize, Serialize};
 
 /// The current mode for selecting notes.
-#[derive(Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum SelectMode {
     /// Select only one note. The value is an index in `track.notes`.
     Single(Option<usize>),

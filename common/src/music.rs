@@ -4,7 +4,7 @@ use fraction::Zero;
 use serde::{Deserialize, Serialize};
 
 /// Tracks, notes, and metadata.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Music {
     /// The name of the music.
     pub name: String,

@@ -8,7 +8,7 @@ use ini::Ini;
 use serde::{Deserialize, Serialize};
 
 /// The dimensions of the piano roll viewport.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct View {
     /// The number of beats per visual cell.
     pub beats_per_cell: Fraction,

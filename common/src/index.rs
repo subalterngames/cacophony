@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 /// An `Index` is an index in a known-length array.
 /// The index can be incremented or decremented past the bounds of length, in which case it will loop to the start/end value.
 /// The index can never exceed the length.
-#[derive(Copy, Clone, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct Index {
     /// The index in the array.
     index: usize,
