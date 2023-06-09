@@ -317,9 +317,8 @@ impl Input {
         let pitch = (9 - self.qwerty_octave) * 12 + note;
         let note = [144, pitch, state.input.volume.get() as u8];
         if state.input.armed {
-            self.new_notes
-            .push(note.clone());
+            self.new_notes.push(note);
         }
-        self.play_now.push(note.clone());
+        self.play_now.push(note);
     }
 }
