@@ -36,7 +36,7 @@ impl Panel for Select {
         input: &Input,
         _: &mut TTS,
         _: &Text,
-    ) -> Option<UndoRedoState> {
+    ) -> Option<Snapshot> {
         // Cycle the select mode.
         if input.happened(&InputEvent::PianoRollCycleMode) {
             let s0 = state.clone();
@@ -54,7 +54,7 @@ impl Panel for Select {
                     None => SelectMode::Single(None),
                 },
             };
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         }
         // Move the selection start leftwards.
         else if input.happened(&InputEvent::SelectStartLeft) {
@@ -65,7 +65,7 @@ impl Panel for Select {
                     Some(index) => {
                         if index > 0 {
                             state.select_mode = SelectMode::Single(Some(index - 1));
-                            return Some(UndoRedoState::from((s0, state)));
+                            return Some(Snapshot::from_states(s0, state));
                         }
                     }
                     None => {
@@ -75,7 +75,7 @@ impl Panel for Select {
                                 &state.time,
                             ) {
                                 state.select_mode = SelectMode::Single(Some(index));
-                                return Some(UndoRedoState::from((s0, state)));
+                                return Some(Snapshot::from_states(s0, state));
                             }
                         }
                     }
@@ -97,7 +97,7 @@ impl Panel for Select {
                                     let mut indices = indices.clone();
                                     indices.push(max_track.0);
                                     state.select_mode = SelectMode::Many(Some(indices));
-                                    return Some(UndoRedoState::from((s0, state)));
+                                    return Some(Snapshot::from_states(s0, state));
                                 }
                             }
                         }
@@ -111,7 +111,7 @@ impl Panel for Select {
                                 &state.time,
                             ) {
                                 state.select_mode = SelectMode::Many(Some(vec![index]));
-                                return Some(UndoRedoState::from((s0, state)));
+                                return Some(Snapshot::from_states(s0, state));
                             }
                         }
                     }
@@ -135,7 +135,7 @@ impl Panel for Select {
                                 .min_by(|a, b| a.1.cmp(b.1))
                             {
                                 state.select_mode = SelectMode::Single(Some(max.0));
-                                return Some(UndoRedoState::from((s0, state)));
+                                return Some(Snapshot::from_states(s0, state));
                             }
                         }
                     }
@@ -146,7 +146,7 @@ impl Panel for Select {
                                 &state.time,
                             ) {
                                 state.select_mode = SelectMode::Single(Some(index));
-                                return Some(UndoRedoState::from((s0, state)));
+                                return Some(Snapshot::from_states(s0, state));
                             }
                         }
                     }
@@ -157,12 +157,12 @@ impl Panel for Select {
                         true => {
                             let indices = indices.as_slice()[0..indices.len() - 1].to_vec();
                             state.select_mode = SelectMode::Many(Some(indices));
-                            return Some(UndoRedoState::from((s0, state)));
+                            return Some(Snapshot::from_states(s0, state));
                         }
                         // There are no indices.
                         false => {
                             state.select_mode = SelectMode::Many(None);
-                            return Some(UndoRedoState::from((s0, state)));
+                            return Some(Snapshot::from_states(s0, state));
                         }
                     },
                     None => {
@@ -172,7 +172,7 @@ impl Panel for Select {
                                 &state.time,
                             ) {
                                 state.select_mode = SelectMode::Many(Some(vec![index]));
-                                return Some(UndoRedoState::from((s0, state)));
+                                return Some(Snapshot::from_states(s0, state));
                             }
                         }
                     }
@@ -188,7 +188,7 @@ impl Panel for Select {
                 SelectMode::Single(_) => SelectMode::Single(None),
                 SelectMode::Many(_) => SelectMode::Many(None),
             };
-            Some(UndoRedoState::from((s0, state)))
+            return Some(Snapshot::from_states(s0, state));
         }
         // Select all.
         else if input.happened(&InputEvent::SelectAll) {
@@ -197,7 +197,7 @@ impl Panel for Select {
                     let indices = track.notes.iter().enumerate().map(|n| n.0).collect();
                     let s0 = state.clone();
                     state.select_mode = SelectMode::Many(Some(indices));
-                    Some(UndoRedoState::from((s0, state)))
+                    return Some(Snapshot::from_states(s0, state));
                 }
                 None => None,
             }
@@ -212,12 +212,12 @@ impl Panel for Select {
                             let s0 = state.clone();
                             let indices = indices.as_slice()[0..indices.len() - 1].to_vec();
                             state.select_mode = SelectMode::Many(Some(indices));
-                            Some(UndoRedoState::from((s0, state)))
+                            return Some(Snapshot::from_states(s0, state));
                         }
                         false => {
                             let s0 = state.clone();
                             state.select_mode = SelectMode::Many(None);
-                            Some(UndoRedoState::from((s0, state)))
+                            return Some(Snapshot::from_states(s0, state));
                         }
                     },
                     None => {
@@ -228,7 +228,7 @@ impl Panel for Select {
                             ) {
                                 let s0 = state.clone();
                                 state.select_mode = SelectMode::Many(Some(vec![index]));
-                                return Some(UndoRedoState::from((s0, state)));
+                                return Some(Snapshot::from_states(s0, state));
                             }
                         }
                         None
@@ -252,7 +252,7 @@ impl Panel for Select {
                                     indices.push(max.0);
                                     let s0 = state.clone();
                                     state.select_mode = SelectMode::Many(Some(indices));
-                                    return Some(UndoRedoState::from((s0, state)));
+                                    return Some(Snapshot::from_states(s0, state));
                                 }
                             }
                         }
@@ -264,7 +264,7 @@ impl Panel for Select {
                                 ) {
                                     let s0 = state.clone();
                                     state.select_mode = SelectMode::Many(Some(vec![index]));
-                                    return Some(UndoRedoState::from((s0, state)));
+                                    return Some(Snapshot::from_states(s0, state));
                                 }
                             }
                         }
@@ -277,7 +277,7 @@ impl Panel for Select {
                             ) {
                                 let s0 = state.clone();
                                 state.select_mode = SelectMode::Many(Some(vec![index]));
-                                return Some(UndoRedoState::from((s0, state)));
+                                return Some(Snapshot::from_states(s0, state));
                             }
                         }
                     }

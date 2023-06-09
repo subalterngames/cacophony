@@ -7,7 +7,7 @@ pub(crate) struct TracksPanel {}
 
 impl TracksPanel {
     /// Increment or decrement the preset index. Returns a new undo-redo state.
-    fn set_preset(channel: u8, conn: &mut Conn, up: bool) -> UndoRedoState {
+    fn set_preset(channel: u8, conn: &mut Conn, up: bool) -> Option<Snapshot> {
         let program = conn.state.programs.get(&channel).unwrap();
         let mut index = Index::new(program.preset_index, program.num_presets);
         index.increment(up);
@@ -25,13 +25,13 @@ impl TracksPanel {
             bank_index: program.bank_index,
             preset_index,
         }];
-        let undo = UndoRedoState::from((c0, &c1));
+        let snapshot = Snapshot::from_commands(c0, &c1);
         conn.send(c1);
-        undo
+        Some(snapshot)
     }
 
     /// Increment or decrement the bank index, setting the preset index to 0. Returns a new undo-redo state.
-    fn set_bank(channel: u8, conn: &mut Conn, up: bool) -> UndoRedoState {
+    fn set_bank(channel: u8, conn: &mut Conn, up: bool) -> Option<Snapshot> {
         let program = conn.state.programs.get(&channel).unwrap();
         let mut index = Index::new(program.bank_index, program.num_banks);
         index.increment(up);
@@ -49,20 +49,20 @@ impl TracksPanel {
             bank_index,
             preset_index: 0,
         }];
-        let undo = UndoRedoState::from((c0, &c1));
+        let snapshot = Snapshot::from_commands(c0, &c1);
         conn.send(c1);
-        undo
+        Some(snapshot)
     }
 
     /// Increment or decrement the track gain. Returns a new undo-redo state.
-    fn set_gain(state: &mut State, up: bool) -> UndoRedoState {
+    fn set_gain(state: &mut State, up: bool) -> Option<Snapshot> {
         let s0 = state.clone();
         let track = state.music.get_selected_track_mut().unwrap();
         let mut index = Index::new(track.gain as usize, 128);
         index.increment(up);
         let gain = index.get() as u8;
         track.gain = gain;
-        UndoRedoState::from((s0, state))
+        Some(Snapshot::from_states(s0, state))
     }
 }
 
@@ -74,7 +74,7 @@ impl Panel for TracksPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-    ) -> Option<UndoRedoState> {
+    ) -> Option<Snapshot> {
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {
             match state.music.get_selected_track() {
@@ -226,7 +226,7 @@ impl Panel for TracksPanel {
             state.music.selected = Some(state.music.midi_tracks.len());
             // Add a track.
             state.music.midi_tracks.push(MidiTrack::new(channel));
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         }
         // There is a selected track.
         else if let Some(selected) = state.music.selected {
@@ -255,17 +255,17 @@ impl Panel for TracksPanel {
                             preset_index: program.preset_index,
                         }];
                         let c1 = vec![Command::UnsetProgram { channel }];
-                        let undo_redo = UndoRedoState::from((s0, c0, state, &c1));
+                        let undo_redo = Snapshot::from_states_and_commands(s0, state, c0, &c1);
                         // Remove the program.
                         conn.send(c1);
                         return Some(undo_redo);
                     }
-                    None => return Some(UndoRedoState::from((s0, state))),
+                    None => Some(Snapshot::from_states(s0, state)),
                 }
             } else if input.happened(&InputEvent::EnableSoundFontPanel) {
-                return Some(UndoRedoState::from(Some(vec![IOCommand::EnableOpenFile(
+                return Some(Snapshot::from_io_commands(vec![IOCommand::EnableOpenFile(
                     OpenFileType::SoundFont,
-                )])));
+                )]));
             }
             // Next track.
             else if input.happened(&InputEvent::NextTrack)
@@ -273,13 +273,13 @@ impl Panel for TracksPanel {
             {
                 let s0 = state.clone();
                 state.music.selected = Some(selected + 1);
-                return Some(UndoRedoState::from((s0, state)));
+                return Some(Snapshot::from_states(s0, state));
             }
             // Previous track.
             else if input.happened(&InputEvent::PreviousTrack) && selected > 0 {
                 let s0 = state.clone();
                 state.music.selected = Some(selected - 1);
-                return Some(UndoRedoState::from((s0, state)));
+                return Some(Snapshot::from_states(s0, state));
             }
             // Track-specific operations.
             else {
@@ -289,17 +289,17 @@ impl Panel for TracksPanel {
                 match conn.state.programs.get(&channel) {
                     Some(_) => {
                         if input.happened(&InputEvent::NextPreset) {
-                            Some(TracksPanel::set_preset(channel, conn, true))
+                            TracksPanel::set_preset(channel, conn, true)
                         } else if input.happened(&InputEvent::PreviousPreset) {
-                            Some(TracksPanel::set_preset(track.channel, conn, false))
+                            TracksPanel::set_preset(track.channel, conn, false)
                         } else if input.happened(&InputEvent::NextBank) {
-                            Some(TracksPanel::set_bank(track.channel, conn, true))
+                            TracksPanel::set_bank(track.channel, conn, true)
                         } else if input.happened(&InputEvent::PreviousBank) {
-                            Some(TracksPanel::set_bank(track.channel, conn, false))
+                            TracksPanel::set_bank(track.channel, conn, false)
                         } else if input.happened(&InputEvent::IncreaseTrackGain) {
-                            Some(TracksPanel::set_gain(state, true))
+                            TracksPanel::set_gain(state, true)
                         } else if input.happened(&InputEvent::DecreaseTrackGain) {
-                            Some(TracksPanel::set_gain(state, false))
+                            TracksPanel::set_gain(state, false)
                         } else if input.happened(&InputEvent::Mute) {
                             let s0 = state.clone();
                             let track = state.music.get_selected_track_mut().unwrap();
@@ -308,7 +308,7 @@ impl Panel for TracksPanel {
                             if track.mute && track.solo {
                                 track.solo = false;
                             }
-                            Some(UndoRedoState::from((s0, state)))
+                            Some(Snapshot::from_states(s0, state))
                         } else if input.happened(&InputEvent::Solo) {
                             let s0 = state.clone();
                             let track = state.music.get_selected_track_mut().unwrap();
@@ -317,7 +317,7 @@ impl Panel for TracksPanel {
                             if track.mute && track.solo {
                                 track.mute = false;
                             }
-                            Some(UndoRedoState::from((s0, state)))
+                            Some(Snapshot::from_states(s0, state))
                         } else {
                             None
                         }

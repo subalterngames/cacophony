@@ -49,7 +49,7 @@ impl Panel for Time {
         input: &Input,
         _: &mut TTS,
         _: &Text,
-    ) -> Option<UndoRedoState> {
+    ) -> Option<Snapshot> {
         // Do nothing if there is no track.
         if state.music.selected.is_none() {
             None
@@ -58,47 +58,47 @@ impl Panel for Time {
         else if input.happened(&InputEvent::PianoRollCycleMode) {
             let s0 = state.clone();
             state.time.mode.increment(true);
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         }
         // Move the cursor.
         else if input.happened(&InputEvent::TimeCursorStart) {
             let s0 = state.clone();
             state.time.cursor = Fraction::zero();
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         } else if input.happened(&InputEvent::TimeCursorEnd) {
             let s0 = state.clone();
             state.time.cursor = Time::get_end(state);
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         } else if input.happened(&InputEvent::TimeCursorLeft) {
             let s0 = state.clone();
             state.time.cursor = self.get_left(&state.time.cursor, state);
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         } else if input.happened(&InputEvent::TimeCursorRight) {
             let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
             let dt = self.deltas.get_dt(&mode, &state.input);
             state.time.cursor += dt;
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         }
         // Move the playback.
         else if input.happened(&InputEvent::TimePlaybackStart) {
             let s0 = state.clone();
             state.time.playback = Fraction::zero();
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         } else if input.happened(&InputEvent::TimePlaybackEnd) {
             let s0 = state.clone();
             state.time.playback = Time::get_end(state);
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         } else if input.happened(&InputEvent::TimePlaybackLeft) {
             let s0 = state.clone();
             state.time.playback = self.get_left(&state.time.playback, state);
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         } else if input.happened(&InputEvent::TimePlaybackRight) {
             let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
             let dt = self.deltas.get_dt(&mode, &state.input);
             state.time.playback += dt;
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         } else {
             None
         }

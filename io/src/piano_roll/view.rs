@@ -38,7 +38,7 @@ impl Panel for View {
         input: &Input,
         _: &mut TTS,
         _: &Text,
-    ) -> Option<UndoRedoState> {
+    ) -> Option<Snapshot> {
         // Do nothing if there is no track.
         if state.music.selected.is_none() {
             None
@@ -47,14 +47,14 @@ impl Panel for View {
         else if input.happened(&InputEvent::PianoRollCycleMode) {
             let s0 = state.clone();
             state.view.mode.increment(true);
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         }
         // Move the view to t0.
         else if input.happened(&InputEvent::ViewStart) {
             let s0 = state.clone();
             let dt = View::get_dt(state);
             state.view.dt = [Fraction::zero(), dt];
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         }
         // Move the view to t1.
         else if input.happened(&InputEvent::ViewEnd) {
@@ -65,13 +65,13 @@ impl Panel for View {
                 Some(max) => {
                     let s0 = state.clone();
                     state.view.dt = [max, max + dt];
-                    Some(UndoRedoState::from((s0, state)))
+                    Some(Snapshot::from_states(s0, state))
                 }
                 // Move the view one viewport's dt rightwards.
                 None => {
                     let s0 = state.clone();
                     state.view.dt = [dt, dt * 2];
-                    Some(UndoRedoState::from((s0, state)))
+                    Some(Snapshot::from_states(s0, state))
                 }
             }
         }
@@ -85,12 +85,12 @@ impl Panel for View {
             if t0.is_zero() || t0.is_sign_positive() {
                 let t1 = state.view.dt[1] - dt;
                 state.view.dt = [t0, t1];
-                Some(UndoRedoState::from((s0, state)))
+                Some(Snapshot::from_states(s0, state))
             }
             // Snap to t=0.
             else {
                 state.view.dt = [Fraction::zero(), dt];
-                Some(UndoRedoState::from((s0, state)))
+                Some(Snapshot::from_states(s0, state))
             }
         }
         // Move the view rightwards.
@@ -101,7 +101,7 @@ impl Panel for View {
             let t0 = state.view.dt[0] + dt;
             let t1 = state.view.dt[1] + dt;
             state.view.dt = [t0, t1];
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         }
         // Move the view upwards.
         else if input.happened(&InputEvent::ViewUp) {
@@ -113,13 +113,13 @@ impl Panel for View {
                 let n0 = state.view.dn[0] + dn;
                 let n1 = state.view.dn[1] + dn;
                 state.view.dn = [n0, n1];
-                Some(UndoRedoState::from((s0, state)))
+                Some(Snapshot::from_states(s0, state))
             }
             // Snap to n=1.
             else {
                 let dn = View::get_dn(state);
                 state.view.dn = [MAX_NOTE, MAX_NOTE - dn];
-                Some(UndoRedoState::from((s0, state)))
+                Some(Snapshot::from_states(s0, state))
             }
         }
         // Move the view downwards.
@@ -132,13 +132,13 @@ impl Panel for View {
                 let n0 = state.view.dn[0] - dn;
                 let n1 = state.view.dn[1] - dn;
                 state.view.dn = [n0, n1];
-                Some(UndoRedoState::from((s0, state)))
+                Some(Snapshot::from_states(s0, state))
             }
             // Snap to n=0.
             else {
                 let dn = View::get_dn(state);
                 state.view.dn = [MIN_NOTE + dn, MIN_NOTE];
-                Some(UndoRedoState::from((s0, state)))
+                Some(Snapshot::from_states(s0, state))
             }
         } else {
             None

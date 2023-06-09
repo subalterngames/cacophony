@@ -7,7 +7,7 @@ pub(crate) struct MusicPanel {}
 
 impl MusicPanel {
     /// Increment the current gain. Returns a new undo state.
-    fn set_gain(conn: &mut Conn, up: bool) -> UndoRedoState {
+    fn set_gain(conn: &mut Conn, up: bool) -> Option<Snapshot> {
         // Get undo commands.
         let gain0 = vec![Command::SetGain {
             gain: conn.state.gain,
@@ -18,18 +18,18 @@ impl MusicPanel {
         let gain = index.get() as u8;
         let gain1 = vec![Command::SetGain { gain }];
         // Get the state.
-        let undo_redo = UndoRedoState::from((gain0, &gain1));
+        let snapshot = Snapshot::from_commands(gain0, &gain1);
         // Send the commands.
         conn.send(gain1);
         // Return the state.
-        undo_redo
+        Some(snapshot)
     }
 
     /// Increment the current music panel field. Returns a new undo state.
-    fn set_field(state: &mut State, up: bool) -> UndoRedoState {
+    fn set_field(state: &mut State, up: bool) -> Option<Snapshot> {
         let s0 = state.clone();
         state.music_panel_field.increment(up);
-        UndoRedoState::from((s0, state))
+        Some(Snapshot::from_states(s0, state))
     }
 }
 
@@ -41,12 +41,12 @@ impl Panel for MusicPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-    ) -> Option<UndoRedoState> {
+    ) -> Option<Snapshot> {
         // Cycle fields.
         if input.happened(&InputEvent::NextMusicPanelField) {
-            Some(MusicPanel::set_field(state, true))
+            MusicPanel::set_field(state, true)
         } else if input.happened(&InputEvent::PreviousMusicPanelField) {
-            Some(MusicPanel::set_field(state, false))
+            MusicPanel::set_field(state, false)
         }
         // Panel TTS.
         else if input.happened(&InputEvent::StatusTTS) {
@@ -101,15 +101,15 @@ impl Panel for MusicPanel {
                     if input.modify_u32(&mut bpm) {
                         let s0 = state.clone();
                         state.music.bpm = bpm;
-                        return Some(UndoRedoState::from((s0, state)));
+                        return Some(Snapshot::from_states(s0, state));
                     }
                 }
                 // Set the gain.
                 MusicPanelField::Gain => {
                     if input.happened(&InputEvent::DecreaseMusicGain) {
-                        return Some(MusicPanel::set_gain(conn, false));
+                        return MusicPanel::set_gain(conn, false);
                     } else if input.happened(&InputEvent::IncreaseMusicGain) {
-                        return Some(MusicPanel::set_gain(conn, true));
+                        return MusicPanel::set_gain(conn, true);
                     }
                 }
                 // Modify the name.
@@ -118,7 +118,7 @@ impl Panel for MusicPanel {
                     if input.modify_string_abc123(&mut name) {
                         let s0 = state.clone();
                         state.music.name = name;
-                        return Some(UndoRedoState::from((s0, state)));
+                        return Some(Snapshot::from_states(s0, state));
                     }
                 }
             }

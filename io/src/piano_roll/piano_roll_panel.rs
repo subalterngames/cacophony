@@ -54,20 +54,20 @@ impl PianoRollPanel {
     }
 
     /// Set the input beat.
-    fn set_input_beat(&mut self, up: bool, state: &mut State) -> Option<UndoRedoState> {
+    fn set_input_beat(&mut self, up: bool, state: &mut State) -> Option<Snapshot> {
         let s0 = state.clone();
         // Increment the beat.
         self.beat.increment(up);
         // Set the input beat.
         state.input.beat = self.beats[self.beat.get()];
-        Some(UndoRedoState::from((s0, state)))
+        Some(Snapshot::from_states(s0, state))
     }
 
     /// Set the piano roll mode.
-    fn set_mode(mode: PianoRollMode, state: &mut State) -> Option<UndoRedoState> {
+    fn set_mode(mode: PianoRollMode, state: &mut State) -> Option<Snapshot> {
         let s0 = state.clone();
         state.piano_roll_mode = mode;
-        Some(UndoRedoState::from((s0, state)))
+        Some(Snapshot::from_states(s0, state))
     }
 
     /// Returns the text-to-speech string that will be said if there is no valid track.
@@ -93,7 +93,7 @@ impl PianoRollPanel {
     }
 
     /// Delete notes from the track.
-    fn delete_notes(state: &mut State) -> Option<UndoRedoState> {
+    fn delete_notes(state: &mut State) -> Option<Snapshot> {
         // Clone the state.
         let s0 = state.clone();
         if let Some(indices) = state.select_mode.get_note_indices() {
@@ -112,7 +112,7 @@ impl PianoRollPanel {
                     SelectMode::Many(_) => SelectMode::Many(None),
                 };
                 // Return the undo state.
-                return Some(UndoRedoState::from((s0, state)));
+                return Some(Snapshot::from_states(s0, state));
             }
         }
         None
@@ -127,7 +127,7 @@ impl Panel for PianoRollPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-    ) -> Option<UndoRedoState> {
+    ) -> Option<Snapshot> {
         // Do nothing.
         if state.music.selected.is_none() {
             None
@@ -154,7 +154,7 @@ impl Panel for PianoRollPanel {
                     track.notes.extend(notes.iter().copied());
                     // Move the cursor.
                     state.time.cursor += state.input.beat;
-                    Some(UndoRedoState::from((s0, state)))
+                    Some(Snapshot::from_states(s0, state))
                 }
                 None => None,
             }
@@ -360,7 +360,7 @@ impl Panel for PianoRollPanel {
                     // Add the notes.
                     track.notes.append(&mut notes);
                     // Return the undo state.
-                    Some(UndoRedoState::from((s0, state)))
+                    Some(Snapshot::from_states(s0, state))
                 } else {
                     None
                 }
@@ -372,7 +372,7 @@ impl Panel for PianoRollPanel {
         else if input.happened(&InputEvent::Arm) {
             let s0 = state.clone();
             state.input.armed = !state.input.armed;
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         }
         // Set the input beat.
         else if input.happened(&InputEvent::InputBeatLeft) {

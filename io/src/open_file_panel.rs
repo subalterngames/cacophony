@@ -72,10 +72,10 @@ impl OpenFilePanel {
         state.input.can_undo = true;
     }
 
-    fn set_save_path(path: &Path) -> Option<UndoRedoState> {
-        Some(UndoRedoState::from(Some(vec![IOCommand::SetSavePath(
+    fn set_save_path(path: &Path) -> Option<Snapshot> {
+        Some(Snapshot::from_io_commands(vec![IOCommand::SetSavePath(
             Some(path.to_path_buf()),
-        )])))
+        )]))
     }
 }
 
@@ -87,7 +87,7 @@ impl Panel for OpenFilePanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-    ) -> Option<UndoRedoState> {
+    ) -> Option<Snapshot> {
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {
             let mut s = text.get_with_values(
@@ -226,11 +226,13 @@ impl Panel for OpenFilePanel {
                                 channel,
                                 path: self.open_file.paths[selected].path.clone(),
                             }];
-                            let mut undo = UndoRedoState::from((c0, &c1));
-                            // Add an IO command.
-                            undo.undo.io_commands = Some(vec![IOCommand::DisableOpenFile]);
+                            let snapshot = Snapshot::from_commands_and_io_commands(
+                                c0,
+                                &c1,
+                                vec![IOCommand::DisableOpenFile],
+                            );
                             conn.send(c1);
-                            return Some(undo);
+                            return Some(snapshot);
                         }
                     }
                 }
@@ -247,15 +249,15 @@ impl Panel for OpenFilePanel {
                     let mut filename = self.open_file.filename.as_ref().unwrap().clone();
                     filename.push_str(".wav");
                     let path = self.open_file.directory.join(filename);
-                    return Some(UndoRedoState::from(Some(vec![IOCommand::SetExportPath(
+                    return Some(Snapshot::from_io_commands(vec![IOCommand::SetExportPath(
                         path,
-                    )])));
+                    )]));
                 }
             }
         }
         // Close this.
         else if input.happened(&InputEvent::CloseOpenFile) {
-            return Some(UndoRedoState::from(Some(vec![IOCommand::DisableOpenFile])));
+            return Some(Snapshot::from_io_commands(vec![IOCommand::DisableOpenFile]));
         }
         None
     }

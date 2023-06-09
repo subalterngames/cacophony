@@ -28,7 +28,7 @@ impl Panel for Edit {
         input: &Input,
         _: &mut TTS,
         _: &Text,
-    ) -> Option<UndoRedoState> {
+    ) -> Option<Snapshot> {
         // Do nothing if there is no track.
         if state.music.selected.is_none() {
             None
@@ -37,7 +37,7 @@ impl Panel for Edit {
         else if input.happened(&InputEvent::PianoRollCycleMode) {
             let s0 = state.clone();
             state.edit_mode.increment(true);
-            Some(UndoRedoState::from((s0, state)))
+            Some(Snapshot::from_states(s0, state))
         } else {
             let mode = EDIT_MODES[state.edit_mode.get()];
             let s0 = state.clone();
@@ -50,7 +50,7 @@ impl Panel for Edit {
                         // Don't let any notes go to t=0.
                         if !notes.iter().any(|n| (n.start - dt).is_sign_negative()) {
                             notes.iter_mut().for_each(|n| n.start -= dt);
-                            Some(UndoRedoState::from((s0, state)))
+                            Some(Snapshot::from_states(s0, state))
                         } else {
                             None
                         }
@@ -59,7 +59,7 @@ impl Panel for Edit {
                     else if input.happened(&InputEvent::EditStartRight) {
                         let dt = self.deltas.get_dt(&mode, &state.input);
                         notes.iter_mut().for_each(|n| n.start -= dt);
-                        Some(UndoRedoState::from((s0, state)))
+                        Some(Snapshot::from_states(s0, state))
                     }
                     // Shorten the duration.
                     else if input.happened(&InputEvent::EditDurationLeft) {
@@ -68,7 +68,7 @@ impl Panel for Edit {
                         let zero = Fraction::zero();
                         if notes.iter().all(|n| (n.duration - dt) > zero) {
                             notes.iter_mut().for_each(|n| n.duration -= dt);
-                            Some(UndoRedoState::from((s0, state)))
+                            Some(Snapshot::from_states(s0, state))
                         } else {
                             None
                         }
@@ -77,7 +77,7 @@ impl Panel for Edit {
                     else if input.happened(&InputEvent::EditDurationRight) {
                         let dt = self.deltas.get_dt(&mode, &state.input);
                         notes.iter_mut().for_each(|n| n.duration += dt);
-                        Some(UndoRedoState::from((s0, state)))
+                        Some(Snapshot::from_states(s0, state))
                     }
                     // Move the notes up.
                     else if input.happened(&InputEvent::EditPitchUp) {
@@ -85,7 +85,7 @@ impl Panel for Edit {
                         // Don't let any notes go to dn>=max.
                         if notes.iter().all(|n| (n.note + dn) <= MAX_NOTE) {
                             notes.iter_mut().for_each(|n| n.note += dn);
-                            Some(UndoRedoState::from((s0, state)))
+                            Some(Snapshot::from_states(s0, state))
                         } else {
                             None
                         }
@@ -96,7 +96,7 @@ impl Panel for Edit {
                         // Don't let any notes go to dn<=0.
                         if notes.iter().all(|n| (n.note - dn) >= MIN_NOTE) {
                             notes.iter_mut().for_each(|n| n.note -= dn);
-                            Some(UndoRedoState::from((s0, state)))
+                            Some(Snapshot::from_states(s0, state))
                         } else {
                             None
                         }
@@ -107,7 +107,7 @@ impl Panel for Edit {
                         // Don't let any notes go to dv>=max.
                         if notes.iter().all(|n| (n.velocity + dv) <= MAX_VOLUME) {
                             notes.iter_mut().for_each(|n| n.velocity += dv);
-                            Some(UndoRedoState::from((s0, state)))
+                            Some(Snapshot::from_states(s0, state))
                         } else {
                             None
                         }
@@ -118,7 +118,7 @@ impl Panel for Edit {
                         // Don't let any notes go to dv<=0.
                         if notes.iter().all(|n| (n.velocity as i8 - dv as i8) >= 0) {
                             notes.iter_mut().for_each(|n| n.velocity -= dv);
-                            Some(UndoRedoState::from((s0, state)))
+                            Some(Snapshot::from_states(s0, state))
                         } else {
                             None
                         }
