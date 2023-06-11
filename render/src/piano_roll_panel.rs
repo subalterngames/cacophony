@@ -240,6 +240,38 @@ impl Drawable for PianoRollPanel {
             conn,
             focus,
         );
+
+        // Draw the selection background.
+        let selected = notes
+            .notes
+            .iter()
+            .filter(|n| n.selected)
+            .collect::<Vec<&ViewableNote>>();
+        // Get the start and end of the selection.
+        if let Some(select_0) = selected
+            .iter()
+            .min_by(|a, b| a.note.start.cmp(&b.note.start))
+        {
+            if let Some(select_1) = selected.iter().max_by(|a, b| a.end.cmp(&b.end)) {
+                let color = if focus {
+                    ColorKey::SelectedNotesBackground
+                } else {
+                    ColorKey::NoFocus
+                };
+                let x1 = get_note_x(
+                    select_1.end,
+                    self.piano_roll_rows_rect[0],
+                    self.piano_roll_rows_rect[2],
+                    &state.view.dt,
+                );
+                renderer.rectangle_pixel(
+                    [select_0.x, self.piano_roll_rows_rect[1]],
+                    [x1 - select_0.x, self.piano_roll_rows_rect[3]],
+                    &color,
+                )
+            }
+        }
+
         // Draw the notes.
         for note in notes.notes.iter() {
             let w = notes.get_note_w(note);

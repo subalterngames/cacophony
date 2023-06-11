@@ -20,4 +20,5 @@ pub enum ColorKey {
     Subtitle,
     Separator,
     TextInput,
+    SelectedNotesBackground,
 }

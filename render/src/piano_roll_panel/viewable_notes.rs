@@ -2,14 +2,6 @@ use crate::panel::*;
 use common::time::samples_to_bar;
 use common::*;
 
-/// This determines the render order for the volume.
-#[derive(Eq, PartialEq)]
-pub(crate) enum NoteState {
-    Note,
-    Selected,
-    Playing,
-}
-
 /// A viewable note.
 pub(crate) struct ViewableNote<'a> {
     /// The note.
@@ -18,8 +10,10 @@ pub(crate) struct ViewableNote<'a> {
     pub end: Fraction,
     /// The x pixel coordinate of the note.
     pub(crate) x: f32,
-    /// The state of the note. This determines render order.
-    pub(crate) state: NoteState,
+    /// If true, this note is being played.
+    pub(crate) playing: bool,
+    /// If true, this note is selected.
+    pub(crate) selected: bool,
     /// The color of this note.
     pub(crate) color: ColorKey,
 }
@@ -85,16 +79,16 @@ impl<'a> ViewableNotes<'a> {
                         None => false,
                     };
                     // Get the color of the note.
-                    let (color, note_state) = if focus {
+                    let color = if focus {
                         if playing {
-                            (ColorKey::NotePlaying, NoteState::Playing)
+                            ColorKey::NotePlaying
                         } else if selected {
-                            (ColorKey::NoteSelected, NoteState::Selected)
+                            ColorKey::NoteSelected
                         } else {
-                            (ColorKey::Note, NoteState::Note)
+                            ColorKey::Note
                         }
                     } else {
-                        (ColorKey::NoFocus, NoteState::Note)
+                        ColorKey::NoFocus
                     };
                     // Add the note.
                     notes.push(ViewableNote {
@@ -102,7 +96,8 @@ impl<'a> ViewableNotes<'a> {
                         end,
                         x,
                         color,
-                        state: note_state,
+                        selected,
+                        playing,
                     });
                 }
                 notes
