@@ -217,7 +217,7 @@ impl IO {
         else if input.happened(&InputEvent::Undo) {
             if let Some(undo) = self.undo.pop() {
                 // Get the redo state.
-                let redo = Snapshot::flip(&undo);
+                let redo = Snapshot::from_snapshot(&undo);
                 // Assign the undo state to the previous state.
                 if let Some(s1) = undo.from_state {
                     *state = s1;
@@ -232,7 +232,7 @@ impl IO {
         // Redo.
         } else if input.happened(&InputEvent::Redo) {
             if let Some(redo) = self.redo.pop() {
-                let undo = Snapshot::flip(&redo);
+                let undo = Snapshot::from_snapshot(&redo);
                 // Assign the redo state to the current state.
                 if let Some(s1) = redo.from_state {
                     *state = s1;
