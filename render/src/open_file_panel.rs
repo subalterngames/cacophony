@@ -41,14 +41,14 @@ impl OpenFilePanel {
         let extension = Width::new(
             [
                 prompt.position[0] + prompt.size[0] - EXTENSION_WIDTH - 1,
-                prompt.position[1],
+                prompt.position[1] + 1,
             ],
             EXTENSION_WIDTH as usize,
         );
 
         let input = Width::new(
-            [prompt.position[0] + 1, prompt.position[1]],
-            (prompt.size[0] - EXTENSION_WIDTH - 2) as usize,
+            [prompt.position[0] + 1, prompt.position[1] + 1],
+            (prompt.size[0] - EXTENSION_WIDTH - 3) as usize,
         );
         let input_rect = Rectangle::new(input.position, [input.width_u32, 1]);
 
@@ -149,16 +149,15 @@ impl Drawable for OpenFilePanel {
             renderer.border(&self.prompt, &ColorKey::FocusDefault);
 
             // Draw the extension.
-            renderer.text(
-                &self.extension.to_label(&open_file.extensions[0]),
-                &ColorKey::Key,
-            );
+            let mut extension = String::from(".");
+            extension.push_str(&open_file.extensions[0]);
+            renderer.text(&self.extension.to_label(&extension), &ColorKey::Key);
 
             // Draw the input background.
             renderer.rectangle(&self.input_rect, &ColorKey::TextFieldBG);
 
             // Draw the input text.
-            renderer.text(&self.input.to_label(filename), &ColorKey::TextInput);
+            renderer.text(&self.input.to_label(filename), &ColorKey::Key);
         }
     }
 }

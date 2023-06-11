@@ -88,6 +88,12 @@ impl Panel for OpenFilePanel {
         tts: &mut TTS,
         text: &Text,
     ) -> Option<Snapshot> {
+        // ABC123 input.
+        if let Some(filename) = &mut self.open_file.filename {
+            if input.modify_string_abc123(filename) {
+                return None;
+            }
+        }
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {
             let mut s = text.get_with_values(
