@@ -18,7 +18,7 @@ pub(crate) struct Snapshot {
 
 impl Snapshot {
     /// Returns a snapshot of the delta between two states.
-    /// 
+    ///
     /// - `from_state` The initial state of the delta. This is usually a clone of a `State` prior to modifying the primary `State`.
     /// - `to_state` The final state of the delta. This is a reference to the primary `State`.
     pub fn from_states(from_state: State, to_state: &mut State) -> Self {
@@ -30,7 +30,7 @@ impl Snapshot {
     }
 
     /// Returns a snapshot of the delta between to synth states.
-    /// 
+    ///
     /// - `from_commands` A list of commands that will revert the `SynthState` to the initial state.
     /// - `to_commands` A list of commands that will set the `SynthState` to the new state. This list will be sent by the `Conn`.
     pub fn from_commands(from_commands: CommandsMessage, to_commands: &CommandsMessage) -> Self {
@@ -42,7 +42,7 @@ impl Snapshot {
     }
 
     /// Returns a snapshot of the delta between two states as well as two synth states.
-    /// 
+    ///
     /// - `from_state` The initial state of the delta. This is usually a clone of a `State` prior to modifying the primary `State`.
     /// - `to_state` The final state of the delta. This is a reference to the primary `State`.
     /// - `from_commands` A list of commands that will revert the `SynthState` to the initial state.
@@ -63,7 +63,7 @@ impl Snapshot {
     }
 
     /// Returns a snapshot of the delta between to synth states. Includes some IOCommands for spice.
-    /// 
+    ///
     /// - `from_commands` A list of commands that will revert the `SynthState` to the initial state.
     /// - `to_commands` A list of commands that will set the `SynthState` to the new state. This list will be sent by the `Conn`.
     /// - `io_commands` A list of IOCommands that will be processed by the `IO`.
@@ -81,7 +81,7 @@ impl Snapshot {
     }
 
     /// Returns a snapshot that just contains IOCommands.
-    /// 
+    ///
     /// - `io_commands` A list of IOCommands that will be processed by the `IO`.
     pub fn from_io_commands(io_commands: Vec<IOCommand>) -> Self {
         Self {
@@ -91,7 +91,7 @@ impl Snapshot {
     }
 
     /// Returns a snapshot that flips the from/to of `snapshot`. This is used for undo/redo.
-    /// 
+    ///
     /// - The Snapshot. Its `from_state` will become the returned Snapshot's `to_state` and vice-versa. Its `from_commands` will become the returned Snapshot's `to_commands` and vice-versa.
     pub fn from_snapshot(snapshot: &Snapshot) -> Self {
         Self {

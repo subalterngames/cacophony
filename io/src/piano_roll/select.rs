@@ -1,7 +1,7 @@
 use super::{get_no_selection_status_tts, PianoRollSubPanel};
 use crate::panel::*;
 use common::time::Time;
-use common::{Note, SelectMode};
+use common::{MidiTrack, Note, SelectMode};
 
 /// Select notes.
 pub(super) struct Select {}
@@ -26,6 +26,32 @@ impl Select {
             .min_by(|a, b| a.1.cmp(b.1))
             .map(|max| max.0)
     }
+
+    /// Returns the first note in a selection defined by `indices`.
+    fn get_first_selected_note<'a>(
+        track: &'a MidiTrack,
+        indices: &[usize],
+    ) -> Option<(usize, &'a Note)> {
+        track
+            .notes
+            .iter()
+            .enumerate()
+            .filter(|n| indices.contains(&n.0))
+            .min_by(|a, b| a.1.cmp(b.1))
+    }
+
+    /// Returns the last note in a selection defined by `indices`.
+    fn get_last_selected_note<'a>(
+        track: &'a MidiTrack,
+        indices: &[usize],
+    ) -> Option<(usize, &'a Note)> {
+        track
+            .notes
+            .iter()
+            .enumerate()
+            .filter(|n| indices.contains(&n.0))
+            .max_by(|a, b| a.1.cmp(b.1))
+    }
 }
 
 impl Panel for Select {
@@ -37,227 +63,227 @@ impl Panel for Select {
         _: &mut TTS,
         _: &Text,
     ) -> Option<Snapshot> {
-        // Cycle the select mode.
-        if input.happened(&InputEvent::PianoRollCycleMode) {
-            let s0 = state.clone();
-            let mode = state.select_mode.clone();
-            state.select_mode = match mode {
-                SelectMode::Single(index) => match index {
-                    Some(index) => SelectMode::Many(Some(vec![index])),
-                    None => SelectMode::Many(None),
-                },
-                SelectMode::Many(indices) => match indices {
-                    Some(indices) => match indices.is_empty() {
-                        true => SelectMode::Single(None),
-                        false => SelectMode::Single(Some(indices[0])),
-                    },
-                    None => SelectMode::Single(None),
-                },
-            };
-            Some(Snapshot::from_states(s0, state))
-        }
-        // Move the selection start leftwards.
-        else if input.happened(&InputEvent::SelectStartLeft) {
-            let s0 = state.clone();
-            let mode = state.select_mode.clone();
-            match mode {
-                SelectMode::Single(index) => match index {
-                    Some(index) => {
-                        if index > 0 {
-                            state.select_mode = SelectMode::Single(Some(index - 1));
-                            return Some(Snapshot::from_states(s0, state));
-                        }
-                    }
-                    None => {
-                        if let Some(track) = state.music.get_selected_track() {
-                            if let Some(index) = Select::get_note_index_closest_to_before_cursor(
-                                &track.notes,
-                                &state.time,
-                            ) {
-                                state.select_mode = SelectMode::Single(Some(index));
-                                return Some(Snapshot::from_states(s0, state));
-                            }
-                        }
-                    }
-                },
-                // Are there selected indices?
-                SelectMode::Many(indices) => match indices {
-                    // Is there a max selected index?
-                    Some(indices) => {
-                        if let Some(max) = indices.iter().max() {
-                            if let Some(track) = state.music.get_selected_track() {
-                                // Does the track have a note after the max note?
-                                if let Some(max_track) = track
+        match state.music.get_selected_track() {
+            None => None,
+            Some(track) => {
+                // Cycle the select mode.
+                if input.happened(&InputEvent::PianoRollCycleMode) {
+                    let s0 = state.clone();
+                    let mode = state.select_mode.clone();
+                    state.select_mode = match mode {
+                        SelectMode::Single(index) => match index {
+                            Some(index) => SelectMode::Many(Some(vec![index])),
+                            None => SelectMode::Many(None),
+                        },
+                        SelectMode::Many(indices) => match indices {
+                            Some(indices) => match indices.is_empty() {
+                                true => SelectMode::Single(None),
+                                false => SelectMode::Single(Some(indices[0])),
+                            },
+                            None => SelectMode::Single(None),
+                        },
+                    };
+                    Some(Snapshot::from_states(s0, state))
+                }
+                // Move the selection start leftwards.
+                else if input.happened(&InputEvent::SelectStartLeft) {
+                    let s0 = state.clone();
+                    match &mut state.select_mode {
+                        SelectMode::Single(index) => match index {
+                            // Get the prior note.
+                            Some(index) => {
+                                let note = &track.notes[*index];
+                                if let Some(prior_note) = track
                                     .notes
                                     .iter()
                                     .enumerate()
-                                    .filter(|n| n.1.gt(&track.notes[*max]))
+                                    .filter(|n| n.1.lt(note))
                                     .max_by(|a, b| a.1.cmp(b.1))
                                 {
-                                    let mut indices = indices.clone();
-                                    indices.push(max_track.0);
-                                    state.select_mode = SelectMode::Many(Some(indices));
+                                    *index = prior_note.0;
                                     return Some(Snapshot::from_states(s0, state));
                                 }
                             }
-                        }
-                    }
-                    // Is there a track?
-                    None => {
-                        if let Some(track) = state.music.get_selected_track() {
-                            // Is there a note near the cursor?
-                            if let Some(index) = Select::get_note_index_closest_to_before_cursor(
-                                &track.notes,
-                                &state.time,
-                            ) {
-                                state.select_mode = SelectMode::Many(Some(vec![index]));
-                                return Some(Snapshot::from_states(s0, state));
+                            // Select the note closest to the cursor.
+                            None => {
+                                if let Some(index) = Select::get_note_index_closest_to_before_cursor(
+                                    &track.notes,
+                                    &state.time,
+                                ) {
+                                    state.select_mode = SelectMode::Single(Some(index));
+                                    return Some(Snapshot::from_states(s0, state));
+                                }
                             }
-                        }
-                    }
-                },
-            }
-            return None;
-        }
-        // Move the selection start rightwards.
-        else if input.happened(&InputEvent::SelectStartRight) {
-            let s0 = state.clone();
-            let mode = state.select_mode.clone();
-            match mode {
-                SelectMode::Single(index) => match index {
-                    Some(index) => {
-                        if let Some(track) = state.music.get_selected_track() {
-                            if let Some(max) = track
-                                .notes
-                                .iter()
-                                .enumerate()
-                                .filter(|n| n.1.gt(&track.notes[index]))
-                                .min_by(|a, b| a.1.cmp(b.1))
-                            {
-                                state.select_mode = SelectMode::Single(Some(max.0));
-                                return Some(Snapshot::from_states(s0, state));
+                        },
+                        // Are there selected indices?
+                        SelectMode::Many(indices) => match indices {
+                            // Is there a max selected index?
+                            Some(indices) => {
+                                // There is a first selected note.
+                                if let Some(first_selected_note) =
+                                    Select::get_first_selected_note(track, &indices)
+                                {
+                                    // There is a prior note.
+                                    if let Some(prior_note) = track
+                                        .notes
+                                        .iter()
+                                        .enumerate()
+                                        .filter(|n| n.1.lt(first_selected_note.1))
+                                        .max_by(|a, b| a.1.cmp(b.1))
+                                    {
+                                        // Add the prior note.
+                                        indices.push(prior_note.0);
+                                        return Some(Snapshot::from_states(s0, state));
+                                    }
+                                }
                             }
-                        }
-                    }
-                    None => {
-                        if let Some(track) = state.music.get_selected_track() {
-                            if let Some(index) = Select::get_note_index_closest_to_before_cursor(
-                                &track.notes,
-                                &state.time,
-                            ) {
-                                state.select_mode = SelectMode::Single(Some(index));
-                                return Some(Snapshot::from_states(s0, state));
+                            // Select the note closest to the cursor.
+                            None => {
+                                // Is there a note near the cursor?
+                                if let Some(index) = Select::get_note_index_closest_to_before_cursor(
+                                    &track.notes,
+                                    &state.time,
+                                ) {
+                                    state.select_mode = SelectMode::Many(Some(vec![index]));
+                                    return Some(Snapshot::from_states(s0, state));
+                                }
                             }
-                        }
+                        },
                     }
-                },
-                SelectMode::Many(indices) => match indices {
-                    Some(indices) => match indices.len() > 1 {
-                        // Remove an index.
-                        true => {
-                            let indices = indices.as_slice()[0..indices.len() - 1].to_vec();
-                            state.select_mode = SelectMode::Many(Some(indices));
-                            return Some(Snapshot::from_states(s0, state));
-                        }
-                        // There are no indices.
-                        false => {
-                            state.select_mode = SelectMode::Many(None);
-                            return Some(Snapshot::from_states(s0, state));
-                        }
-                    },
-                    None => {
-                        if let Some(track) = state.music.get_selected_track() {
-                            if let Some(index) = Select::get_note_index_closest_to_before_cursor(
-                                &track.notes,
-                                &state.time,
-                            ) {
-                                state.select_mode = SelectMode::Many(Some(vec![index]));
-                                return Some(Snapshot::from_states(s0, state));
+                    return None;
+                }
+                // Move the selection start rightwards.
+                else if input.happened(&InputEvent::SelectStartRight) {
+                    let s0 = state.clone();
+                    match &mut state.select_mode {
+                        SelectMode::Single(index) => match index {
+                            Some(index) => {
+                                let note = &track.notes[*index];
+                                // Get the next note.
+                                if let Some(next_note) = track
+                                    .notes
+                                    .iter()
+                                    .enumerate()
+                                    .filter(|n| n.1.gt(note))
+                                    .min_by(|a, b| a.1.cmp(b.1))
+                                {
+                                    *index = next_note.0;
+                                    return Some(Snapshot::from_states(s0, state));
+                                }
                             }
-                        }
+                            // Select the note closest to the cursor.
+                            None => {
+                                if let Some(index) = Select::get_note_index_closest_to_before_cursor(
+                                    &track.notes,
+                                    &state.time,
+                                ) {
+                                    state.select_mode = SelectMode::Single(Some(index));
+                                    return Some(Snapshot::from_states(s0, state));
+                                }
+                            }
+                        },
+                        // Remove the first note.
+                        SelectMode::Many(indices) => match indices {
+                            Some(indices) => {
+                                // There is a first selected note.
+                                if let Some(first_selected_note) =
+                                    Select::get_first_selected_note(track, &indices)
+                                {
+                                    // Remove the note.
+                                    indices.retain(|n| *n != first_selected_note.0);
+                                    return Some(Snapshot::from_states(s0, state));
+                                }
+                            }
+                            // Select the note closest to the cursor.
+                            None => {
+                                if let Some(index) = Select::get_note_index_closest_to_before_cursor(
+                                    &track.notes,
+                                    &state.time,
+                                ) {
+                                    state.select_mode = SelectMode::Many(Some(vec![index]));
+                                    return Some(Snapshot::from_states(s0, state));
+                                }
+                            }
+                        },
                     }
-                },
-            }
-            return None;
-        }
-        // Deselect.
-        else if input.happened(&InputEvent::SelectNone) {
-            let s0 = state.clone();
-            let mode = state.select_mode.clone();
-            state.select_mode = match mode {
-                SelectMode::Single(_) => SelectMode::Single(None),
-                SelectMode::Many(_) => SelectMode::Many(None),
-            };
-            return Some(Snapshot::from_states(s0, state));
-        }
-        // Select all.
-        else if input.happened(&InputEvent::SelectAll) {
-            match state.music.get_selected_track() {
-                Some(track) => {
+                    return None;
+                }
+                // Deselect.
+                else if input.happened(&InputEvent::SelectNone) {
+                    let s0 = state.clone();
+                    let mode = state.select_mode.clone();
+                    state.select_mode = match mode {
+                        SelectMode::Single(_) => SelectMode::Single(None),
+                        SelectMode::Many(_) => SelectMode::Many(None),
+                    };
+                    return Some(Snapshot::from_states(s0, state));
+                }
+                // Select all.
+                else if input.happened(&InputEvent::SelectAll) {
                     let indices = track.notes.iter().enumerate().map(|n| n.0).collect();
                     let s0 = state.clone();
                     state.select_mode = SelectMode::Many(Some(indices));
                     return Some(Snapshot::from_states(s0, state));
                 }
-                None => None,
-            }
-        }
-        // Adjust the end of the selection.
-        else if let SelectMode::Many(indices) = &state.select_mode {
-            // Remove a note at the end.
-            if input.happened(&InputEvent::SelectEndLeft) {
-                match indices {
-                    Some(indices) => match indices.len() > 1 {
-                        true => {
-                            let s0 = state.clone();
-                            let indices = indices.as_slice()[0..indices.len() - 1].to_vec();
-                            state.select_mode = SelectMode::Many(Some(indices));
-                            return Some(Snapshot::from_states(s0, state));
-                        }
-                        false => {
-                            let s0 = state.clone();
-                            state.select_mode = SelectMode::Many(None);
-                            return Some(Snapshot::from_states(s0, state));
-                        }
-                    },
-                    None => {
-                        if let Some(track) = state.music.get_selected_track() {
-                            if let Some(index) = Select::get_note_index_closest_to_after_cursor(
-                                &track.notes,
-                                &state.time,
-                            ) {
-                                let s0 = state.clone();
-                                state.select_mode = SelectMode::Many(Some(vec![index]));
-                                return Some(Snapshot::from_states(s0, state));
-                            }
-                        }
-                        None
-                    }
-                }
-            }
-            // Add a note at the end.
-            else if input.happened(&InputEvent::SelectEndRight) {
-                match indices {
-                    Some(indices) => match indices.iter().max() {
-                        Some(max) => {
-                            if let Some(track) = state.music.get_selected_track() {
-                                if let Some(max) = track
-                                    .notes
-                                    .iter()
-                                    .enumerate()
-                                    .filter(|n| n.1.gt(&track.notes[*max]))
-                                    .max_by(|a, b| a.1.cmp(b.1))
-                                {
-                                    let mut indices = indices.clone();
-                                    indices.push(max.0);
-                                    let s0 = state.clone();
-                                    state.select_mode = SelectMode::Many(Some(indices));
-                                    return Some(Snapshot::from_states(s0, state));
+                // Adjust the end of the selection.
+                else if let SelectMode::Many(indices) = &state.select_mode {
+                    // Remove a note at the end.
+                    if input.happened(&InputEvent::SelectEndLeft) {
+                        match indices {
+                            Some(indices) => {
+                                match Select::get_last_selected_note(track, indices) {
+                                    Some(last_selected_note) => {
+                                        let s0 = state.clone();
+                                        // Remove the note.
+                                        let mut indices = indices.clone();
+                                        indices.retain(|n| *n == last_selected_note.0);
+                                        state.select_mode = SelectMode::Many(Some(indices));                                  
+                                        return Some(Snapshot::from_states(s0, state));
+                                    }
+                                    None => return None,
                                 }
                             }
+                            None => {
+                                // Select the note closest to the cursor.
+                                if let Some(index) = Select::get_note_index_closest_to_after_cursor(
+                                    &track.notes,
+                                    &state.time,
+                                ) {
+                                    let s0 = state.clone();
+                                    state.select_mode = SelectMode::Many(Some(vec![index]));
+                                    return Some(Snapshot::from_states(s0, state));
+                                }
+                                None
+                            }
                         }
-                        None => {
-                            if let Some(track) = state.music.get_selected_track() {
+                    }
+                    // Add a note at the end.
+                    else if input.happened(&InputEvent::SelectEndRight) {
+                        match indices {
+                            Some(indices) => {
+                                match Select::get_last_selected_note(track, indices) {
+                                    // Get the next note.
+                                    Some(last_selected_note) => match track
+                                        .notes
+                                        .iter()
+                                        .enumerate()
+                                        .filter(|n| n.1.gt(last_selected_note.1))
+                                        .min_by(|a, b| a.1.cmp(b.1))
+                                    {
+                                        Some(next_note) => {
+                                            let s0 = state.clone();
+                                            // Remove the note.
+                                            let mut indices = indices.clone();
+                                            indices.push(next_note.0);
+                                            state.select_mode = SelectMode::Many(Some(indices));       
+                                            return Some(Snapshot::from_states(s0, state));
+                                        }
+                                        None => return None,
+                                    },
+                                    None => return None,
+                                }
+                            }
+                            None => {
                                 if let Some(index) = Select::get_note_index_closest_to_after_cursor(
                                     &track.notes,
                                     &state.time,
@@ -268,26 +294,14 @@ impl Panel for Select {
                                 }
                             }
                         }
-                    },
-                    None => {
-                        if let Some(track) = state.music.get_selected_track() {
-                            if let Some(index) = Select::get_note_index_closest_to_after_cursor(
-                                &track.notes,
-                                &state.time,
-                            ) {
-                                let s0 = state.clone();
-                                state.select_mode = SelectMode::Many(Some(vec![index]));
-                                return Some(Snapshot::from_states(s0, state));
-                            }
-                        }
+                        None
+                    } else {
+                        None
                     }
+                } else {
+                    None
                 }
-                None
-            } else {
-                None
             }
-        } else {
-            None
         }
     }
 }
