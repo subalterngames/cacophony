@@ -58,7 +58,7 @@ impl Panel for Edit {
                     // Move the notes right.
                     else if input.happened(&InputEvent::EditStartRight) {
                         let dt = self.deltas.get_dt(&mode, &state.input);
-                        notes.iter_mut().for_each(|n| n.start -= dt);
+                        notes.iter_mut().for_each(|n| n.start += dt);
                         Some(Snapshot::from_states(s0, state))
                     }
                     // Shorten the duration.

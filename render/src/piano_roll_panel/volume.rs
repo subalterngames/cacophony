@@ -39,9 +39,9 @@ impl Volume {
         let size_f =
             renderer.grid_to_pixel([size[0] - 2 - PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH, size[1] - 2]);
 
-        let line_y1 = position_f[1];
-        let line_y0 = position_f[1] + size_f[1];
-        let line_extents = [line_y1, line_y0, line_y1 - line_y0];
+        let line_y1 = position_f[1] + size_f[1];
+        let line_y0 = position_f[1] + size_f[1] * 2.0;
+        let line_extents = [line_y1, line_y0, line_y0 - line_y1];
 
         Self {
             rect,
@@ -81,6 +81,6 @@ impl Volume {
         let h = self.line_extents[2] * (note.note.velocity as f32 / 127.0);
         let bottom = self.line_extents[0];
         let top = bottom - h;
-        renderer.vertical_line_pixel(note.x, top, bottom, &note.color)
+        renderer.vertical_line_pixel(note.x, bottom, top, &note.color)
     }
 }
