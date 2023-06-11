@@ -216,8 +216,7 @@ impl Panel for OpenFilePanel {
                 // Load a save file.
                 OpenFileType::ReadSave => {
                     let path = &self.open_file.paths[self.open_file.selected.unwrap()].path;
-                    let mut filename = path.file_name().unwrap().to_str().unwrap().to_string();
-                    filename.push_str(".cac");
+                    let filename = path.file_name().unwrap().to_str().unwrap().to_string();
                     let path = self.open_file.directory.join(filename);
                     *state = State::read(&path);
                     return OpenFilePanel::set_save_path(&path);
