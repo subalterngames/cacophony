@@ -12,7 +12,7 @@ impl Select {
         notes
             .iter()
             .enumerate()
-            .filter(|n| n.1.start + n.1.duration < time.cursor)
+            .filter(|n| n.1.start < time.cursor)
             .max_by(|a, b| a.1.cmp(b.1))
             .map(|max| max.0)
     }
@@ -22,7 +22,7 @@ impl Select {
         notes
             .iter()
             .enumerate()
-            .filter(|n| n.1.start + n.1.duration >= time.cursor)
+            .filter(|n| n.1.start >= time.cursor)
             .min_by(|a, b| a.1.cmp(b.1))
             .map(|max| max.0)
     }
@@ -121,7 +121,7 @@ impl Panel for Select {
                             Some(indices) => {
                                 // There is a first selected note.
                                 if let Some(first_selected_note) =
-                                    Select::get_first_selected_note(track, &indices)
+                                    Select::get_first_selected_note(track, indices)
                                 {
                                     // There is a prior note.
                                     if let Some(prior_note) = track
@@ -185,9 +185,12 @@ impl Panel for Select {
                         // Remove the first note.
                         SelectMode::Many(indices) => match indices {
                             Some(indices) => {
+                                if indices.len() <= 1 {
+                                    return None;
+                                }
                                 // There is a first selected note.
                                 if let Some(first_selected_note) =
-                                    Select::get_first_selected_note(track, &indices)
+                                    Select::get_first_selected_note(track, indices)
                                 {
                                     // Remove the note.
                                     indices.retain(|n| *n != first_selected_note.0);
@@ -231,13 +234,16 @@ impl Panel for Select {
                     if input.happened(&InputEvent::SelectEndLeft) {
                         match indices {
                             Some(indices) => {
+                                if indices.len() <= 1 {
+                                    return None;
+                                }
                                 match Select::get_last_selected_note(track, indices) {
                                     Some(last_selected_note) => {
                                         let s0 = state.clone();
                                         // Remove the note.
                                         let mut indices = indices.clone();
-                                        indices.retain(|n| *n == last_selected_note.0);
-                                        state.select_mode = SelectMode::Many(Some(indices));                                  
+                                        indices.retain(|n| *n != last_selected_note.0);
+                                        state.select_mode = SelectMode::Many(Some(indices));
                                         return Some(Snapshot::from_states(s0, state));
                                     }
                                     None => return None,
@@ -275,7 +281,7 @@ impl Panel for Select {
                                             // Remove the note.
                                             let mut indices = indices.clone();
                                             indices.push(next_note.0);
-                                            state.select_mode = SelectMode::Many(Some(indices));       
+                                            state.select_mode = SelectMode::Many(Some(indices));
                                             return Some(Snapshot::from_states(s0, state));
                                         }
                                         None => return None,
