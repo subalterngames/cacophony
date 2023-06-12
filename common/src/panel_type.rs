@@ -8,4 +8,5 @@ pub enum PanelType {
     Music,
     PianoRoll,
     OpenFile,
+    Export,
 }

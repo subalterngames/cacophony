@@ -1,3 +1,4 @@
+use crate::export_panel::ExportPanel;
 use crate::main_menu::MainMenu;
 use crate::music_panel::MusicPanel;
 use crate::open_file_panel::OpenFilePanel;
@@ -18,6 +19,8 @@ pub struct Panels {
     open_file_panel: OpenFilePanel,
     /// The piano roll panel.
     piano_roll_panel: PianoRollPanel,
+    /// The export panel.
+    export_panel: ExportPanel,
 }
 
 impl Panels {
@@ -33,12 +36,14 @@ impl Panels {
         let tracks_panel = TracksPanel::new(config, text);
         let open_file_panel = OpenFilePanel::new(config, text);
         let piano_roll_panel = PianoRollPanel::new(config, state, text, renderer);
+        let export_panel = ExportPanel::new(config, text);
         Self {
             music_panel,
             main_menu,
             tracks_panel,
             open_file_panel,
             piano_roll_panel,
+            export_panel,
         }
     }
 
@@ -70,6 +75,7 @@ impl Panels {
                 PanelType::Tracks => &self.tracks_panel,
                 PanelType::OpenFile => &self.open_file_panel,
                 PanelType::PianoRoll => &self.piano_roll_panel,
+                PanelType::Export => &self.export_panel,
             };
             // Draw the panel.
             panel.update(renderer, state, conn, input, text, open_file);

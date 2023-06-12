@@ -111,7 +111,7 @@ impl MainMenu {
 
 impl Drawable for MainMenu {
     fn update(&self, renderer: &Renderer, _: &State, _: &Conn, _: &Input, _: &Text, _: &OpenFile) {
-        self.panel.draw_ex(&COLOR, renderer);
+        self.panel.update_ex(&COLOR, renderer);
         for label in self.labels.iter() {
             renderer.text(label, &COLOR)
         }

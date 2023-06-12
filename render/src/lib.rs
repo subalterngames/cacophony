@@ -13,6 +13,7 @@
 
 mod color_key;
 mod drawable;
+mod export_panel;
 mod field_params;
 mod focusable_texture;
 mod main_menu;

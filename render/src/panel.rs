@@ -24,6 +24,7 @@ impl Panel {
             PanelType::OpenFile => "TITLE_OPEN_FILE",
             PanelType::PianoRoll => "TITLE_PIANO_ROLL",
             PanelType::Tracks => "TITLE_TRACKS",
+            PanelType::Export => "TITLE_EXPORT",
         };
         let title = text.get(title_key);
         let title_position = [position[0] + 2, position[1]];
@@ -46,11 +47,11 @@ impl Panel {
         } else {
             ColorKey::NoFocus
         };
-        self.draw_ex(&color, renderer);
+        self.update_ex(&color, renderer);
     }
 
     /// Draw an empty panel. The border and title text will be an explicitly defined color.
-    pub fn draw_ex(&self, color: &ColorKey, renderer: &Renderer) {
+    pub fn update_ex(&self, color: &ColorKey, renderer: &Renderer) {
         renderer.rectangle(&self.rect, &ColorKey::Background);
         renderer.border(&self.rect, color);
         renderer.rectangle(&self.title_rect, &ColorKey::Background);

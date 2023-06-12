@@ -3,7 +3,7 @@ use common::config::{load, parse_bool};
 use common::macroquad;
 use common::macroquad::prelude::*;
 use common::sizes::get_window_pixel_size;
-use common::{Paths, State, get_bytes};
+use common::{get_bytes, Paths, State};
 use input::Input;
 use io::IO;
 use render::{draw_subtitles, Panels, Renderer};
