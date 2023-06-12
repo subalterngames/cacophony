@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 /// A channel's program.
+#[derive(Serialize, Deserialize)]
 pub struct Program {
     /// The path to the current track's SoundFont.
     pub path: PathBuf,

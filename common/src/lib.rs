@@ -39,7 +39,7 @@ pub use music::Music;
 pub use note::{Note, MAX_NOTE, MAX_VOLUME, MIN_NOTE};
 pub use panel_type::PanelType;
 pub use paths::Paths;
-pub use state::State;
+pub use state::{SerializableState, State};
 pub use tts;
 use view::View;
 mod edit_mode;
@@ -49,13 +49,12 @@ mod select_mode;
 pub use select_mode::SelectMode;
 mod piano_roll_mode;
 pub use piano_roll_mode::PianoRollMode;
-pub use serde;
-pub use serde_json;
 use std::fs::{metadata, File};
 use std::io::Read;
 pub mod font;
 pub mod open_file;
 pub mod sizes;
+pub use serde_json;
 
 /// Read bytes from a file.
 pub fn get_bytes(path: &str) -> Vec<u8> {

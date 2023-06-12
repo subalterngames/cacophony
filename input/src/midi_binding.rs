@@ -1,5 +1,5 @@
+use common::serde_json::{from_str, Error};
 use serde::Deserialize;
-use serde_json::{from_str, Error};
 
 /// Bindings for MIDI input.
 #[derive(Clone, Deserialize)]

@@ -1,8 +1,10 @@
 use crate::Program;
 use crate::TimeState;
 use hashbrown::HashMap;
+use serde::{Deserialize, Serialize};
 
 /// The state of the synthesizer.
+#[derive(Serialize, Deserialize)]
 pub struct SynthState {
     /// The program state per channel.
     pub programs: HashMap<u8, Program>,

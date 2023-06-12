@@ -1,5 +1,7 @@
+use serde::{Deserialize, Serialize};
+
 /// Describes the state of audio playback.
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone, Default, Deserialize, Serialize)]
 pub struct TimeState {
     /// The current playback time in samples.
     pub time: Option<u64>,

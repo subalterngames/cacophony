@@ -87,6 +87,7 @@ dependencies = [
  "crossbeam-channel",
  "hashbrown 0.13.2",
  "oxisynth",
+ "serde",
 ]
 
 [[package]]
@@ -796,6 +797,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43a3c133739dddd0d2990f9a4bdf8eb4b21ef50e4851ca85ab661199821d510e"
 dependencies = [
  "ahash 0.8.3",
+ "serde",
 ]
 
 [[package]]
@@ -878,7 +880,6 @@ version = "0.1.0"
 dependencies = [
  "common",
  "serde",
- "serde_json",
  "strum",
  "strum_macros",
 ]
@@ -900,6 +901,7 @@ dependencies = [
  "common",
  "edit",
  "input",
+ "serde",
  "text",
  "tooltip",
 ]

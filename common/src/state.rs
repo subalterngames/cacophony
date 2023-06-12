@@ -7,13 +7,6 @@ use crate::view::SerializableViewport;
 use crate::{Index, InputState, Music, PanelType, PianoRollMode, SelectMode, View};
 use ini::Ini;
 use serde::{Deserialize, Serialize};
-use serde_json::{from_str, to_string, Error};
-use std::fs::{File, OpenOptions};
-use std::io::{Read, Write};
-use std::path::PathBuf;
-
-const READ_ERROR: &str = "Error reading file: ";
-const WRITE_ERROR: &str = "Error writing file: ";
 
 #[derive(Clone, Debug)]
 pub struct State {
@@ -65,56 +58,17 @@ impl State {
         }
     }
 
-    /// Write this state to a file.
-    pub fn write(&self, path: &PathBuf) {
-        match OpenOptions::new()
-            .write(true)
-            .append(false)
-            .truncate(true)
-            .create(true)
-            .open(path)
-        {
-            Ok(mut file) => {
-                let s = self.serialize();
-                if let Err(error) = file.write(s.as_bytes()) {
-                    panic!("{} {}", WRITE_ERROR, error)
-                }
-            }
-            Err(error) => panic!("{} {}", WRITE_ERROR, error),
-        }
-    }
-
-    /// Load a file and deserialize its contents to a `State`.
-    pub fn read(path: &PathBuf) -> State {
-        match File::open(path) {
-            Ok(mut file) => {
-                let mut string = String::new();
-                match file.read_to_string(&mut string) {
-                    Ok(_) => {
-                        let q: Result<SerializableState, Error> = from_str(&string);
-                        match q {
-                            Ok(s) => s.deserialize(),
-                            Err(error) => panic!("{} {}", READ_ERROR, error),
-                        }
-                    }
-                    Err(error) => panic!("{} {}", READ_ERROR, error),
-                }
-            }
-            Err(error) => panic!("{} {}", READ_ERROR, error),
-        }
-    }
-
     pub fn get_music_panel_field(&self) -> &MusicPanelField {
         &MUSIC_PANEL_FIELDS[self.music_panel_field.get()]
     }
 
-    fn serialize(&self) -> String {
+    pub fn serialize(&self) -> SerializableState {
         let music = self.music.serialize();
         let view = self.view.serialize();
         let input = self.input.serialize();
         let time = self.time.serialize();
         let select_mode = self.select_mode.clone();
-        let s = SerializableState {
+        SerializableState {
             input,
             music,
             view,
@@ -125,16 +79,12 @@ impl State {
             music_panel_field: self.music_panel_field.get(),
             edit_mode: self.edit_mode.get(),
             select_mode,
-        };
-        match to_string(&s) {
-            Ok(s) => s,
-            Err(error) => panic!("{} {}", WRITE_ERROR, error),
         }
     }
 }
 
 #[derive(Serialize, Deserialize)]
-struct SerializableState {
+pub struct SerializableState {
     /// The input state.
     input: SerializableInputState,
     /// The serializable music.
@@ -158,7 +108,7 @@ struct SerializableState {
 }
 
 impl SerializableState {
-    fn deserialize(&self) -> State {
+    pub fn deserialize(&self) -> State {
         let music = self.music.deserialize();
         let view = self.view.deserialize();
         let input = self.input.deserialize();

@@ -1,5 +1,5 @@
 use crate::panel::*;
-use crate::{get_tooltip, get_tooltip_with_values};
+use crate::{get_tooltip, get_tooltip_with_values, Save};
 use common::open_file::*;
 use common::{PanelType, Paths};
 use std::path::Path;
@@ -218,7 +218,7 @@ impl Panel for OpenFilePanel {
                     let path = &self.open_file.paths[self.open_file.selected.unwrap()].path;
                     let filename = path.file_name().unwrap().to_str().unwrap().to_string();
                     let path = self.open_file.directory.join(filename);
-                    *state = State::read(&path);
+                    Save::read(&path, state, conn);
                     return OpenFilePanel::set_save_path(&path);
                 }
                 // Load a SoundFont.
@@ -246,7 +246,7 @@ impl Panel for OpenFilePanel {
                     let mut filename = self.open_file.filename.as_ref().unwrap().clone();
                     filename.push_str(".cac");
                     let path = self.open_file.directory.join(filename);
-                    state.write(&path);
+                    Save::write(&path, state, conn);
                     return OpenFilePanel::set_save_path(&path);
                 }
                 // Set an export file.

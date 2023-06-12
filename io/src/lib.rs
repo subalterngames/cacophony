@@ -28,6 +28,7 @@ mod io_command;
 mod music_panel;
 mod panel;
 mod piano_roll;
+mod save;
 mod snapshot;
 mod tracks_panel;
 use io_command::IOCommand;
@@ -38,6 +39,7 @@ use common::open_file::OpenFileType;
 use open_file_panel::OpenFilePanel;
 use panel::Panel;
 use piano_roll::PianoRollPanel;
+use save::Save;
 use snapshot::Snapshot;
 use tooltip::*;
 use tracks_panel::TracksPanel;
@@ -171,7 +173,7 @@ impl IO {
         else if input.happened(&InputEvent::SaveFile) {
             match &self.save_path {
                 // Save to the existing path,
-                Some(path) => state.write(path),
+                Some(path) => Save::write(path, state, conn),
                 // Set a new path.
                 None => self.open_file_panel.write_save(paths, state),
             }
