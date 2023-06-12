@@ -89,7 +89,7 @@ impl Panel for View {
             }
             // Snap to t=0.
             else {
-                state.view.dt = [Fraction::zero(), dt];
+                state.view.dt = [Fraction::zero(), state.view.dt[1] - state.view.dt[0]];
                 Some(Snapshot::from_states(s0, state))
             }
         }
