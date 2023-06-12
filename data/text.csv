@@ -209,7 +209,7 @@ PIANO_ROLL_PANEL_INPUT_TTS_EDIT,\0 and \1 to set the start time. \2 and \3 to se
 PIANO_ROLL_PANEL_STATUS_TTS_TIME,"The cursor is at \0. Playback will start at \1."
 PIANO_ROLL_PANEL_INPUT_TTS_TIME,\0 and \1 to move the cursor. \2 and \3 to set the cursor to the start and end. \4 and \5 to move the playback time. \6 and \7 to set the playback time to the start and end.
 PIANO_ROLL_PANEL_STATUS_TTS_VIEW,The view is from beats \0 to \1 and pitches \2 to \3.
-PIANO_ROLL_PANEL_INPUT_TTS_VIEW,"\0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end."
+PIANO_ROLL_PANEL_INPUT_TTS_VIEW,"\0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end. \6 and \7 to zoom in and out. \8 to reset the zoom level."
 ERROR,ERROR: \0
 TRUE,Y
 FALSE,N

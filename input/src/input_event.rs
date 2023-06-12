@@ -70,6 +70,9 @@ pub enum InputEvent {
     ViewDown,
     ViewStart,
     ViewEnd,
+    ViewZoomIn,
+    ViewZoomOut,
+    ViewZoomDefault,
     // Piano roll - time mode.
     TimeCursorLeft,
     TimeCursorRight,

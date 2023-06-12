@@ -2,20 +2,45 @@ use super::{
     get_cycle_edit_mode_input_tts, get_edit_mode_status_tts, EditModeDeltas, PianoRollSubPanel,
 };
 use crate::panel::*;
+use common::config::parse_fraction;
 use common::ini::Ini;
-use common::Zero;
-use common::{Fraction, EDIT_MODES, MAX_NOTE, MIN_NOTE};
+use common::sizes::get_viewport_size;
+use common::{EditMode, Fraction, One, Zero, EDIT_MODES, MAX_NOTE, MIN_NOTE};
 
 /// The piano roll view sub-pane
 pub(super) struct View {
     /// Time values and deltas.
     deltas: EditModeDeltas,
+    /// The default viewport dt.
+    dt_0: Fraction,
+    /// The minimum viewport dt.
+    min_dt: Fraction,
+    /// The maximum viewport dt.
+    max_dt: Fraction,
+    /// In normal mode, zoom in by this factor.
+    normal_zoom: Fraction,
+    /// In quick mode, zoom in by this factor.
+    quick_zoom: Fraction,
+    /// In precise mode, zoom in by this factor.
+    precise_zoom: Fraction,
 }
 
 impl View {
     pub fn new(config: &Ini) -> Self {
+        let section = config.section(Some("PIANO_ROLL")).unwrap();
+        let normal_zoom = parse_fraction(section, "normal_zoom");
+        let quick_zoom = parse_fraction(section, "quick_zoom");
+        let precise_zoom = parse_fraction(section, "precise_zoom");
+        let viewport_size = get_viewport_size(config);
+        let dt_0 = Fraction::from(viewport_size[0]);
         Self {
             deltas: EditModeDeltas::new(config),
+            min_dt: Fraction::one(),
+            max_dt: Fraction::new(500u16, 1u16),
+            normal_zoom,
+            quick_zoom,
+            precise_zoom,
+            dt_0,
         }
     }
 
@@ -27,6 +52,26 @@ impl View {
     /// Returns the delta from the viewport's n1 to its n0.
     fn get_dn(state: &State) -> u8 {
         state.view.dn[0] - state.view.dn[1]
+    }
+
+    /// Zoom in or out.
+    fn zoom(&self, state: &mut State, zoom_in: bool) -> Option<Snapshot> {
+        // Get the current dt.
+        let mut dt = state.view.dt[1] - state.view.dt[0];
+        // Get the zoom factor.
+        let dz = match &EDIT_MODES[state.view.mode.get()] {
+            EditMode::Normal => self.normal_zoom,
+            EditMode::Quick => self.quick_zoom,
+            EditMode::Precise => self.precise_zoom,
+        };
+        // Apply the zoom factor.
+        dt = (if zoom_in { dt * dz } else { dt / dz })
+            .ceil()
+            .clamp(self.min_dt, self.max_dt);
+        // Set the viewport.
+        let s0 = state.clone();
+        state.view.dt = [state.view.dt[0], state.view.dt[0] + dt];
+        Some(Snapshot::from_states(s0, state))
     }
 }
 
@@ -140,6 +185,20 @@ impl Panel for View {
                 state.view.dn = [MIN_NOTE + dn, MIN_NOTE];
                 Some(Snapshot::from_states(s0, state))
             }
+        }
+        // Zoom in.
+        else if input.happened(&InputEvent::ViewZoomIn) {
+            self.zoom(state, true)
+        }
+        // Zoom out.
+        else if input.happened(&InputEvent::ViewZoomOut) {
+            self.zoom(state, false)
+        }
+        // Zoom default.
+        else if input.happened(&InputEvent::ViewZoomDefault) {
+            let s0 = state.clone();
+            state.view.dt = [state.view.dt[0], state.view.dt[0] + self.dt_0];
+            Some(Snapshot::from_states(s0, state))
         } else {
             None
         }
@@ -176,6 +235,9 @@ impl PianoRollSubPanel for View {
                 InputEvent::ViewRight,
                 InputEvent::ViewStart,
                 InputEvent::ViewEnd,
+                InputEvent::ViewZoomIn,
+                InputEvent::ViewZoomOut,
+                InputEvent::ViewZoomDefault,
             ],
             input,
             text,

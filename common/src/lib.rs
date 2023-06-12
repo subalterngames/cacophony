@@ -25,7 +25,7 @@ pub mod time;
 mod view;
 pub use crossbeam_channel;
 pub use csv;
-pub use fraction::{ToPrimitive, Zero};
+pub use fraction::{One, ToPrimitive, Zero};
 pub use fraction_utils::Fraction;
 use fraction_utils::{deserialize_fraction, serialize_fraction, SerializableFraction};
 pub use hashbrown;
