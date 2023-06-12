@@ -8,8 +8,7 @@ use text::{get_file_name_no_ex, get_folder_name};
 /// Data for an open-file panel.
 #[derive(Default)]
 pub struct OpenFilePanel {
-    /// The open-file context.
-    pub open_file: OpenFile,
+    open_file_type: OpenFileType,
     /// The index of the previously-focused panel.
     previous_focus: Index,
     /// The previously-active panels.
@@ -87,23 +86,34 @@ impl Panel for OpenFilePanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
+        paths: &Paths,
+        paths_state: &mut PathsState,
     ) -> Option<Snapshot> {
-        // ABC123 input.
-        if let Some(filename) = &mut self.open_file.filename {
-            if input.modify_string_abc123(filename) {
-                return None;
+        match self.open_file_type {
+            OpenFileType::SoundFont => (),
+            other => {
+                // Get a modifiable filename.
+                let mut filename = match &paths_state.get_filename(&self.open_file_type) {
+                    Some(filename) => filename.clone(),
+                    None => String::new()
+                };
+                // Modify the path.
+                if input.modify_string_abc123(&mut filename) {
+                    paths_state.set_path(&filename, &self.open_file_type, paths);
+                    return None;
+                }
             }
         }
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {
             let mut s = text.get_with_values(
                 "OPEN_FILE_PANEL_STATUS_TTS_CWD",
-                &[&get_folder_name(&self.open_file.directory)],
+                &[&get_folder_name(&paths_state.get_directory(&self.open_file_type, paths))],
             );
             s.push(' ');
-            match self.open_file.selected {
-                Some(selected) => {
-                    let path = &self.open_file.paths[selected];
+            match (paths_state.selected, paths_state.children) {
+                (Some(selected), Some(children)) => {
+                    let path = &children[selected];
                     let name = if path.is_file {
                         text.get_with_values("FILE", &[&get_file_name_no_ex(&path.path)])
                     } else {
@@ -113,7 +123,7 @@ impl Panel for OpenFilePanel {
                         &text.get_with_values("OPEN_FILE_PANEL_STATUS_TTS_SELECTION", &[&name]),
                     );
                 }
-                None => s.push_str(&text.get("OPEN_FILE_PANEL_STATUS_TTS_NO_SELECTION")),
+                _ => s.push_str(&text.get("OPEN_FILE_PANEL_STATUS_TTS_NO_SELECTION")),
             }
             tts.say(&s);
         }
@@ -121,7 +131,7 @@ impl Panel for OpenFilePanel {
         else if input.happened(&InputEvent::InputTTS) {
             let mut strings = vec![];
             // Up directory.
-            if let Some(parent) = self.open_file.directory.parent() {
+            if let Some(parent) = paths_state.get_directory(&self.open_file_type, paths).parent() {
                 strings.push(get_tooltip_with_values(
                     "OPEN_FILE_PANEL_INPUT_TTS_UP_DIRECTORY",
                     &[InputEvent::UpDirectory],
@@ -131,43 +141,49 @@ impl Panel for OpenFilePanel {
                 ))
             }
             // Scroll.
-            if self.open_file.paths.len() > 1 {
-                strings.push(get_tooltip(
-                    "OPEN_FILE_PANEL_INPUT_TTS_SCROLL",
-                    &[InputEvent::PreviousPath, InputEvent::NextPath],
-                    input,
-                    text,
-                ));
-            }
-            if let Some(selected) = self.open_file.selected {
-                let events = vec![InputEvent::SelectFile];
-                let path = &self.open_file.paths[selected];
-                match path.is_file {
-                    // Select.
-                    true => {
-                        let open_file_key = match self.open_file.open_file_type.as_ref().unwrap() {
-                            OpenFileType::ReadSave => "OPEN_FILE_PANEL_INPUT_TTS_READ_SAVE",
-                            OpenFileType::Export => "OPEN_FILE_PANEL_INPUT_TTS_EXPORT",
-                            OpenFileType::SoundFont => "OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT",
-                            OpenFileType::WriteSave => "OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE",
-                        };
-                        strings.push(get_tooltip_with_values(
-                            open_file_key,
-                            &events,
-                            &[&get_file_name_no_ex(&path.path)],
-                            input,
-                            text,
-                        ));
-                    }
-                    // Down directory.
-                    false => strings.push(get_tooltip_with_values(
-                        "OPEN_FILE_PANEL_INPUT_TTS_DOWN_DIRECTORY",
-                        &[InputEvent::DownDirectory],
-                        &[&get_folder_name(&path.path)],
+            if let Some(children) = paths_state.children {
+                if children.len() > 1 {
+                    strings.push(get_tooltip(
+                        "OPEN_FILE_PANEL_INPUT_TTS_SCROLL",
+                        &[InputEvent::PreviousPath, InputEvent::NextPath],
                         input,
                         text,
-                    )),
+                    ));
                 }
+            }
+            // Selection.
+            match (paths_state.selected, paths_state.children) {
+                (Some(selected), Some(children)) => {
+                    let events = vec![InputEvent::SelectFile];
+                    let path = &children[selected];
+                    match path.is_file {
+                        // Select.
+                        true => {
+                            let open_file_key = match self.open_file_type {
+                                OpenFileType::ReadSave => "OPEN_FILE_PANEL_INPUT_TTS_READ_SAVE",
+                                OpenFileType::Export => "OPEN_FILE_PANEL_INPUT_TTS_EXPORT",
+                                OpenFileType::SoundFont => "OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT",
+                                OpenFileType::WriteSave => "OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE",
+                            };
+                            strings.push(get_tooltip_with_values(
+                                open_file_key,
+                                &events,
+                                &[&get_file_name_no_ex(&path.path)],
+                                input,
+                                text,
+                            ));
+                        }
+                        // Down directory.
+                        false => strings.push(get_tooltip_with_values(
+                            "OPEN_FILE_PANEL_INPUT_TTS_DOWN_DIRECTORY",
+                            &[InputEvent::DownDirectory],
+                            &[&get_folder_name(&path.path)],
+                            input,
+                            text,
+                        )),
+                    }
+                }
+                _ => ()
             }
             // Close.
             strings.push(get_tooltip(
@@ -195,17 +211,19 @@ impl Panel for OpenFilePanel {
         }
         // Scroll up.
         else if input.happened(&InputEvent::PreviousPath) {
-            if let Some(selected) = self.open_file.selected {
-                if selected > 0 {
-                    self.open_file.selected = Some(selected - 1);
+            if let Some(selected) = &paths_state.selected {
+                if *selected > 0 {
+                    paths_state.selected = Some(selected - 1);
                 }
             }
         }
         // Scroll down.
         else if input.happened(&InputEvent::NextPath) {
-            if let Some(selected) = self.open_file.selected {
-                if selected < self.open_file.paths.len() - 1 {
-                    self.open_file.selected = Some(selected + 1);
+            if let Some(selected) = &paths_state.selected {
+                if let Some(children) = &paths_state.children {
+                    if *selected < children.len() - 1 {
+                        paths_state.selected = Some(selected + 1);
+                    }
                 }
             }
         }

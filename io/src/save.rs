@@ -1,6 +1,6 @@
 use audio::*;
 use common::serde_json::{from_str, to_string, Error};
-use common::{SerializableState, State};
+use common::{SerializableState, State, PathsState};
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
@@ -14,6 +14,7 @@ const WRITE_ERROR: &str = "Error writing file: ";
 pub(crate) struct Save {
     state: SerializableState,
     synth_state: SynthState,
+    paths_state: PathsState,
 }
 
 impl Save {
@@ -22,11 +23,13 @@ impl Save {
     /// - `path` The path we will write to.
     /// - `state` The app state. This will be converted to a `SerializableState`.
     /// - `conn` The audio connection. Its `SynthState` will be serialized.
-    pub fn write(path: &PathBuf, state: &State, conn: &Conn) {
+    /// - `paths_state` The paths state.
+    pub fn write(path: &PathBuf, state: &State, conn: &Conn, paths_state: &PathsState) {
         // Convert the state to something that can be serialized.
         let save = Save {
             state: state.serialize(),
             synth_state: conn.state.clone(),
+            paths_state: paths_state.clone()
         };
         // Try to open the file.
         match OpenOptions::new()
@@ -50,7 +53,7 @@ impl Save {
     }
 
     /// Load a file and deserialize.
-    pub fn read(path: &PathBuf, state: &mut State, conn: &mut Conn) {
+    pub fn read(path: &PathBuf, state: &mut State, conn: &mut Conn, paths_state: &mut PathsState) {
         match File::open(path) {
             Ok(mut file) => {
                 let mut string = String::new();
@@ -61,6 +64,9 @@ impl Save {
                             Ok(s) => {
                                 // Set the app state.
                                 *state = s.state.deserialize();
+
+                                // Set the paths.
+                                *paths_state = s.paths_state;
 
                                 // Set the synthesizer.
                                 // Set the gain.

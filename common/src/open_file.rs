@@ -22,8 +22,6 @@ pub struct OpenFile {
     pub selected: Option<usize>,
     /// The folders and files in the directory.
     pub paths: Vec<FileOrDirectory>,
-    /// The filename. This is used for write operations.
-    pub filename: Option<String>,
     /// If true, this was enabled on this frame.
     pub enabled: bool,
 }
@@ -50,26 +48,22 @@ impl OpenFile {
             self.directory = paths.soundfonts_directory.clone();
         }
         self.extensions = SOUNDFONT_EXTENSIONS.iter().map(|s| s.to_string()).collect();
-        self.filename = None;
         self.enable();
     }
 
     /// Enable a panel that can read save files.
     pub fn read_save(&mut self, paths: &Paths) {
-        self.filename = None;
         self.enable_as_save(paths);
         self.open_file_type = Some(OpenFileType::ReadSave);
     }
 
     /// Enable a panel that can write save files.
     pub fn write_save(&mut self, paths: &Paths) {
-        self.filename = Some(String::new());
         self.enable_as_save(paths);
         self.open_file_type = Some(OpenFileType::WriteSave);
     }
 
     pub fn export(&mut self, paths: &Paths) {
-        self.filename = Some(String::new());
         let set_directory = match &self.open_file_type {
             Some(oft) => *oft != OpenFileType::Export,
             None => true,

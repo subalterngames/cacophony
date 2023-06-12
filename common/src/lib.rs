@@ -20,6 +20,7 @@ mod music;
 mod note;
 mod panel_type;
 mod paths;
+mod paths_state;
 mod state;
 pub mod time;
 mod view;
@@ -55,6 +56,7 @@ pub mod font;
 pub mod open_file;
 pub mod sizes;
 pub use serde_json;
+pub use paths_state::PathsState;
 
 /// Read bytes from a file.
 pub fn get_bytes(path: &str) -> Vec<u8> {

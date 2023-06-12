@@ -1,5 +1,5 @@
-use common::PanelType;
 use crate::panel::*;
+use common::PanelType;
 
 /// Are we done yet?
 #[derive(Default)]
@@ -22,13 +22,15 @@ impl ExportPanel {
 
 impl Panel for ExportPanel {
     fn update(
-            &mut self,
-            state: &mut State,
-            conn: &mut Conn,
-            _: &Input,
-            _: &mut TTS,
-            _: &Text,
-        ) -> Option<Snapshot> {
+        &mut self,
+        state: &mut State,
+        conn: &mut Conn,
+        _: &Input,
+        _: &mut TTS,
+        _: &Text,
+        _: &Paths,
+        _: &mut PathsState,
+    ) -> Option<Snapshot> {
         // We're done.
         if conn.export_state.is_none() {
             state.panels = self.panels.clone();

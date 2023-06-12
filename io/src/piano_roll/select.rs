@@ -62,6 +62,8 @@ impl Panel for Select {
         input: &Input,
         _: &mut TTS,
         _: &Text,
+        _: &Paths,
+        _: &mut PathsState,
     ) -> Option<Snapshot> {
         match state.music.get_selected_track() {
             None => None,
