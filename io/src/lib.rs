@@ -24,6 +24,7 @@ use edit::edit_file;
 use input::{Input, InputEvent};
 use std::path::PathBuf;
 use text::{Text, TTS};
+mod export_panel;
 mod io_command;
 mod music_panel;
 mod panel;
