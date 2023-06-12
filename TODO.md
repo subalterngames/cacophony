@@ -11,12 +11,12 @@
 
 ## Misc.
 
-- [ ] Qwerty note play
+- [x] Qwerty note play
 
 ## Piano Roll Panel
 
-- [ ] Can we play notes?
-- [ ] Qwerty note input
+- [x] Can we play notes?
+- [x] Qwerty note input
 
 ## Export panel
 
