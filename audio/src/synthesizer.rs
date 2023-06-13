@@ -6,6 +6,8 @@ use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::PathBuf;
 
+const F32_TO_I16: f32 = 32767.5;
+
 /// A convenient wrapper for a SoundFont.
 struct SoundFontBanks {
     id: SoundFontId,
@@ -54,7 +56,9 @@ pub(crate) struct Synthesizer {
     ready: bool,
     /// The state of the synthesizer.
     state: SynthState,
+    /// The export state.
     export_state: Option<ExportState>,
+    /// The file we are exporting to.
     export_file: Option<File>,
 }
 
@@ -281,10 +285,10 @@ impl Synthesizer {
             match (&mut s.export_file, &mut s.export_state) {
                 (Some(export_file), Some(export_state)) => {
                     // Export.
-                    if let Err(error) = export_file.write(&sample.0.to_le_bytes()) {
+                    if let Err(error) = export_file.write(&Synthesizer::to_i16(sample.0).to_le_bytes()) {
                         panic!("Error exporting example: {}", error)
                     }
-                    if let Err(error) = export_file.write(&sample.1.to_le_bytes()) {
+                    if let Err(error) = export_file.write(&Synthesizer::to_i16(sample.1).to_le_bytes()) {
                         panic!("Error exporting example: {}", error)
                     }
                     // Increment the number of exported samples.
@@ -295,6 +299,11 @@ impl Synthesizer {
                     if export_state.exported >= export_state.samples {
                         s.export_state = None;
                         s.export_file = None;
+                    }
+                    // Increment time.
+                    else                            
+                    if let Some(time) = s.state.time.time.as_mut() {
+                        *time += 1;
                     }
                 }
                 // Set to None.
@@ -424,5 +433,9 @@ impl Synthesizer {
         self.synth
             .program_select(channel, id, bank, preset)
             .unwrap();
+    }
+
+    fn to_i16(sample: f32) -> i16 {
+        (sample * F32_TO_I16) as i16
     }
 }

@@ -9,6 +9,7 @@ const BPM_TO_SECONDS: f64 = 60.0;
 /// The framerate as a f64 value.
 const FRAMERATE: f64 = 44100.0;
 const FRAMERATE_U32: u32 = FRAMERATE as u32;
+pub const FRAMERATE_U64: u64 = FRAMERATE as u64;
 const BPM_TO_SECONDS_U32: u32 = 60;
 
 /// The time state.

@@ -33,6 +33,9 @@ impl Drawable for ExportPanel {
         _: &Text,
         _: &PathsState,
     ) {
+        if conn.export_state.is_none() {
+            return;
+        }
         self.popup.update(renderer);
         self.panel.update(true, renderer);
 
