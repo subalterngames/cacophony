@@ -1,12 +1,12 @@
 use crate::get_page;
 use crate::panel::*;
-use common::macroquad::texture::{DrawTextureParams, Texture2D};
+use crate::Popup;
 use text::truncate;
 
 const EXTENSION_WIDTH: u32 = 4;
 
 /// The open-file dialogue box.
-pub struct OpenFilePanel {
+pub(crate) struct OpenFilePanel {
     /// The panel.
     panel: Panel,
     /// The background of the filename prompt.
@@ -17,8 +17,8 @@ pub struct OpenFilePanel {
     input: Width,
     /// The filename input background rectangle.
     input_rect: Rectangle,
-    /// The background texture (screen capture).
-    background: Option<(Texture2D, DrawTextureParams)>,
+    /// The popup handler.
+    pub popup: Popup,
 }
 
 impl OpenFilePanel {
@@ -52,19 +52,16 @@ impl OpenFilePanel {
         );
         let input_rect = Rectangle::new(input.position, [input.width_u32, 1]);
 
+        let popup = Popup::new(PanelType::OpenFile);
+
         Self {
             panel,
             prompt,
             extension,
             input,
             input_rect,
-            background: None,
+            popup,
         }
-    }
-
-    /// Capture the screen and set it as the background.
-    pub fn set_background(&mut self, renderer: &Renderer) {
-        self.background = Some(renderer.screen_capture())
     }
 }
 
@@ -76,11 +73,9 @@ impl Drawable for OpenFilePanel {
         _: &Conn,
         _: &Input,
         _: &Text,
-        open_file: &OpenFile,
+        paths_state: &PathsState,
     ) {
-        if let Some(background) = &self.background {
-            renderer.texture_ex(background.0, [0, 0], background.1.clone());
-        }
+        self.popup.update(renderer);
         // Draw the panel background.
         self.panel.update(true, renderer);
         // Draw the working directory.
@@ -92,7 +87,11 @@ impl Drawable for OpenFilePanel {
         let cwd = Label {
             position: [x, y],
             text: truncate(
-                &open_file.directory.to_str().unwrap().replace('\\', "/"),
+                &paths_state
+                    .get_directory()
+                    .to_str()
+                    .unwrap()
+                    .replace('\\', "/"),
                 length,
                 true,
             ),
@@ -107,19 +106,19 @@ impl Drawable for OpenFilePanel {
         let width = length as u32;
 
         // Get a page of elements.
-        let elements: Vec<u32> = vec![1; open_file.paths.len()];
-        let page = get_page(&open_file.selected, &elements, height);
+        let elements: Vec<u32> = vec![1; paths_state.children.children.len()];
+        let page = get_page(&paths_state.children.selected, &elements, height);
 
         // Show the elements.
         for index in page {
-            let path = &open_file.paths[index];
+            let path = &paths_state.children.children[index];
             // Get the color of the text. Flip the fg/bg colors for the selected element.
             let c = if path.is_file {
                 ColorKey::Value
             } else {
                 ColorKey::FocusDefault
             };
-            let (text_color, bg_color) = match open_file.selected {
+            let (text_color, bg_color) = match paths_state.children.selected {
                 Some(selected) => match selected == index {
                     true => (ColorKey::Background, Some(c)),
                     false => (c, None),
@@ -143,14 +142,14 @@ impl Drawable for OpenFilePanel {
         }
 
         // Possibly show the input dialogue.
-        if let Some(filename) = &open_file.filename {
+        if let Some(filename) = &paths_state.get_filename() {
             // Draw the background of the prompt.
             renderer.rectangle(&self.prompt, &ColorKey::Background);
             renderer.border(&self.prompt, &ColorKey::FocusDefault);
 
             // Draw the extension.
             let mut extension = String::from(".");
-            extension.push_str(&open_file.extensions[0]);
+            extension.push_str(paths_state.open_file_type.get_extensions()[0]);
             renderer.text(&self.extension.to_label(&extension), &ColorKey::Key);
 
             // Draw the input background.

@@ -149,7 +149,7 @@ impl Drawable for PianoRollPanel {
         conn: &Conn,
         _: &Input,
         text: &Text,
-        _: &OpenFile,
+        _: &PathsState,
     ) {
         let focus = self.panel.has_focus(state);
 

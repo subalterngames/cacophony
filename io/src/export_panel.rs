@@ -28,7 +28,6 @@ impl Panel for ExportPanel {
         _: &Input,
         _: &mut TTS,
         _: &Text,
-        _: &Paths,
         _: &mut PathsState,
     ) -> Option<Snapshot> {
         // We're done.

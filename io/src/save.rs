@@ -1,6 +1,6 @@
 use audio::*;
 use common::serde_json::{from_str, to_string, Error};
-use common::{SerializableState, State, PathsState};
+use common::{PathsState, SerializableState, State};
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
@@ -29,7 +29,7 @@ impl Save {
         let save = Save {
             state: state.serialize(),
             synth_state: conn.state.clone(),
-            paths_state: paths_state.clone()
+            paths_state: paths_state.clone(),
         };
         // Try to open the file.
         match OpenOptions::new()

@@ -1,14 +1,12 @@
 use crate::panel::*;
 use crate::{get_tooltip, get_tooltip_with_values, Save};
 use common::open_file::*;
-use common::{PanelType, Paths};
-use std::path::Path;
+use common::PanelType;
 use text::{get_file_name_no_ex, get_folder_name};
 
 /// Data for an open-file panel.
 #[derive(Default)]
 pub struct OpenFilePanel {
-    open_file_type: OpenFileType,
     /// The index of the previously-focused panel.
     previous_focus: Index,
     /// The previously-active panels.
@@ -17,7 +15,12 @@ pub struct OpenFilePanel {
 
 impl OpenFilePanel {
     /// Enable the panel.
-    fn enable(&mut self, state: &mut State) {
+    fn enable(
+        &mut self,
+        open_file_type: OpenFileType,
+        state: &mut State,
+        paths_state: &mut PathsState,
+    ) {
         // Lock undo/redo.
         state.input.can_undo = false;
         // Remember the active panels.
@@ -30,34 +33,48 @@ impl OpenFilePanel {
         self.previous_focus = state.focus;
         // Set a new index.
         state.focus = Index::new(0, 1);
+        // Set the file type.
+        paths_state.open_file_type = open_file_type;
     }
 
-    /// Enable a panel that can read SoundFonts.
-    pub fn soundfont(&mut self, paths: &Paths, state: &mut State) {
-        self.open_file.soundfont(paths);
-        self.enable(state);
+    /// Enable the panel for loading SoundFonts.
+    pub fn soundfont(&mut self, state: &mut State, paths_state: &mut PathsState) {
+        let open_file_type = OpenFileType::SoundFont;
+        paths_state
+            .children
+            .set(&paths_state.soundfonts.directory, &open_file_type, None);
+        self.enable(open_file_type, state, paths_state);
     }
 
-    /// Enable a panel that can read save files.
-    pub fn read_save(&mut self, paths: &Paths, state: &mut State) {
-        self.open_file.read_save(paths);
-        self.enable_as_save(paths, state);
+    /// Enable the panel for setting the save path to be read from.
+    pub fn read_save(&mut self, state: &mut State, paths_state: &mut PathsState) {
+        self.enable_as_save(OpenFileType::ReadSave, state, paths_state);
     }
 
-    /// Enable a panel that can write save files.
-    pub fn write_save(&mut self, paths: &Paths, state: &mut State) {
-        self.open_file.write_save(paths);
-        self.enable_as_save(paths, state);
+    /// Enable the panel for setting the save path to be written to.
+    pub fn write_save(&mut self, state: &mut State, paths_state: &mut PathsState) {
+        self.enable_as_save(OpenFileType::WriteSave, state, paths_state);
     }
 
-    pub fn export(&mut self, paths: &Paths, state: &mut State) {
-        self.open_file.export(paths);
-        self.enable(state);
+    /// Enable a panel for setting the export path.
+    pub fn export(&mut self, state: &mut State, paths_state: &mut PathsState) {
+        let open_file_type = OpenFileType::Export;
+        paths_state
+            .children
+            .set(&paths_state.exports.directory, &open_file_type, None);
+        self.enable(open_file_type, state, paths_state);
     }
 
-    fn enable_as_save(&mut self, paths: &Paths, state: &mut State) {
-        self.open_file.enable_as_save(paths);
-        self.enable(state);
+    fn enable_as_save(
+        &mut self,
+        open_file_type: OpenFileType,
+        state: &mut State,
+        paths_state: &mut PathsState,
+    ) {
+        paths_state
+            .children
+            .set(&paths_state.saves.directory, &open_file_type, None);
+        self.enable(open_file_type, state, paths_state);
     }
 
     /// Disable this panel.
@@ -70,12 +87,6 @@ impl OpenFilePanel {
         // Restore undo/redo.
         state.input.can_undo = true;
     }
-
-    fn set_save_path(path: &Path) -> Option<Snapshot> {
-        Some(Snapshot::from_io_commands(vec![IOCommand::SetSavePath(
-            Some(path.to_path_buf()),
-        )]))
-    }
 }
 
 impl Panel for OpenFilePanel {
@@ -86,20 +97,19 @@ impl Panel for OpenFilePanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-        paths: &Paths,
         paths_state: &mut PathsState,
     ) -> Option<Snapshot> {
-        match self.open_file_type {
-            OpenFileType::SoundFont => (),
-            other => {
+        match &paths_state.open_file_type {
+            OpenFileType::SoundFont | OpenFileType::ReadSave => (),
+            _ => {
                 // Get a modifiable filename.
-                let mut filename = match &paths_state.get_filename(&self.open_file_type) {
+                let mut filename = match &paths_state.get_filename() {
                     Some(filename) => filename.clone(),
-                    None => String::new()
+                    None => String::new(),
                 };
                 // Modify the path.
                 if input.modify_string_abc123(&mut filename) {
-                    paths_state.set_path(&filename, &self.open_file_type, paths);
+                    paths_state.set_filename(&filename);
                     return None;
                 }
             }
@@ -108,12 +118,12 @@ impl Panel for OpenFilePanel {
         if input.happened(&InputEvent::StatusTTS) {
             let mut s = text.get_with_values(
                 "OPEN_FILE_PANEL_STATUS_TTS_CWD",
-                &[&get_folder_name(&paths_state.get_directory(&self.open_file_type, paths))],
+                &[&get_folder_name(paths_state.get_directory())],
             );
             s.push(' ');
-            match (paths_state.selected, paths_state.children) {
-                (Some(selected), Some(children)) => {
-                    let path = &children[selected];
+            match paths_state.children.selected {
+                Some(selected) => {
+                    let path = &paths_state.children.children[selected];
                     let name = if path.is_file {
                         text.get_with_values("FILE", &[&get_file_name_no_ex(&path.path)])
                     } else {
@@ -131,7 +141,7 @@ impl Panel for OpenFilePanel {
         else if input.happened(&InputEvent::InputTTS) {
             let mut strings = vec![];
             // Up directory.
-            if let Some(parent) = paths_state.get_directory(&self.open_file_type, paths).parent() {
+            if let Some(parent) = paths_state.get_directory().parent() {
                 strings.push(get_tooltip_with_values(
                     "OPEN_FILE_PANEL_INPUT_TTS_UP_DIRECTORY",
                     &[InputEvent::UpDirectory],
@@ -141,49 +151,44 @@ impl Panel for OpenFilePanel {
                 ))
             }
             // Scroll.
-            if let Some(children) = paths_state.children {
-                if children.len() > 1 {
-                    strings.push(get_tooltip(
-                        "OPEN_FILE_PANEL_INPUT_TTS_SCROLL",
-                        &[InputEvent::PreviousPath, InputEvent::NextPath],
-                        input,
-                        text,
-                    ));
-                }
+            if paths_state.children.children.len() > 1 {
+                strings.push(get_tooltip(
+                    "OPEN_FILE_PANEL_INPUT_TTS_SCROLL",
+                    &[InputEvent::PreviousPath, InputEvent::NextPath],
+                    input,
+                    text,
+                ));
             }
             // Selection.
-            match (paths_state.selected, paths_state.children) {
-                (Some(selected), Some(children)) => {
-                    let events = vec![InputEvent::SelectFile];
-                    let path = &children[selected];
-                    match path.is_file {
-                        // Select.
-                        true => {
-                            let open_file_key = match self.open_file_type {
-                                OpenFileType::ReadSave => "OPEN_FILE_PANEL_INPUT_TTS_READ_SAVE",
-                                OpenFileType::Export => "OPEN_FILE_PANEL_INPUT_TTS_EXPORT",
-                                OpenFileType::SoundFont => "OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT",
-                                OpenFileType::WriteSave => "OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE",
-                            };
-                            strings.push(get_tooltip_with_values(
-                                open_file_key,
-                                &events,
-                                &[&get_file_name_no_ex(&path.path)],
-                                input,
-                                text,
-                            ));
-                        }
-                        // Down directory.
-                        false => strings.push(get_tooltip_with_values(
-                            "OPEN_FILE_PANEL_INPUT_TTS_DOWN_DIRECTORY",
-                            &[InputEvent::DownDirectory],
-                            &[&get_folder_name(&path.path)],
+            if let Some(selected) = paths_state.children.selected {
+                let events = vec![InputEvent::SelectFile];
+                let path = &paths_state.children.children[selected];
+                match path.is_file {
+                    // Select.
+                    true => {
+                        let open_file_key = match paths_state.open_file_type {
+                            OpenFileType::ReadSave => "OPEN_FILE_PANEL_INPUT_TTS_READ_SAVE",
+                            OpenFileType::Export => "OPEN_FILE_PANEL_INPUT_TTS_EXPORT",
+                            OpenFileType::SoundFont => "OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT",
+                            OpenFileType::WriteSave => "OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE",
+                        };
+                        strings.push(get_tooltip_with_values(
+                            open_file_key,
+                            &events,
+                            &[&get_file_name_no_ex(&path.path)],
                             input,
                             text,
-                        )),
+                        ));
                     }
+                    // Down directory.
+                    false => strings.push(get_tooltip_with_values(
+                        "OPEN_FILE_PANEL_INPUT_TTS_DOWN_DIRECTORY",
+                        &[InputEvent::DownDirectory],
+                        &[&get_folder_name(&path.path)],
+                        input,
+                        text,
+                    )),
                 }
-                _ => ()
             }
             // Close.
             strings.push(get_tooltip(
@@ -196,64 +201,58 @@ impl Panel for OpenFilePanel {
         }
         // Go up a directory.
         else if input.happened(&InputEvent::UpDirectory) {
-            self.open_file.up_directory();
+            paths_state.up_directory();
         }
         // Go down a directory.
         else if input.happened(&InputEvent::DownDirectory) {
-            if let Some(selected) = self.open_file.selected {
-                if !self.open_file.paths[selected].is_file {
-                    self.open_file.directory = self.open_file.paths[selected].path.clone();
-                    let (selected, paths) = self.open_file.get_paths();
-                    self.open_file.selected = selected;
-                    self.open_file.paths = paths;
-                }
-            }
+            paths_state.down_directory();
         }
         // Scroll up.
         else if input.happened(&InputEvent::PreviousPath) {
-            if let Some(selected) = &paths_state.selected {
-                if *selected > 0 {
-                    paths_state.selected = Some(selected - 1);
-                }
-            }
+            paths_state.scroll(true);
         }
         // Scroll down.
         else if input.happened(&InputEvent::NextPath) {
-            if let Some(selected) = &paths_state.selected {
-                if let Some(children) = &paths_state.children {
-                    if *selected < children.len() - 1 {
-                        paths_state.selected = Some(selected + 1);
-                    }
-                }
-            }
+            paths_state.scroll(false);
         }
         // We selected something.
         else if input.happened(&InputEvent::SelectFile) {
+            // Disable the panel and revert to a prior state.
             self.disable(state);
-            match self.open_file.open_file_type.as_ref().unwrap() {
+            // Do something with the selected file.
+            match &paths_state.open_file_type {
                 // Load a save file.
                 OpenFileType::ReadSave => {
-                    let path = &self.open_file.paths[self.open_file.selected.unwrap()].path;
-                    let filename = path.file_name().unwrap().to_str().unwrap().to_string();
-                    let path = self.open_file.directory.join(filename);
-                    Save::read(&path, state, conn);
-                    return OpenFilePanel::set_save_path(&path);
+                    if let Some(selected) = paths_state.children.selected {
+                        // Read the save file.
+                        Save::read(
+                            &paths_state.children.children[selected].path.clone(),
+                            state,
+                            conn,
+                            paths_state,
+                        );
+                        // Set the saves directory.
+                        paths_state.saves = FileAndDirectory::new_path(
+                            paths_state.children.children[selected].path.clone(),
+                        );
+                    }
                 }
                 // Load a SoundFont.
                 OpenFileType::SoundFont => {
-                    if let Some(selected) = self.open_file.selected {
-                        if self.open_file.paths[selected].is_file {
+                    if let Some(selected) = paths_state.children.selected {
+                        if paths_state.children.children[selected].is_file {
+                            // Get the selected track's channel.
                             let channel = state.music.get_selected_track().unwrap().channel;
+                            // To revert: unset the program.
                             let c0 = vec![Command::UnsetProgram { channel }];
+                            // A command to load the SoundFont.
                             let c1 = vec![Command::LoadSoundFont {
                                 channel,
-                                path: self.open_file.paths[selected].path.clone(),
+                                path: paths_state.children.children[selected].path.clone(),
                             }];
-                            let snapshot = Snapshot::from_commands_and_io_commands(
-                                c0,
-                                &c1,
-                                vec![IOCommand::DisableOpenFile],
-                            );
+                            // *click*
+                            let snapshot = Snapshot::from_commands(c0, &c1);
+                            // Send the commands.
                             conn.send(c1);
                             return Some(snapshot);
                         }
@@ -261,26 +260,37 @@ impl Panel for OpenFilePanel {
                 }
                 // Write a save file.
                 OpenFileType::WriteSave => {
-                    let mut filename = self.open_file.filename.as_ref().unwrap().clone();
-                    filename.push_str(".cac");
-                    let path = self.open_file.directory.join(filename);
-                    Save::write(&path, state, conn);
-                    return OpenFilePanel::set_save_path(&path);
+                    // There is a filename.
+                    if let Some(filename) = &paths_state.saves.filename {
+                        // Append the extension.
+                        let mut filename = filename.clone();
+                        filename.push_str(".cac");
+                        // Write.
+                        Save::write(
+                            &paths_state.saves.directory.join(filename),
+                            state,
+                            conn,
+                            paths_state,
+                        );
+                    }
                 }
-                // Set an export file.
+                // Write an export file.
                 OpenFileType::Export => {
-                    let mut filename = self.open_file.filename.as_ref().unwrap().clone();
-                    filename.push_str(".wav");
-                    let path = self.open_file.directory.join(filename);
-                    return Some(Snapshot::from_io_commands(vec![IOCommand::SetExportPath(
-                        path,
-                    )]));
+                    // There is a filename.
+                    if let Some(filename) = &paths_state.exports.filename {
+                        // Append the extension.
+                        let mut filename = filename.clone();
+                        filename.push_str(".wav");
+                        return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
+                            paths_state.exports.directory.join(filename),
+                        )]));
+                    }
                 }
             }
         }
         // Close this.
         else if input.happened(&InputEvent::CloseOpenFile) {
-            return Some(Snapshot::from_io_commands(vec![IOCommand::DisableOpenFile]));
+            self.disable(state);
         }
         None
     }

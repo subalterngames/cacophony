@@ -3,7 +3,7 @@ use common::config::{load, parse_bool};
 use common::macroquad;
 use common::macroquad::prelude::*;
 use common::sizes::get_window_pixel_size;
-use common::{get_bytes, Paths, State};
+use common::{get_bytes, Paths, PathsState, State};
 use input::Input;
 use io::IO;
 use render::{draw_subtitles, Panels, Renderer};
@@ -12,7 +12,7 @@ use text::{Text, TTS};
 #[macroquad::main(window_conf)]
 async fn main() {
     // Get the paths.
-    let paths = Paths::new();
+    let paths = Paths::default();
 
     // Load the splash image.
     let splash = load_texture(paths.splash_path.as_os_str().to_str().unwrap())
@@ -38,6 +38,9 @@ async fn main() {
 
     // Create the state.
     let mut state = State::new(&config);
+
+    // Create the paths state.
+    let mut paths_state = PathsState::new(&paths);
 
     // Get the IO state.
     let mut io = IO::new(&config, &input, &state.input, &text);
@@ -68,23 +71,23 @@ async fn main() {
         clear_background(clear_color);
 
         // Draw.
-        panels.update(
-            &renderer,
-            &state,
-            &conn,
-            &input,
-            &text,
-            &io.open_file_panel.open_file,
-        );
+        panels.update(&renderer, &state, &conn, &input, &text, &paths_state);
 
         // Draw subtitles.
         draw_subtitles(&renderer, &tts);
 
         // Receive input. Possible say something or do an audio operation. Modify the state.
-        done = io.update(&mut state, &mut conn, &mut input, &mut tts, &text, &paths);
+        done = io.update(
+            &mut state,
+            &mut conn,
+            &mut input,
+            &mut tts,
+            &text,
+            &mut paths_state,
+        );
 
         // Late update to do stuff like screen capture.
-        panels.late_update(&mut io.open_file_panel.open_file, &renderer);
+        panels.late_update(&state, &renderer);
 
         // Wait.
         next_frame().await;

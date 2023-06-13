@@ -74,8 +74,7 @@ impl Panel for TracksPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-        paths: &Paths,
-        paths_state: &mut PathsState,
+        _: &mut PathsState,
     ) -> Option<Snapshot> {
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {

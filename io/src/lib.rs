@@ -19,10 +19,10 @@ use audio::{Command, CommandsMessage, Conn, ExportState};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::time::bar_to_samples;
-use common::{InputState, MidiTrack, Music, Note, PanelType, Paths, State, MAX_VOLUME, PathsState};
+use common::{InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, State, MAX_VOLUME};
 use edit::edit_file;
 use input::{Input, InputEvent};
-use std::path::PathBuf;
+use std::path::Path;
 use text::{Text, TTS};
 mod export_panel;
 mod io_command;
@@ -37,6 +37,7 @@ use io_command::IOCommands;
 use music_panel::MusicPanel;
 mod open_file_panel;
 use common::open_file::OpenFileType;
+use export_panel::ExportPanel;
 use open_file_panel::OpenFilePanel;
 use panel::Panel;
 use piano_roll::PianoRollPanel;
@@ -60,13 +61,11 @@ pub struct IO {
     /// The tracks panel.
     tracks_panel: TracksPanel,
     /// The open-file panel.
-    pub open_file_panel: OpenFilePanel,
+    open_file_panel: OpenFilePanel,
     /// The piano roll panel.
     piano_roll_panel: PianoRollPanel,
-    /// The file path. If None, we haven't saved this music yet.
-    save_path: Option<PathBuf>,
-    /// The export path, if any.
-    export_path: Option<PathBuf>,
+    /// The export panel.
+    export_panel: ExportPanel,
 }
 
 impl IO {
@@ -110,16 +109,16 @@ impl IO {
         let tracks_panel = TracksPanel {};
         let open_file_panel = OpenFilePanel::default();
         let piano_roll_panel = PianoRollPanel::new(&input_state.beat, config);
+        let export_panel = ExportPanel::default();
         Self {
             tts,
             music_panel,
             tracks_panel,
             open_file_panel,
             piano_roll_panel,
+            export_panel,
             redo: vec![],
             undo: vec![],
-            save_path: None,
-            export_path: None,
         }
     }
 
@@ -130,7 +129,6 @@ impl IO {
         input: &mut Input,
         tts: &mut TTS,
         text: &Text,
-        paths: &Paths,
         paths_state: &mut PathsState,
     ) -> bool {
         // Update the input state.
@@ -164,52 +162,41 @@ impl IO {
         }
         // New file.
         if input.happened(&InputEvent::NewFile) {
-            self.save_path = None;
+            paths_state.saves.filename = None;
             state.music = Music::default();
         }
         // Open file.
         else if input.happened(&InputEvent::OpenFile) {
-            self.open_file_panel.read_save(paths, state);
+            self.open_file_panel.read_save(state, paths_state);
         }
         // Save file.
         else if input.happened(&InputEvent::SaveFile) {
-            match &self.save_path {
+            match &paths_state.saves.try_get_path() {
                 // Save to the existing path,
                 Some(path) => Save::write(path, state, conn, paths_state),
                 // Set a new path.
-                None => self.open_file_panel.write_save(paths, state),
+                None => self.open_file_panel.write_save(state, paths_state),
             }
         }
         // Save to a new path.
         else if input.happened(&InputEvent::SaveFileAs) {
-            self.open_file_panel.write_save(paths, state)
+            self.open_file_panel.write_save(state, paths_state)
         }
         // Export.
         else if input.happened(&InputEvent::ExportFile) {
             // We aren't exporting already.
             if conn.export_state.is_none() {
-                match &self.export_path {
-                    Some(path) => {
-                        let (mut commands, t1) = tracks_to_commands(state);
-                        // Define the export state.
-                        let export_state = ExportState::new(t1);
-                        // Insert the export command.
-                        commands.insert(
-                            0,
-                            Command::Export {
-                                path: path.clone(),
-                                state: export_state,
-                            },
-                        );
-                        // Send the commands.
-                        conn.send(commands);
-                    }
-                    None => self.open_file_panel.export(paths, state),
+                match &paths_state.exports.try_get_path() {
+                    // Export.
+                    Some(path) => self.export(path, state, conn),
+                    // Get a file path.
+                    None => self.open_file_panel.export(state, paths_state),
                 }
             }
         }
         // Open config file.
         else if input.happened(&InputEvent::EditConfig) {
+            let paths = Paths::default();
             // Create a user .ini file.
             if !paths.user_ini_path.exists() {
                 paths.create_user_config();
@@ -273,10 +260,21 @@ impl IO {
 
         // Listen to the focused panel.
         let resp = match state.panels[state.focus.get()] {
-            PanelType::Music => self.music_panel.update(state, conn, input, tts, text, paths, paths_state),
-            PanelType::Tracks => self.tracks_panel.update(state, conn, input, tts, text, paths, paths_state),
-            PanelType::OpenFile => self.open_file_panel.update(state, conn, input, tts, text, paths, paths_state),
-            PanelType::PianoRoll => self.piano_roll_panel.update(state, conn, input, tts, text, paths, paths_state),
+            PanelType::Music => self
+                .music_panel
+                .update(state, conn, input, tts, text, paths_state),
+            PanelType::Tracks => {
+                self.tracks_panel
+                    .update(state, conn, input, tts, text, paths_state)
+            }
+            PanelType::OpenFile => {
+                self.open_file_panel
+                    .update(state, conn, input, tts, text, paths_state)
+            }
+            PanelType::PianoRoll => {
+                self.piano_roll_panel
+                    .update(state, conn, input, tts, text, paths_state)
+            }
             other => panic!("Not implemented: {:?}", other),
         };
         // Push an undo state generated by the focused panel.
@@ -285,19 +283,21 @@ impl IO {
             if let Some(io_commands) = &snapshot.io_commands {
                 for command in io_commands {
                     match command {
+                        // Enable the open-file panel.
                         IOCommand::EnableOpenFile(open_file_type) => match open_file_type {
-                            OpenFileType::Export => self.open_file_panel.export(paths, state),
-                            OpenFileType::ReadSave => self.open_file_panel.read_save(paths, state),
-                            OpenFileType::SoundFont => self.open_file_panel.soundfont(paths, state),
+                            OpenFileType::Export => self.open_file_panel.export(state, paths_state),
+                            OpenFileType::ReadSave => {
+                                self.open_file_panel.read_save(state, paths_state)
+                            }
+                            OpenFileType::SoundFont => {
+                                self.open_file_panel.soundfont(state, paths_state)
+                            }
                             OpenFileType::WriteSave => {
-                                self.open_file_panel.write_save(paths, state)
+                                self.open_file_panel.write_save(state, paths_state)
                             }
                         },
-                        IOCommand::DisableOpenFile => {
-                            self.open_file_panel.disable(state);
-                        }
-                        IOCommand::SetSavePath(path) => self.save_path = path.clone(),
-                        IOCommand::SetExportPath(path) => self.export_path = Some(path.clone()),
+                        // Export.
+                        IOCommand::Export(path) => self.export(path, state, conn),
                     }
                 }
             }
@@ -321,6 +321,26 @@ impl IO {
         if self.undo.len() > MAX_UNDOS {
             self.undo.remove(0);
         }
+    }
+
+    // Begin to export audio.
+    fn export(&mut self, path: &Path, state: &mut State, conn: &mut Conn) {
+        // Enable the export panel.
+        self.export_panel.enable(state);
+        // Get commands and an end time.
+        let (mut commands, t1) = tracks_to_commands(state);
+        // Define the export state.
+        let export_state = ExportState::new(t1);
+        // Insert the export command.
+        commands.insert(
+            0,
+            Command::Export {
+                path: path.to_path_buf(),
+                state: export_state,
+            },
+        );
+        // Send the commands.
+        conn.send(commands);
     }
 }
 
@@ -365,6 +385,9 @@ fn tracks_to_commands(state: &State) -> (CommandsMessage, u64) {
         for note in notes.iter() {
             // Convert the start and duration to sample lengths.
             let start = bar_to_samples(&note.start, bpm);
+            if start < t0 {
+                continue;
+            }
             let duration = bar_to_samples(&note.duration, bpm);
             // Is this the last note?
             let note_t1 = start + duration;

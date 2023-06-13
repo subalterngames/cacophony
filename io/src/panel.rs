@@ -2,7 +2,7 @@ pub(crate) use crate::io_command::IOCommand;
 pub(crate) use crate::{get_tooltip, get_tooltip_with_values, Snapshot};
 pub(crate) use audio::{Command, Conn};
 pub(crate) use common::music_panel_field::MusicPanelField;
-pub(crate) use common::{Index, State, PathsState, Paths};
+pub(crate) use common::{Index, PathsState, State};
 pub(crate) use input::{Input, InputEvent};
 pub(crate) use text::{Text, TTS};
 
@@ -26,7 +26,6 @@ pub(crate) trait Panel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-        paths: &Paths,
-        paths_state: &mut PathsState
+        paths_state: &mut PathsState,
     ) -> Option<Snapshot>;
 }

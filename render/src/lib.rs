@@ -32,6 +32,8 @@ mod scroll_page;
 use focusable_texture::FocusableTexture;
 use scroll_page::get_page;
 use text::TTS;
+mod popup;
+pub(crate) use popup::Popup;
 
 /// If subtitles are enabled and Casey is speaking, draw the subtitles.
 pub fn draw_subtitles(renderer: &Renderer, tts: &TTS) {

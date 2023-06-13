@@ -55,8 +55,8 @@ use std::io::Read;
 pub mod font;
 pub mod open_file;
 pub mod sizes;
-pub use serde_json;
 pub use paths_state::PathsState;
+pub use serde_json;
 
 /// Read bytes from a file.
 pub fn get_bytes(path: &str) -> Vec<u8> {

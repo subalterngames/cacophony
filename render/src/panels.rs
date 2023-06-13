@@ -62,11 +62,11 @@ impl Panels {
         conn: &Conn,
         input: &Input,
         text: &Text,
-        open_file: &OpenFile,
+        paths_state: &PathsState,
     ) {
         // Draw the main panel.
         self.main_menu
-            .update(renderer, state, conn, input, text, open_file);
+            .update(renderer, state, conn, input, text, paths_state);
         for panel_type in &state.panels {
             // Get the panel.
             let panel: &dyn Drawable = match panel_type {
@@ -78,16 +78,13 @@ impl Panels {
                 PanelType::Export => &self.export_panel,
             };
             // Draw the panel.
-            panel.update(renderer, state, conn, input, text, open_file);
+            panel.update(renderer, state, conn, input, text, paths_state);
         }
     }
 
     /// Do something after input is received from elsewhere.
-    pub fn late_update(&mut self, open_file: &mut OpenFile, renderer: &Renderer) {
-        // The open-file panel was enabled on this frame. Capture the screen.
-        if open_file.enabled {
-            self.open_file_panel.set_background(renderer);
-            open_file.enabled = false;
-        }
+    pub fn late_update(&mut self, state: &State, renderer: &Renderer) {
+        self.open_file_panel.popup.late_update(state, renderer);
+        self.export_panel.popup.late_update(state, renderer);
     }
 }

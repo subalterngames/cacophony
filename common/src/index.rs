@@ -25,16 +25,38 @@ impl Index {
     ///
     /// - `up` If true, increment. If false, decrement.
     pub fn increment(&mut self, up: bool) {
-        self.index = match up {
-            true => match self.index == self.length - 1 {
-                true => 0,
-                false => self.index + 1,
-            },
-            false => match self.index == 0 {
-                true => self.length - 1,
-                false => self.index - 1,
-            },
+        self.index = if up {
+            if self.index == self.length - 1 {
+                0
+            } else {
+                self.index + 1
+            }
+        } else if self.index == 0 {
+            self.length - 1
+        } else {
+            self.index - 1
         };
+    }
+
+    /// Increment or decrement the index without looping around the bounds.
+    ///
+    /// - `up` If true, increment. If false, decrement.
+    ///
+    /// Returns true if we incremented.
+    pub fn increment_no_loop(&mut self, up: bool) -> bool {
+        if up {
+            if self.index > 0 {
+                self.index -= 1;
+                true
+            } else {
+                false
+            }
+        } else if self.index < self.length - 1 {
+            self.index += 1;
+            true
+        } else {
+            false
+        }
     }
 
     /// Returns the index.

@@ -1,8 +1,13 @@
 use crate::panel::*;
+use crate::Popup;
+use common::macroquad::prelude::*;
 
 /// Are we done yet?
 pub(crate) struct ExportPanel {
+    /// The panel.
     panel: Panel,
+    /// The popup handler.
+    pub popup: Popup,
 }
 
 impl ExportPanel {
@@ -13,7 +18,8 @@ impl ExportPanel {
         let w = window_grid_size[0] / 2;
         let x = window_grid_size[0] / 2 - w / 2;
         let panel = Panel::new(PanelType::Export, [x, y], [w, h], text);
-        Self { panel }
+        let popup = Popup::new(PanelType::Export);
+        Self { panel, popup }
     }
 }
 
@@ -25,8 +31,9 @@ impl Drawable for ExportPanel {
         conn: &Conn,
         _: &Input,
         _: &Text,
-        _: &OpenFile,
+        _: &PathsState,
     ) {
+        self.popup.update(renderer);
         self.panel.update(true, renderer);
 
         // Get the string.

@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 /// Load the config file.
 pub fn load() -> Ini {
-    let paths = Paths::new();
+    let paths = Paths::default();
     let path = if paths.user_ini_path.exists() {
         paths.user_ini_path
     } else {

@@ -78,7 +78,7 @@ impl Drawable for MusicPanel {
         conn: &Conn,
         _: &Input,
         _: &Text,
-        _: &OpenFile,
+        _: &PathsState,
     ) {
         // Get the focus,
         let focus = self.panel.has_focus(state);

@@ -62,24 +62,6 @@ impl Snapshot {
         }
     }
 
-    /// Returns a snapshot of the delta between to synth states. Includes some IOCommands for spice.
-    ///
-    /// - `from_commands` A list of commands that will revert the `SynthState` to the initial state.
-    /// - `to_commands` A list of commands that will set the `SynthState` to the new state. This list will be sent by the `Conn`.
-    /// - `io_commands` A list of IOCommands that will be processed by the `IO`.
-    pub fn from_commands_and_io_commands(
-        from_commands: CommandsMessage,
-        to_commands: &CommandsMessage,
-        io_commands: Vec<IOCommand>,
-    ) -> Self {
-        Self {
-            from_commands: Some(from_commands),
-            to_commands: Some(to_commands.clone()),
-            io_commands: Some(io_commands),
-            ..Default::default()
-        }
-    }
-
     /// Returns a snapshot that just contains IOCommands.
     ///
     /// - `io_commands` A list of IOCommands that will be processed by the `IO`.

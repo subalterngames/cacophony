@@ -28,7 +28,6 @@ impl Panel for Edit {
         input: &Input,
         _: &mut TTS,
         _: &Text,
-        _: &Paths,
         _: &mut PathsState,
     ) -> Option<Snapshot> {
         // Do nothing if there is no track.

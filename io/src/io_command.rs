@@ -6,12 +6,8 @@ use std::path::PathBuf;
 pub(crate) enum IOCommand {
     /// Enable the open-file panel.
     EnableOpenFile(OpenFileType),
-    /// Disable the open-file panel.
-    DisableOpenFile,
-    /// Set the save file path.
-    SetSavePath(Option<PathBuf>),
-    /// Set the export file path.
-    SetExportPath(PathBuf),
+    /// Begin to export.
+    Export(PathBuf),
 }
 
 pub(crate) type IOCommands = Option<Vec<IOCommand>>;
