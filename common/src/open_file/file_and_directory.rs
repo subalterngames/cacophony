@@ -41,4 +41,11 @@ impl FileAndDirectory {
             .as_ref()
             .map(|filename| self.directory.join(filename))
     }
+
+    pub fn get_filename(&self) -> String {
+        match &self.filename {
+            Some(string) => string.clone(),
+            None => String::new(),
+        }
+    }
 }

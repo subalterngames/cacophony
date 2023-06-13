@@ -224,17 +224,11 @@ impl Panel for OpenFilePanel {
                 // Load a save file.
                 OpenFileType::ReadSave => {
                     if let Some(selected) = paths_state.children.selected {
+                        let path = paths_state.children.children[selected].path.clone();
                         // Read the save file.
-                        Save::read(
-                            &paths_state.children.children[selected].path.clone(),
-                            state,
-                            conn,
-                            paths_state,
-                        );
+                        Save::read(&path, state, conn, paths_state);
                         // Set the saves directory.
-                        paths_state.saves = FileAndDirectory::new_path(
-                            paths_state.children.children[selected].path.clone(),
-                        );
+                        paths_state.saves = FileAndDirectory::new_path(path);
                     }
                 }
                 // Load a SoundFont.

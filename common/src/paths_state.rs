@@ -47,11 +47,11 @@ impl PathsState {
     }
 
     /// Returns a string of a given open-file-type's path's filename.
-    pub fn get_filename(&self) -> &Option<String> {
+    pub fn get_filename(&self) -> Option<String> {
         match self.open_file_type {
-            OpenFileType::Export => &self.exports.filename,
-            OpenFileType::ReadSave | OpenFileType::WriteSave => &self.saves.filename,
-            OpenFileType::SoundFont => &None,
+            OpenFileType::Export => Some(self.exports.get_filename()),
+            OpenFileType::WriteSave => Some(self.saves.get_filename()),
+            _ => None,
         }
     }
 
