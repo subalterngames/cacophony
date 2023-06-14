@@ -217,13 +217,14 @@ impl Panel for OpenFilePanel {
         }
         // We selected something.
         else if input.happened(&InputEvent::SelectFile) {
-            // Disable the panel and revert to a prior state.
-            self.disable(state);
             // Do something with the selected file.
             match &paths_state.open_file_type {
                 // Load a save file.
                 OpenFileType::ReadSave => {
                     if let Some(selected) = paths_state.children.selected {
+                        // Disable the panel.
+                        self.disable(state);
+                        // Get the path.
                         let path = paths_state.children.children[selected].path.clone();
                         // Read the save file.
                         Save::read(&path, state, conn, paths_state);
@@ -235,6 +236,8 @@ impl Panel for OpenFilePanel {
                 OpenFileType::SoundFont => {
                     if let Some(selected) = paths_state.children.selected {
                         if paths_state.children.children[selected].is_file {
+                            // Disable the panel.
+                            self.disable(state);
                             // Get the selected track's channel.
                             let channel = state.music.get_selected_track().unwrap().channel;
                             // To revert: unset the program.
@@ -256,6 +259,8 @@ impl Panel for OpenFilePanel {
                 OpenFileType::WriteSave => {
                     // There is a filename.
                     if let Some(filename) = &paths_state.saves.filename {
+                        // Disable the panel.
+                        self.disable(state);
                         // Append the extension.
                         let mut filename = filename.clone();
                         filename.push_str(".cac");
@@ -272,6 +277,8 @@ impl Panel for OpenFilePanel {
                 OpenFileType::Export => {
                     // There is a filename.
                     if let Some(filename) = &paths_state.exports.filename {
+                        // Disable the panel.
+                        self.disable(state);
                         // Append the extension.
                         let mut filename = filename.clone();
                         filename.push_str(".wav");
