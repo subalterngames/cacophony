@@ -47,8 +47,8 @@ impl Drawable for ExportPanel {
 
         // Draw the string.
         let w = s.chars().count() as u32;
-        let x = self.panel.rect.position[0] + self.panel.rect.position[2] / 2 + w / 2;
-        let y = self.panel.rect.position[1];
+        let x = self.panel.rect.position[0] + self.panel.rect.size[0] / 2 - w / 2;
+        let y = self.panel.rect.position[1] + 1;
         let label = Label {
             position: [x, y],
             text: s,

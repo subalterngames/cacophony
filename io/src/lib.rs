@@ -126,14 +126,11 @@ impl IO {
         &mut self,
         state: &mut State,
         conn: &mut Conn,
-        input: &mut Input,
+        input: &Input,
         tts: &mut TTS,
         text: &Text,
         paths_state: &mut PathsState,
     ) -> bool {
-        // Update the input state.
-        input.update(state);
-
         // Quit.
         if input.happened(&InputEvent::Quit) {
             return true;
@@ -316,9 +313,6 @@ impl IO {
                 self.push_undo(snapshot);
             }
         }
-        // Try to update time itself.
-        conn.update_time();
-
         // We're not done yet.
         false
     }

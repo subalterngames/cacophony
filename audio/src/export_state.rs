@@ -1,5 +1,5 @@
 /// The state of audio that is being exported.
-#[derive(Eq, PartialEq, Copy, Clone)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub struct ExportState {
     /// The number of samples that have been exported.
     pub exported: u64,

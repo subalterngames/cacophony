@@ -46,7 +46,7 @@ pub fn connect() -> Conn {
     let (send_state, recv_state) = bounded(1);
     let (send_audio, recv_audio) = bounded(1);
     let (send_time, recv_time) = bounded(1);
-    let (send_export, recv_export) = unbounded();
+    let (send_export, recv_export) = bounded(1);
 
     // Spawn the synthesizer thread.
     spawn(move || {

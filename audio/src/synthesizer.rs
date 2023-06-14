@@ -74,7 +74,7 @@ impl Synthesizer {
         recv_commands: Receiver<CommandsMessage>,
         send_audio: Sender<AudioMessage>,
         send_state: Sender<SynthState>,
-        send_export: Sender<ExportState>,
+        send_export: Sender<Option<ExportState>>,
         send_time: Sender<TimeState>,
     ) {
         // Create the synthesizer.
@@ -309,8 +309,7 @@ impl Synthesizer {
                     }
                     // Increment the number of exported samples.
                     export_state.exported += 1;
-                    // Send the export state.
-                    if send_export.send(*export_state).is_ok() {}
+
                     // Are we done exporting?
                     if export_state.exported >= export_state.samples {
                         // Sync the header.
@@ -318,10 +317,14 @@ impl Synthesizer {
                         // Open the file.
                         s.export_state = None;
                         s.exporter = None;
-                    }
-                    // Increment time.
-                    else if let Some(time) = s.state.time.time.as_mut() {
-                        *time += 1;
+                        if send_export.send(None).is_ok() {}
+                    } else {
+                        // Increment time.
+                        if let Some(time) = s.state.time.time.as_mut() {
+                            *time += 1;
+                        }
+                        // Send the export state.
+                        if send_export.send(Some(*export_state)).is_ok() {}
                     }
                 }
                 // Set to None.

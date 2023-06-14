@@ -76,21 +76,29 @@ async fn main() {
         // Draw subtitles.
         draw_subtitles(&renderer, &tts);
 
-        // Receive input. Possible say something or do an audio operation. Modify the state.
+        // Update the input state.
+        input.update(&state);
+
+        // Modify the state.
         done = io.update(
             &mut state,
             &mut conn,
-            &mut input,
+            &input,
             &mut tts,
             &text,
             &mut paths_state,
         );
 
-        // Late update to do stuff like screen capture.
-        panels.late_update(&state, &renderer);
+        if !done {
+            // Update time itself.
+            conn.update();
 
-        // Wait.
-        next_frame().await;
+            // Late update to do stuff like screen capture.
+            panels.late_update(&state, &renderer);
+
+            // Wait.
+            next_frame().await;
+        }
     }
 }
 

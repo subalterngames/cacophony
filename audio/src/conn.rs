@@ -16,7 +16,7 @@ pub struct Conn {
     /// Receive the program state.
     recv: Receiver<SynthState>,
     /// Receive the export state.
-    recv_export: Receiver<ExportState>,
+    recv_export: Receiver<Option<ExportState>>,
     /// Receive the updated time.
     recv_time: Receiver<TimeState>,
 }
@@ -26,7 +26,7 @@ impl Conn {
         player: Option<Player>,
         send_commands: Sender<CommandsMessage>,
         recv: Receiver<SynthState>,
-        recv_export: Receiver<ExportState>,
+        recv_export: Receiver<Option<ExportState>>,
         recv_time: Receiver<TimeState>,
     ) -> Self {
         let framerate = match &player {
@@ -64,15 +64,15 @@ impl Conn {
         if let Ok(time) = self.recv_time.try_recv() {
             self.state.time = time;
         }
-        if let Ok(export_state) = self.recv_export.try_recv() {
-            self.export_state = Some(export_state)
+        if self.export_state.is_some() {
+            if let Ok(export_state) = self.recv_export.recv() {
+                self.export_state = export_state
+            }
         }
-    }
-
-    /// Try to update the time.
-    pub fn update_time(&mut self) {
-        if let Ok(time) = self.recv_time.try_recv() {
-            self.state.time = time;
+        else {
+            if let Ok(export_state) = self.recv_export.try_recv() {
+                self.export_state = export_state;
+            }
         }
     }
 }
