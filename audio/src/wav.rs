@@ -5,8 +5,8 @@ const FORMAT: u16 = 1;
 const SAMPLE_RATE: u32 = 44100;
 const CHANNELS: u16 = 2;
 const BIT_DEPTH: u16 = 16;
-const BYTE_RATE: u32 = SAMPLE_RATE * BIT_DEPTH as u32 / 8;
-const BLOCK_ALIGN: u16 = BIT_DEPTH / 2;
+const BYTE_RATE: u32 = SAMPLE_RATE * CHANNELS as u32 * 2;
+const BLOCK_ALIGN: u16 = CHANNELS * 2;
 
 /// Converts an f32 sample to an i16 sample.
 pub(crate) fn to_i16(sample: f32) -> i16 {
@@ -17,7 +17,7 @@ pub(crate) fn to_i16(sample: f32) -> i16 {
 ///
 /// - `num_samples` The number of samples in the wav file.
 ///
-/// Source: https://www.simonwenkel.com/notes/programming_languages/rust/writing-files-with-rust-wav-file-example.html
+/// Source: https://docs.fileformat.com/audio/wav/
 pub(crate) fn get_wav_header(num_samples: u64) -> [u8; HEADER_SIZE] {
     let size = num_samples as u32;
     let mut header = [0; HEADER_SIZE];

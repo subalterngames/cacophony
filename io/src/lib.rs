@@ -410,7 +410,9 @@ fn tracks_to_commands(state: &State) -> (CommandsMessage, u64) {
             })
         }
     }
+    // Decay.
+    t1 += FRAMERATE_U64;
     // All-off.
     commands.push(Command::StopMusicAt { time: t1 });
-    (commands, t1 + FRAMERATE_U64)
+    (commands, t1)
 }

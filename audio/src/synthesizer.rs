@@ -306,7 +306,7 @@ impl Synthesizer {
                     // Increment the number of exported samples.
                     export_state.exported += 1;
                     // Send the export state.
-                    if send_export.try_send(*export_state).is_ok() {}
+                    if send_export.send(*export_state).is_ok() {}
                     // Are we done exporting?
                     if export_state.exported >= export_state.samples {
                         // Open the file.
@@ -321,7 +321,7 @@ impl Synthesizer {
                 // Set to None.
                 (Some(_), None) => s.export_file = None,
                 (None, Some(_)) => s.export_state = None,
-                // Play
+                // Play.
                 (None, None) => {
                     match send_audio.send(sample) {
                         // We sent a message. Increment the time.
