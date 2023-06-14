@@ -342,6 +342,8 @@ impl IO {
                 state: export_state,
             },
         );
+        // Insert a command to stop all audio.
+        commands.insert(0, Command::SoundOff);
         // Send the commands.
         conn.send(commands);
     }

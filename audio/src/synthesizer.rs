@@ -101,7 +101,7 @@ impl Synthesizer {
                                     s.state.time.music = true;
                                     s.state.time.time = Some(*time);
                                 }
-                                // Stop all audio.
+                                // Stop all notes.
                                 Command::StopMusic => {
                                     s.state.programs.keys().for_each(|c| {
                                         Synthesizer::send_event(
@@ -123,6 +123,15 @@ impl Synthesizer {
                                             event: MidiEvent::AllNotesOff { channel: *c },
                                         });
                                     })
+                                }
+                                // Turn off all sound.
+                                Command::SoundOff => {
+                                    s.state.programs.keys().for_each(|c| {
+                                        Synthesizer::send_event(
+                                            MidiEvent::AllSoundOff { channel: *c },
+                                            &mut s.synth,
+                                        )
+                                    });
                                 }
                                 // Note-on ASAP. Schedule a note-off as well.
                                 Command::NoteOn {

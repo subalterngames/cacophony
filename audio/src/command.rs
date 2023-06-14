@@ -10,6 +10,8 @@ pub enum Command {
     StopMusic,
     /// Schedule a stop-all event.
     StopMusicAt { time: u64 },
+    /// Stop all sound.
+    SoundOff,
     /// Note-on ASAP.
     NoteOn {
         channel: u8,
