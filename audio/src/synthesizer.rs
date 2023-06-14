@@ -1,11 +1,12 @@
-use crate::wav::*;
 use crate::{AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState, TimeState};
 use crossbeam_channel::{Receiver, Sender};
 use hashbrown::HashMap;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
+use riff_wave::*;
 use std::fs::{File, OpenOptions};
-use std::io::Write;
 use std::path::PathBuf;
+
+const F32_TO_I16: f32 = 32767.5;
 
 /// A convenient wrapper for a SoundFont.
 struct SoundFontBanks {
@@ -57,8 +58,8 @@ pub(crate) struct Synthesizer {
     state: SynthState,
     /// The export state.
     export_state: Option<ExportState>,
-    /// The file we are exporting to.
-    export_file: Option<File>,
+    /// The export file writer.
+    exporter: Option<WaveWriter<File>>,
 }
 
 impl Synthesizer {
@@ -83,7 +84,7 @@ impl Synthesizer {
             events_queue: vec![],
             ready: true,
             state: SynthState::default(),
-            export_file: None,
+            exporter: None,
             export_state: None,
         };
         loop {
@@ -245,12 +246,12 @@ impl Synthesizer {
                                         .create(true)
                                         .open(path)
                                     {
-                                        Ok(mut file) => {
-                                            // Write the header.
-                                            let header = get_wav_header(state.samples);
-                                            file.write_all(&header).unwrap();
+                                        Ok(file) => {
+                                            // Create a new writer.
+                                            let writer =
+                                                WaveWriter::new(2, 44100, 16, file).unwrap();
                                             // Remember the export state.
-                                            s.export_file = Some(file);
+                                            s.exporter = Some(writer);
                                             s.export_state = Some(*state);
                                         }
                                         Err(error) => {
@@ -294,13 +295,13 @@ impl Synthesizer {
             let sample = s.synth.read_next();
 
             // Either export audio or play the file.
-            match (&mut s.export_file, &mut s.export_state) {
-                (Some(export_file), Some(export_state)) => {
+            match (&mut s.exporter, &mut s.export_state) {
+                (Some(writer), Some(export_state)) => {
                     // Export.
-                    if let Err(error) = export_file.write(&to_i16(sample.0).to_le_bytes()) {
+                    if let Err(error) = writer.write_sample_i16(to_i16(sample.0)) {
                         panic!("Error exporting example: {}", error)
                     }
-                    if let Err(error) = export_file.write(&to_i16(sample.1).to_le_bytes()) {
+                    if let Err(error) = writer.write_sample_i16(to_i16(sample.1)) {
                         panic!("Error exporting example: {}", error)
                     }
                     // Increment the number of exported samples.
@@ -309,9 +310,11 @@ impl Synthesizer {
                     if send_export.send(*export_state).is_ok() {}
                     // Are we done exporting?
                     if export_state.exported >= export_state.samples {
+                        // Sync the header.
+                        writer.sync_header().unwrap();
                         // Open the file.
                         s.export_state = None;
-                        s.export_file = None;
+                        s.exporter = None;
                     }
                     // Increment time.
                     else if let Some(time) = s.state.time.time.as_mut() {
@@ -319,7 +322,7 @@ impl Synthesizer {
                     }
                 }
                 // Set to None.
-                (Some(_), None) => s.export_file = None,
+                (Some(_), None) => s.exporter = None,
                 (None, Some(_)) => s.export_state = None,
                 // Play.
                 (None, None) => {
@@ -446,4 +449,9 @@ impl Synthesizer {
             .program_select(channel, id, bank, preset)
             .unwrap();
     }
+}
+
+/// Converts an f32 sample to an i16 sample.
+fn to_i16(sample: f32) -> i16 {
+    (sample * F32_TO_I16).floor() as i16
 }
