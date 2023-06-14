@@ -1,3 +1,4 @@
+use crate::wav::*;
 use crate::{AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState, TimeState};
 use crossbeam_channel::{Receiver, Sender};
 use hashbrown::HashMap;
@@ -5,8 +6,6 @@ use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::PathBuf;
-
-const F32_TO_I16: f32 = 32767.5;
 
 /// A convenient wrapper for a SoundFont.
 struct SoundFontBanks {
@@ -246,7 +245,11 @@ impl Synthesizer {
                                         .create(true)
                                         .open(path)
                                     {
-                                        Ok(file) => {
+                                        Ok(mut file) => {
+                                            // Write the header.
+                                            let header = get_wav_header(state.samples);
+                                            file.write_all(&header).unwrap();
+                                            // Remember the export state.
                                             s.export_file = Some(file);
                                             s.export_state = Some(*state);
                                         }
@@ -294,10 +297,10 @@ impl Synthesizer {
             match (&mut s.export_file, &mut s.export_state) {
                 (Some(export_file), Some(export_state)) => {
                     // Export.
-                    if let Err(error) = export_file.write(&Synthesizer::to_i16(sample.0).to_le_bytes()) {
+                    if let Err(error) = export_file.write(&to_i16(sample.0).to_le_bytes()) {
                         panic!("Error exporting example: {}", error)
                     }
-                    if let Err(error) = export_file.write(&Synthesizer::to_i16(sample.1).to_le_bytes()) {
+                    if let Err(error) = export_file.write(&to_i16(sample.1).to_le_bytes()) {
                         panic!("Error exporting example: {}", error)
                     }
                     // Increment the number of exported samples.
@@ -306,12 +309,12 @@ impl Synthesizer {
                     if send_export.try_send(*export_state).is_ok() {}
                     // Are we done exporting?
                     if export_state.exported >= export_state.samples {
+                        // Open the file.
                         s.export_state = None;
                         s.export_file = None;
                     }
                     // Increment time.
-                    else                            
-                    if let Some(time) = s.state.time.time.as_mut() {
+                    else if let Some(time) = s.state.time.time.as_mut() {
                         *time += 1;
                     }
                 }
@@ -442,9 +445,5 @@ impl Synthesizer {
         self.synth
             .program_select(channel, id, bank, preset)
             .unwrap();
-    }
-
-    fn to_i16(sample: f32) -> i16 {
-        (sample * F32_TO_I16) as i16
     }
 }

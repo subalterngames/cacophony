@@ -29,6 +29,7 @@ mod program;
 mod synth_state;
 mod synthesizer;
 mod time_state;
+mod wav;
 pub use crate::command::Command;
 pub use crate::conn::Conn;
 pub use crate::message::{AudioMessage, CommandsMessage};
