@@ -3,6 +3,11 @@ use crate::{serialize_fraction, Fraction, SerializableFraction};
 use fraction::Zero;
 use serde::{Deserialize, Serialize};
 
+/// The default BPM.
+pub const DEFAULT_BPM: u32 = 120;
+/// The default music name.
+pub const DEFAULT_MUSIC_NAME: &str = "My Music";
+
 /// Tracks, notes, and metadata.
 #[derive(Clone, Debug)]
 pub struct Music {
@@ -23,7 +28,7 @@ impl Music {
         Self {
             name: name.to_string(),
             midi_tracks: vec![],
-            bpm: 120,
+            bpm: DEFAULT_BPM,
             playback_time: Fraction::zero(),
             selected: None,
         }
@@ -59,7 +64,7 @@ impl Music {
 
 impl Default for Music {
     fn default() -> Self {
-        Self::new("My Music")
+        Self::new(DEFAULT_MUSIC_NAME)
     }
 }
 

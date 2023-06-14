@@ -130,7 +130,7 @@ FILE_TTS,\0 for new music. \1 to open a file. \2 to save. \3 to save as. \4 to e
 MUSIC_PANEL_STATUS_TTS,This music is named \0. The b p m is \1. The gain is \2.
 MUSIC_PANEL_INPUT_TTS,\0 and \1 to scroll. The current selection is \2.
 NAME,name
-BPM,b p m
+BPM,BPM
 GAIN,gain
 MUSIC_PANEL_INPUT_TTS_BPM,Type to set the beats per minute.
 MUSIC_PANEL_INPUT_TTS_GAIN,\0 and \1 to set the gain.

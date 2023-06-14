@@ -1,8 +1,9 @@
 use crate::panel::*;
-use common::MAX_VOLUME;
+use common::{DEFAULT_BPM, DEFAULT_MUSIC_NAME, MAX_VOLUME};
 
 const MAX_GAIN: usize = MAX_VOLUME as usize;
 
+/// Set global music values.
 pub(crate) struct MusicPanel {}
 
 impl MusicPanel {
@@ -29,6 +30,12 @@ impl MusicPanel {
     fn set_field(state: &mut State, up: bool) -> Option<Snapshot> {
         let s0 = state.clone();
         state.music_panel_field.increment(up);
+        Some(Snapshot::from_states(s0, state))
+    }
+
+    fn enable_alphanumeric_input(state: &mut State) -> Option<Snapshot> {
+        let s0 = state.clone();
+        state.input.alphanumeric_input = true;
         Some(Snapshot::from_states(s0, state))
     }
 }
@@ -98,11 +105,31 @@ impl Panel for MusicPanel {
             match state.get_music_panel_field() {
                 // Modify the BPM.
                 MusicPanelField::BPM => {
-                    let mut bpm = state.music.bpm;
-                    if input.modify_u32(&mut bpm) {
-                        let s0 = state.clone();
-                        state.music.bpm = bpm;
-                        return Some(Snapshot::from_states(s0, state));
+                    if state.input.alphanumeric_input {
+                        // Stop editing the BPM.
+                        if input.happened(&InputEvent::MusicPanelToggleInput) {
+                            let s0 = state.clone();
+                            // Set a default BPM.
+                            if state.music.bpm == 0 {
+                                state.music.bpm = DEFAULT_BPM;
+                            }
+                            // Toggle off alphanumeric input.
+                            state.input.alphanumeric_input = false;
+                            return Some(Snapshot::from_states(s0, state));
+                        }
+                        // Edit the BPM.
+                        else {
+                            let mut bpm = state.music.bpm;
+                            if input.modify_u32(&mut bpm) {
+                                let s0 = state.clone();
+                                state.music.bpm = bpm;
+                                return Some(Snapshot::from_states(s0, state));
+                            }
+                        }
+                    }
+                    // Enable input.
+                    else if input.happened(&InputEvent::MusicPanelToggleInput) {
+                        return Self::enable_alphanumeric_input(state);
                     }
                 }
                 // Set the gain.
@@ -115,11 +142,27 @@ impl Panel for MusicPanel {
                 }
                 // Modify the name.
                 MusicPanelField::Name => {
-                    let mut name = state.music.name.clone();
-                    if input.modify_string_abc123(&mut name) {
-                        let s0 = state.clone();
-                        state.music.name = name;
-                        return Some(Snapshot::from_states(s0, state));
+                    if state.input.alphanumeric_input {
+                        // Stop editing the name.
+                        if input.happened(&InputEvent::MusicPanelToggleInput) {
+                            let s0 = state.clone();
+                            if state.music.name.is_empty() {
+                                state.music.name = DEFAULT_MUSIC_NAME.to_string();
+                            }
+                            state.input.alphanumeric_input = false;
+                            return Some(Snapshot::from_states(s0, state));
+                        } else {
+                            let mut name = state.music.name.clone();
+                            if input.modify_string_abc123(&mut name) {
+                                let s0 = state.clone();
+                                state.music.name = name;
+                                return Some(Snapshot::from_states(s0, state));
+                            }
+                        }
+                    }
+                    // Enable input.
+                    else if input.happened(&InputEvent::MusicPanelToggleInput) {
+                        return Self::enable_alphanumeric_input(state);
                     }
                 }
             }

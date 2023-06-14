@@ -36,7 +36,7 @@ pub use input_state::InputState;
 pub use macroquad;
 pub use midi_track::MidiTrack;
 pub use midir;
-pub use music::Music;
+pub use music::{Music, DEFAULT_BPM, DEFAULT_MUSIC_NAME};
 pub use note::{Note, MAX_NOTE, MAX_VOLUME, MIN_NOTE};
 pub use panel_type::PanelType;
 pub use paths::Paths;

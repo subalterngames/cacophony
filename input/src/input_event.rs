@@ -29,6 +29,7 @@ pub enum InputEvent {
     PreviousMusicPanelField,
     IncreaseMusicGain,
     DecreaseMusicGain,
+    MusicPanelToggleInput,
     // Tracks panel.
     AddTrack,
     RemoveTrack,

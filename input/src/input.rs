@@ -295,7 +295,7 @@ impl Input {
         }
     }
 
-    // Parse a qwerty binding from a key-value pair of strings (i.e. from a config file).
+    /// Parse a qwerty binding from a key-value pair of strings (i.e. from a config file).
     fn parse_qwerty_binding(key: &str, value: &str) -> (InputEvent, QwertyBinding) {
         match key.parse::<InputEvent>() {
             Ok(input_key) => (input_key, QwertyBinding::deserialize(value)),
