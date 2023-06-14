@@ -60,6 +60,8 @@ pub(crate) struct Synthesizer {
     export_state: Option<ExportState>,
     /// The export file writer.
     exporter: Option<WaveWriter<File>>,
+    /// If true, we need to send the export state.
+    send_export_state: bool,
 }
 
 impl Synthesizer {
@@ -86,6 +88,7 @@ impl Synthesizer {
             state: SynthState::default(),
             exporter: None,
             export_state: None,
+            send_export_state: false,
         };
         loop {
             if s.ready {
@@ -265,6 +268,8 @@ impl Synthesizer {
                                         panic!("Error converting export path to string: {:?}", path)
                                     }
                                 },
+                                // Send the export state.
+                                Command::SendExportState => s.send_export_state = true,
                             }
                         }
                         // Try to send the state.
@@ -317,15 +322,14 @@ impl Synthesizer {
                         // Open the file.
                         s.export_state = None;
                         s.exporter = None;
-                        if send_export.send(None).is_ok() {}
                     } else {
                         // Increment time.
                         if let Some(time) = s.state.time.time.as_mut() {
                             *time += 1;
                         }
-                        // Send the export state.
-                        if send_export.send(Some(*export_state)).is_ok() {}
                     }
+                    // We're ready for a new message.
+                    s.ready = true;
                 }
                 // Set to None.
                 (Some(_), None) => s.exporter = None,
@@ -348,6 +352,10 @@ impl Synthesizer {
                     // Send the time state.
                     if send_time.try_send(s.state.time).is_ok() {}
                 }
+            }
+            // Send the export state.
+            if s.send_export_state && send_export.send(s.export_state).is_ok() {
+                s.send_export_state = false;
             }
         }
     }

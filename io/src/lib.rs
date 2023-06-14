@@ -335,6 +335,7 @@ impl IO {
         let (track_commands, t1) = tracks_to_commands(state, FRAMERATE);
         // Define the export state.
         let export_state = ExportState::new(t1);
+        conn.export_state = Some(export_state);
         // Set the framerate.
         // Sound-off. Set the framerate. Export.
         let mut commands = vec![

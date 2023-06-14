@@ -1,4 +1,4 @@
-use crate::{CommandsMessage, ExportState, Player, SynthState, TimeState};
+use crate::{Command, CommandsMessage, ExportState, Player, SynthState, TimeState};
 use crossbeam_channel::{Receiver, Sender};
 
 /// The connects used by an external function.
@@ -64,13 +64,10 @@ impl Conn {
         if let Ok(time) = self.recv_time.try_recv() {
             self.state.time = time;
         }
+        // Get the export state.
         if self.export_state.is_some() {
+            self.send(vec![Command::SendExportState]);
             if let Ok(export_state) = self.recv_export.recv() {
-                self.export_state = export_state
-            }
-        }
-        else {
-            if let Ok(export_state) = self.recv_export.try_recv() {
                 self.export_state = export_state;
             }
         }

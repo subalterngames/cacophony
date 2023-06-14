@@ -8,8 +8,6 @@ pub(crate) struct ExportPanel {
     panels: Vec<PanelType>,
     /// The previous focus.
     focus: usize,
-    /// If true, the panel was enabled on this frame.
-    enabled: bool,
 }
 
 impl ExportPanel {
@@ -19,7 +17,6 @@ impl ExportPanel {
         self.focus = state.focus.get();
         state.panels = vec![PanelType::Export];
         state.focus.set(0);
-        self.enabled = true;
     }
 }
 
@@ -34,11 +31,9 @@ impl Panel for ExportPanel {
         _: &mut PathsState,
     ) -> Option<Snapshot> {
         // We're done.
-        if !self.enabled && conn.export_state.is_none() {
+        if conn.export_state.is_none() {
             state.panels = self.panels.clone();
             state.focus.set(self.focus);
-        } else if self.enabled {
-            self.enabled = false;
         }
         None
     }

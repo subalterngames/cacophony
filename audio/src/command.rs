@@ -46,4 +46,6 @@ pub enum Command {
     SetGain { gain: u8 },
     /// Export audio.
     Export { path: PathBuf, state: ExportState },
+    /// Ask for the export state
+    SendExportState,
 }
