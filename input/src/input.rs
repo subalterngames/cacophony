@@ -283,8 +283,7 @@ impl Input {
     fn modify_string(&self, string: &mut String, chars: &Vec<char>) -> bool {
         // Delete the last character.
         if self.backspace {
-            string.pop().unwrap();
-            true
+            string.pop().is_some()
         // Add new characters.
         } else if !chars.is_empty() {
             for ch in chars.iter() {
