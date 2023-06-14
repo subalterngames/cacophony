@@ -76,18 +76,21 @@ async fn main() {
         // Draw subtitles.
         draw_subtitles(&renderer, &tts);
 
-        // Update the input state.
-        input.update(&state);
+        // If we're exporting audio, don't allow input.
+        if conn.export_state.is_none() {
+            // Update the input state.
+            input.update(&state);
 
-        // Modify the state.
-        done = io.update(
-            &mut state,
-            &mut conn,
-            &input,
-            &mut tts,
-            &text,
-            &mut paths_state,
-        );
+            // Modify the state.
+            done = io.update(
+                &mut state,
+                &mut conn,
+                &input,
+                &mut tts,
+                &text,
+                &mut paths_state,
+            );
+        }
 
         if !done {
             // Update time itself.
