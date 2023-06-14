@@ -7,12 +7,13 @@
 - [ ] Help links
 - [ ] Multi-track view
 - [ ] Effects
+- [ ] Text ref
 
 ## Bugs
 
 - [x] Open file panel background screen capture
-- [ ] During alphanumeric input, all other input should be locked except TTS.
-- [ ] Don't show input backgrounds if alphanumeric input is disabled.
+- [x] During alphanumeric input, all other input should be locked except TTS.
+- [x] Don't show input backgrounds if alphanumeric input is disabled.
 
 ## Misc.
 

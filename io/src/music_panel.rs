@@ -70,35 +70,57 @@ impl Panel for MusicPanel {
         }
         // Sub-panel TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let field_key = match state.get_music_panel_field() {
-                MusicPanelField::BPM => "BPM",
-                MusicPanelField::Gain => "GAIN",
-                MusicPanelField::Name => "NAME",
-            };
-            let field = text.get(field_key);
-            let mut s = get_tooltip_with_values(
+            let scroll = get_tooltip(
                 "MUSIC_PANEL_INPUT_TTS",
                 &[
                     InputEvent::PreviousMusicPanelField,
                     InputEvent::NextMusicPanelField,
                 ],
-                &[&field],
                 input,
                 text,
             );
-            s.push(' ');
             let tts_text = match state.get_music_panel_field() {
-                MusicPanelField::BPM => text.get("MUSIC_PANEL_INPUT_TTS_BPM"),
-                MusicPanelField::Gain => get_tooltip(
-                    "MUSIC_PANEL_INPUT_TTS_GAIN",
-                    &[InputEvent::DecreaseMusicGain, InputEvent::IncreaseMusicGain],
-                    input,
-                    text,
-                ),
-                MusicPanelField::Name => text.get("MUSIC_PANEL_INPUT_TTS_NAME"),
+                MusicPanelField::BPM => {
+                    let key = if state.input.alphanumeric_input {
+                        "MUSIC_PANEL_INPUT_TTS_BPM_ABC123"
+                    } else {
+                        "MUSIC_PANEL_INPUT_TTS_BPM_NO_ABC123"
+                    };
+                    let mut s =
+                        get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input, text);
+                    if !state.input.alphanumeric_input {
+                        s.push(' ');
+                        s.push_str(&scroll);
+                    }
+                    s
+                }
+                MusicPanelField::Gain => {
+                    let mut s = get_tooltip(
+                        "MUSIC_PANEL_INPUT_TTS_GAIN",
+                        &[InputEvent::DecreaseMusicGain, InputEvent::IncreaseMusicGain],
+                        input,
+                        text,
+                    );
+                    s.push(' ');
+                    s.push_str(&scroll);
+                    s
+                }
+                MusicPanelField::Name => {
+                    let key = if state.input.alphanumeric_input {
+                        "MUSIC_PANEL_INPUT_TTS_NAME_ABC123"
+                    } else {
+                        "MUSIC_PANEL_INPUT_TTS_NAME_NO_ABC123"
+                    };
+                    let mut s =
+                        get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input, text);
+                    if !state.input.alphanumeric_input {
+                        s.push(' ');
+                        s.push_str(&scroll);
+                    }
+                    s
+                }
             };
-            s.push_str(&tts_text);
-            tts.say(&s);
+            tts.say(&tts_text);
             None
         } else {
             // Field-specific actions.
