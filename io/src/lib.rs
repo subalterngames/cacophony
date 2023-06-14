@@ -18,7 +18,7 @@
 use audio::{Command, CommandsMessage, Conn, ExportState};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
-use common::time::{bar_to_samples, FRAMERATE_U64};
+use common::time::{bar_to_samples, FRAMERATE, FRAMERATE_U64};
 use common::{InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, State, MAX_VOLUME};
 use edit::edit_file;
 use input::{Input, InputEvent};
@@ -144,8 +144,14 @@ impl IO {
             if let Some(track) = state.music.get_selected_track() {
                 if conn.state.programs.get(&track.channel).is_some() {
                     let gain = track.gain as f64 / 127.0;
-                    let mut commands = vec![];
-                    let duration = bar_to_samples(&state.input.beat, state.music.bpm);
+                    // Set the framerate for playback.
+                    let mut commands = vec![Command::SetFramerate {
+                        framerate: conn.framerate as u32,
+                    }];
+                    // Get the beat duration.
+                    let duration =
+                        bar_to_samples(&state.input.beat, conn.framerate, state.music.bpm);
+                    // Play the notes.
                     for note in input.play_now.iter() {
                         // Set the volume.
                         let volume = (note[2] as f64 * gain) as u8;
@@ -332,19 +338,19 @@ impl IO {
         // Enable the export panel.
         self.export_panel.enable(state);
         // Get commands and an end time.
-        let (mut commands, t1) = tracks_to_commands(state);
+        let (track_commands, t1) = tracks_to_commands(state, FRAMERATE);
         // Define the export state.
         let export_state = ExportState::new(t1);
-        // Insert the export command.
-        commands.insert(
-            0,
+        // Set the framerate.
+        // Sound-off. Set the framerate. Export.
+        let mut commands = vec![
+            Command::SoundOff,
             Command::Export {
                 path: path.to_path_buf(),
                 state: export_state,
             },
-        );
-        // Insert a command to stop all audio.
-        commands.insert(0, Command::SoundOff);
+        ];
+        commands.extend(track_commands);
         // Send the commands.
         conn.send(commands);
     }
@@ -379,22 +385,27 @@ fn get_playback_notes(state: &State, track: &MidiTrack) -> Vec<Note> {
 }
 
 /// Converts all playable tracks to note-on commands.
-fn tracks_to_commands(state: &State) -> (CommandsMessage, u64) {
+fn tracks_to_commands(state: &State, framerate: f64) -> (CommandsMessage, u64) {
     let bpm = state.music.bpm;
     // Start playing music.
-    let t0 = bar_to_samples(&state.time.playback, bpm);
+    let t0 = bar_to_samples(&state.time.playback, framerate, bpm);
     let mut t1 = t0;
-    let mut commands = vec![Command::PlayMusic { time: t0 }];
+    let mut commands = vec![
+        Command::PlayMusic { time: t0 },
+        Command::SetFramerate {
+            framerate: framerate as u32,
+        },
+    ];
     // Get playable tracks.
     for track in get_playable_tracks(&state.music) {
         let notes = get_playback_notes(state, track);
         for note in notes.iter() {
             // Convert the start and duration to sample lengths.
-            let start = bar_to_samples(&note.start, bpm);
+            let start = bar_to_samples(&note.start, framerate, bpm);
             if start < t0 {
                 continue;
             }
-            let duration = bar_to_samples(&note.duration, bpm);
+            let duration = bar_to_samples(&note.duration, framerate, bpm);
             // Is this the last note?
             let note_t1 = start + duration;
             if note_t1 > t1 {

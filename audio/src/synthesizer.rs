@@ -96,6 +96,9 @@ impl Synthesizer {
                         s.ready = false;
                         for command in commands.iter() {
                             match command {
+                                Command::SetFramerate { framerate } => {
+                                    s.synth.set_sample_rate(*framerate as f32)
+                                }
                                 Command::PlayMusic { time } => {
                                     s.events_queue.clear();
                                     s.state.time.music = true;

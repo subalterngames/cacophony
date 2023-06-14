@@ -4,6 +4,8 @@ use std::path::PathBuf;
 /// A command for the synthesizer.
 #[derive(Eq, PartialEq, Clone)]
 pub enum Command {
+    /// Set the synthesizer's framerate.
+    SetFramerate { framerate: u32 },
     /// Send this to announce that we're playing music, as opposed to arbitrary user input audio.
     PlayMusic { time: u64 },
     /// Send this to stop playing music.

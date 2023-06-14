@@ -7,6 +7,8 @@ pub struct Conn {
     pub state: SynthState,
     /// The current export state, if any.
     pub export_state: Option<ExportState>,
+    /// The playback framerate.
+    pub framerate: f64,
     /// The audio player. This is here so we don't drop it.
     _player: Option<Player>,
     /// Send commands to the synthesizer.
@@ -27,6 +29,10 @@ impl Conn {
         recv_export: Receiver<ExportState>,
         recv_time: Receiver<TimeState>,
     ) -> Self {
+        let framerate = match &player {
+            Some(player) => player.framerate as f64,
+            None => 0.0,
+        };
         Self {
             state: SynthState::default(),
             export_state: None,
@@ -35,6 +41,7 @@ impl Conn {
             recv,
             recv_export,
             recv_time,
+            framerate,
         }
     }
 

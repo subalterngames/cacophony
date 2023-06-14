@@ -10,6 +10,7 @@ const ERROR_MESSAGE: &str = "Failed to create an audio output stream: ";
 pub(crate) struct Player {
     _host: Host,
     _stream: Option<Stream>,
+    pub framerate: u32,
 }
 
 impl Player {
@@ -31,6 +32,7 @@ impl Player {
                 // We have a device and a config!
                 Ok(config) => {
                     let sample_format = config.sample_format();
+                    let framerate = config.sample_rate().0;
                     let stream_config: StreamConfig = config.into();
                     let channels = stream_config.channels as usize;
 
@@ -49,6 +51,7 @@ impl Player {
                     Some(Self {
                         _host: host,
                         _stream: stream,
+                        framerate,
                     })
                 }
             },
