@@ -107,7 +107,7 @@ impl Panel for MusicPanel {
                 MusicPanelField::BPM => {
                     if state.input.alphanumeric_input {
                         // Stop editing the BPM.
-                        if input.happened(&InputEvent::MusicPanelToggleInput) {
+                        if input.happened(&InputEvent::ToggleAlphanumericInput) {
                             let s0 = state.clone();
                             // Set a default BPM.
                             if state.music.bpm == 0 {
@@ -128,7 +128,7 @@ impl Panel for MusicPanel {
                         }
                     }
                     // Enable input.
-                    else if input.happened(&InputEvent::MusicPanelToggleInput) {
+                    else if input.happened(&InputEvent::ToggleAlphanumericInput) {
                         return Self::enable_alphanumeric_input(state);
                     }
                 }
@@ -144,7 +144,7 @@ impl Panel for MusicPanel {
                 MusicPanelField::Name => {
                     if state.input.alphanumeric_input {
                         // Stop editing the name.
-                        if input.happened(&InputEvent::MusicPanelToggleInput) {
+                        if input.happened(&InputEvent::ToggleAlphanumericInput) {
                             let s0 = state.clone();
                             if state.music.name.is_empty() {
                                 state.music.name = DEFAULT_MUSIC_NAME.to_string();
@@ -161,7 +161,7 @@ impl Panel for MusicPanel {
                         }
                     }
                     // Enable input.
-                    else if input.happened(&InputEvent::MusicPanelToggleInput) {
+                    else if input.happened(&InputEvent::ToggleAlphanumericInput) {
                         return Self::enable_alphanumeric_input(state);
                     }
                 }

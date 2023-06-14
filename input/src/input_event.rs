@@ -6,6 +6,8 @@ pub enum InputEvent {
     // Cycle panels.
     NextPanel,
     PreviousPanel,
+    // Alphanumeric input.
+    ToggleAlphanumericInput,
     // TTS.
     StatusTTS,
     InputTTS,
@@ -29,7 +31,6 @@ pub enum InputEvent {
     PreviousMusicPanelField,
     IncreaseMusicGain,
     DecreaseMusicGain,
-    MusicPanelToggleInput,
     // Tracks panel.
     AddTrack,
     RemoveTrack,

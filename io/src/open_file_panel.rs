@@ -21,8 +21,6 @@ impl OpenFilePanel {
         state: &mut State,
         paths_state: &mut PathsState,
     ) {
-        // Lock undo/redo.
-        state.input.can_undo = false;
         // Remember the active panels.
         self.previous_panels = state.panels.clone();
         // Clear all active panels.
@@ -84,8 +82,6 @@ impl OpenFilePanel {
         state.panels = self.previous_panels.clone();
         // Restore the focus.
         state.focus = self.previous_focus;
-        // Restore undo/redo.
-        state.input.can_undo = true;
     }
 }
 

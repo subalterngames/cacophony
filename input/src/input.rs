@@ -13,6 +13,21 @@ use common::State;
 use std::str::FromStr;
 
 const MAX_OCTAVE: u8 = 9;
+/// Only these events are allowed during alphanumeric input.
+const ALLOWED_DURING_ALPHANUMERIC_INPUT: [InputEvent; 12] = [
+    InputEvent::Quit,
+    InputEvent::AppTTS,
+    InputEvent::StatusTTS,
+    InputEvent::InputTTS,
+    InputEvent::FileTTS,
+    InputEvent::ToggleAlphanumericInput,
+    InputEvent::UpDirectory,
+    InputEvent::DownDirectory,
+    InputEvent::SelectFile,
+    InputEvent::NextPath,
+    InputEvent::PreviousPath,
+    InputEvent::CloseOpenFile,
+];
 
 /// Listens for user input from qwerty and MIDI devices and records the current input state.
 #[derive(Default)]
@@ -170,55 +185,60 @@ impl Input {
                 _ => (),
             }
         }
+        // Remove events during alphanumeric input.
+        if state.input.alphanumeric_input {
+            events.retain(|e| ALLOWED_DURING_ALPHANUMERIC_INPUT.contains(e));
+        }
         self.events = events;
 
         // MIDI INPUT.
-        let mut midi = vec![];
-        if let Some(midi_conn) = &mut self.midi_conn {
-            midi.extend(midi_conn.poll());
-
-            // Append MIDI events.
-            for mde in self.midi_events.iter_mut() {
-                if mde.1.update(&midi) {
-                    self.events.push(*mde.0);
-                }
-            }
-
-            // Get note-on and note-off events.
-            let volume = state.input.volume.get() as u8;
-            for midi in midi.iter() {
-                // Note-on.
-                if midi[0] >= 144 && midi[0] <= 159 {
-                    // Set the volume.
-                    let midi = if state.input.use_volume {
-                        [midi[0], midi[1], volume]
-                    } else {
-                        *midi
-                    };
-                    // Remember the note-on for piano roll input.
-                    if state.input.armed {
-                        self.note_on_events.push(NoteOn::new(&midi));
+        if !state.input.alphanumeric_input {
+            if let Some(midi_conn) = &mut self.midi_conn {
+                // Poll for MIDI events.
+                let midi = midi_conn.poll();
+                // Append MIDI events.
+                for mde in self.midi_events.iter_mut() {
+                    if mde.1.update(midi) {
+                        self.events.push(*mde.0);
                     }
-                    // Copy this note to the immediate note-on array.
-                    self.play_now.push(midi);
                 }
-                // Note-off.
-                if state.input.armed && midi[0] >= 128 && midi[0] <= 143 {
-                    // Find the corresponding note.
-                    for note_on in self.note_on_events.iter_mut() {
-                        // Same key. Note-off.
-                        if note_on.note[1] == midi[1] {
-                            note_on.off = true;
+
+                // Get note-on and note-off events.
+                let volume = state.input.volume.get() as u8;
+                for midi in midi.iter() {
+                    // Note-on.
+                    if midi[0] >= 144 && midi[0] <= 159 {
+                        // Set the volume.
+                        let midi = if state.input.use_volume {
+                            [midi[0], midi[1], volume]
+                        } else {
+                            *midi
+                        };
+                        // Remember the note-on for piano roll input.
+                        if state.input.armed {
+                            self.note_on_events.push(NoteOn::new(&midi));
+                        }
+                        // Copy this note to the immediate note-on array.
+                        self.play_now.push(midi);
+                    }
+                    // Note-off.
+                    if state.input.armed && midi[0] >= 128 && midi[0] <= 143 {
+                        // Find the corresponding note.
+                        for note_on in self.note_on_events.iter_mut() {
+                            // Same key. Note-off.
+                            if note_on.note[1] == midi[1] {
+                                note_on.off = true;
+                            }
                         }
                     }
                 }
-            }
-            // If all note-ons are off, add them to the `notes` buffer as notes.
-            if !self.note_on_events.is_empty() && self.note_on_events.iter().all(|n| n.off) {
-                for note_on in self.note_on_events.iter() {
-                    self.new_notes.push(note_on.note);
+                // If all note-ons are off, add them to the `notes` buffer as notes.
+                if !self.note_on_events.is_empty() && self.note_on_events.iter().all(|n| n.off) {
+                    for note_on in self.note_on_events.iter() {
+                        self.new_notes.push(note_on.note);
+                    }
+                    self.note_on_events.clear();
                 }
-                self.note_on_events.clear();
             }
         }
     }

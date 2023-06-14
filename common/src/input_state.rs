@@ -19,8 +19,6 @@ pub struct InputState {
     pub use_volume: bool,
     /// The input beat.
     pub beat: Fraction,
-    /// If true, we can undo and redo.
-    pub can_undo: bool,
     /// A buffer of cut/copied notes.
     pub copied: Vec<Note>,
 }
@@ -33,7 +31,6 @@ impl InputState {
             volume: self.volume,
             use_volume: self.use_volume,
             beat: serialize_fraction(&self.beat),
-            can_undo: self.can_undo,
             copied: self.copied.iter().map(|n| n.serialize()).collect(),
         }
     }
@@ -47,7 +44,6 @@ impl Default for InputState {
             volume: Index::new(MAX_VOLUME as usize, MAX_VOLUME as usize + 1),
             use_volume: true,
             beat: Fraction::one(),
-            can_undo: true,
             copied: vec![],
         }
     }
@@ -64,8 +60,6 @@ pub(crate) struct SerializableInputState {
     pub volume: Index,
     /// If true, we'll use the volume value.
     pub use_volume: bool,
-    /// If true, we can undo and redo.
-    pub can_undo: bool,
     /// A buffer of cut/copied notes.
     pub copied: Vec<SerializableNote>,
     /// The input beat.
@@ -81,7 +75,6 @@ impl SerializableInputState {
             volume: self.volume,
             use_volume: self.use_volume,
             beat: deserialize_fraction(&self.beat),
-            can_undo: self.can_undo,
             copied: self.copied.iter().map(|n| n.deserialize()).collect(),
         }
     }
