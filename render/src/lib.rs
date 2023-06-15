@@ -43,6 +43,18 @@ pub fn draw_subtitles(renderer: &Renderer, tts: &TTS) {
     }
 }
 
+pub(crate) fn get_track_heights(state: &common::State, conn: &audio::Conn) -> Vec<u32> {
+    // Get a list of track element heights.
+    let mut elements = vec![];
+    for track in state.music.midi_tracks.iter() {
+        elements.push(match conn.state.programs.get(&track.channel) {
+            Some(_) => TRACK_HEIGHT_SOUNDFONT,
+            None => TRACK_HEIGHT_NO_SOUNDFONT,
+        });
+    }
+    elements
+}
+
 /// Converts a list of elements into a viewable page.
 ///
 /// - `selected` The index of the current selection.

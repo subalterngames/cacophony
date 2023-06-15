@@ -21,4 +21,11 @@ pub enum ColorKey {
     Separator,
     TextInput,
     SelectedNotesBackground,
+    Track0,
+    Track1,
+    Track2,
+    Track3,
+    Track4,
+    Track5,
+    Track6,
 }

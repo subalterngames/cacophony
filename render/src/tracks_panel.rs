@@ -1,5 +1,5 @@
-use crate::{get_page, TRACK_HEIGHT_SOUNDFONT, TRACK_HEIGHT_NO_SOUNDFONT};
 use crate::panel::*;
+use crate::{get_page, get_track_heights, TRACK_HEIGHT_NO_SOUNDFONT, TRACK_HEIGHT_SOUNDFONT};
 use text::{get_file_name, truncate};
 
 const MUTE_OFFSET: u32 = 6;
@@ -44,7 +44,7 @@ impl TracksPanel {
         let gain_key = text.get("TRACKS_PANEL_GAIN");
         let mute_text = text.get("TRACKS_PANEL_MUTE");
         let solo_text = text.get("TRACKS_PANEL_SOLO");
-        let page_height = height - 2;
+        let page_height = height - 3;
         // Return.
         Self {
             panel,
@@ -76,14 +76,11 @@ impl Drawable for TracksPanel {
         self.panel.update(focus, renderer);
 
         // Get a list of track element heights.
-        let mut elements = vec![];
-        for track in state.music.midi_tracks.iter() {
-            elements.push(match conn.state.programs.get(&track.channel) {
-                Some(_) => self.track_size_sf[1],
-                None => self.track_size_no_sf[1],
-            });
-        }
-        let track_page = get_page(&state.music.selected, &elements, self.page_height);
+        let track_page = get_page(
+            &state.music.selected,
+            &get_track_heights(state, conn),
+            self.page_height,
+        );
         // Get the color of the separator.
         let separator_color = if focus {
             ColorKey::Separator
@@ -93,7 +90,7 @@ impl Drawable for TracksPanel {
 
         // Draw the tracks.
         let x = self.panel.rect.position[0] + 1;
-        let mut y = self.panel.rect.position[1] + 1;
+        let mut y = self.panel.rect.position[1] + 2;
         for i in track_page {
             let track = &state.music.midi_tracks[i];
             let channel = track.channel;
