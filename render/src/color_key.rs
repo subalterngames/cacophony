@@ -27,5 +27,4 @@ pub enum ColorKey {
     Track3,
     Track4,
     Track5,
-    Track6,
 }

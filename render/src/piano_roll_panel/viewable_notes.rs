@@ -33,6 +33,25 @@ pub(crate) struct ViewableNotes<'a> {
 
 impl<'a> ViewableNotes<'a> {
     pub(crate) fn new(x: f32, w: f32, state: &'a State, conn: &Conn, focus: bool) -> Self {
+        match state.music.get_selected_track() {
+            Some(track) => Self::new_from_track(x, w, track, state, conn, focus),
+            None => Self {
+                x,
+                w,
+                notes: vec![],
+                dt: &state.view.dt,
+            },
+        }
+    }
+
+    pub(crate) fn new_from_track(
+        x: f32,
+        w: f32,
+        track: &'a MidiTrack,
+        state: &'a State,
+        conn: &Conn,
+        focus: bool,
+    ) -> Self {
         // Get any notes being played.
         let playtime = match conn.state.time.music {
             true => conn
@@ -44,66 +63,60 @@ impl<'a> ViewableNotes<'a> {
         };
 
         let dt = &state.view.dt;
-        let notes = match &state.music.get_selected_track() {
-            Some(track) => {
-                // Get the selected notes.
-                let selected = match state.select_mode.get_notes(&state.music) {
-                    Some(selected) => selected,
-                    None => vec![],
-                };
-                let mut notes = vec![];
-                for note in track.notes.iter() {
-                    // Get the end time.
-                    let end = note.start + note.duration;
-                    // Is the note in view?
-                    if !(end >= dt[0]
-                        && note.start <= dt[1]
-                        && note.note <= state.view.dn[0]
-                        && note.note >= state.view.dn[1])
-                    {
-                        continue;
-                    }
-                    // Get the start time of the note. This could be the start of the viewport.
-                    let t = if note.start < dt[0] {
-                        dt[0]
-                    } else {
-                        note.start
-                    };
-                    // Get the x coordinate of the note.
-                    let x = get_note_x(t, x, w, dt);
-                    // Is this note in the selection?
-                    let selected = selected.contains(&note);
-                    // Is this note being played?
-                    let playing = match playtime {
-                        Some(playtime) => note.start <= playtime && end >= playtime,
-                        None => false,
-                    };
-                    // Get the color of the note.
-                    let color = if focus {
-                        if playing {
-                            ColorKey::NotePlaying
-                        } else if selected {
-                            ColorKey::NoteSelected
-                        } else {
-                            ColorKey::Note
-                        }
-                    } else {
-                        ColorKey::NoFocus
-                    };
-                    // Add the note.
-                    notes.push(ViewableNote {
-                        note,
-                        end,
-                        x,
-                        color,
-                        selected,
-                        playing,
-                    });
-                }
-                notes
-            }
+        // Get the selected notes.
+        let selected = match state.select_mode.get_notes(&state.music) {
+            Some(selected) => selected,
             None => vec![],
         };
+        let mut notes = vec![];
+        for note in track.notes.iter() {
+            // Get the end time.
+            let end = note.start + note.duration;
+            // Is the note in view?
+            if !(end >= dt[0]
+                && note.start <= dt[1]
+                && note.note <= state.view.dn[0]
+                && note.note >= state.view.dn[1])
+            {
+                continue;
+            }
+            // Get the start time of the note. This could be the start of the viewport.
+            let t = if note.start < dt[0] {
+                dt[0]
+            } else {
+                note.start
+            };
+            // Get the x coordinate of the note.
+            let x = get_note_x(t, x, w, dt);
+            // Is this note in the selection?
+            let selected = selected.contains(&note);
+            // Is this note being played?
+            let playing = match playtime {
+                Some(playtime) => note.start <= playtime && end >= playtime,
+                None => false,
+            };
+            // Get the color of the note.
+            let color = if focus {
+                if playing {
+                    ColorKey::NotePlaying
+                } else if selected {
+                    ColorKey::NoteSelected
+                } else {
+                    ColorKey::Note
+                }
+            } else {
+                ColorKey::NoFocus
+            };
+            // Add the note.
+            notes.push(ViewableNote {
+                note,
+                end,
+                x,
+                color,
+                selected,
+                playing,
+            });
+        }
         Self { notes, x, w, dt }
     }
 

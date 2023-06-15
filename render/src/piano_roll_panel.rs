@@ -11,6 +11,7 @@ mod volume;
 use super::FocusableTexture;
 use common::State;
 use common::{Fraction, MAX_NOTE, MIN_NOTE};
+use multi_track::MultiTrack;
 use text::fraction;
 use top_bar::TopBar;
 use viewable_notes::*;
@@ -24,6 +25,8 @@ pub struct PianoRollPanel {
     top_bar: TopBar,
     /// The volume sub-panel.
     volume: Volume,
+    /// The multi-track sub-panel.
+    multi_track: MultiTrack,
     /// The note names textures.
     note_names: FocusableTexture,
     /// The position of the note names.
@@ -78,6 +81,7 @@ impl PianoRollPanel {
         let time_y = note_names_position[1] - 1;
         let time_horizontal_line_y = cell_size[1] * (time_y + 1) as f32;
         let volume = Volume::new(config, text, renderer);
+        let multi_track = MultiTrack::new(config, renderer);
         Self {
             panel,
             top_bar,
@@ -91,6 +95,7 @@ impl PianoRollPanel {
             time_y,
             time_horizontal_line_y,
             volume,
+            multi_track,
         }
     }
 
@@ -166,19 +171,21 @@ impl Drawable for PianoRollPanel {
         // Top bar.
         self.top_bar.update(state, renderer, text, focus);
 
-        // Note names.
-        let texture = self.note_names.get(focus);
-        let rect = [
-            0,
-            ((MAX_NOTE - MIN_NOTE) - state.view.dn[0]) as u32,
-            PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
-            self.piano_roll_height,
-        ];
-        renderer.texture(texture, self.note_names_position, Some(rect));
+        if state.view.single_track {
+            // Note names.
+            let texture = self.note_names.get(focus);
+            let rect = [
+                0,
+                ((MAX_NOTE - MIN_NOTE) - state.view.dn[0]) as u32,
+                PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
+                self.piano_roll_height,
+            ];
+            renderer.texture(texture, self.note_names_position, Some(rect));
 
-        // Piano roll rows.
-        let texture = self.piano_roll_rows.get(focus);
-        renderer.texture(texture, self.piano_roll_rows_position, None);
+            // Piano roll rows.
+            let texture = self.piano_roll_rows.get(focus);
+            renderer.texture(texture, self.piano_roll_rows_position, None);
+        }
 
         // Cursor label.
         let cursor_color = if focus {
@@ -233,53 +240,61 @@ impl Drawable for PianoRollPanel {
         };
         renderer.text(&dt_label, &Renderer::get_key_color(focus));
 
-        // Get the viewable notes.
-        let notes = ViewableNotes::new(
-            self.piano_roll_rows_rect[0],
-            self.piano_roll_rows_rect[2],
-            state,
-            conn,
-            focus,
-        );
+        if state.view.single_track {
+            // Get the viewable notes.
+            let notes = ViewableNotes::new(
+                self.piano_roll_rows_rect[0],
+                self.piano_roll_rows_rect[2],
+                state,
+                conn,
+                focus,
+            );
 
-        // Draw the selection background.
-        let selected = notes
-            .notes
-            .iter()
-            .filter(|n| n.selected)
-            .collect::<Vec<&ViewableNote>>();
-        // Get the start and end of the selection.
-        if let Some(select_0) = selected
-            .iter()
-            .min_by(|a, b| a.note.start.cmp(&b.note.start))
-        {
-            if let Some(select_1) = selected.iter().max_by(|a, b| a.end.cmp(&b.end)) {
-                let color = if focus {
-                    ColorKey::SelectedNotesBackground
-                } else {
-                    ColorKey::NoFocus
-                };
-                let x1 = get_note_x(
-                    select_1.end,
-                    self.piano_roll_rows_rect[0],
-                    self.piano_roll_rows_rect[2],
-                    &state.view.dt,
-                );
-                renderer.rectangle_pixel(
-                    [select_0.x, self.piano_roll_rows_rect[1]],
-                    [x1 - select_0.x, self.piano_roll_rows_rect[3]],
-                    &color,
-                )
+            // Draw the selection background.
+            let selected = notes
+                .notes
+                .iter()
+                .filter(|n| n.selected)
+                .collect::<Vec<&ViewableNote>>();
+            // Get the start and end of the selection.
+            if let Some(select_0) = selected
+                .iter()
+                .min_by(|a, b| a.note.start.cmp(&b.note.start))
+            {
+                if let Some(select_1) = selected.iter().max_by(|a, b| a.end.cmp(&b.end)) {
+                    let color = if focus {
+                        ColorKey::SelectedNotesBackground
+                    } else {
+                        ColorKey::NoFocus
+                    };
+                    let x1 = get_note_x(
+                        select_1.end,
+                        self.piano_roll_rows_rect[0],
+                        self.piano_roll_rows_rect[2],
+                        &state.view.dt,
+                    );
+                    renderer.rectangle_pixel(
+                        [select_0.x, self.piano_roll_rows_rect[1]],
+                        [x1 - select_0.x, self.piano_roll_rows_rect[3]],
+                        &color,
+                    )
+                }
             }
-        }
 
-        // Draw the notes.
-        for note in notes.notes.iter() {
-            let w = notes.get_note_w(note);
-            // Get the y value from the pitch.
-            let y = self.piano_roll_rows_rect[1]
-                + ((state.view.dn[0] - note.note.note) as f32) * self.cell_size[1];
-            renderer.rectangle_pixel([note.x, y], [w, self.cell_size[1]], &note.color)
+            // Draw the notes.
+            for note in notes.notes.iter() {
+                let w = notes.get_note_w(note);
+                // Get the y value from the pitch.
+                let y = self.piano_roll_rows_rect[1]
+                    + ((state.view.dn[0] - note.note.note) as f32) * self.cell_size[1];
+                renderer.rectangle_pixel([note.x, y], [w, self.cell_size[1]], &note.color)
+            }
+            // Volume.
+            self.volume.update(&notes, renderer, state);
+        }
+        // Multi-track.
+        else {
+            self.multi_track.update(renderer, state, conn);
         }
 
         // Draw time lines.
@@ -297,8 +312,5 @@ impl Drawable for PianoRollPanel {
             state,
             renderer,
         );
-
-        // Volume.
-        self.volume.update(&notes, renderer, state);
     }
 }
