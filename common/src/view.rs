@@ -16,6 +16,8 @@ pub struct View {
     pub dn: [u8; 2],
     /// The current edit mode.
     pub mode: Index,
+    /// If true, we're viewing a single track. If false, we're viewing multiple tracks.
+    pub single_track: bool,
 }
 
 impl View {
@@ -36,7 +38,12 @@ impl View {
         let n1 = n0 - h;
         let dn = [n0, n1];
         let mode = Index::new(0, EDIT_MODES.len());
-        Self { dt, dn, mode }
+        Self {
+            dt,
+            dn,
+            mode,
+            single_track: true,
+        }
     }
 
     /// Returns a serializable version of the viewport.
@@ -48,6 +55,7 @@ impl View {
             ],
             dn: self.dn,
             mode: self.mode,
+            single_track: self.single_track,
         }
     }
 }
@@ -56,11 +64,13 @@ impl View {
 #[derive(Serialize, Deserialize)]
 pub(crate) struct SerializableViewport {
     /// The start and end time of the viewport.
-    pub dt: [SerializableFraction; 2],
+    pub(crate) dt: [SerializableFraction; 2],
     /// The start and end note of the viewport.
-    pub dn: [u8; 2],
+    pub(crate) dn: [u8; 2],
     /// The current edit mode.
     pub(crate) mode: Index,
+    /// If true, we're viewing a single track. If false, we're viewing multiple tracks.
+    pub(crate) single_track: bool,
 }
 
 impl SerializableViewport {
@@ -73,6 +83,7 @@ impl SerializableViewport {
             ],
             dn: self.dn,
             mode: self.mode,
+            single_track: self.single_track,
         }
     }
 }
