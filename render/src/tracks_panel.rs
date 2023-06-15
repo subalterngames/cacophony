@@ -1,4 +1,4 @@
-use crate::get_page;
+use crate::{get_page, TRACK_HEIGHT_SOUNDFONT, TRACK_HEIGHT_NO_SOUNDFONT};
 use crate::panel::*;
 use text::{get_file_name, truncate};
 
@@ -37,8 +37,8 @@ impl TracksPanel {
         let panel = Panel::new(PanelType::Tracks, [x, y], [width, height], text);
         // Get the sizes.
         let track_width = width - 2;
-        let track_size_sf = [track_width, 4];
-        let track_size_no_sf = [track_width, 1];
+        let track_size_sf = [track_width, TRACK_HEIGHT_SOUNDFONT];
+        let track_size_no_sf = [track_width, TRACK_HEIGHT_NO_SOUNDFONT];
         let field_width = width - 4;
         let bank_key = text.get("TRACKS_PANEL_BANK");
         let gain_key = text.get("TRACKS_PANEL_GAIN");

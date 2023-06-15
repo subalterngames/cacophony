@@ -7,6 +7,7 @@ use piano_roll_rows::get_piano_roll_rows;
 mod top_bar;
 mod viewable_notes;
 mod volume;
+mod multi_track;
 use super::FocusableTexture;
 use common::State;
 use common::{Fraction, MAX_NOTE, MIN_NOTE};
