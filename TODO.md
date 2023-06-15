@@ -8,6 +8,8 @@
 - [ ] Multi-track view
 - [ ] Effects
 - [ ] Text ref
+- [ ] Rewrite README
+- [ ] Export MIDI
 
 ## Bugs
 
