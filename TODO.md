@@ -24,6 +24,13 @@
 - [x] Can we play notes?
 - [x] Qwerty note input
 
+## Tracks view
+
+- [ ] Extend to the bottom of the screen
+- [ ] Better colors
+- [ ] Note sizes in the config file
+- [ ] Arrows to the tracks
+
 ## Export panel
 
 - [x] Make it
