@@ -192,6 +192,17 @@ impl Panel for PianoRollPanel {
                             // Not armed.
                             false => s.push_str(&text.get("PIANO_ROLL_PANEL_STATUS_TTS_NOT_ARMED")),
                         }
+                        // How many tracks?
+                        let tracks_key = if state.view.single_track {
+                            "PIANO_ROLL_PANEL_STATUS_TTS_SINGLE_TRACK"
+                        } else {
+                            "PIANO_ROLL_PANEL_STATUS_TTS_MULTI_TRACK"
+                        };
+                        s.push_str(&text.get_with_values(
+                            tracks_key,
+                            &[&state.music.selected.unwrap().to_string()],
+                        ));
+                        s.push(' ');
                         // Piano role mode.
                         s.push(' ');
                         s.push_str(&text.get_with_values(
@@ -261,6 +272,18 @@ impl Panel for PianoRollPanel {
                                 text,
                             )),
                         }
+                        // Toggle tracks.
+                        let tracks_key = if state.view.single_track {
+                            "PIANO_ROLL_PANEL_INPUT_TTS_MULTI_TRACK"
+                        } else {
+                            "PIANO_ROLL_PANEL_INPUT_TTS_SINGLE_TRACK"
+                        };
+                        s.push(get_tooltip(
+                            tracks_key,
+                            &[InputEvent::PianoRollToggleTracks],
+                            input,
+                            text,
+                        ));
                         // Change the mode.
                         s.push(get_tooltip(
                             "PIANO_ROLL_PANEL_INPUT_TTS_MODES",
@@ -373,6 +396,12 @@ impl Panel for PianoRollPanel {
         else if input.happened(&InputEvent::Arm) {
             let s0 = state.clone();
             state.input.armed = !state.input.armed;
+            Some(Snapshot::from_states(s0, state))
+        }
+        // Toggle tracks view.
+        else if input.happened(&InputEvent::PianoRollToggleTracks) {
+            let s0 = state.clone();
+            state.view.single_track = !state.view.single_track;
             Some(Snapshot::from_states(s0, state))
         }
         // Set the input beat.

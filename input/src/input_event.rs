@@ -58,6 +58,7 @@ pub enum InputEvent {
     PianoRollSetView,
     PianoRollSetSelect,
     PianoRollSetEdit,
+    PianoRollToggleTracks,
     Arm,
     InputBeatLeft,
     InputBeatRight,
