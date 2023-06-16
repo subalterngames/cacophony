@@ -28,8 +28,8 @@
 
 ## Tracks view
 
-- [ ] Extend to the bottom of the screen
-- [ ] Better colors
+- [x] Extend to the bottom of the screen
+- [x] Better colors
 - [ ] Note sizes in the config file
 - [ ] Arrows to the tracks
 

@@ -4,6 +4,8 @@ pub(crate) use crate::{ColorKey, Ini};
 pub(crate) use common::sizes::*;
 pub(crate) use common::PanelType;
 
+/// A panel has a rectangular backaground and a title label.
+#[derive(Clone)]
 pub(crate) struct Panel {
     /// The type of panel.
     panel_type: PanelType,

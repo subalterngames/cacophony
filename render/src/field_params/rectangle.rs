@@ -1,4 +1,5 @@
 /// A rectangle has a position and a size.
+#[derive(Clone)]
 pub(crate) struct Rectangle {
     /// The position in grid units.
     pub position: [u32; 2],

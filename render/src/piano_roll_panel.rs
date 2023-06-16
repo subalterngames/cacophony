@@ -19,8 +19,10 @@ use volume::Volume;
 
 /// Draw the piano roll panel.
 pub struct PianoRollPanel {
-    /// The panel.
-    panel: Panel,
+    /// The panel used in single-track mode.
+    panel_single_track: Panel,
+    /// The panel used in multi-track mode.
+    panel_multi_track: Panel,
     /// Data for the top bar sub-panel.
     top_bar: TopBar,
     /// The volume sub-panel.
@@ -45,13 +47,15 @@ pub struct PianoRollPanel {
     time_y: u32,
     /// The time horizontal line y pixel coordinate.
     time_horizontal_line_y: f32,
+    /// The bottom y coordinates for time lines in single- and multi- track modes.
+    time_line_bottoms: [f32; 2],
 }
 
 impl PianoRollPanel {
     pub fn new(config: &Ini, state: &State, text: &Text, renderer: &Renderer) -> Self {
         let piano_roll_panel_position = get_piano_roll_panel_position(config);
         let piano_roll_panel_size = get_piano_roll_panel_size(config);
-        let panel = Panel::new(
+        let panel_single_track = Panel::new(
             PanelType::PianoRoll,
             piano_roll_panel_position,
             piano_roll_panel_size,
@@ -60,8 +64,8 @@ impl PianoRollPanel {
         let top_bar = TopBar::new(config, text);
         let note_names = get_note_names(config, renderer);
         let note_names_position = [
-            panel.rect.position[0] + 1,
-            panel.rect.position[1] + PIANO_ROLL_PANEL_TOP_BAR_HEIGHT + 1,
+            panel_single_track.rect.position[0] + 1,
+            panel_single_track.rect.position[1] + PIANO_ROLL_PANEL_TOP_BAR_HEIGHT + 1,
         ];
         let piano_roll_height = (state.view.dn[0] - state.view.dn[1]) as u32;
         let piano_roll_rows = get_piano_roll_rows(config, renderer);
@@ -82,8 +86,14 @@ impl PianoRollPanel {
         let time_horizontal_line_y = cell_size[1] * (time_y + 1) as f32;
         let volume = Volume::new(config, text, renderer);
         let multi_track = MultiTrack::new(config, renderer);
+        let mut panel_multi_track = panel_single_track.clone();
+        panel_multi_track.rect.size[1] += volume.rect.size[1];
+        let volume_size_f = renderer.grid_to_pixel(volume.rect.size);
+        let time_line_bottom_single_track = piano_roll_rows_rect[1] + piano_roll_rows_rect[3];
+        let time_line_bottoms = [time_line_bottom_single_track, time_line_bottom_single_track + volume_size_f[1]];
         Self {
-            panel,
+            panel_single_track,
+            panel_multi_track,
             top_bar,
             note_names,
             note_names_position,
@@ -96,6 +106,7 @@ impl PianoRollPanel {
             time_horizontal_line_y,
             volume,
             multi_track,
+            time_line_bottoms,
         }
     }
 
@@ -140,7 +151,7 @@ impl PianoRollPanel {
             renderer.vertical_line_pixel(
                 x1,
                 self.piano_roll_rows_rect[1],
-                self.piano_roll_rows_rect[1] + self.piano_roll_rows_rect[3],
+                if state.view.single_track { self.time_line_bottoms[0] } else { self.time_line_bottoms[1] },
                 color,
             );
         }
@@ -157,10 +168,11 @@ impl Drawable for PianoRollPanel {
         text: &Text,
         _: &PathsState,
     ) {
-        let focus = self.panel.has_focus(state);
+        let panel = if state.view.single_track { &self.panel_single_track } else { &self.panel_multi_track };
+        let focus = panel.has_focus(state);
 
         // Panel background.
-        self.panel.update(focus, renderer);
+        panel.update(focus, renderer);
 
         let program_exists = match state.music.get_selected_track() {
             Some(track) => conn.state.programs.contains_key(&track.channel),
@@ -193,7 +205,7 @@ impl Drawable for PianoRollPanel {
         } else {
             ColorKey::NoFocus
         };
-        let cursor_x = self.panel.rect.position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH + 1;
+        let cursor_x = panel.rect.position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH + 1;
         let cursor_string = text.get_with_values(
             "PIANO_ROLL_PANEL_CURSOR_TIME",
             &[&fraction(&state.time.cursor)],
@@ -231,7 +243,7 @@ impl Drawable for PianoRollPanel {
             "PIANO_ROLL_PANEL_VIEW_DT",
             &[&fraction(&state.view.dt[0]), &fraction(&state.view.dt[1])],
         );
-        let dt_x = self.panel.rect.position[0] + self.panel.rect.size[0]
+        let dt_x = panel.rect.position[0] + panel.rect.size[0]
             - dt_string.chars().count() as u32
             - 1;
         let dt_label = Label {

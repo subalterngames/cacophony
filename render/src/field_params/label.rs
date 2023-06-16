@@ -1,4 +1,5 @@
 /// A position and a string. This is used for drawing text.
+#[derive(Clone)]
 pub(crate) struct Label {
     /// The position in grid units.
     pub position: [u32; 2],

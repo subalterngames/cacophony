@@ -4,7 +4,7 @@ use crate::panel::*;
 /// The piano roll volume sub-panel.
 pub(crate) struct Volume {
     /// The position and size of the panel in grid units.
-    rect: Rectangle,
+    pub(super) rect: Rectangle,
     /// The title label for the panel.
     title: Label,
     /// The position and size of the title in grid units.
