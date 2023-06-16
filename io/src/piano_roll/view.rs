@@ -150,7 +150,7 @@ impl Panel for View {
             Some(Snapshot::from_states(s0, state))
         }
         // Move the view upwards.
-        else if input.happened(&InputEvent::ViewUp) {
+        else if state.view.single_track && input.happened(&InputEvent::ViewUp) {
             let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
             let dn = self.deltas.get_dn(&mode);
@@ -169,7 +169,7 @@ impl Panel for View {
             }
         }
         // Move the view downwards.
-        else if input.happened(&InputEvent::ViewDown) {
+        else if state.view.single_track && input.happened(&InputEvent::ViewDown) {
             let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
             let dn = self.deltas.get_dn(&mode);
@@ -188,15 +188,15 @@ impl Panel for View {
             }
         }
         // Zoom in.
-        else if input.happened(&InputEvent::ViewZoomIn) {
+        else if state.view.single_track && input.happened(&InputEvent::ViewZoomIn) {
             self.zoom(state, true)
         }
         // Zoom out.
-        else if input.happened(&InputEvent::ViewZoomOut) {
+        else if state.view.single_track && input.happened(&InputEvent::ViewZoomOut) {
             self.zoom(state, false)
         }
         // Zoom default.
-        else if input.happened(&InputEvent::ViewZoomDefault) {
+        else if state.view.single_track && input.happened(&InputEvent::ViewZoomDefault) {
             let s0 = state.clone();
             state.view.dt = [state.view.dt[0], state.view.dt[0] + self.dt_0];
             Some(Snapshot::from_states(s0, state))
@@ -226,23 +226,36 @@ impl PianoRollSubPanel for View {
     }
 
     fn get_input_tts(&self, state: &State, input: &Input, text: &Text) -> String {
-        // PIANO_ROLL_PANEL_INPUT_TTS_VIEW,"\0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end."
-        let mut s = get_tooltip(
-            "PIANO_ROLL_PANEL_INPUT_TTS_VIEW",
-            &[
-                InputEvent::ViewUp,
-                InputEvent::ViewDown,
-                InputEvent::ViewLeft,
-                InputEvent::ViewRight,
-                InputEvent::ViewStart,
-                InputEvent::ViewEnd,
-                InputEvent::ViewZoomIn,
-                InputEvent::ViewZoomOut,
-                InputEvent::ViewZoomDefault,
-            ],
-            input,
-            text,
-        );
+        let mut s = if state.view.single_track {
+            get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK",
+                &[
+                    InputEvent::ViewUp,
+                    InputEvent::ViewDown,
+                    InputEvent::ViewLeft,
+                    InputEvent::ViewRight,
+                    InputEvent::ViewStart,
+                    InputEvent::ViewEnd,
+                    InputEvent::ViewZoomIn,
+                    InputEvent::ViewZoomOut,
+                    InputEvent::ViewZoomDefault,
+                ],
+                input,
+                text,
+            )
+        } else {
+            get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK",
+                &[
+                    InputEvent::ViewLeft,
+                    InputEvent::ViewRight,
+                    InputEvent::ViewStart,
+                    InputEvent::ViewEnd,
+                ],
+                input,
+                text,
+            )
+        };
         s.push(' ');
         s.push_str(&get_cycle_edit_mode_input_tts(
             &state.view.mode,

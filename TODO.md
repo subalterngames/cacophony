@@ -32,7 +32,7 @@
 - [x] Better colors
 - [x] Note sizes in the config file
 - [x] Arrows to the tracks
-- [ ] Disable view up/down
+- [x] Disable view up/down
 
 ## Export panel
 
