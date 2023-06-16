@@ -31,7 +31,8 @@
 - [x] Extend to the bottom of the screen
 - [x] Better colors
 - [x] Note sizes in the config file
-- [ ] Arrows to the tracks
+- [x] Arrows to the tracks
+- [ ] Disable view up/down
 
 ## Export panel
 

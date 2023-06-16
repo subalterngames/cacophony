@@ -1,9 +1,8 @@
 use super::viewable_notes::*;
 use crate::panel::*;
 use crate::{get_page, get_track_heights};
-use common::{MAX_NOTE, MIN_NOTE};
 use common::config::parse;
-
+use common::{MAX_NOTE, MIN_NOTE};
 
 /// Track colors for when the panel has focus.
 const TRACK_COLORS_FOCUS: [ColorKey; 6] = [
@@ -34,6 +33,8 @@ pub(crate) struct MultiTrack {
     rect_f: [f32; 4],
     /// The height of each note in pixels.
     note_height: f32,
+    /// The string used for drawing an arrow.
+    arrow: Label,
 }
 
 impl MultiTrack {
@@ -54,7 +55,20 @@ impl MultiTrack {
         let position_f = renderer.grid_to_pixel(position);
         let size_f = renderer.grid_to_pixel(size);
         let rect_f = [position_f[0], position_f[1], size_f[0], size_f[1]];
-        Self { rect, rect_f, note_height }
+        let mut arrow_text = String::from("<");
+        for _ in 0..PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH as usize + 1 {
+            arrow_text.push('=');
+        }
+        let arrow = Label {
+            position: [piano_roll_panel_position[0] - 1, position[1]],
+            text: arrow_text,
+        };
+        Self {
+            rect,
+            rect_f,
+            note_height,
+            arrow,
+        }
     }
 
     pub(crate) fn update(&self, renderer: &Renderer, state: &State, conn: &Conn) {
@@ -75,11 +89,20 @@ impl MultiTrack {
             } else {
                 TRACK_COLORS_NO_FOCUS[color_index]
             };
+            renderer.rectangle(&rect, &color);
+            // Draw an arrow if this is the selected track.
+            if let Some(selected) = state.music.selected {
+                if selected == i {
+                    let mut arrow = self.arrow.clone();
+                    arrow.position[1] = y + *height / 2;
+                    renderer.text(&arrow, &color);
+                }
+            }
+            // Increment the color index.
             color_index += 1;
             if color_index >= TRACK_COLORS_FOCUS.len() {
                 color_index = 0;
             }
-            renderer.rectangle(&rect, &color);
             // Get the track.
             let track = &state.music.midi_tracks[i];
             // Get the viewable notes.

@@ -90,7 +90,10 @@ impl PianoRollPanel {
         panel_multi_track.rect.size[1] += volume.rect.size[1];
         let volume_size_f = renderer.grid_to_pixel(volume.rect.size);
         let time_line_bottom_single_track = piano_roll_rows_rect[1] + piano_roll_rows_rect[3];
-        let time_line_bottoms = [time_line_bottom_single_track, time_line_bottom_single_track + volume_size_f[1]];
+        let time_line_bottoms = [
+            time_line_bottom_single_track,
+            time_line_bottom_single_track + volume_size_f[1],
+        ];
         Self {
             panel_single_track,
             panel_multi_track,
@@ -151,7 +154,11 @@ impl PianoRollPanel {
             renderer.vertical_line_pixel(
                 x1,
                 self.piano_roll_rows_rect[1],
-                if state.view.single_track { self.time_line_bottoms[0] } else { self.time_line_bottoms[1] },
+                if state.view.single_track {
+                    self.time_line_bottoms[0]
+                } else {
+                    self.time_line_bottoms[1]
+                },
                 color,
             );
         }
@@ -168,7 +175,11 @@ impl Drawable for PianoRollPanel {
         text: &Text,
         _: &PathsState,
     ) {
-        let panel = if state.view.single_track { &self.panel_single_track } else { &self.panel_multi_track };
+        let panel = if state.view.single_track {
+            &self.panel_single_track
+        } else {
+            &self.panel_multi_track
+        };
         let focus = panel.has_focus(state);
 
         // Panel background.
@@ -243,9 +254,8 @@ impl Drawable for PianoRollPanel {
             "PIANO_ROLL_PANEL_VIEW_DT",
             &[&fraction(&state.view.dt[0]), &fraction(&state.view.dt[1])],
         );
-        let dt_x = panel.rect.position[0] + panel.rect.size[0]
-            - dt_string.chars().count() as u32
-            - 1;
+        let dt_x =
+            panel.rect.position[0] + panel.rect.size[0] - dt_string.chars().count() as u32 - 1;
         let dt_label = Label {
             text: dt_string,
             position: [dt_x, self.time_y],
