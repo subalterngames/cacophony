@@ -10,6 +10,7 @@
 - [ ] Text ref
 - [ ] Rewrite README
 - [ ] Export MIDI
+- [x] Export chunks
 
 ## Bugs
 
@@ -38,3 +39,11 @@
 
 - [x] Make it
 - [x] Use Popup
+
+## Effects
+
+- [ ] Pitch bend
+- [ ] Channel pressure
+- [ ] Polyphonic pressure
+- [ ] Reverb
+- [ ] Chorus

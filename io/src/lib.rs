@@ -18,7 +18,7 @@
 use audio::{Command, CommandsMessage, Conn, ExportState};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
-use common::time::{bar_to_samples, FRAMERATE, FRAMERATE_U64};
+use common::time::{bar_to_samples, FRAMERATE};
 use common::{InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, State, MAX_VOLUME};
 use edit::edit_file;
 use input::{Input, InputEvent};
@@ -416,8 +416,6 @@ fn tracks_to_commands(state: &State, framerate: f64) -> (CommandsMessage, u64) {
             })
         }
     }
-    // Decay.
-    t1 += FRAMERATE_U64;
     // All-off.
     commands.push(Command::StopMusicAt { time: t1 });
     (commands, t1)

@@ -6,7 +6,13 @@ use riff_wave::*;
 use std::fs::{File, OpenOptions};
 use std::path::PathBuf;
 
+/// Conversion factor for f32 to i16.
 const F32_TO_I16: f32 = 32767.5;
+/// Export this many bytes per decay chunk.
+const DECAY_CHUNK_SIZE: usize = 2048;
+///  Oxisynth usually doesn't zero out its audio. This is essentially an epsilon.
+/// This is used to detect if the export is done.
+const SILENCE: [i16; 2] = [-1, 1];
 
 /// A convenient wrapper for a SoundFont.
 struct SoundFontBanks {
@@ -299,30 +305,57 @@ impl Synthesizer {
                 s.events_queue.retain(|e| e.time != time);
             }
 
-            // Get the sample.
-            let sample = s.synth.read_next();
-
             // Either export audio or play the file.
             match (&mut s.exporter, &mut s.export_state) {
                 (Some(writer), Some(export_state)) => {
-                    // Export.
-                    if let Err(error) = writer.write_sample_i16(to_i16(sample.0)) {
-                        panic!("Error exporting example: {}", error)
-                    }
-                    if let Err(error) = writer.write_sample_i16(to_i16(sample.1)) {
-                        panic!("Error exporting example: {}", error)
-                    }
-                    // Increment the number of exported samples.
-                    export_state.exported += 1;
-
                     // Are we done exporting?
                     if export_state.exported >= export_state.samples {
-                        // Sync the header.
-                        writer.sync_header().unwrap();
-                        // Open the file.
-                        s.export_state = None;
-                        s.exporter = None;
+                        // Get the samples as f32.
+                        let mut left_f: [f32; DECAY_CHUNK_SIZE] = [0.0; DECAY_CHUNK_SIZE];
+                        let mut right_f: [f32; DECAY_CHUNK_SIZE] = [0.0; DECAY_CHUNK_SIZE];
+                        s.synth
+                            .write((left_f.as_mut_slice(), right_f.as_mut_slice()));
+                        // Are we decaying?
+                        let mut decaying = false;
+                        for (lf, rf) in left_f.iter().zip(&right_f) {
+                            // Convert to i16.
+                            let left = to_i16(lf);
+                            let right = to_i16(rf);
+                            // There is still sound.
+                            if left < SILENCE[0]
+                                || left > SILENCE[1]
+                                || right < SILENCE[0]
+                                || right > SILENCE[1]
+                            {
+                                decaying = true;
+                            }
+                            // Export.
+                            if let Err(error) = writer.write_sample_i16(left) {
+                                panic!("Error exporting example: {}", error)
+                            }
+                            if let Err(error) = writer.write_sample_i16(right) {
+                                panic!("Error exporting example: {}", error)
+                            }
+                        }
+                        // We're done!
+                        if !decaying {
+                            // Sync the header.
+                            writer.sync_header().unwrap();
+                            // Open the file.
+                            s.export_state = None;
+                        }
                     } else {
+                        // Get the sample.
+                        let sample = s.synth.read_next();
+                        // Export.
+                        if let Err(error) = writer.write_sample_i16(to_i16(&sample.0)) {
+                            panic!("Error exporting example: {}", error)
+                        }
+                        if let Err(error) = writer.write_sample_i16(to_i16(&sample.1)) {
+                            panic!("Error exporting example: {}", error)
+                        }
+                        // Increment the number of exported samples.
+                        export_state.exported += 1;
                         // Increment time.
                         if let Some(time) = s.state.time.time.as_mut() {
                             *time += 1;
@@ -336,6 +369,8 @@ impl Synthesizer {
                 (None, Some(_)) => s.export_state = None,
                 // Play.
                 (None, None) => {
+                    // Get the sample.
+                    let sample = s.synth.read_next();
                     match send_audio.send(sample) {
                         // We sent a message. Increment the time.
                         Ok(_) => {
@@ -352,6 +387,10 @@ impl Synthesizer {
                     // Send the time state.
                     if send_time.try_send(s.state.time).is_ok() {}
                 }
+            }
+            // Stop exporting.
+            if s.export_state.is_none() && s.exporter.is_some() {
+                s.exporter = None;
             }
             // Send the export state.
             if s.send_export_state && send_export.send(s.export_state).is_ok() {
@@ -466,6 +505,6 @@ impl Synthesizer {
 }
 
 /// Converts an f32 sample to an i16 sample.
-fn to_i16(sample: f32) -> i16 {
+fn to_i16(sample: &f32) -> i16 {
     (sample * F32_TO_I16).floor() as i16
 }
