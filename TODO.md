@@ -5,7 +5,7 @@
 - [ ] Test on Linux
 - [ ] Test on OSX
 - [ ] Help links
-- [ ] Multi-track view
+- [x] Multi-track view
 - [ ] Effects
 - [ ] Text ref
 - [ ] Rewrite README
