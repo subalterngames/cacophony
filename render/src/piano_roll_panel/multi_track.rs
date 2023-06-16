@@ -2,7 +2,10 @@ use super::viewable_notes::*;
 use crate::panel::*;
 use crate::{get_page, get_track_heights};
 use common::{MAX_NOTE, MIN_NOTE};
+use common::config::parse;
 
+
+/// Track colors for when the panel has focus.
 const TRACK_COLORS_FOCUS: [ColorKey; 6] = [
     ColorKey::Track0Focus,
     ColorKey::Track1Focus,
@@ -11,6 +14,7 @@ const TRACK_COLORS_FOCUS: [ColorKey; 6] = [
     ColorKey::Track4Focus,
     ColorKey::Track5Focus,
 ];
+/// Track colors for when the panel doesn't have focus.
 const TRACK_COLORS_NO_FOCUS: [ColorKey; 6] = [
     ColorKey::Track0NoFocus,
     ColorKey::Track1NoFocus,
@@ -19,8 +23,8 @@ const TRACK_COLORS_NO_FOCUS: [ColorKey; 6] = [
     ColorKey::Track4NoFocus,
     ColorKey::Track5NoFocus,
 ];
+/// The min/max note delta as a float.
 const DN: f32 = (MAX_NOTE - MIN_NOTE) as f32;
-const NOTE_HEIGHT: f32 = 2.0;
 
 /// View multiple tracks at the same time.
 pub(crate) struct MultiTrack {
@@ -28,10 +32,14 @@ pub(crate) struct MultiTrack {
     rect: Rectangle,
     /// The (x, y, w, h) of the sub-panel in pixels.
     rect_f: [f32; 4],
+    /// The height of each note in pixels.
+    note_height: f32,
 }
 
 impl MultiTrack {
     pub fn new(config: &Ini, renderer: &Renderer) -> Self {
+        let section = config.section(Some("RENDER")).unwrap();
+        let note_height = parse(section, "multi_track_note_height");
         let piano_roll_panel_position = get_piano_roll_panel_position(config);
         let piano_roll_panel_size = get_piano_roll_panel_size(config);
         let position = [
@@ -46,7 +54,7 @@ impl MultiTrack {
         let position_f = renderer.grid_to_pixel(position);
         let size_f = renderer.grid_to_pixel(size);
         let rect_f = [position_f[0], position_f[1], size_f[0], size_f[1]];
-        Self { rect, rect_f }
+        Self { rect, rect_f, note_height }
     }
 
     pub(crate) fn update(&self, renderer: &Renderer, state: &State, conn: &Conn) {
@@ -117,7 +125,7 @@ impl MultiTrack {
                 let note_w = notes.get_note_w(note);
                 renderer.rectangle_pixel(
                     [note.x, note_y],
-                    [note_w, NOTE_HEIGHT],
+                    [note_w, self.note_height],
                     &ColorKey::Background,
                 )
             }
