@@ -3,13 +3,21 @@ use crate::panel::*;
 use crate::{get_page, get_track_heights};
 use common::{MAX_NOTE, MIN_NOTE};
 
-const TRACK_COLORS: [ColorKey; 6] = [
-    ColorKey::Track0,
-    ColorKey::Track1,
-    ColorKey::Track2,
-    ColorKey::Track3,
-    ColorKey::Track4,
-    ColorKey::Track5,
+const TRACK_COLORS_FOCUS: [ColorKey; 6] = [
+    ColorKey::Track0Focus,
+    ColorKey::Track1Focus,
+    ColorKey::Track2Focus,
+    ColorKey::Track3Focus,
+    ColorKey::Track4Focus,
+    ColorKey::Track5Focus,
+];
+const TRACK_COLORS_NO_FOCUS: [ColorKey; 6] = [
+    ColorKey::Track0NoFocus,
+    ColorKey::Track1NoFocus,
+    ColorKey::Track2NoFocus,
+    ColorKey::Track3NoFocus,
+    ColorKey::Track4NoFocus,
+    ColorKey::Track5NoFocus,
 ];
 const DN: f32 = (MAX_NOTE - MIN_NOTE) as f32;
 const NOTE_HEIGHT: f32 = 2.0;
@@ -53,15 +61,17 @@ impl MultiTrack {
         // Iterate through the heights and indices.
         for (height, i) in track_heights.iter().zip(page) {
             // Draw a rectangle.
-            if focus {
-                let rect = Rectangle::new([x, y], [w, *height]);
-                let color = &TRACK_COLORS[color_index];
-                color_index += 1;
-                if color_index >= TRACK_COLORS.len() {
-                    color_index = 0;
-                }
-                renderer.rectangle(&rect, color);
+            let rect = Rectangle::new([x, y], [w, *height]);
+            let color = if focus {
+                TRACK_COLORS_FOCUS[color_index]
+            } else {
+                TRACK_COLORS_NO_FOCUS[color_index]
+            };
+            color_index += 1;
+            if color_index >= TRACK_COLORS_FOCUS.len() {
+                color_index = 0;
             }
+            renderer.rectangle(&rect, &color);
             // Get the track.
             let track = &state.music.midi_tracks[i];
             // Get the viewable notes.
@@ -92,7 +102,8 @@ impl MultiTrack {
                     } else {
                         ColorKey::NoFocus
                     };
-                    let x1 = get_note_x(select_1.end, self.rect_f[0], self.rect_f[2], &state.view.dt);
+                    let x1 =
+                        get_note_x(select_1.end, self.rect_f[0], self.rect_f[2], &state.view.dt);
                     renderer.rectangle_pixel(
                         [select_0.x, position[1]],
                         [x1 - select_0.x, h],
@@ -102,7 +113,7 @@ impl MultiTrack {
             }
             // Draw some notes.
             for note in notes.notes.iter() {
-                let note_y = position[1] + ((1.0 - ((note.note.note - MIN_NOTE) as f32) / DN)) * h;
+                let note_y = position[1] + (1.0 - ((note.note.note - MIN_NOTE) as f32) / DN) * h;
                 let note_w = notes.get_note_w(note);
                 renderer.rectangle_pixel(
                     [note.x, note_y],

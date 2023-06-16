@@ -48,7 +48,7 @@ pub(crate) fn get_track_heights(state: &common::State, conn: &audio::Conn) -> Ve
     let mut elements = vec![];
     for track in state.music.midi_tracks.iter() {
         elements.push(match conn.state.programs.get(&track.channel) {
-            Some(_) => TRACK_HEIGHT_SOUNDFONT,
+            Some(_) => TRACK_HEIGHT_SOUNDFONT + 1,
             None => TRACK_HEIGHT_NO_SOUNDFONT,
         });
     }
