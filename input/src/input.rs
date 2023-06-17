@@ -1,8 +1,5 @@
-#[cfg(debug_assertions)]
 use std::env;
-#[cfg(debug_assertions)]
 use std::fs::File;
-#[cfg(debug_assertions)]
 use std::io::Read;
 
 use crate::{InputEvent, MidiBinding, MidiConn, NoteOn, QwertyBinding, KEYS};
@@ -79,7 +76,8 @@ impl Input {
             midi_events.insert(k_input.0, k_input.1);
         }
 
-        let debug_inputs = if cfg!(debug_assertions) {
+        let mut debug_inputs = vec![];
+        if cfg!(debug_assertions) {
             let args: Vec<String> = env::args().collect();
             if args.len() >= 3 && args[1] == "--events" {
                 match File::open(&args[2]) {
@@ -87,23 +85,17 @@ impl Input {
                         let mut s = String::new();
                         file.read_to_string(&mut s).unwrap();
                         let lines = s.split('\n');
-                        let mut debug_inputs = vec![];
                         for line in lines {
                             match line.trim().parse::<InputEvent>() {
                                 Ok(e) => debug_inputs.push(e),
                                 Err(_) => panic!("Failed to parse {}", line),
                             }
                         }
-                        debug_inputs
                     }
                     Err(error) => panic!("Failed to open file {}: {}", &args[2], error),
                 }
-            } else {
-                vec![]
             }
-        } else {
-            vec![]
-        };
+        }
 
         Self {
             midi_conn,
