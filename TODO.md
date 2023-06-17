@@ -7,9 +7,12 @@
 - [ ] Help links
 - [x] Multi-track view
 - [ ] Effects
-- [ ] Text ref
+- [x] ~~Text ref~~
 - [ ] Rewrite README
 - [ ] Export MIDI
+- [ ] Export separate tracks
+- [ ] Export ogg
+- [ ] Export mp3
 - [x] Export chunks
 
 ## Bugs
