@@ -22,7 +22,7 @@
 - [x] During alphanumeric input, all other input should be locked except TTS.
 - [x] Don't show input backgrounds if alphanumeric input is disabled.
 - [ ] Channel overflow
-- [ ] Don't hide notes beyond dn in multi-track view
+- [x] Don't hide notes beyond dn in multi-track view
 - [ ] Soundfont paths if they don't exist
 
 ## Misc.
@@ -33,6 +33,10 @@
 
 - [x] Can we play notes?
 - [x] Qwerty note input
+- [ ] Cursor to beat
+- [ ] Playback to beat
+- [ ] Cursor to Playback
+- [ ] Playback to cursor
 
 ## Tracks view
 

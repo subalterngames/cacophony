@@ -32,9 +32,16 @@ pub(crate) struct ViewableNotes<'a> {
 }
 
 impl<'a> ViewableNotes<'a> {
-    pub(crate) fn new(x: f32, w: f32, state: &'a State, conn: &Conn, focus: bool) -> Self {
+    pub(crate) fn new(
+        x: f32,
+        w: f32,
+        state: &'a State,
+        conn: &Conn,
+        focus: bool,
+        dn: [u8; 2],
+    ) -> Self {
         match state.music.get_selected_track() {
-            Some(track) => Self::new_from_track(x, w, track, state, conn, focus),
+            Some(track) => Self::new_from_track(x, w, track, state, conn, focus, dn),
             None => Self {
                 x,
                 w,
@@ -51,6 +58,7 @@ impl<'a> ViewableNotes<'a> {
         state: &'a State,
         conn: &Conn,
         focus: bool,
+        dn: [u8; 2],
     ) -> Self {
         // Get any notes being played.
         let playtime = match conn.state.time.music {
@@ -73,11 +81,7 @@ impl<'a> ViewableNotes<'a> {
             // Get the end time.
             let end = note.start + note.duration;
             // Is the note in view?
-            if !(end >= dt[0]
-                && note.start <= dt[1]
-                && note.note <= state.view.dn[0]
-                && note.note >= state.view.dn[1])
-            {
+            if !(end >= dt[0] && note.start <= dt[1] && note.note <= dn[0] && note.note >= dn[1]) {
                 continue;
             }
             // Get the start time of the note. This could be the start of the viewport.

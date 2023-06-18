@@ -23,7 +23,9 @@ const TRACK_COLORS_NO_FOCUS: [ColorKey; 6] = [
     ColorKey::Track5NoFocus,
 ];
 /// The min/max note delta as a float.
-const DN: f32 = (MAX_NOTE - MIN_NOTE) as f32;
+const DN_F: f32 = (MAX_NOTE - MIN_NOTE) as f32;
+/// The viewable note delta.
+const DN: [u8; 2] = [MAX_NOTE, MIN_NOTE];
 
 /// View multiple tracks at the same time.
 pub(crate) struct MultiTrack {
@@ -113,6 +115,7 @@ impl MultiTrack {
                 state,
                 conn,
                 focus,
+                DN,
             );
             // Draw the selection background.
             let selected = notes
@@ -144,7 +147,7 @@ impl MultiTrack {
             }
             // Draw some notes.
             for note in notes.notes.iter() {
-                let note_y = position[1] + (1.0 - ((note.note.note - MIN_NOTE) as f32) / DN) * h;
+                let note_y = position[1] + (1.0 - ((note.note.note - MIN_NOTE) as f32) / DN_F) * h;
                 let note_w = notes.get_note_w(note);
                 renderer.rectangle_pixel(
                     [note.x, note_y],
