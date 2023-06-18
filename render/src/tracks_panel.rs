@@ -44,7 +44,7 @@ impl TracksPanel {
         let gain_key = text.get("TRACKS_PANEL_GAIN");
         let mute_text = text.get("TRACKS_PANEL_MUTE");
         let solo_text = text.get("TRACKS_PANEL_SOLO");
-        let page_height = height - 3;
+        let page_height = height - 2;
         // Return.
         Self {
             panel,
@@ -90,7 +90,7 @@ impl Drawable for TracksPanel {
 
         // Draw the tracks.
         let x = self.panel.rect.position[0] + 1;
-        let mut y = self.panel.rect.position[1] + 2;
+        let mut y = self.panel.rect.position[1] + 1;
         for i in track_page {
             let track = &state.music.midi_tracks[i];
             let channel = track.channel;

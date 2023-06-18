@@ -187,7 +187,7 @@ impl TopBar {
             self.position[0] + self.width + 2,
             [0.45, -0.45],
             self.position[1] + 2,
-            0.4,
+            0.6,
             line_color,
         );
     }

@@ -8,7 +8,7 @@ pub const MAIN_MENU_HEIGHT: u32 = 3;
 /// The position of the music panel in grid units.
 pub const MUSIC_PANEL_POSITION: [u32; 2] = [0, 0];
 /// The height of the music panel.
-pub const MUSIC_PANEL_HEIGHT: u32 = 5;
+pub const MUSIC_PANEL_HEIGHT: u32 = 6;
 /// The height of the piano roll panel's top bar.
 pub const PIANO_ROLL_PANEL_TOP_BAR_HEIGHT: u32 = 3;
 /// The width of the column of note names.

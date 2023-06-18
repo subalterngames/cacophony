@@ -24,10 +24,13 @@
 - [x] Channel overflow
 - [x] Don't hide notes beyond dn in multi-track view
 - [ ] Soundfont paths if they don't exist
+- [ ] Splash is off-center
+- [x] Music panel height to align everything better
 
 ## Misc.
 
 - [x] Qwerty note play
+- [ ] Splash version
 
 ## Piano Roll Panel
 
@@ -37,6 +40,7 @@
 - [ ] Playback to beat
 - [ ] Cursor to Playback
 - [ ] Playback to cursor
+- [ ] Up/down tracks in multi-track
 
 ## Tracks view
 
