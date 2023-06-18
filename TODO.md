@@ -6,7 +6,7 @@
 - [ ] Test on OSX
 - [ ] Help links
 - [x] Multi-track view
-- [ ] Effects
+- [x] ~~Effects~~
 - [x] ~~Text ref~~
 - [ ] Rewrite README
 - [ ] Export MIDI
@@ -14,12 +14,16 @@
 - [ ] Export ogg
 - [ ] Export mp3
 - [x] Export chunks
+- [ ] More MIDI bindings
 
 ## Bugs
 
 - [x] Open file panel background screen capture
 - [x] During alphanumeric input, all other input should be locked except TTS.
 - [x] Don't show input backgrounds if alphanumeric input is disabled.
+- [ ] Channel overflow
+- [ ] Don't hide notes beyond dn in multi-track view
+- [ ] Soundfont paths if they don't exist
 
 ## Misc.
 
@@ -42,11 +46,3 @@
 
 - [x] Make it
 - [x] Use Popup
-
-## Effects
-
-- [ ] Pitch bend
-- [ ] Channel pressure
-- [ ] Polyphonic pressure
-- [ ] Reverb
-- [ ] Chorus
