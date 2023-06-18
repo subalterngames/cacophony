@@ -1,4 +1,5 @@
 use crate::panel::*;
+use common::VERSION;
 use input::InputEvent;
 use tooltip::get_tooltip;
 
@@ -9,8 +10,8 @@ const COLOR: ColorKey = ColorKey::Key;
 pub(crate) struct MainMenu {
     /// The panel background.
     panel: Panel,
-    /// The fields.
-    labels: [Label; 6],
+    /// The field labels and the version label.
+    labels: [Label; 7],
 }
 
 impl MainMenu {
@@ -71,7 +72,14 @@ impl MainMenu {
             input,
             text,
         );
-        let fields = [help, status, input_field, app, file, stop];
+        let version = Label {
+            position: [
+                panel.rect.position[0] + panel.rect.size[0] - VERSION.chars().count() as u32 - 1,
+                y,
+            ],
+            text: VERSION.to_string(),
+        };
+        let fields = [help, status, input_field, app, file, stop, version];
 
         Self {
             panel,

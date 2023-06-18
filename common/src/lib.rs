@@ -58,6 +58,9 @@ pub mod sizes;
 pub use paths_state::PathsState;
 pub use serde_json;
 
+/// The version that will be printed on-screen.
+pub const VERSION: &str = "0.1.0";
+
 /// Read bytes from a file.
 pub fn get_bytes(path: &str) -> Vec<u8> {
     let metadata = metadata(path).unwrap();

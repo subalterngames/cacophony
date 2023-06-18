@@ -30,7 +30,7 @@
 ## Misc.
 
 - [x] Qwerty note play
-- [ ] Splash version
+- [x] Splash version
 
 ## Piano Roll Panel
 
