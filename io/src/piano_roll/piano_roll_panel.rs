@@ -284,6 +284,18 @@ impl Panel for PianoRollPanel {
                             input,
                             text,
                         ));
+                        // Multi-track scroll.
+                        if !state.view.single_track {
+                            s.push(get_tooltip(
+                                "PIANO_ROLL_PANEL_INPUT_TTS_TRACK_SCROLL",
+                                &[
+                                    InputEvent::PianoRollPreviousTrack,
+                                    InputEvent::PianoRollNextTrack,
+                                ],
+                                input,
+                                text,
+                            ));
+                        }
                         // Change the mode.
                         s.push(get_tooltip(
                             "PIANO_ROLL_PANEL_INPUT_TTS_MODES",
@@ -420,8 +432,37 @@ impl Panel for PianoRollPanel {
         } else if input.happened(&InputEvent::PianoRollSetView) {
             PianoRollPanel::set_mode(PianoRollMode::View, state)
         }
-        // Sub-panel actions.
-        else {
+        // Multi-track: previous track.
+        else if !state.view.single_track && input.happened(&InputEvent::PianoRollPreviousTrack) {
+            match &state.music.selected {
+                Some(selected) => {
+                    if *selected > 0 {
+                        let s0 = state.clone();
+                        state.music.selected = Some(selected - 1);
+                        Some(Snapshot::from_states(s0, state))
+                    } else {
+                        None
+                    }
+                }
+                None => None,
+            }
+        }
+        // Multi-track: next track.
+        else if !state.view.single_track && input.happened(&InputEvent::PianoRollNextTrack) {
+            match &state.music.selected {
+                Some(selected) => {
+                    if *selected < state.music.midi_tracks.len() - 1 {
+                        let s0 = state.clone();
+                        state.music.selected = Some(selected + 1);
+                        Some(Snapshot::from_states(s0, state))
+                    } else {
+                        None
+                    }
+                }
+                None => None,
+            }
+        } else {
+            // Sub-panel actions.
             let mode = state.piano_roll_mode;
             match mode {
                 PianoRollMode::Edit => self.edit.update(state, conn, input, tts, text, paths_state),

@@ -182,6 +182,7 @@ PIANO_ROLL_PANEL_STATUS_TTS_VIEW,The view is from beats \0 to \1 and pitches \2 
 PIANO_ROLL_PANEL_INPUT_TTS_PLAY,\0 to play music.
 PIANO_ROLL_PANEL_INPUT_TTS_SINGLE_TRACK,\0 to view a single track.
 PIANO_ROLL_PANEL_INPUT_TTS_MULTI_TRACK,\0 to view multiple tracks.
+PIANO_ROLL_PANEL_INPUT_TTS_TRACK_SCROLL,\0 and \1 to select a track.
 PIANO_ROLL_PANEL_INPUT_TTS_NOT_ARMED,\0 to arm the track.
 PIANO_ROLL_PANEL_INPUT_TTS_ARMED,\0 to disarm the track. \1 and \2 to set the input beat.
 PIANO_ROLL_PANEL_INPUT_TTS_DO_NOT_USE_VOLUME,\0 and \1 to set the input volume. \2 to start using MIDI input volume instead. 

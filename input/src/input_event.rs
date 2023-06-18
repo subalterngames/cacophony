@@ -66,6 +66,8 @@ pub enum InputEvent {
     DecreaseInputVolume,
     ToggleInputVolume,
     PlayStop,
+    PianoRollPreviousTrack,
+    PianoRollNextTrack,
     // Piano roll - view mode.
     ViewLeft,
     ViewRight,
