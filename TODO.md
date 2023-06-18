@@ -21,7 +21,7 @@
 - [x] Open file panel background screen capture
 - [x] During alphanumeric input, all other input should be locked except TTS.
 - [x] Don't show input backgrounds if alphanumeric input is disabled.
-- [ ] Channel overflow
+- [x] Channel overflow
 - [x] Don't hide notes beyond dn in multi-track view
 - [ ] Soundfont paths if they don't exist
 

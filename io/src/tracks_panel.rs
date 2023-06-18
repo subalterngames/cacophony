@@ -218,16 +218,20 @@ impl Panel for TracksPanel {
         // Add a track.
         else if input.happened(&InputEvent::AddTrack) {
             let s0 = state.clone();
-            // Get the next channel.
-            let channel = match state.music.midi_tracks.iter().map(|t| t.channel).max() {
-                Some(channel) => channel + 1,
-                None => 0,
-            };
-            // Set the selection.
-            state.music.selected = Some(state.music.midi_tracks.len());
-            // Add a track.
-            state.music.midi_tracks.push(MidiTrack::new(channel));
-            Some(Snapshot::from_states(s0, state))
+            // Get all channels currently being used.
+            let track_channels: Vec<u8> =
+                state.music.midi_tracks.iter().map(|t| t.channel).collect();
+            // Get all available channels and get the minimum availabe channel.
+            match (0u8..255u8).filter(|c| !track_channels.contains(c)).min() {
+                Some(channel) => {
+                    // Set the selection.
+                    state.music.selected = Some(state.music.midi_tracks.len());
+                    // Add a track.
+                    state.music.midi_tracks.push(MidiTrack::new(channel));
+                    Some(Snapshot::from_states(s0, state))
+                }
+                None => None,
+            }
         }
         // There is a selected track.
         else if let Some(selected) = state.music.selected {
