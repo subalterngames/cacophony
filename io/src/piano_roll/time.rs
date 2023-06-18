@@ -39,6 +39,11 @@ impl Time {
             t1
         }
     }
+
+    /// Round a time off to the nearest beat.
+    fn get_nearest_beat(t: &Fraction, state: &State) -> Fraction {
+        (t / state.input.beat).ceil() * state.input.beat
+    }
 }
 
 impl Panel for Time {
@@ -80,6 +85,14 @@ impl Panel for Time {
             let dt = self.deltas.get_dt(&mode, &state.input);
             state.time.cursor += dt;
             Some(Snapshot::from_states(s0, state))
+        } else if input.happened(&InputEvent::TimeCursorPlayback) {
+            let s0 = state.clone();
+            state.time.cursor = state.time.playback;
+            Some(Snapshot::from_states(s0, state))
+        } else if input.happened(&InputEvent::TimeCursorBeat) {
+            let s0 = state.clone();
+            state.time.cursor = Time::get_nearest_beat(&state.time.cursor, state);
+            Some(Snapshot::from_states(s0, state))
         }
         // Move the playback.
         else if input.happened(&InputEvent::TimePlaybackStart) {
@@ -99,6 +112,14 @@ impl Panel for Time {
             let s0 = state.clone();
             let dt = self.deltas.get_dt(&mode, &state.input);
             state.time.playback += dt;
+            Some(Snapshot::from_states(s0, state))
+        } else if input.happened(&InputEvent::TimePlaybackCursor) {
+            let s0 = state.clone();
+            state.time.playback = state.time.cursor;
+            Some(Snapshot::from_states(s0, state))
+        } else if input.happened(&InputEvent::TimePlaybackBeat) {
+            let s0 = state.clone();
+            state.time.playback = Time::get_nearest_beat(&state.time.playback, state);
             Some(Snapshot::from_states(s0, state))
         } else {
             None
@@ -128,10 +149,14 @@ impl PianoRollSubPanel for Time {
                 InputEvent::TimeCursorRight,
                 InputEvent::TimeCursorStart,
                 InputEvent::TimeCursorEnd,
+                InputEvent::TimeCursorBeat,
+                InputEvent::TimeCursorPlayback,
                 InputEvent::TimePlaybackLeft,
                 InputEvent::TimePlaybackRight,
                 InputEvent::TimePlaybackStart,
                 InputEvent::TimePlaybackEnd,
+                InputEvent::TimePlaybackBeat,
+                InputEvent::TimePlaybackCursor,
             ],
             input,
             text,

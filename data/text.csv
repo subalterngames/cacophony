@@ -198,7 +198,7 @@ PIANO_ROLL_PANEL_INPUT_TTS_DESELECT,\0 to deselect.
 PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_SINGLE,\0 to select only one note.
 PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_MANY,\0 to select multiple notes.
 PIANO_ROLL_PANEL_INPUT_TTS_EDIT,\0 and \1 to set the start time. \2 and \3 to set the pitch. \3 and \4 to set the duration. \5 and \6 to set the volume.
-PIANO_ROLL_PANEL_INPUT_TTS_TIME,\0 and \1 to move the cursor. \2 and \3 to set the cursor to the start and end. \4 and \5 to move the playback time. \6 and \7 to set the playback time to the start and end.
+PIANO_ROLL_PANEL_INPUT_TTS_TIME,\0 and \1 to move the cursor. \2 and \3 to set the cursor to the start and end. \4 to set the cursor to the nearest beat. \5 to set the cursor to the playback time. \6 and \7 to move the playback time. \8 and \9 to set the playback time to the start and end. \10 to set the playback time to the nearest beat. \11 to set the playback time to the cursor.
 PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK,"\0, \1, \2, and \3 to move the view. \4 and \5 to set the view to the start and end. \6 and \7 to zoom in and out. \8 to reset the zoom level."
 PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK,"\0 and \1 to move the view. \4 and \5 to set the view to the start and end."
 PIANO_ROLL_MODE_TIME,Time

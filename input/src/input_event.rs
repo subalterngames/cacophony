@@ -85,6 +85,10 @@ pub enum InputEvent {
     TimePlaybackRight,
     TimePlaybackStart,
     TimePlaybackEnd,
+    TimeCursorPlayback,
+    TimePlaybackCursor,
+    TimeCursorBeat,
+    TimePlaybackBeat,
     // Piano roll - edit mode.
     EditStartLeft,
     EditStartRight,

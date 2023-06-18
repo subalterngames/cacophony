@@ -15,6 +15,7 @@
 - [ ] Export mp3
 - [x] Export chunks
 - [ ] More MIDI bindings
+- [ ] Test all TTS
 
 ## Bugs
 
@@ -36,11 +37,12 @@
 
 - [x] Can we play notes?
 - [x] Qwerty note input
-- [ ] Cursor to beat
-- [ ] Playback to beat
-- [ ] Cursor to Playback
-- [ ] Playback to cursor
-- [ ] Up/down tracks in multi-track
+- [x] Cursor to beat
+- [x] Playback to beat
+- [x] Cursor to Playback
+- [x] Playback to cursor
+- [x] Up/down tracks in multi-track
+- [ ] Qwerty note input TTS
 
 ## Tracks view
 
