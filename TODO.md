@@ -24,7 +24,7 @@
 - [x] Channel overflow
 - [x] Don't hide notes beyond dn in multi-track view
 - [ ] Soundfont paths if they don't exist
-- [ ] Splash is off-center
+- [x] Splash is off-center
 - [x] Music panel height to align everything better
 
 ## Misc.

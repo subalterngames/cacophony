@@ -114,8 +114,8 @@ fn window_conf() -> Conf {
     let icon = Some(miniquad::conf::Icon { big, medium, small });
     Conf {
         window_title: "Cacophony".to_string(),
-        window_width: 660,
-        window_height: 255,
+        window_width: 624,
+        window_height: 240,
         window_resizable: false,
         icon,
         ..Default::default()
