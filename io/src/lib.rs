@@ -45,6 +45,7 @@ use save::Save;
 use snapshot::Snapshot;
 use tooltip::*;
 use tracks_panel::TracksPanel;
+mod mid;
 
 /// The maximum size of the undo stack.
 const MAX_UNDOS: usize = 100;

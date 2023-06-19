@@ -16,6 +16,7 @@
 - [x] Export chunks
 - [ ] More MIDI bindings
 - [ ] Test all TTS
+- [ ] Music author
 
 ## Bugs
 
