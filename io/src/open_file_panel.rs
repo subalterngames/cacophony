@@ -1,3 +1,4 @@
+use crate::mid::to_mid;
 use crate::panel::*;
 use crate::{get_tooltip, get_tooltip_with_values, Save};
 use common::open_file::*;
@@ -112,11 +113,21 @@ impl Panel for OpenFilePanel {
         }
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {
+            // Current working directory.
             let mut s = text.get_with_values(
                 "OPEN_FILE_PANEL_STATUS_TTS_CWD",
                 &[&get_folder_name(paths_state.get_directory())],
             );
             s.push(' ');
+            // Export file type.
+            if paths_state.open_file_type == OpenFileType::Export {
+                let export_type = EXPORT_TYPE_STRINGS[paths_state.export_type.get()];
+                s.push_str(
+                    &text.get_with_values("OPEN_FILE_PANEL_STATUS_TTS_EXPORT", &[export_type]),
+                );
+                s.push(' ');
+            }
+            // Selection.
             match paths_state.children.selected {
                 Some(selected) => {
                     let path = &paths_state.children.children[selected];
@@ -151,6 +162,19 @@ impl Panel for OpenFilePanel {
                 strings.push(get_tooltip(
                     "OPEN_FILE_PANEL_INPUT_TTS_SCROLL",
                     &[InputEvent::PreviousPath, InputEvent::NextPath],
+                    input,
+                    text,
+                ));
+            }
+            // Set export type.
+            if paths_state.open_file_type == OpenFileType::Export {
+                let mut index = Index::new(paths_state.export_type.get(), EXPORT_TYPES.len());
+                index.increment(true);
+                let next_export_type = EXPORT_TYPE_STRINGS[index.get()];
+                strings.push(get_tooltip_with_values(
+                    "OPEN_FILE_PANEL_INPUT_TTS_CYCLE_EXPORT",
+                    &[InputEvent::CycleExportType],
+                    &[next_export_type],
                     input,
                     text,
                 ));
@@ -210,6 +234,12 @@ impl Panel for OpenFilePanel {
         // Scroll down.
         else if input.happened(&InputEvent::NextPath) {
             paths_state.scroll(false);
+        }
+        // Export type.
+        else if paths_state.open_file_type == OpenFileType::Export
+            && input.happened(&InputEvent::CycleExportType)
+        {
+            paths_state.export_type.increment(true);
         }
         // We selected something.
         else if input.happened(&InputEvent::SelectFile) {
@@ -277,10 +307,24 @@ impl Panel for OpenFilePanel {
                         self.disable(state);
                         // Append the extension.
                         let mut filename = filename.clone();
-                        filename.push_str(".wav");
-                        return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
-                            paths_state.exports.directory.join(filename),
-                        )]));
+                        match &EXPORT_TYPES[paths_state.export_type.get()] {
+                            // Export to a .wav file.
+                            ExportType::Wav => {
+                                filename.push_str(".wav");
+                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
+                                    paths_state.exports.directory.join(filename),
+                                )]));
+                            }
+                            // Export to a .mid file.
+                            ExportType::Mid => {
+                                filename.push_str(".mid");
+                                to_mid(
+                                    &paths_state.exports.directory.join(filename),
+                                    &state.music,
+                                    &conn.state,
+                                );
+                            }
+                        }
                     }
                 }
             }
