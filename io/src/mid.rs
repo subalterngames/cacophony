@@ -30,7 +30,7 @@ impl MidiNote {
 }
 
 /// Convert internal audio commands to a .mid file.
-/// 
+///
 /// - `path` Output to this path.
 /// - `music` This is what we're saving.
 /// - `synth_state` We need this for its present names.

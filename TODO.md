@@ -17,6 +17,8 @@
 - [ ] More MIDI bindings
 - [ ] Test all TTS
 - [ ] Music author
+- [ ] Asterisk for changes
+- [ ] Quit unsaved prompt
 
 ## Bugs
 
@@ -28,6 +30,12 @@
 - [ ] Soundfont paths if they don't exist
 - [x] Splash is off-center
 - [x] Music panel height to align everything better
+- [ ] Can't add spaces or underscores to alphanumeric input
+- [ ] Audio crackling with some soundfonts??
+- [x] Audio playing on music name input, save file input
+- [ ] Open file name doesn't change if you're saving or exporting
+- [ ] Play only works in piano roll panel
+- [ ] Can't delete a track
 
 ## Misc.
 
