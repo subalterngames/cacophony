@@ -16,9 +16,10 @@
 - [x] Export chunks
 - [ ] More MIDI bindings
 - [ ] Test all TTS
-- [ ] Music author
+- [ ] Export metadata
 - [ ] Asterisk for changes
 - [ ] Quit unsaved prompt
+- [ ] Set framerate
 
 ## Bugs
 

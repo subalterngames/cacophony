@@ -16,6 +16,8 @@ pub struct PathsState {
     pub saves: FileAndDirectory,
     /// When the user wants to export a file, it will be exported to this path.
     pub exports: FileAndDirectory,
+    /// The export type.
+    pub export_type: Index,
     /// The child paths within the current working directory.
     #[serde(skip_serializing, skip_deserializing)]
     pub children: ChildPaths,
@@ -29,10 +31,12 @@ impl PathsState {
         let soundfonts = FileAndDirectory::new_directory(paths.soundfonts_directory.clone());
         let saves = FileAndDirectory::new_directory(paths.saves_directory.clone());
         let exports = FileAndDirectory::new_directory(paths.export_directory.clone());
+        let export_type = Index::new(0, EXPORT_TYPES.len());
         Self {
             soundfonts,
             saves,
             exports,
+            export_type,
             ..Default::default()
         }
     }
