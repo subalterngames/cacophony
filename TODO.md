@@ -13,10 +13,21 @@
 - [ ] Export separate tracks
 - [ ] Export ogg
 - [ ] Export mp3
+- [ ] Export flac
 - [x] Export chunks
 - [ ] More MIDI bindings
 - [ ] Test all TTS
-- [ ] Export metadata
+- [ ] Metadata: framerate, name, album title, track number, year, genre, comments
+- [ ] Export settings
+  - [ ] MIDI: Copyright
+  - [ ] wav: framerate; 16, 24, 32
+  - [ ] flac: ???
+  - [ ] mp3: framerate, quality, variable speed, channel mode, bit rate mode
+  - [ ] ogg: framerate; quality (0-10)
+  - [ ] MIDI: copyright
+  - [ ] Separate tracks: auto-name
+  - [ ] ogg: quality
+  - [ ] mp3: ???
 - [ ] Asterisk for changes
 - [ ] Quit unsaved prompt
 - [ ] Set framerate
