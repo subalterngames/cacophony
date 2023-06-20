@@ -9,7 +9,7 @@
 - [x] ~~Effects~~
 - [x] ~~Text ref~~
 - [ ] Rewrite README
-- [ ] Export MIDI
+- [x] Export MIDI
 - [ ] Export separate tracks
 - [ ] Export ogg
 - [ ] Export mp3

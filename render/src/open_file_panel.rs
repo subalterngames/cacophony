@@ -1,6 +1,7 @@
 use crate::get_page;
 use crate::panel::*;
 use crate::Popup;
+use common::open_file::*;
 use text::truncate;
 
 const EXTENSION_WIDTH: u32 = 4;
@@ -149,8 +150,16 @@ impl Drawable for OpenFilePanel {
 
             // Draw the extension.
             let mut extension = String::from(".");
-            extension.push_str(paths_state.open_file_type.get_extensions()[0]);
-            renderer.text(&self.extension.to_label(&extension), &ColorKey::Key);
+            let ext = match paths_state.open_file_type {
+                OpenFileType::ReadSave | OpenFileType::WriteSave => ".cac",
+                OpenFileType::SoundFont => ".sf2",
+                OpenFileType::Export => match &EXPORT_TYPES[paths_state.export_type.get()] {
+                    ExportType::Wav => ".wav",
+                    ExportType::Mid => ".mid",
+                },
+            };
+            extension.push_str(ext);
+            renderer.text(&self.extension.to_label(&extension), &ColorKey::Arrow);
 
             // Draw the input background.
             renderer.rectangle(&self.input_rect, &ColorKey::TextFieldBG);
