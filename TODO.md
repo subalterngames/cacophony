@@ -17,7 +17,7 @@
 - [x] Export chunks
 - [ ] More MIDI bindings
 - [ ] Test all TTS
-- [ ] Metadata: framerate, name, album title, track number, year, genre, comments
+- [ ] Metadata: name, artist, album, year, genre, track number, comments
 - [ ] Export settings
   - [ ] MIDI: Copyright
   - [ ] wav: framerate; 16, 24, 32
@@ -26,11 +26,8 @@
   - [ ] ogg: framerate; quality (0-10)
   - [ ] MIDI: copyright
   - [ ] Separate tracks: auto-name
-  - [ ] ogg: quality
-  - [ ] mp3: ???
 - [ ] Asterisk for changes
 - [ ] Quit unsaved prompt
-- [ ] Set framerate
 
 ## Bugs
 
