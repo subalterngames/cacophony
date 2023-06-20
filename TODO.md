@@ -31,7 +31,7 @@
 - [ ] Soundfont paths if they don't exist
 - [x] Splash is off-center
 - [x] Music panel height to align everything better
-- [ ] Can't add spaces or underscores to alphanumeric input
+- [x] Can't add spaces or underscores to alphanumeric input
 - [ ] Audio crackling with some soundfonts??
 - [x] Audio playing on music name input, save file input
 - [ ] Open file name doesn't change if you're saving or exporting

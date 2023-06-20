@@ -115,7 +115,7 @@ impl Input {
         // QWERTY INPUT.
 
         // Was backspace pressed?
-        self.backspace = is_key_down(KeyCode::Backspace);
+        self.backspace = is_key_pressed(KeyCode::Backspace);
         // Get the pressed characters.
         self.pressed_chars.clear();
         while let Some(c) = get_char_pressed() {
@@ -255,7 +255,7 @@ impl Input {
             &self
                 .pressed_chars
                 .iter()
-                .filter(|c| c.is_ascii_alphanumeric())
+                .filter(|c| !c.is_control())
                 .copied()
                 .collect(),
         )
