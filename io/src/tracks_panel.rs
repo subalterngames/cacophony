@@ -129,7 +129,6 @@ impl Panel for TracksPanel {
             );
             // There is a selected track.
             if let Some(track) = state.music.get_selected_track() {
-                // Remove the track.
                 s.push(' ');
                 s.push_str(&get_tooltip_with_values(
                     "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX",
@@ -249,6 +248,8 @@ impl Panel for TracksPanel {
                         other => Some(other - 1),
                     },
                 };
+                // Remove the track.
+                state.music.midi_tracks.retain(|t| t.channel != channel);
                 // This track has a program that needs to be unset.
                 match conn.state.programs.get(&channel) {
                     Some(program) => {
