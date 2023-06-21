@@ -5,7 +5,7 @@ use crate::panel::*;
 use common::config::parse_ppq;
 use common::ini::Ini;
 use common::sizes::get_viewport_size;
-use common::{EditMode, EDIT_MODES, MAX_NOTE, MIN_NOTE};
+use common::{EditMode, EDIT_MODES, MAX_NOTE, MIN_NOTE, PPQ_U};
 
 /// The piano roll view sub-pane
 pub(super) struct View {
@@ -57,7 +57,7 @@ impl View {
     /// Zoom in or out.
     fn zoom(&self, state: &mut State, zoom_in: bool) -> Option<Snapshot> {
         // Get the current dt.
-        let dt = Self::get_dt(state) as f32;
+        let dt = (Self::get_dt(state) * PPQ_U) as f32;
         // Get the zoom factor.
         let dz = match &EDIT_MODES[state.view.mode.get()] {
             EditMode::Normal => self.normal_zoom,
