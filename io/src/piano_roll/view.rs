@@ -57,7 +57,7 @@ impl View {
     /// Zoom in or out.
     fn zoom(&self, state: &mut State, zoom_in: bool) -> Option<Snapshot> {
         // Get the current dt.
-        let dt = (Self::get_dt(state) * PPQ_U) as f32;
+        let dt = Self::get_dt(state) as f32;
         // Get the zoom factor.
         let dz = match &EDIT_MODES[state.view.mode.get()] {
             EditMode::Normal => self.normal_zoom,
