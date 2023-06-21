@@ -47,6 +47,7 @@
 - [ ] Open file name doesn't change if you're saving or exporting
 - [ ] Play only works in piano roll panel
 - [x] Can't delete a track
+- [ ] Bad zoom
 
 ## Misc.
 

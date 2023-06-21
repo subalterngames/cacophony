@@ -1,6 +1,6 @@
 use crate::note::MIDDLE_C;
 use crate::sizes::*;
-use crate::{Index, EDIT_MODES};
+use crate::{Index, EDIT_MODES, PPQ_U};
 use ini::Ini;
 use serde::{Deserialize, Serialize};
 
@@ -25,7 +25,7 @@ impl View {
         // Get the start time.
         let t0 = 0;
         // Get the end time from the size of the panel and the beats per cell.
-        let t1 = t0 + w as u64;
+        let t1 = t0 + w as u64 * PPQ_U;
         // Get the time delta.
         let dt = [t0, t1];
         // Get the notes delta.
