@@ -47,18 +47,6 @@ impl Time {
     pub fn samples_to_ppq(&self, samples: u64, framerate: f32) -> u64 {
         ((self.bpm.get_f() * samples as f32) / (BPM_TO_SECONDS * framerate) * PPQ_F) as u64
     }
-
-    /// Returns a time string of pulses per quarter note.
-    pub fn ppq_to_string(&self, ppq: u64) -> String {
-        let time = self.ppq_to_duration(ppq);
-        format!(
-            "{:02}:{:02}:{:02}.{:03}",
-            time.whole_hours(),
-            time.whole_minutes(),
-            time.whole_seconds() % 60,
-            time.subsec_milliseconds()
-        )
-    }
 }
 
 impl Default for Time {
