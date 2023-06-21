@@ -12,7 +12,6 @@
 //! `common` is designed such that any Cacophony crate can use it, but itself does not depend on any Cacophony crates.
 
 pub mod config;
-mod fraction_utils;
 mod index;
 mod input_state;
 mod midi_track;
@@ -26,9 +25,6 @@ pub mod time;
 mod view;
 pub use crossbeam_channel;
 pub use csv;
-pub use fraction::{One, ToPrimitive, Zero};
-pub use fraction_utils::Fraction;
-use fraction_utils::{deserialize_fraction, serialize_fraction, SerializableFraction};
 pub use hashbrown;
 pub use index::Index;
 pub use ini;
@@ -36,11 +32,11 @@ pub use input_state::InputState;
 pub use macroquad;
 pub use midi_track::MidiTrack;
 pub use midir;
-pub use music::{Music, DEFAULT_BPM, DEFAULT_MUSIC_NAME};
-pub use note::{Note, MAX_NOTE, MAX_VOLUME, MIN_NOTE};
+pub use music::*;
+pub use note::{Note, MAX_NOTE, MIN_NOTE};
 pub use panel_type::PanelType;
 pub use paths::Paths;
-pub use state::{SerializableState, State};
+pub use state::State;
 pub use tts;
 use view::View;
 mod edit_mode;
@@ -57,9 +53,14 @@ pub mod open_file;
 pub mod sizes;
 pub use paths_state::PathsState;
 pub use serde_json;
+mod u64_or_f32;
+pub use self::time::*;
+pub use u64_or_f32::*;
 
 /// The version that will be printed on-screen.
 pub const VERSION: &str = "0.1.0";
+/// The maximum volume.
+pub const MAX_VOLUME: u8 = 127;
 
 /// Read bytes from a file.
 pub fn get_bytes(path: &str) -> Vec<u8> {

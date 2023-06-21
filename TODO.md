@@ -28,6 +28,8 @@
   - [ ] Separate tracks: auto-name
 - [ ] Asterisk for changes
 - [ ] Quit unsaved prompt
+- [ ] Note times should be measured in PPQ
+- [ ] Export buffer
 
 ## Bugs
 

@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-fraction = "0.13.1"
 serde_json = "1.0"
 rust-ini = "0.18"
 directories = "5.0.0"

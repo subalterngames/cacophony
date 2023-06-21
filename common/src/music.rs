@@ -1,39 +1,21 @@
-use super::midi_track::{MidiTrack, SerializableTrack};
-use crate::{serialize_fraction, Fraction, SerializableFraction};
-use fraction::Zero;
+use super::midi_track::MidiTrack;
 use serde::{Deserialize, Serialize};
 
-/// The default BPM.
-pub const DEFAULT_BPM: u32 = 120;
 /// The default music name.
-pub const DEFAULT_MUSIC_NAME: &str = "My Music";
+const DEFAULT_MUSIC_NAME: &str = "My Music";
 
 /// Tracks, notes, and metadata.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Music {
     /// The name of the music.
     pub name: String,
     /// The music tracks.
     pub midi_tracks: Vec<MidiTrack>,
-    /// The beats per minute.
-    pub bpm: u32,
-    /// Start audio playback at this time.
-    pub playback_time: Fraction,
     /// The index of the selected track.
     pub selected: Option<usize>,
 }
 
 impl Music {
-    pub fn new(name: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            midi_tracks: vec![],
-            bpm: DEFAULT_BPM,
-            playback_time: Fraction::zero(),
-            selected: None,
-        }
-    }
-
     /// Returns the selected track, if any.
     pub fn get_selected_track(&self) -> Option<&MidiTrack> {
         match self.selected {
@@ -49,87 +31,14 @@ impl Music {
             None => None,
         }
     }
-
-    /// Serialize to a `SerializableMusic`.
-    pub(crate) fn serialize(&self) -> SerializableMusic {
-        SerializableMusic {
-            name: self.name.clone(),
-            midi_tracks: self.midi_tracks.iter().map(|m| m.serialize()).collect(),
-            bpm: self.bpm,
-            playback_time: serialize_fraction(&self.playback_time),
-            selected: self.selected,
-        }
-    }
 }
 
 impl Default for Music {
     fn default() -> Self {
-        Self::new(DEFAULT_MUSIC_NAME)
-    }
-}
-
-/// Music that can be serialized.
-#[derive(Serialize, Deserialize)]
-pub(crate) struct SerializableMusic {
-    /// The name of the music.
-    name: String,
-    /// The serializable tracks.
-    midi_tracks: Vec<SerializableTrack>,
-    /// The beats per minute.
-    bpm: u32,
-    /// Start audio playback at this time.
-    playback_time: SerializableFraction,
-    /// The index of the selected track.
-    selected: Option<usize>,
-}
-
-impl SerializableMusic {
-    /// Deserialize to a `Music`.
-    pub(crate) fn deserialize(&self) -> Music {
-        Music {
-            name: self.name.clone(),
-            midi_tracks: self.midi_tracks.iter().map(|m| m.deserialize()).collect(),
-            bpm: self.bpm,
-            playback_time: Fraction::new(self.playback_time[0], self.playback_time[1]),
-            selected: self.selected,
+        Self {
+            name: DEFAULT_MUSIC_NAME.to_string(),
+            midi_tracks: vec![],
+            selected: None,
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::super::note::Note;
-    use super::{Fraction, MidiTrack, Music, SerializableMusic};
-    use serde_json::{from_str, to_string};
-
-    #[test]
-    fn serialize() {
-        let mut music = Music::default();
-        let mut track = MidiTrack::new(0);
-        track.notes.push(Note {
-            note: 60,
-            velocity: 100,
-            start: Fraction::new(1u8, 2u8),
-            duration: Fraction::new(2u8, 1u8),
-        });
-        track.notes.push(Note {
-            note: 61,
-            velocity: 90,
-            start: Fraction::new(3u8, 2u8),
-            duration: Fraction::new(4u8, 7u8),
-        });
-        music.midi_tracks.push(track);
-        let s = to_string(&music.serialize());
-        assert!(s.is_ok());
-        let serialized = s.unwrap();
-        let m: Result<SerializableMusic, _> = from_str(&serialized);
-        assert!(m.is_ok());
-        let m1 = m.unwrap().deserialize();
-        assert_eq!(m1.midi_tracks.len(), 1);
-        assert_eq!(m1.midi_tracks[0].notes.len(), 2);
-        assert_eq!(m1.midi_tracks[0].notes[0].note, 60);
-        assert_eq!(m1.midi_tracks[0].notes[0].velocity, 100);
-        assert_eq!(m1.midi_tracks[0].notes[1].note, 61);
-        assert_eq!(m1.midi_tracks[0].notes[1].velocity, 90);
     }
 }

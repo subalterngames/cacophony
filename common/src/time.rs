@@ -1,98 +1,72 @@
 use crate::edit_mode::get_index;
-use crate::{deserialize_fraction, serialize_fraction, Fraction, Index, SerializableFraction};
-use fraction::{ToPrimitive, Zero};
+use crate::{Index, U64orF32};
 use serde::{Deserialize, Serialize};
 use time::Duration;
 
 /// Converts BPM to seconds.
-const BPM_TO_SECONDS: f64 = 60.0;
-/// The framerate as a f64 value.
-pub const FRAMERATE: f64 = 44100.0;
-const FRAMERATE_U32: u32 = FRAMERATE as u32;
-pub const FRAMERATE_U64: u64 = FRAMERATE as u64;
-const BPM_TO_SECONDS_U32: u32 = 60;
+const BPM_TO_SECONDS: f32 = 60.0;
+/// Pulses per quarter note as a u64.
+pub const PPQ_U: u64 = 192;
+/// Pulses per quarter note.
+pub const PPQ_F: f32 = PPQ_U as f32;
 
 /// The time state.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Time {
     /// The time defining the position of the cursor.
-    pub cursor: Fraction,
+    pub cursor: u64,
     /// The time at which playback will start.
-    pub playback: Fraction,
+    pub playback: u64,
+    /// The beats per minute.
+    pub bpm: U64orF32,
     /// The current edit mode.
     pub mode: Index,
+    /// The framerate.
+    pub framerate: U64orF32,
 }
 
 impl Time {
-    pub(crate) fn serialize(&self) -> SerializableTime {
-        SerializableTime {
-            cursor: serialize_fraction(&self.cursor),
-            playback: serialize_fraction(&self.playback),
-            mode: self.mode,
-        }
+    /// Converts pulses per quarter note into seconds.
+    pub fn ppq_to_seconds(&self, ppq: u64) -> f32 {
+        ppq as f32 * (BPM_TO_SECONDS / (self.bpm.f * PPQ_F))
+    }
+
+    /// Converts pulses per quarter note into a quantity of samples.
+    pub fn ppq_to_samples(&self, ppq: u64) -> u64 {
+        (self.ppq_to_seconds(ppq) * self.framerate.f) as u64
+    }
+
+    /// Converts pulses per quarter note into a duration
+    pub fn ppq_to_duration(&self, ppq: u64) -> Duration {
+        Duration::seconds_f32(self.ppq_to_seconds(ppq))
+    }
+
+    /// Converts a quantity of samples into pulses per quarter note.
+    pub fn samples_to_ppq(&self, samples: u64) -> u64 {
+        ((self.bpm.f * samples as f32) / (BPM_TO_SECONDS * self.framerate.f) * PPQ_F) as u64
+    }
+
+    /// Returns a time string of pulses per quarter note.
+    pub fn ppq_to_string(&self, ppq: u64) -> String {
+        let time = self.ppq_to_duration(ppq);
+        format!(
+            "{:02}:{:02}:{:02}.{:03}",
+            time.whole_hours(),
+            time.whole_minutes(),
+            time.whole_seconds() % 60,
+            time.subsec_milliseconds()
+        )
     }
 }
 
 impl Default for Time {
     fn default() -> Self {
         Self {
-            cursor: Fraction::zero(),
-            playback: Fraction::zero(),
+            cursor: 0,
+            playback: 0,
+            bpm: U64orF32::from(120),
             mode: get_index(),
+            framerate: U64orF32::from(44100),
         }
     }
-}
-
-/// Time is a series.
-#[derive(Deserialize, Serialize)]
-pub(crate) struct SerializableTime {
-    /// The time defining the position of the cursor.
-    pub(crate) cursor: SerializableFraction,
-    /// The time at which playback will start.
-    pub(crate) playback: SerializableFraction,
-    /// The current edit mode.
-    pub(crate) mode: Index,
-}
-
-impl SerializableTime {
-    /// Returns a deserialized `Viewport`.
-    pub(crate) fn deserialize(&self) -> Time {
-        Time {
-            cursor: deserialize_fraction(&self.cursor),
-            playback: deserialize_fraction(&self.playback),
-            mode: self.mode,
-        }
-    }
-}
-
-/// Converts a number of samples to a bar length.
-pub fn samples_to_bar(samples: u64, bpm: u32) -> Fraction {
-    Fraction::new(samples as u32, FRAMERATE_U32) * Fraction::new(bpm, BPM_TO_SECONDS_U32)
-}
-
-/// Converts a beats value (bar length) to a time value in seconds.
-pub fn bar_to_seconds(bar: &Fraction, bpm: u32) -> f64 {
-    bar.to_f64().unwrap() / (bpm as f64 / BPM_TO_SECONDS)
-}
-
-/// Converts a beats value (bar length) to duration.
-pub fn bar_to_duration(bar: &Fraction, bpm: u32) -> Duration {
-    Duration::seconds_f64(bar_to_seconds(bar, bpm))
-}
-
-/// Returns the number of samples in a bar.
-pub fn bar_to_samples(bar: &Fraction, framerate: f64, bpm: u32) -> u64 {
-    (bar_to_seconds(bar, bpm) * framerate) as u64
-}
-
-/// Returns a time string of the bar length.
-pub fn bar_to_time_string(bar: &Fraction, bpm: u32) -> String {
-    let time = Duration::seconds_f64(bar_to_seconds(bar, bpm));
-    format!(
-        "{:02}:{:02}:{:02}.{:03}",
-        time.whole_hours(),
-        time.whole_minutes(),
-        time.whole_seconds() % 60,
-        time.subsec_milliseconds()
-    )
 }

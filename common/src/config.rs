@@ -1,4 +1,4 @@
-use crate::{Fraction, Paths};
+use crate::{Paths, PPQ_F, PPQ_U};
 use ini::{Ini, Properties};
 use serde_json::from_str;
 use std::fmt::Display;
@@ -57,19 +57,19 @@ pub fn parse_bool(properties: &Properties, key: &str) -> bool {
     }
 }
 
-/// Parse a fraction from a string.
-pub fn parse_fraction(properties: &Properties, key: &str) -> Fraction {
+/// Parse a PPQ value from a string.
+pub fn parse_ppq(properties: &Properties, key: &str) -> u64 {
     match properties.get(key) {
-        Some(value) => value_to_fraction(key, value),
+        Some(value) => value_to_ppq(key, value),
         None => panic!("Missing key {}", key),
     }
 }
 
-/// Parse a list of fraction strings.
-pub fn parse_fractions(properties: &Properties, key: &str) -> Vec<Fraction> {
+/// Parse a list of fraction strings to PPQ values.
+pub fn parse_fractions(properties: &Properties, key: &str) -> Vec<u64> {
     match properties.get(key) {
         Some(value) => match from_str::<Vec<&str>>(value) {
-            Ok(value) => value.iter().map(|v| value_to_fraction(key, v)).collect(),
+            Ok(value) => value.iter().map(|v| value_to_ppq(key, v)).collect(),
             Err(error) => panic!(
                 "Error parsing list of fractions {} for key {}: {}",
                 value, key, error
@@ -79,15 +79,15 @@ pub fn parse_fractions(properties: &Properties, key: &str) -> Vec<Fraction> {
     }
 }
 
-/// Parse a value string as a fraction.
-fn value_to_fraction(key: &str, value: &str) -> Fraction {
+/// Parse a value string as a PPQ value.
+fn value_to_ppq(key: &str, value: &str) -> u64 {
     // Is this formatted like a fraction, e.g. "1/2"?
     match value.contains('/') {
         true => {
             let nd: Vec<&str> = value.split('/').collect();
-            match nd[0].parse::<u32>() {
-                Ok(n) => match nd[1].parse::<u32>() {
-                    Ok(d) => Fraction::new(n, d),
+            match nd[0].parse::<f32>() {
+                Ok(n) => match nd[1].parse::<f32>() {
+                    Ok(d) => ((n / d) * PPQ_F) as u64,
                     Err(error) => panic!(
                         "Invalid denominator in fraction {} for key {}: {}",
                         value, key, error
@@ -101,13 +101,13 @@ fn value_to_fraction(key: &str, value: &str) -> Fraction {
         }
         // Is this formated like a decimal, e.g. "0.5"?
         false => match value.contains('.') {
-            true => match value.parse::<f64>() {
-                Ok(value) => Fraction::from(value),
+            true => match value.parse::<f32>() {
+                Ok(value) => (value * PPQ_F) as u64,
                 Err(error) => panic!("Invalid value {} for key {}: {}", value, key, error),
             },
             // Is it formatted like an integer, e.g. "1"?
-            false => match value.parse::<u32>() {
-                Ok(value) => Fraction::from(value),
+            false => match value.parse::<u64>() {
+                Ok(value) => value * PPQ_U,
                 Err(error) => panic!("Invalid value {} for key {}: {}", value, key, error),
             },
         },

@@ -1,45 +1,30 @@
-use crate::{deserialize_fraction, serialize_fraction, Fraction, SerializableFraction};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter, Result};
 
+/// The MIDI value of the highest-frequency note.
 pub const MAX_NOTE: u8 = 127;
+/// The MIDI value of the lowest-frequency note.
 pub const MIN_NOTE: u8 = 12;
+/// The MIDI value for C4.
 pub const MIDDLE_C: u8 = 60;
-pub const MAX_VOLUME: u8 = 127;
 
 /// A MIDI note with a start bar time and a duration bar time.
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Note {
-    /// The MIDI note value (0-127).
+    /// The MIDI note value.
     pub note: u8,
-    /// The velocity value (0-127).
+    /// The velocity value.
     pub velocity: u8,
-    /// The start bar time.
-    pub start: Fraction,
-    /// The duration bar time.
-    pub duration: Fraction,
-}
-
-impl Note {
-    /// Serialize to a `SerializableNote`.
-    pub(crate) fn serialize(&self) -> SerializableNote {
-        SerializableNote {
-            n: self.note,
-            v: self.velocity,
-            s: serialize_fraction(&self.start),
-            d: serialize_fraction(&self.duration),
-        }
-    }
+    /// The start time in PPQ (pulses per quarter note).
+    pub start: u64,
+    /// The end time in PPQ.
+    pub end: u64,
 }
 
 impl Ord for Note {
     fn cmp(&self, other: &Self) -> Ordering {
-        (self.start, self.start + self.duration, self.note).cmp(&(
-            other.start,
-            other.start + other.duration,
-            other.note,
-        ))
+        (self.start, self.end, self.note).cmp(&(other.start, other.end, other.note))
     }
 }
 
@@ -51,45 +36,10 @@ impl PartialOrd for Note {
 
 impl Debug for Note {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        let start = format!(
-            "{}/{}",
-            self.start.numer().unwrap(),
-            self.start.denom().unwrap()
-        );
-        let duration = format!(
-            "{}/{}",
-            self.duration.numer().unwrap(),
-            self.duration.denom().unwrap()
-        );
         write!(
             f,
             "Note {} {} {} {}",
-            self.note, self.velocity, start, duration
+            self.note, self.velocity, self.start, self.end
         )
-    }
-}
-
-/// A serializable note, with reduced key names.
-#[derive(Serialize, Deserialize, Copy, Clone)]
-pub(crate) struct SerializableNote {
-    /// The MIDI note value (0-127).
-    n: u8,
-    /// The velocity value (0-127).
-    v: u8,
-    /// The start bar time.
-    s: SerializableFraction,
-    /// The duration bar time.
-    d: SerializableFraction,
-}
-
-impl SerializableNote {
-    /// Deserialize to a `Note`.
-    pub(crate) fn deserialize(&self) -> Note {
-        Note {
-            note: self.n,
-            velocity: self.v,
-            start: deserialize_fraction(&self.s),
-            duration: deserialize_fraction(&self.d),
-        }
     }
 }

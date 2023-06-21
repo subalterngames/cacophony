@@ -291,7 +291,6 @@ dependencies = [
  "crossbeam-channel",
  "csv",
  "directories",
- "fraction",
  "hashbrown 0.13.2",
  "macroquad",
  "midir",
@@ -701,16 +700,6 @@ name = "foreign-types-shared"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
-
-[[package]]
-name = "fraction"
-version = "0.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3027ae1df8d41b4bed2241c8fdad4acc1e7af60c8e17743534b545e77182d678"
-dependencies = [
- "lazy_static",
- "num",
-]
 
 [[package]]
 name = "futures-core"
