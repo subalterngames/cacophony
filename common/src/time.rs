@@ -3,6 +3,8 @@ use crate::{Index, U64orF32};
 use serde::{Deserialize, Serialize};
 use time::Duration;
 
+/// The default BPM.
+pub const DEFAULT_BPM: u64 = 120;
 /// Converts BPM to seconds.
 const BPM_TO_SECONDS: f32 = 60.0;
 /// Pulses per quarter note as a u64.
@@ -28,12 +30,12 @@ pub struct Time {
 impl Time {
     /// Converts pulses per quarter note into seconds.
     pub fn ppq_to_seconds(&self, ppq: u64) -> f32 {
-        ppq as f32 * (BPM_TO_SECONDS / (self.bpm.f * PPQ_F))
+        ppq as f32 * (BPM_TO_SECONDS / (self.bpm.get_f() * PPQ_F))
     }
 
     /// Converts pulses per quarter note into a quantity of samples.
-    pub fn ppq_to_samples(&self, ppq: u64) -> u64 {
-        (self.ppq_to_seconds(ppq) * self.framerate.f) as u64
+    pub fn ppq_to_samples(&self, ppq: u64, framerate: f32) -> u64 {
+        (self.ppq_to_seconds(ppq) * framerate) as u64
     }
 
     /// Converts pulses per quarter note into a duration
@@ -43,7 +45,8 @@ impl Time {
 
     /// Converts a quantity of samples into pulses per quarter note.
     pub fn samples_to_ppq(&self, samples: u64) -> u64 {
-        ((self.bpm.f * samples as f32) / (BPM_TO_SECONDS * self.framerate.f) * PPQ_F) as u64
+        ((self.bpm.get_f() * samples as f32) / (BPM_TO_SECONDS * self.framerate.get_f()) * PPQ_F)
+            as u64
     }
 
     /// Returns a time string of pulses per quarter note.
@@ -64,7 +67,7 @@ impl Default for Time {
         Self {
             cursor: 0,
             playback: 0,
-            bpm: U64orF32::from(120),
+            bpm: U64orF32::from(DEFAULT_BPM),
             mode: get_index(),
             framerate: U64orF32::from(44100),
         }

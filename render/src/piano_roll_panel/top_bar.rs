@@ -1,7 +1,7 @@
 use crate::panel::*;
 use common::hashbrown::HashMap;
 use common::{EditMode, Index, PianoRollMode, SelectMode, EDIT_MODES};
-use text::fraction;
+use text::ppq_to_string;
 
 const PADDING: u32 = 4;
 type ModesMap = HashMap<PianoRollMode, (Label, Rectangle)>;
@@ -127,7 +127,7 @@ impl TopBar {
         let value_color = Renderer::get_value_color([focus, true]);
         let key_color = Renderer::get_key_color(focus);
         let colors = [&key_color, &value_color];
-        renderer.key_value(&fraction(&state.input.beat), &self.beat, colors);
+        renderer.key_value(&ppq_to_string(state.input.beat.get_u()), &self.beat, colors);
         renderer.boolean(state.input.use_volume, &self.use_volume, focus, text);
         renderer.key_value(&state.input.volume.get().to_string(), &self.volume, colors);
 

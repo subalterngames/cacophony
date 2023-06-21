@@ -1,5 +1,5 @@
 use crate::panel::*;
-use common::{DEFAULT_BPM, DEFAULT_MUSIC_NAME, MAX_VOLUME};
+use common::{U64orF32, DEFAULT_BPM, DEFAULT_MUSIC_NAME, MAX_VOLUME};
 
 const MAX_GAIN: usize = MAX_VOLUME as usize;
 
@@ -62,7 +62,7 @@ impl Panel for MusicPanel {
                 "MUSIC_PANEL_STATUS_TTS",
                 &[
                     &state.music.name,
-                    &state.music.bpm.to_string(),
+                    &state.time.bpm.to_string(),
                     &conn.state.gain.to_string(),
                 ],
             ));
@@ -132,8 +132,8 @@ impl Panel for MusicPanel {
                         if input.happened(&InputEvent::ToggleAlphanumericInput) {
                             let s0 = state.clone();
                             // Set a default BPM.
-                            if state.music.bpm == 0 {
-                                state.music.bpm = DEFAULT_BPM;
+                            if state.time.bpm.get_u() == 0 {
+                                state.time.bpm = U64orF32::from(DEFAULT_BPM)
                             }
                             // Toggle off alphanumeric input.
                             state.input.alphanumeric_input = false;
@@ -141,10 +141,10 @@ impl Panel for MusicPanel {
                         }
                         // Edit the BPM.
                         else {
-                            let mut bpm = state.music.bpm;
-                            if input.modify_u32(&mut bpm) {
-                                let s0 = state.clone();
-                                state.music.bpm = bpm;
+                            let mut bpm = state.time.bpm.get_u();
+                            if input.modify_u64(&mut bpm) {
+                                let s0: State = state.clone();
+                                state.time.bpm = U64orF32::from(bpm);
                                 return Some(Snapshot::from_states(s0, state));
                             }
                         }

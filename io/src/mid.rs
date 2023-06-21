@@ -1,13 +1,10 @@
 use audio::SynthState;
-use common::{Fraction, Music, Note, ToPrimitive, Zero};
+use common::*;
 use ghakuf::messages::*;
 use ghakuf::writer::*;
 use std::path::Path;
 
-/// Pulses per quarter note as a u32.
-const PPQ_U32: u32 = 192;
-/// Pulses per quarter note as an f64.
-const PPQ_F64: f64 = PPQ_U32 as f64;
+const PULSE: u64 = 1;
 
 /// A MIDI note contains a note and some other useful information.
 struct MidiNote {
@@ -15,8 +12,6 @@ struct MidiNote {
     note: Note,
     /// The channel of the note's track.
     channel: u8,
-    /// The note's end time.
-    end: Fraction,
 }
 
 impl MidiNote {
@@ -24,7 +19,6 @@ impl MidiNote {
         Self {
             note: *note,
             channel,
-            end: note.start + note.duration,
         }
     }
 }
@@ -34,7 +28,7 @@ impl MidiNote {
 /// - `path` Output to this path.
 /// - `music` This is what we're saving.
 /// - `synth_state` We need this for its present names.
-pub(crate) fn to_mid(path: &Path, music: &Music, synth_state: &SynthState) {
+pub(crate) fn to_mid(path: &Path, music: &Music, time: &Time, synth_state: &SynthState) {
     // Gather all notes.
     let mut notes: Vec<MidiNote> = vec![];
     for track in music.midi_tracks.iter() {
@@ -60,7 +54,7 @@ pub(crate) fn to_mid(path: &Path, music: &Music, synth_state: &SynthState) {
         });
     }
     // Set the tempo.
-    let tempo = 60000000 / music.bpm;
+    let tempo = 60000000 / time.bpm.get_u();
     messages.push(Message::MetaEvent {
         delta_time: 0,
         event: MetaEvent::SetTempo,
@@ -70,15 +64,14 @@ pub(crate) fn to_mid(path: &Path, music: &Music, synth_state: &SynthState) {
     // Sort the notes by start time.
     notes.sort_by(|a, b| a.note.start.cmp(&b.note.start));
     // Get the end time.
-    let t1 = notes.iter().map(|n| n.end).max().unwrap();
+    let t1 = notes.iter().map(|n| n.note.end).max().unwrap();
 
     // Get the beat time of one pulse.
-    let pulse = Fraction::new(1u8, PPQ_U32);
     // This is the current time.
-    let mut t = Fraction::zero();
+    let mut t = 0;
 
     // The delta-time since the last event.
-    let mut dt = Fraction::zero();
+    let mut dt = 0;
 
     // Maybe this should be a for loop.
     while t < t1 {
@@ -95,7 +88,7 @@ pub(crate) fn to_mid(path: &Path, music: &Music, synth_state: &SynthState) {
             });
         }
         // Are there any note-off events?
-        for note in notes.iter().filter(|n| n.end == t) {
+        for note in notes.iter().filter(|n| n.note.end == t) {
             // Note-off.
             messages.push(Message::MidiEvent {
                 delta_time: get_delta_time(&mut dt),
@@ -107,8 +100,8 @@ pub(crate) fn to_mid(path: &Path, music: &Music, synth_state: &SynthState) {
             });
         }
         // Increment the time and the delta-time.
-        t += pulse;
-        dt += pulse;
+        t += PULSE;
+        dt += PULSE;
     }
     // Track end.
     messages.push(Message::MetaEvent {
@@ -127,11 +120,11 @@ pub(crate) fn to_mid(path: &Path, music: &Music, synth_state: &SynthState) {
     }
 }
 
-/// Converts a fraction into a MIDI time delta and resets `fraction` to zero.
-fn get_delta_time(fraction: &mut Fraction) -> u32 {
+/// Converts a PPQ value into a MIDI time delta and resets `ppq` to zero.
+fn get_delta_time(ppq: &mut u64) -> u32 {
     // Get the dt.
-    let dt = (fraction.to_f64().unwrap() * PPQ_F64) as u32;
-    // Reset the fraction.
-    *fraction = Fraction::zero();
+    let dt = (*ppq as f32 / PPQ_F) as u32;
+    // Reset the PPQ value.
+    *ppq = 0;
     dt
 }

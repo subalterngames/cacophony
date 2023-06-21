@@ -1,13 +1,10 @@
 use crate::panel::*;
-use common::time::samples_to_bar;
 use common::*;
 
 /// A viewable note.
 pub(crate) struct ViewableNote<'a> {
     /// The note.
     pub note: &'a Note,
-    /// Cached end time of the note.
-    pub end: Fraction,
     /// The x pixel coordinate of the note.
     pub(crate) x: f32,
     /// If true, this note is being played.
@@ -23,8 +20,8 @@ pub(crate) struct ViewableNote<'a> {
 pub(crate) struct ViewableNotes<'a> {
     /// The notes that are in view.
     pub(crate) notes: Vec<ViewableNote<'a>>,
-    /// Cached viewport dt.
-    dt: &'a [Fraction; 2],
+    /// Cached viewport dt in PPQ.
+    dt: [U64orF32; 2],
     /// The x pixel coordinate of the viewport.
     x: f32,
     /// The width in pixels of the viewport.
@@ -46,7 +43,7 @@ impl<'a> ViewableNotes<'a> {
                 x,
                 w,
                 notes: vec![],
-                dt: &state.view.dt,
+                dt: Self::get_dt(&state.view.dt),
             },
         }
     }
@@ -66,11 +63,11 @@ impl<'a> ViewableNotes<'a> {
                 .state
                 .time
                 .time
-                .map(|time| samples_to_bar(time, state.music.bpm)),
+                .map(|time| state.time.samples_to_ppq(time)),
             false => None,
         };
 
-        let dt = &state.view.dt;
+        let dt = Self::get_dt(&state.view.dt);
         // Get the selected notes.
         let selected = match state.select_mode.get_notes(&state.music) {
             Some(selected) => selected,
@@ -78,25 +75,27 @@ impl<'a> ViewableNotes<'a> {
         };
         let mut notes = vec![];
         for note in track.notes.iter() {
-            // Get the end time.
-            let end = note.start + note.duration;
             // Is the note in view?
-            if !(end >= dt[0] && note.start <= dt[1] && note.note <= dn[0] && note.note >= dn[1]) {
+            if !(note.end >= dt[0].get_u()
+                && note.start <= dt[1].get_u()
+                && note.note <= dn[0]
+                && note.note >= dn[1])
+            {
                 continue;
             }
             // Get the start time of the note. This could be the start of the viewport.
-            let t = if note.start < dt[0] {
-                dt[0]
+            let t = if note.start < dt[0].get_u() {
+                dt[0].get_u()
             } else {
                 note.start
             };
             // Get the x coordinate of the note.
-            let x = get_note_x(t, x, w, dt);
+            let x = get_note_x(t, x, w, &dt);
             // Is this note in the selection?
             let selected = selected.contains(&note);
             // Is this note being played?
             let playing = match playtime {
-                Some(playtime) => note.start <= playtime && end >= playtime,
+                Some(playtime) => note.start <= playtime && note.end >= playtime,
                 None => false,
             };
             // Get the color of the note.
@@ -114,7 +113,6 @@ impl<'a> ViewableNotes<'a> {
             // Add the note.
             notes.push(ViewableNote {
                 note,
-                end,
                 x,
                 color,
                 selected,
@@ -124,23 +122,34 @@ impl<'a> ViewableNotes<'a> {
         Self { notes, x, w, dt }
     }
 
-    /// Returns the width of the note at `index`.
+    /// Returns the width of a note.
     pub(crate) fn get_note_w(&self, note: &ViewableNote) -> f32 {
-        let t = if note.end > self.dt[1] {
-            self.dt[1]
+        let dt = if note.note.start < self.dt[0].get_u() {
+            note.note.end - self.dt[0].get_u()
+        } else if note.note.end > self.dt[1].get_u() {
+            self.dt[1].get_u() - note.note.start
         } else {
-            note.end
+            note.note.end - note.note.start
         };
-        let x1 = get_note_x(t, self.x, self.w, self.dt);
+        let x1 = get_note_x(dt, self.x, self.w, &self.dt);
         if x1 <= note.x {
             1.0
         } else {
             x1 - note.x
         }
     }
+
+    /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
+    pub(crate) fn get_note_x(&self, t: u64, x: f32, w: f32) -> f32 {
+        get_note_x(t, x, w, &self.dt)
+    }
+
+    pub(crate) fn get_dt(dt: &[u64; 2]) -> [U64orF32; 2] {
+        [U64orF32::from(dt[0]), U64orF32::from(dt[1])]
+    }
 }
 
 /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
-pub(crate) fn get_note_x(t: Fraction, x: f32, w: f32, dt: &[Fraction; 2]) -> f32 {
-    x + w * ((t - dt[0]) / dt[1]).to_f32().unwrap()
+pub(crate) fn get_note_x(t: u64, x: f32, w: f32, dt: &[U64orF32; 2]) -> f32 {
+    x + w * (t as f32 - dt[0].get_f() / dt[1].get_f())
 }

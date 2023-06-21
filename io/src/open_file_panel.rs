@@ -321,6 +321,7 @@ impl Panel for OpenFilePanel {
                                 to_mid(
                                     &paths_state.exports.directory.join(filename),
                                     &state.music,
+                                    &state.time,
                                     &conn.state,
                                 );
                             }

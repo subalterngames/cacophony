@@ -177,13 +177,13 @@ impl Synthesizer {
                                     channel,
                                     key,
                                     velocity,
-                                    time,
-                                    duration,
+                                    start,
+                                    end,
                                 } => {
                                     let channel = *channel;
                                     let key = *key;
                                     s.events_queue.push(QueuedEvent {
-                                        time: *time,
+                                        time: *start,
                                         event: MidiEvent::NoteOn {
                                             channel,
                                             key,
@@ -191,7 +191,7 @@ impl Synthesizer {
                                         },
                                     });
                                     s.events_queue.push(QueuedEvent {
-                                        time: *time + duration,
+                                        time: *end,
                                         event: MidiEvent::NoteOff { channel, key },
                                     });
                                 }

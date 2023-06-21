@@ -2,41 +2,41 @@ use super::{
     get_cycle_edit_mode_input_tts, get_edit_mode_status_tts, EditModeDeltas, PianoRollSubPanel,
 };
 use crate::panel::*;
-use common::config::parse_fraction;
+use common::config::parse_ppq;
 use common::ini::Ini;
 use common::sizes::get_viewport_size;
-use common::{EditMode, Fraction, One, Zero, EDIT_MODES, MAX_NOTE, MIN_NOTE};
+use common::{EditMode, EDIT_MODES, MAX_NOTE, MIN_NOTE};
 
 /// The piano roll view sub-pane
 pub(super) struct View {
     /// Time values and deltas.
     deltas: EditModeDeltas,
     /// The default viewport dt.
-    dt_0: Fraction,
+    dt_0: u64,
     /// The minimum viewport dt.
-    min_dt: Fraction,
+    min_dt: u64,
     /// The maximum viewport dt.
-    max_dt: Fraction,
+    max_dt: u64,
     /// In normal mode, zoom in by this factor.
-    normal_zoom: Fraction,
+    normal_zoom: f32,
     /// In quick mode, zoom in by this factor.
-    quick_zoom: Fraction,
+    quick_zoom: f32,
     /// In precise mode, zoom in by this factor.
-    precise_zoom: Fraction,
+    precise_zoom: f32,
 }
 
 impl View {
     pub fn new(config: &Ini) -> Self {
         let section = config.section(Some("PIANO_ROLL")).unwrap();
-        let normal_zoom = parse_fraction(section, "normal_zoom");
-        let quick_zoom = parse_fraction(section, "quick_zoom");
-        let precise_zoom = parse_fraction(section, "precise_zoom");
+        let normal_zoom = parse_ppq(section, "normal_zoom") as f32;
+        let quick_zoom = parse_ppq(section, "quick_zoom") as f32;
+        let precise_zoom = parse_ppq(section, "precise_zoom") as f32;
         let viewport_size = get_viewport_size(config);
-        let dt_0 = Fraction::from(viewport_size[0]);
+        let dt_0 = viewport_size[0] as u64;
         Self {
             deltas: EditModeDeltas::new(config),
-            min_dt: Fraction::one(),
-            max_dt: Fraction::new(500u16, 1u16),
+            min_dt: 1,
+            max_dt: 96000,
             normal_zoom,
             quick_zoom,
             precise_zoom,
@@ -45,7 +45,7 @@ impl View {
     }
 
     /// Returns the delta from the viewport's t1 to its t0.
-    fn get_dt(state: &State) -> Fraction {
+    fn get_dt(state: &State) -> u64 {
         state.view.dt[1] - state.view.dt[0]
     }
 
@@ -57,7 +57,7 @@ impl View {
     /// Zoom in or out.
     fn zoom(&self, state: &mut State, zoom_in: bool) -> Option<Snapshot> {
         // Get the current dt.
-        let mut dt = state.view.dt[1] - state.view.dt[0];
+        let dt = Self::get_dt(state) as f32;
         // Get the zoom factor.
         let dz = match &EDIT_MODES[state.view.mode.get()] {
             EditMode::Normal => self.normal_zoom,
@@ -65,8 +65,7 @@ impl View {
             EditMode::Precise => self.precise_zoom,
         };
         // Apply the zoom factor.
-        dt = (if zoom_in { dt * dz } else { dt / dz })
-            .ceil()
+        let dt = ((if zoom_in { dt * dz } else { dt / dz }).ceil() as u64)
             .clamp(self.min_dt, self.max_dt);
         // Set the viewport.
         let s0 = state.clone();
@@ -99,7 +98,7 @@ impl Panel for View {
         else if input.happened(&InputEvent::ViewStart) {
             let s0 = state.clone();
             let dt = View::get_dt(state);
-            state.view.dt = [Fraction::zero(), dt];
+            state.view.dt = [0, dt];
             Some(Snapshot::from_states(s0, state))
         }
         // Move the view to t1.
@@ -126,17 +125,16 @@ impl Panel for View {
             let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
             let dt = self.deltas.get_dt(&mode, &state.input);
-            let t0 = state.view.dt[0] - dt;
-            // Don't go past t=0.
-            if t0.is_zero() || t0.is_sign_positive() {
-                let t1 = state.view.dt[1] - dt;
-                state.view.dt = [t0, t1];
-                Some(Snapshot::from_states(s0, state))
-            }
-            // Snap to t=0.
-            else {
-                state.view.dt = [Fraction::zero(), state.view.dt[1] - state.view.dt[0]];
-                Some(Snapshot::from_states(s0, state))
+            match state.view.dt[0].checked_sub(dt) {
+                Some(t0) => {
+                    let t1 = state.view.dt[1] - dt;
+                    state.view.dt = [t0, t1];
+                    Some(Snapshot::from_states(s0, state))
+                }
+                None => {
+                    state.view.dt = [0, Self::get_dt(state)];
+                    Some(Snapshot::from_states(s0, state))
+                }
             }
         }
         // Move the view rightwards.
@@ -211,8 +209,8 @@ impl PianoRollSubPanel for View {
         let mut s = text.get_with_values(
             "PIANO_ROLL_PANEL_STATUS_TTS_VIEW",
             &[
-                &text.get_fraction_tts(&state.view.dt[0]),
-                &text.get_fraction_tts(&state.view.dt[1]),
+                &text.get_ppq_tts(&state.view.dt[0]),
+                &text.get_ppq_tts(&state.view.dt[1]),
                 &text.get_note_name(state.view.dn[0]),
                 &text.get_note_name(state.view.dn[1]),
             ],

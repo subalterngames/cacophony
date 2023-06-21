@@ -261,8 +261,8 @@ impl Input {
         )
     }
 
-    /// Modify a u32 value.
-    pub fn modify_u32(&self, value: &mut u32) -> bool {
+    /// Modify a u64 value.
+    pub fn modify_u64(&self, value: &mut u64) -> bool {
         self.modify_value(value, 0)
     }
 

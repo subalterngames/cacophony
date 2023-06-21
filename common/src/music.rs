@@ -2,7 +2,7 @@ use super::midi_track::MidiTrack;
 use serde::{Deserialize, Serialize};
 
 /// The default music name.
-const DEFAULT_MUSIC_NAME: &str = "My Music";
+pub const DEFAULT_MUSIC_NAME: &str = "My Music";
 
 /// Tracks, notes, and metadata.
 #[derive(Clone, Debug, Deserialize, Serialize)]

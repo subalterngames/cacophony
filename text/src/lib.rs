@@ -7,31 +7,27 @@
 mod text;
 mod tts;
 pub use self::tts::TTS;
-use common::{Fraction, ToPrimitive, Zero};
+use common::{PPQ_F, PPQ_U};
 use std::path::Path;
 pub use text::Text;
 
-/// Converts a fraction to a string.
-pub fn fraction(fraction: &Fraction) -> String {
-    if fraction.is_nan() {
-        return "NaN".to_string();
-    } else if fraction.is_zero() {
-        return "0".to_string();
+pub fn ppq_to_string(ppq: u64) -> String {
+    // This is a whole note.
+    if ppq % PPQ_U == 0 {
+        (ppq / PPQ_U).to_string()
+    } else {
+        match ppq {
+            288 => "3/2".to_string(),
+            96 => "1/2".to_string(),
+            64 => "1/3".to_string(),
+            48 => "1/4".to_string(),
+            32 => "1/6".to_string(),
+            24 => "1/8".to_string(),
+            12 => "1/16".to_string(),
+            6 => "1/32".to_string(),
+            other => format!("{:.2}", (other as f32 / PPQ_F)),
+        }
     }
-    let mut s = vec![];
-    // Get the integer part.
-    let trunc = fraction.trunc();
-    if !trunc.is_zero() {
-        s.push(trunc.to_i64().unwrap().to_string());
-    }
-    // Get the fractional part.
-    let fract = fraction.fract();
-    if !fract.is_zero() {
-        let numer = fract.numer().unwrap();
-        let denom = fract.denom().unwrap();
-        s.push(format!("{}/{}", numer, denom));
-    }
-    s.join(" ")
 }
 
 /// Truncate a string to fit a specified length.

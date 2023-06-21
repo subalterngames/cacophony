@@ -4,7 +4,7 @@ use super::{
 };
 use crate::panel::*;
 use common::ini::Ini;
-use common::{Fraction, Zero, EDIT_MODES, MAX_NOTE, MAX_VOLUME, MIN_NOTE};
+use common::{EDIT_MODES, MAX_NOTE, MAX_VOLUME, MIN_NOTE};
 
 /// Edit selected notes.
 pub(super) struct Edit {
@@ -49,8 +49,8 @@ impl Panel for Edit {
                     if input.happened(&InputEvent::EditStartLeft) {
                         let dt = self.deltas.get_dt(&mode, &state.input);
                         // Don't let any notes go to t=0.
-                        if !notes.iter().any(|n| (n.start - dt).is_sign_negative()) {
-                            notes.iter_mut().for_each(|n| n.start -= dt);
+                        if !notes.iter().any(|n| n.start.checked_sub(dt).is_none()) {
+                            notes.iter_mut().for_each(|n| n.set_t0_by(dt, false));
                             Some(Snapshot::from_states(s0, state))
                         } else {
                             None
@@ -59,16 +59,18 @@ impl Panel for Edit {
                     // Move the notes right.
                     else if input.happened(&InputEvent::EditStartRight) {
                         let dt = self.deltas.get_dt(&mode, &state.input);
-                        notes.iter_mut().for_each(|n| n.start += dt);
+                        notes.iter_mut().for_each(|n| n.set_t0_by(dt, true));
                         Some(Snapshot::from_states(s0, state))
                     }
                     // Shorten the duration.
                     else if input.happened(&InputEvent::EditDurationLeft) {
                         let dt = self.deltas.get_dt(&mode, &state.input);
                         // Don't let any notes go to dt<=0.
-                        let zero = Fraction::zero();
-                        if notes.iter().all(|n| (n.duration - dt) > zero) {
-                            notes.iter_mut().for_each(|n| n.duration -= dt);
+                        if notes
+                            .iter()
+                            .all(|n| n.get_duration().checked_sub(dt).is_some())
+                        {
+                            notes.iter_mut().for_each(|n| n.end -= dt);
                             Some(Snapshot::from_states(s0, state))
                         } else {
                             None
@@ -77,7 +79,7 @@ impl Panel for Edit {
                     // Lengthen the notes.
                     else if input.happened(&InputEvent::EditDurationRight) {
                         let dt = self.deltas.get_dt(&mode, &state.input);
-                        notes.iter_mut().for_each(|n| n.duration += dt);
+                        notes.iter_mut().for_each(|n| n.end += dt);
                         Some(Snapshot::from_states(s0, state))
                     }
                     // Move the notes up.

@@ -3,7 +3,7 @@ use crate::panel::*;
 use crate::tracks_to_commands;
 use common::config::parse_fractions;
 use common::ini::Ini;
-use common::{Fraction, Index, Note, PianoRollMode, SelectMode};
+use common::{Index, Note, PianoRollMode, SelectMode, U64orF32};
 
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.
@@ -16,8 +16,8 @@ pub struct PianoRollPanel {
     time: Time,
     /// The view mode.
     view: View,
-    /// The beats that we can potentially input.
-    beats: Vec<Fraction>,
+    /// The beats that we can potentially input as PPQ values.
+    beats: Vec<u64>,
     /// The index of the current beat.
     beat: Index,
     /// A buffer of copied notes.
@@ -25,7 +25,7 @@ pub struct PianoRollPanel {
 }
 
 impl PianoRollPanel {
-    pub fn new(beat: &Fraction, config: &Ini) -> Self {
+    pub fn new(beat: &u64, config: &Ini) -> Self {
         let edit = Edit::new(config);
         let select = Select {};
         let time = Time::new(config);
@@ -59,7 +59,7 @@ impl PianoRollPanel {
         // Increment the beat.
         self.beat.increment(up);
         // Set the input beat.
-        state.input.beat = self.beats[self.beat.get()];
+        state.input.beat = U64orF32::from(self.beats[self.beat.get()]);
         Some(Snapshot::from_states(s0, state))
     }
 
@@ -148,13 +148,13 @@ impl Panel for PianoRollPanel {
                             note: n[1],
                             velocity: n[2],
                             start: state.time.cursor,
-                            duration: state.input.beat,
+                            end: state.time.cursor + state.input.beat.get_u(),
                         })
                         .collect();
                     // Add the notes.
                     track.notes.extend(notes.iter().copied());
                     // Move the cursor.
-                    state.time.cursor += state.input.beat;
+                    state.time.cursor += state.input.beat.get_u();
                     Some(Snapshot::from_states(s0, state))
                 }
                 None => None,
@@ -174,7 +174,7 @@ impl Panel for PianoRollPanel {
                         match state.input.armed {
                             // The beat and the volume.
                             true => {
-                                let beat = text.get_fraction_tts(&state.input.beat);
+                                let beat = text.get_ppq_tts(&state.input.beat.get_u());
                                 let v = state.input.volume.get().to_string();
                                 let volume = if state.input.use_volume {
                                     v

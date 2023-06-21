@@ -1,13 +1,13 @@
-use common::config::{parse, parse_fraction};
+use common::config::{parse, parse_ppq};
 use common::ini::Ini;
-use common::{EditMode, Fraction, InputState};
+use common::{EditMode, InputState};
 
 /// Delta factors and values for edit modes.
 pub(super) struct EditModeDeltas {
     /// Multiply the beat by this factor to get the quick time.
-    quick_time_factor: u32,
-    /// In precise mode, move the view left and right by this beat length.
-    precise_time: Fraction,
+    quick_time_factor: u64,
+    /// In precise mode, move the view left and right by this PPQ value.
+    precise_time: u64,
     /// In normal mode, move the viewport up and down by this many half-steps.
     normal_note: u8,
     /// In quick mode, move the viewport up and down by this many half-steps.
@@ -25,8 +25,8 @@ pub(super) struct EditModeDeltas {
 impl EditModeDeltas {
     pub(super) fn new(config: &Ini) -> Self {
         let section = config.section(Some("PIANO_ROLL")).unwrap();
-        let quick_time_factor: u32 = parse(section, "quick_time_factor");
-        let precise_time: Fraction = parse_fraction(section, "precise_time");
+        let quick_time_factor: u64 = parse(section, "quick_time_factor");
+        let precise_time: u64 = parse_ppq(section, "precise_time");
         let normal_note: u8 = parse(section, "normal_note");
         let quick_note: u8 = parse(section, "quick_note");
         let precise_note: u8 = parse(section, "precise_note");
@@ -46,10 +46,10 @@ impl EditModeDeltas {
     }
 
     /// Returns the delta for time.
-    pub(super) fn get_dt(&self, mode: &EditMode, input: &InputState) -> Fraction {
+    pub(super) fn get_dt(&self, mode: &EditMode, input: &InputState) -> u64 {
         match mode {
-            EditMode::Normal => input.beat,
-            EditMode::Quick => input.beat * self.quick_time_factor,
+            EditMode::Normal => input.beat.get_u(),
+            EditMode::Quick => input.beat.get_u() * self.quick_time_factor,
             EditMode::Precise => self.precise_time,
         }
     }

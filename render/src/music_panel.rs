@@ -117,7 +117,7 @@ impl Drawable for MusicPanel {
         }
         // Draw the BPM.
         renderer.key_value(
-            &state.music.bpm.to_string(),
+            &state.time.bpm.to_string(),
             &self.bpm,
             [&key_color, &Renderer::get_value_color([focus, bpm_focus])],
         );

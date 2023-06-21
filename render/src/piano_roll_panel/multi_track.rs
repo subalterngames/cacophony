@@ -130,14 +130,13 @@ impl MultiTrack {
                 .iter()
                 .min_by(|a, b| a.note.start.cmp(&b.note.start))
             {
-                if let Some(select_1) = selected.iter().max_by(|a, b| a.end.cmp(&b.end)) {
+                if let Some(select_1) = selected.iter().max_by(|a, b| a.note.end.cmp(&b.note.end)) {
                     let color = if focus {
                         ColorKey::SelectedNotesBackground
                     } else {
                         ColorKey::NoFocus
                     };
-                    let x1 =
-                        get_note_x(select_1.end, self.rect_f[0], self.rect_f[2], &state.view.dt);
+                    let x1 = notes.get_note_x(select_1.note.end, self.rect_f[0], self.rect_f[2]);
                     renderer.rectangle_pixel(
                         [select_0.x, position[1]],
                         [x1 - select_0.x, h],

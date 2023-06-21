@@ -1,6 +1,6 @@
 use audio::*;
 use common::serde_json::{from_str, to_string, Error};
-use common::{PathsState, SerializableState, State};
+use common::{PathsState, State};
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
@@ -12,7 +12,7 @@ const WRITE_ERROR: &str = "Error writing file: ";
 /// Serializable save data.
 #[derive(Deserialize, Serialize)]
 pub(crate) struct Save {
-    state: SerializableState,
+    state: State,
     synth_state: SynthState,
     paths_state: PathsState,
 }
@@ -27,7 +27,7 @@ impl Save {
     pub fn write(path: &PathBuf, state: &State, conn: &Conn, paths_state: &PathsState) {
         // Convert the state to something that can be serialized.
         let save = Save {
-            state: state.serialize(),
+            state: state.clone(),
             synth_state: conn.state.clone(),
             paths_state: paths_state.clone(),
         };
@@ -63,7 +63,7 @@ impl Save {
                         match q {
                             Ok(s) => {
                                 // Set the app state.
-                                *state = s.state.deserialize();
+                                *state = s.state;
 
                                 // Set the paths.
                                 *paths_state = s.paths_state;

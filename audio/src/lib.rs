@@ -137,8 +137,8 @@ mod tests {
                 channel: CHANNEL,
                 key: KEY + i,
                 velocity: VELOCITY,
-                time: DURATION * 3 + dt * i as u64,
-                duration: DURATION,
+                start: DURATION * 3 + dt * i as u64,
+                end: (DURATION * 3 + dt * i as u64) + DURATION,
             })
             .collect::<CommandsMessage>()
     }

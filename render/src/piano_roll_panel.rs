@@ -10,9 +10,9 @@ mod viewable_notes;
 mod volume;
 use super::FocusableTexture;
 use common::State;
-use common::{Fraction, MAX_NOTE, MIN_NOTE};
+use common::{MAX_NOTE, MIN_NOTE};
 use multi_track::MultiTrack;
-use text::fraction;
+use text::ppq_to_string;
 use top_bar::TopBar;
 use viewable_notes::*;
 use volume::Volume;
@@ -117,7 +117,7 @@ impl PianoRollPanel {
     fn draw_time_lines(
         &self,
         x: u32,
-        time: &Fraction,
+        time: u64,
         color: &ColorKey,
         state: &State,
         renderer: &Renderer,
@@ -125,11 +125,11 @@ impl PianoRollPanel {
         // Get the pixel position of the start coordinate.
         let x0 = x as f32 * self.cell_size[0];
         // The time is before the start time.
-        let (x1, vertical) = if time < &state.view.dt[0] {
+        let (x1, vertical) = if time < state.view.dt[0] {
             (self.piano_roll_rows_rect[0], false)
         }
         // The time is after the end time.
-        else if time > &state.view.dt[1] {
+        else if time > state.view.dt[1] {
             (
                 self.piano_roll_rows_rect[0] + self.piano_roll_rows_rect[2],
                 false,
@@ -139,10 +139,10 @@ impl PianoRollPanel {
         else {
             (
                 get_note_x(
-                    *time,
+                    time,
                     self.piano_roll_rows_rect[0],
                     self.piano_roll_rows_rect[2],
-                    &state.view.dt,
+                    &ViewableNotes::get_dt(&state.view.dt),
                 ),
                 true,
             )
@@ -219,7 +219,7 @@ impl Drawable for PianoRollPanel {
         let cursor_x = panel.rect.position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH + 1;
         let cursor_string = text.get_with_values(
             "PIANO_ROLL_PANEL_CURSOR_TIME",
-            &[&fraction(&state.time.cursor)],
+            &[&ppq_to_string(state.time.cursor)],
         );
         let cursor_string_width = cursor_string.chars().count() as u32;
         let playback_x = cursor_x + cursor_string_width + 3;
@@ -240,7 +240,7 @@ impl Drawable for PianoRollPanel {
         };
         let playback_string = text.get_with_values(
             "PIANO_ROLL_PANEL_PLAYBACK_TIME",
-            &[&fraction(&state.time.playback)],
+            &[&ppq_to_string(state.time.playback)],
         );
         let playback_line_x0 = playback_x + playback_string.chars().count() as u32 / 2;
         let playback_label = Label {
@@ -252,7 +252,10 @@ impl Drawable for PianoRollPanel {
         // Time delta label.
         let dt_string = text.get_with_values(
             "PIANO_ROLL_PANEL_VIEW_DT",
-            &[&fraction(&state.view.dt[0]), &fraction(&state.view.dt[1])],
+            &[
+                &ppq_to_string(state.view.dt[0]),
+                &ppq_to_string(state.view.dt[1]),
+            ],
         );
         let dt_x =
             panel.rect.position[0] + panel.rect.size[0] - dt_string.chars().count() as u32 - 1;
@@ -284,17 +287,16 @@ impl Drawable for PianoRollPanel {
                 .iter()
                 .min_by(|a, b| a.note.start.cmp(&b.note.start))
             {
-                if let Some(select_1) = selected.iter().max_by(|a, b| a.end.cmp(&b.end)) {
+                if let Some(select_1) = selected.iter().max_by(|a, b| a.note.end.cmp(&b.note.end)) {
                     let color = if focus {
                         ColorKey::SelectedNotesBackground
                     } else {
                         ColorKey::NoFocus
                     };
-                    let x1 = get_note_x(
-                        select_1.end,
+                    let x1 = notes.get_note_x(
+                        select_1.note.end,
                         self.piano_roll_rows_rect[0],
                         self.piano_roll_rows_rect[2],
-                        &state.view.dt,
                     );
                     renderer.rectangle_pixel(
                         [select_0.x, self.piano_roll_rows_rect[1]],
@@ -323,14 +325,14 @@ impl Drawable for PianoRollPanel {
         // Draw time lines.
         self.draw_time_lines(
             cursor_line_x0,
-            &state.time.cursor,
+            state.time.cursor,
             &cursor_color,
             state,
             renderer,
         );
         self.draw_time_lines(
             playback_line_x0,
-            &state.time.playback,
+            state.time.playback,
             &playback_color,
             state,
             renderer,

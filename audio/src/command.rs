@@ -21,13 +21,13 @@ pub enum Command {
         velocity: u8,
         duration: u64,
     },
-    /// Schedule a note-on event. `time` is the sample count from 0.
+    /// Schedule a note-on event.
     NoteOnAt {
         channel: u8,
         key: u8,
         velocity: u8,
-        time: u64,
-        duration: u64,
+        start: u64,
+        end: u64,
     },
     /// Note-off ASAP.
     NoteOff { channel: u8, key: u8 },

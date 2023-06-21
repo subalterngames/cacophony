@@ -322,7 +322,7 @@ impl PianoRollSubPanel for Select {
                         let note = notes[*index];
                         text.get_with_values(
                             "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE",
-                            &[&note.note.to_string(), &text.get_fraction_tts(&note.start)],
+                            &[&note.note.to_string(), &text.get_ppq_tts(&note.start)],
                         )
                     }
                     None => text.get_error("The selected note doesn't exist."),
@@ -331,10 +331,10 @@ impl PianoRollSubPanel for Select {
             },
             SelectMode::Many(_) => match state.select_mode.get_notes(&state.music) {
                 Some(notes) => match notes.iter().map(|n| n.start).min() {
-                    Some(min) => match notes.iter().map(|n| n.start + n.duration).max() {
+                    Some(min) => match notes.iter().map(|n| n.end).max() {
                         Some(max) => text.get_with_values(
                             "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_MANY",
-                            &[&text.get_fraction_tts(&min), &text.get_fraction_tts(&max)],
+                            &[&text.get_ppq_tts(&min), &text.get_ppq_tts(&max)],
                         ),
                         None => text.get_error("There is no end time to the selection."),
                     },

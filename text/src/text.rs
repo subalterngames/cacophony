@@ -1,11 +1,9 @@
-use crate::Fraction;
 use common::config::parse;
 use common::csv::Reader;
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::input::KeyCode;
-use common::time::bar_to_duration;
-use common::{EditMode, Paths, PianoRollMode, ToPrimitive, MIN_NOTE};
+use common::{EditMode, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U};
 
 const LANGUAGES: [&str; 1] = ["en"];
 
@@ -127,9 +125,9 @@ impl Text {
             .unwrap()
     }
 
-    /// Converts a beat fraction into a time string.
-    pub fn get_time(&self, beat: &Fraction, bpm: u32) -> String {
-        let duration = bar_to_duration(beat, bpm);
+    /// Converts a beat PPQ value into a time string.
+    pub fn get_time(&self, ppq: u64, time: &Time) -> String {
+        let duration = time.ppq_to_duration(ppq);
         let hours = duration.whole_hours();
         let minutes = duration.whole_minutes() - (hours * 60);
         let seconds = duration.whole_seconds() - (minutes * 60);
@@ -150,46 +148,22 @@ impl Text {
         }
     }
 
-    /// Returns a text-to-speech string of the `beat` fraction.
-    pub fn get_fraction_tts(&self, beat: &Fraction) -> String {
-        let numer = beat.numer().unwrap();
-        if *numer == 0 {
-            numer.to_string()
+    /// Returns a text-to-speech string of the `ppq` value.
+    pub fn get_ppq_tts(&self, ppq: &u64) -> String {
+        // This is a whole note.
+        if ppq % PPQ_U == 0 {
+            (ppq / PPQ_U).to_string()
         } else {
-            let denom = beat.denom().unwrap();
-            // Whole number.
-            if *denom == 1 {
-                numer.to_string()
-            } else {
-                // Fraction.
-                match (numer, denom) {
-                    (1, 32) => self.get("FRACTION_TTS_ONE_THIRTY_SECOND"),
-                    (1, 16) => self.get("FRACTION_TTS_ONE_SIXTEENTH"),
-                    (1, 8) => self.get("FRACTION_TTS_ONE_EIGHTH"),
-                    (1, 6) => self.get("FRACTION_TTS_ONE_SIXTH"),
-                    (1, 4) => self.get("FRACTION_TTS_ONE_FOURTH"),
-                    (1, 3) => self.get("FRACTION_TTS_ONE_THIRD"),
-                    (1, 2) => self.get("FRACTION_TTS_ONE_HALF"),
-                    (3, 2) => self.get("FRACTION_TTS_ONE_AND_A_HALF"),
-                    other => {
-                        let u = beat.trunc().abs().to_u64().unwrap();
-                        match u > 0 {
-                            true => {
-                                let fr = beat.fract();
-                                let n = fr.numer().unwrap();
-                                let d = fr.denom().unwrap();
-                                self.get_with_values(
-                                    "FRACTION_TTS_WHOLE",
-                                    &[&u.to_string(), &n.to_string(), &d.to_string()],
-                                )
-                            }
-                            false => self.get_with_values(
-                                "FRACTION_TTS",
-                                &[&other.0.to_string(), &other.1.to_string()],
-                            ),
-                        }
-                    }
-                }
+            match ppq {
+                288 => self.get("FRACTION_TTS_ONE_AND_A_HALF"),
+                96 => self.get("FRACTION_TTS_ONE_HALF"),
+                64 => self.get("FRACTION_TTS_ONE_THIRD"),
+                48 => self.get("FRACTION_TTS_ONE_FOURTH"),
+                32 => self.get("FRACTION_TTS_ONE_SIXTH"),
+                24 => self.get("FRACTION_TTS_ONE_EIGHTH"),
+                12 => self.get("FRACTION_TTS_ONE_SIXTEENTH"),
+                6 => self.get("FRACTION_TTS_ONE_THIRTY_SECOND"),
+                other => format!("{:.2}", (*other as f32 / PPQ_F)),
             }
         }
     }
