@@ -76,3 +76,41 @@ impl Serialize for Note {
         seq.end()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::note::MIDDLE_C;
+    use crate::{Note, MAX_VOLUME, PPQ_U};
+    use serde_json::{from_str, to_string};
+
+    #[test]
+    fn note_duration() {
+        let note = get_note();
+        assert_eq!(note.get_duration(), PPQ_U, "{}", note.get_duration());
+    }
+
+    #[test]
+    fn note_serialization() {
+        let note = get_note();
+        let r = to_string(&note);
+        assert!(r.is_ok(), "{:?}", note);
+        let s = r.unwrap();
+        assert_eq!(&s, "[60,127,0,192]", "{}", s);
+        let r = from_str(&s);
+        assert!(r.is_ok(), "{:?}", s);
+        let note: Note = r.unwrap();
+        assert_eq!(note.note, MIDDLE_C, "{:?}", note);
+        assert_eq!(note.velocity, MAX_VOLUME, "{:?}", note);
+        assert_eq!(note.start, 0, "{:?}", note);
+        assert_eq!(note.end, PPQ_U, "{:?}", note);
+    }
+
+    fn get_note() -> Note {
+        Note {
+            note: MIDDLE_C,
+            velocity: MAX_VOLUME,
+            start: 0,
+            end: PPQ_U,
+        }
+    }
+}
