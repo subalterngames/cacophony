@@ -59,11 +59,11 @@ impl<'a> ViewableNotes<'a> {
     ) -> Self {
         // Get any notes being played.
         let playtime = match conn.state.time.music {
-            true => conn
-                .state
-                .time
-                .time
-                .map(|time| state.time.samples_to_ppq(time)),
+            true => conn.state.time.time.map(|time| {
+                state
+                    .time
+                    .samples_to_ppq(time, state.time.framerate.get_f())
+            }),
             false => None,
         };
 
