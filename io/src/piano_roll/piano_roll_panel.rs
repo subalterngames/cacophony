@@ -3,7 +3,7 @@ use crate::panel::*;
 use crate::tracks_to_commands;
 use common::config::parse_fractions;
 use common::ini::Ini;
-use common::{Index, Note, PianoRollMode, SelectMode, U64orF32};
+use common::{Index, Note, PianoRollMode, SelectMode, U64orF32, PPQ_F};
 
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.
@@ -32,7 +32,10 @@ impl PianoRollPanel {
         let view = View::new(config);
         // Load the beats.
         let section = config.section(Some("PIANO_ROLL")).unwrap();
-        let mut beats = parse_fractions(section, "beats");
+        let mut beats: Vec<u64> = parse_fractions(section, "beats")
+            .iter()
+            .map(|f| (*f * PPQ_F) as u64)
+            .collect();
         // Is the input beat in the list?
         let beat_index = match beats.iter().position(|b| b == beat) {
             Some(position) => position,

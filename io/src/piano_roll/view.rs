@@ -2,10 +2,9 @@ use super::{
     get_cycle_edit_mode_input_tts, get_edit_mode_status_tts, EditModeDeltas, PianoRollSubPanel,
 };
 use crate::panel::*;
-use common::config::parse_ppq;
 use common::ini::Ini;
 use common::sizes::get_viewport_size;
-use common::{EditMode, EDIT_MODES, MAX_NOTE, MIN_NOTE};
+use common::EDIT_MODES;
 
 /// The piano roll view sub-pane
 pub(super) struct View {
@@ -13,63 +12,44 @@ pub(super) struct View {
     deltas: EditModeDeltas,
     /// The default viewport dt.
     dt_0: u64,
-    /// The minimum viewport dt.
-    min_dt: u64,
-    /// The maximum viewport dt.
-    max_dt: u64,
-    /// In normal mode, zoom in by this factor.
-    normal_zoom: f32,
-    /// In quick mode, zoom in by this factor.
-    quick_zoom: f32,
-    /// In precise mode, zoom in by this factor.
-    precise_zoom: f32,
 }
 
 impl View {
     pub fn new(config: &Ini) -> Self {
-        let section = config.section(Some("PIANO_ROLL")).unwrap();
-        let normal_zoom = parse_ppq(section, "normal_zoom") as f32;
-        let quick_zoom = parse_ppq(section, "quick_zoom") as f32;
-        let precise_zoom = parse_ppq(section, "precise_zoom") as f32;
         let viewport_size = get_viewport_size(config);
         let dt_0 = viewport_size[0] as u64;
         Self {
             deltas: EditModeDeltas::new(config),
-            min_dt: 1,
-            max_dt: 96000,
-            normal_zoom,
-            quick_zoom,
-            precise_zoom,
             dt_0,
         }
     }
 
-    /// Returns the delta from the viewport's t1 to its t0.
-    fn get_dt(state: &State) -> u64 {
-        state.view.dt[1] - state.view.dt[0]
+    fn set_top_note_by(&self, state: &mut State, add: bool) -> Option<Snapshot> {
+        let mode = EDIT_MODES[state.view.mode.get()];
+        let s0 = state.clone();
+        state.view.set_top_note_by(self.deltas.get_dn(&mode), add);
+        Some(Snapshot::from_states(s0, state))
     }
 
-    /// Returns the delta from the viewport's n1 to its n0.
-    fn get_dn(state: &State) -> u8 {
-        state.view.dn[0] - state.view.dn[1]
+    fn set_start_time_by(&self, state: &mut State, add: bool) -> Option<Snapshot> {
+        let mode = EDIT_MODES[state.view.mode.get()];
+        let s0 = state.clone();
+        state
+            .view
+            .set_start_time_by(self.deltas.get_dt(&mode, &state.input), add);
+        Some(Snapshot::from_states(s0, state))
     }
 
     /// Zoom in or out.
     fn zoom(&self, state: &mut State, zoom_in: bool) -> Option<Snapshot> {
-        // Get the current dt.
-        let dt = Self::get_dt(state) as f32;
         // Get the zoom factor.
-        let dz = match &EDIT_MODES[state.view.mode.get()] {
-            EditMode::Normal => self.normal_zoom,
-            EditMode::Quick => self.quick_zoom,
-            EditMode::Precise => self.precise_zoom,
-        };
-        // Apply the zoom factor.
-        let dt = ((if zoom_in { dt * dz } else { dt / dz }).ceil() as u64)
-            .clamp(self.min_dt, self.max_dt);
+        let mut zoom = self.deltas.get_dz(&EDIT_MODES[state.view.mode.get()]);
+        if !zoom_in {
+            zoom = 1.0 / zoom;
+        }
         // Set the viewport.
         let s0 = state.clone();
-        state.view.dt = [state.view.dt[0], state.view.dt[0] + dt];
+        state.view.zoom(zoom);
         Some(Snapshot::from_states(s0, state))
     }
 }
@@ -97,13 +77,12 @@ impl Panel for View {
         // Move the view to t0.
         else if input.happened(&InputEvent::ViewStart) {
             let s0 = state.clone();
-            let dt = View::get_dt(state);
-            state.view.dt = [0, dt];
+            state.view.dt = [0, state.view.get_dt()];
             Some(Snapshot::from_states(s0, state))
         }
         // Move the view to t1.
         else if input.happened(&InputEvent::ViewEnd) {
-            let dt = View::get_dt(state);
+            let dt = state.view.get_dt();
             let track = state.music.get_selected_track().unwrap();
             match track.get_end() {
                 // Move the view to the end.
@@ -122,59 +101,19 @@ impl Panel for View {
         }
         // Move the view leftwards.
         else if input.happened(&InputEvent::ViewLeft) {
-            let mode = EDIT_MODES[state.time.mode.get()];
-            let s0 = state.clone();
-            state
-                .view
-                .set_start_time_by(self.deltas.get_dt(&mode, &state.input), false);
-            Some(Snapshot::from_states(s0, state))
+            self.set_start_time_by(state, false)
         }
         // Move the view rightwards.
         else if input.happened(&InputEvent::ViewRight) {
-            let mode = EDIT_MODES[state.time.mode.get()];
-            let s0 = state.clone();
-            state
-                .view
-                .set_start_time_by(self.deltas.get_dt(&mode, &state.input), true);
-            Some(Snapshot::from_states(s0, state))
+            self.set_start_time_by(state, true)
         }
         // Move the view upwards.
         else if state.view.single_track && input.happened(&InputEvent::ViewUp) {
-            let mode = EDIT_MODES[state.time.mode.get()];
-            let s0 = state.clone();
-            let dn = self.deltas.get_dn(&mode);
-            // Don't go past n=1.
-            if state.view.dn[0] + dn <= MAX_NOTE {
-                let n0 = state.view.dn[0] + dn;
-                let n1 = state.view.dn[1] + dn;
-                state.view.dn = [n0, n1];
-                Some(Snapshot::from_states(s0, state))
-            }
-            // Snap to n=1.
-            else {
-                let dn = View::get_dn(state);
-                state.view.dn = [MAX_NOTE, MAX_NOTE - dn];
-                Some(Snapshot::from_states(s0, state))
-            }
+            self.set_top_note_by(state, true)
         }
         // Move the view downwards.
         else if state.view.single_track && input.happened(&InputEvent::ViewDown) {
-            let mode = EDIT_MODES[state.time.mode.get()];
-            let s0 = state.clone();
-            let dn = self.deltas.get_dn(&mode);
-            // Don't go past n=0.
-            if state.view.dn[1] - dn >= MIN_NOTE {
-                let n0 = state.view.dn[0] - dn;
-                let n1 = state.view.dn[1] - dn;
-                state.view.dn = [n0, n1];
-                Some(Snapshot::from_states(s0, state))
-            }
-            // Snap to n=0.
-            else {
-                let dn = View::get_dn(state);
-                state.view.dn = [MIN_NOTE + dn, MIN_NOTE];
-                Some(Snapshot::from_states(s0, state))
-            }
+            self.set_top_note_by(state, false)
         }
         // Zoom in.
         else if state.view.single_track && input.happened(&InputEvent::ViewZoomIn) {
