@@ -5,7 +5,7 @@ use crate::panel::*;
 use common::config::parse_ppq;
 use common::ini::Ini;
 use common::sizes::get_viewport_size;
-use common::{EditMode, EDIT_MODES, MAX_NOTE, MIN_NOTE, PPQ_U};
+use common::{EditMode, EDIT_MODES, MAX_NOTE, MIN_NOTE};
 
 /// The piano roll view sub-pane
 pub(super) struct View {
@@ -124,27 +124,18 @@ impl Panel for View {
         else if input.happened(&InputEvent::ViewLeft) {
             let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
-            let dt = self.deltas.get_dt(&mode, &state.input);
-            match state.view.dt[0].checked_sub(dt) {
-                Some(t0) => {
-                    let t1 = state.view.dt[1] - dt;
-                    state.view.dt = [t0, t1];
-                    Some(Snapshot::from_states(s0, state))
-                }
-                None => {
-                    state.view.dt = [0, Self::get_dt(state)];
-                    Some(Snapshot::from_states(s0, state))
-                }
-            }
+            state
+                .view
+                .set_start_time_by(self.deltas.get_dt(&mode, &state.input), false);
+            Some(Snapshot::from_states(s0, state))
         }
         // Move the view rightwards.
         else if input.happened(&InputEvent::ViewRight) {
             let mode = EDIT_MODES[state.time.mode.get()];
             let s0 = state.clone();
-            let dt = self.deltas.get_dt(&mode, &state.input);
-            let t0 = state.view.dt[0] + dt;
-            let t1 = state.view.dt[1] + dt;
-            state.view.dt = [t0, t1];
+            state
+                .view
+                .set_start_time_by(self.deltas.get_dt(&mode, &state.input), true);
             Some(Snapshot::from_states(s0, state))
         }
         // Move the view upwards.

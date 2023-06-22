@@ -41,4 +41,25 @@ impl View {
             single_track: true,
         }
     }
+
+    /// Returns the time delta from t1 to t0 in PPQ.
+    pub fn get_dt(&self) -> u64 {
+        self.dt[1] - self.dt[0]
+    }
+
+    /// Set the start time of the viewport.
+    ///
+    /// - `delta` The time delta.
+    /// - `add` If true, add. If false, subtract.
+    pub fn set_start_time_by(&mut self, dt: u64, add: bool) {
+        let delta = self.get_dt();
+        self.dt = if add {
+            [self.dt[0] + dt, self.dt[1] + dt]
+        } else {
+            match self.dt[0].checked_sub(dt) {
+                Some(t0) => [t0, t0 + delta],
+                None => [0, delta],
+            }
+        };
+    }
 }
