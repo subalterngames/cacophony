@@ -27,11 +27,30 @@ impl Time {
         }
     }
 
-    /// Move the time left.
-    fn get_left(&self, t: &u64, state: &State) -> u64 {
+    /// Move the cursor time.
+    fn set_cursor(&self, state: &mut State, add: bool) -> Option<Snapshot> {
+        let s0 = state.clone();
         let mode = EDIT_MODES[state.time.mode.get()];
         let dt = self.deltas.get_dt(&mode, &state.input);
-        t.checked_sub(dt).unwrap_or(0)
+        if add {
+            state.time.cursor += dt;
+        } else {
+            state.time.cursor = state.time.cursor.saturating_sub(dt);
+        }
+        Some(Snapshot::from_states(s0, state))
+    }
+
+    /// Move the playback time.
+    fn set_playback(&self, state: &mut State, add: bool) -> Option<Snapshot> {
+        let s0 = state.clone();
+        let mode = EDIT_MODES[state.time.mode.get()];
+        let dt = self.deltas.get_dt(&mode, &state.input);
+        if add {
+            state.time.playback += dt;
+        } else {
+            state.time.playback = state.time.cursor.saturating_sub(dt);
+        }
+        Some(Snapshot::from_states(s0, state))
     }
 
     /// Round a time off to the nearest beat.
@@ -70,15 +89,9 @@ impl Panel for Time {
             state.time.cursor = Time::get_end(state);
             Some(Snapshot::from_states(s0, state))
         } else if input.happened(&InputEvent::TimeCursorLeft) {
-            let s0 = state.clone();
-            state.time.cursor = self.get_left(&state.time.cursor, state);
-            Some(Snapshot::from_states(s0, state))
+            self.set_cursor(state, false)
         } else if input.happened(&InputEvent::TimeCursorRight) {
-            let mode = EDIT_MODES[state.time.mode.get()];
-            let s0 = state.clone();
-            let dt = self.deltas.get_dt(&mode, &state.input);
-            state.time.cursor += dt;
-            Some(Snapshot::from_states(s0, state))
+            self.set_cursor(state, true)
         } else if input.happened(&InputEvent::TimeCursorPlayback) {
             let s0 = state.clone();
             state.time.cursor = state.time.playback;
@@ -98,15 +111,9 @@ impl Panel for Time {
             state.time.playback = Time::get_end(state);
             Some(Snapshot::from_states(s0, state))
         } else if input.happened(&InputEvent::TimePlaybackLeft) {
-            let s0 = state.clone();
-            state.time.playback = self.get_left(&state.time.playback, state);
-            Some(Snapshot::from_states(s0, state))
+            self.set_playback(state, false)
         } else if input.happened(&InputEvent::TimePlaybackRight) {
-            let mode = EDIT_MODES[state.time.mode.get()];
-            let s0 = state.clone();
-            let dt = self.deltas.get_dt(&mode, &state.input);
-            state.time.playback += dt;
-            Some(Snapshot::from_states(s0, state))
+            self.set_playback(state, true)
         } else if input.happened(&InputEvent::TimePlaybackCursor) {
             let s0 = state.clone();
             state.time.playback = state.time.cursor;

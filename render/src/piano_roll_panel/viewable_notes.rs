@@ -124,19 +124,12 @@ impl<'a> ViewableNotes<'a> {
 
     /// Returns the width of a note.
     pub(crate) fn get_note_w(&self, note: &ViewableNote) -> f32 {
-        let dt = if note.note.start < self.dt[0].get_u() {
-            note.note.end - self.dt[0].get_u()
-        } else if note.note.end > self.dt[1].get_u() {
-            self.dt[1].get_u() - note.note.start
+        let t1 = if note.note.end > self.dt[1].get_u() {
+            self.dt[1].get_u()
         } else {
-            note.note.end - note.note.start
+            note.note.end
         };
-        let x1 = get_note_x(dt, self.x, self.w, &self.dt);
-        if x1 <= note.x {
-            1.0
-        } else {
-            x1 - note.x
-        }
+        (get_note_x(t1, self.x, self.w, &self.dt) - note.x).clamp(1.0, f32::MAX)
     }
 
     /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
@@ -151,5 +144,6 @@ impl<'a> ViewableNotes<'a> {
 
 /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
 pub(crate) fn get_note_x(t: u64, x: f32, w: f32, dt: &[U64orF32; 2]) -> f32 {
-    x + w * (t as f32 - dt[0].get_f() / dt[1].get_f())
+    let dt = dt[1].get_f() - dt[0].get_f();
+    x + w * (t as f32 / dt)
 }
