@@ -1,3 +1,4 @@
+use crate::export_settings::*;
 use crate::open_file::*;
 use crate::{Index, Paths};
 use serde::{Deserialize, Serialize};
@@ -18,6 +19,8 @@ pub struct PathsState {
     pub exports: FileAndDirectory,
     /// The export type.
     pub export_type: Index,
+    /// The export settings.
+    pub export_settings: ExportSettings,
     /// The child paths within the current working directory.
     #[serde(skip_serializing, skip_deserializing)]
     pub children: ChildPaths,

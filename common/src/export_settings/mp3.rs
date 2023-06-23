@@ -20,6 +20,9 @@ pub struct MP3 {
 
 impl Default for MP3 {
     fn default() -> Self {
-        Self { framerate: 44100, quality: Quality::Standard }
+        Self {
+            framerate: 44100,
+            quality: Quality::Standard,
+        }
     }
 }

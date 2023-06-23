@@ -11,6 +11,9 @@ pub struct Ogg {
 
 impl Default for Ogg {
     fn default() -> Self {
-        Self { framerate: 44100, quality:  5}
+        Self {
+            framerate: 44100,
+            quality: 5,
+        }
     }
 }

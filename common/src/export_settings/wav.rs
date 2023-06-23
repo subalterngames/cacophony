@@ -22,6 +22,10 @@ pub struct Wav {
 
 impl Default for Wav {
     fn default() -> Self {
-        Self { framerate: 44100, mono: false, sample_format: SampleFormat::I16 }
+        Self {
+            framerate: 44100,
+            mono: false,
+            sample_format: SampleFormat::I16,
+        }
     }
 }
