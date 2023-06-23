@@ -6,7 +6,7 @@ pub enum MusicPanelField {
     Gain,
 }
 
-pub(crate) const MUSIC_PANEL_FIELDS: [MusicPanelField; 3] = [
+pub const MUSIC_PANEL_FIELDS: [MusicPanelField; 3] = [
     MusicPanelField::Name,
     MusicPanelField::BPM,
     MusicPanelField::Gain,

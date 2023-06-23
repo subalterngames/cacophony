@@ -1,4 +1,5 @@
 use crate::panel::*;
+use common::music_panel_field::*;
 use common::{U64orF32, DEFAULT_BPM, DEFAULT_MUSIC_NAME, MAX_VOLUME};
 
 const MAX_GAIN: usize = MAX_VOLUME as usize;
@@ -37,6 +38,10 @@ impl MusicPanel {
         let s0 = state.clone();
         state.input.alphanumeric_input = true;
         Some(Snapshot::from_states(s0, state))
+    }
+
+    fn get_music_panel_field(state: &State) -> MusicPanelField {
+        MUSIC_PANEL_FIELDS[state.music_panel_field.get()]
     }
 }
 
@@ -79,7 +84,7 @@ impl Panel for MusicPanel {
                 input,
                 text,
             );
-            let tts_text = match state.get_music_panel_field() {
+            let tts_text = match Self::get_music_panel_field(state) {
                 MusicPanelField::BPM => {
                     let key = if state.input.alphanumeric_input {
                         "MUSIC_PANEL_INPUT_TTS_BPM_ABC123"
@@ -124,7 +129,7 @@ impl Panel for MusicPanel {
             None
         } else {
             // Field-specific actions.
-            match state.get_music_panel_field() {
+            match Self::get_music_panel_field(state) {
                 // Modify the BPM.
                 MusicPanelField::BPM => {
                     if state.input.alphanumeric_input {

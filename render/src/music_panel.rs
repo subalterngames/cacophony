@@ -1,5 +1,5 @@
 use crate::panel::*;
-use common::music_panel_field::MusicPanelField;
+use common::music_panel_field::*;
 
 /// The music panel.
 pub(crate) struct MusicPanel {
@@ -85,7 +85,7 @@ impl Drawable for MusicPanel {
         // Draw the rect.
         self.panel.update(focus, renderer);
         // Get the enum value of the focused widget.
-        let focused_field = *state.get_music_panel_field();
+        let focused_field = MUSIC_PANEL_FIELDS[state.music_panel_field.get()];
 
         let key_color = Renderer::get_key_color(focus);
 

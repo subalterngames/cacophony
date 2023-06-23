@@ -12,12 +12,12 @@ pub struct U64orF32 {
 }
 
 impl U64orF32 {
-    #[inline(always)]
+    /// Returns the value as a u64.
     pub fn get_u(&self) -> u64 {
         self.u
     }
 
-    #[inline(always)]
+    /// Returns the value as an f32.
     pub fn get_f(&self) -> f32 {
         self.f
     }

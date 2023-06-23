@@ -1,5 +1,5 @@
 use crate::edit_mode::EDIT_MODES;
-use crate::music_panel_field::{MusicPanelField, MUSIC_PANEL_FIELDS};
+use crate::music_panel_field::MUSIC_PANEL_FIELDS;
 use crate::{Index, InputState, Music, PanelType, PianoRollMode, SelectMode, Time, View};
 use ini::Ini;
 use serde::{Deserialize, Serialize};
@@ -52,9 +52,5 @@ impl State {
             edit_mode,
             select_mode,
         }
-    }
-
-    pub fn get_music_panel_field(&self) -> &MusicPanelField {
-        &MUSIC_PANEL_FIELDS[self.music_panel_field.get()]
     }
 }
