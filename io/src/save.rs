@@ -1,5 +1,6 @@
 use audio::*;
 use common::serde_json::{from_str, to_string, Error};
+use common::export_settings::ExportSettings;
 use common::{PathsState, State};
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
@@ -15,6 +16,7 @@ pub(crate) struct Save {
     state: State,
     synth_state: SynthState,
     paths_state: PathsState,
+    export_settings: ExportSettings,
 }
 
 impl Save {
@@ -24,12 +26,14 @@ impl Save {
     /// - `state` The app state. This will be converted to a `SerializableState`.
     /// - `conn` The audio connection. Its `SynthState` will be serialized.
     /// - `paths_state` The paths state.
-    pub fn write(path: &PathBuf, state: &State, conn: &Conn, paths_state: &PathsState) {
+    /// - `export_settings` The export settings.
+    pub fn write(path: &PathBuf, state: &State, conn: &Conn, paths_state: &PathsState, export_settings: &ExportSettings) {
         // Convert the state to something that can be serialized.
         let save = Save {
             state: state.clone(),
             synth_state: conn.state.clone(),
             paths_state: paths_state.clone(),
+            export_settings: export_settings.clone()
         };
         // Try to open the file.
         match OpenOptions::new()
