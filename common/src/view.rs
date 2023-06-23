@@ -5,7 +5,7 @@ use ini::Ini;
 use serde::{Deserialize, Serialize};
 
 /// The maximum zoom time delta in PPQ.
-const MAX_ZOOM: u64 = PPQ_U * 500;
+const MAX_ZOOM: u64 = PPQ_U * 5000;
 
 /// The dimensions of the piano roll viewport.
 #[derive(Clone, Debug, Deserialize, Serialize)]

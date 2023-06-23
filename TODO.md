@@ -30,6 +30,7 @@
 - [ ] Quit unsaved prompt
 - [x] Note times should be measured in PPQ
 - [ ] Export buffer
+- [ ] TTS is not helpful!!
 
 ## Bugs
 
@@ -47,7 +48,7 @@
 - [ ] Open file name doesn't change if you're saving or exporting
 - [ ] Play only works in piano roll panel
 - [x] Can't delete a track
-- [ ] Bad zoom
+- [x] Bad zoom
 
 ## Misc.
 
