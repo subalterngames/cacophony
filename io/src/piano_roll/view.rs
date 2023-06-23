@@ -6,7 +6,7 @@ use common::ini::Ini;
 use common::sizes::get_viewport_size;
 use common::EDIT_MODES;
 
-/// The piano roll view sub-pane
+/// The piano roll view sub-panel.
 pub(super) struct View {
     /// Time values and deltas.
     deltas: EditModeDeltas,
