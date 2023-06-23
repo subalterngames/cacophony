@@ -323,8 +323,8 @@ impl Panel for OpenFilePanel {
                                     &state.music,
                                     &state.time,
                                     &conn.state,
-                                    &text,
-                                    &paths_state.export_settings.mid
+                                    text,
+                                    &paths_state.export_settings,
                                 );
                             }
                         }

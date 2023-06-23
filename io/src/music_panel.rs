@@ -1,6 +1,6 @@
 use crate::panel::*;
 use common::music_panel_field::*;
-use common::{U64orF32, DEFAULT_BPM, DEFAULT_MUSIC_NAME, MAX_VOLUME};
+use common::{U64orF32, DEFAULT_BPM, MAX_VOLUME};
 
 const MAX_GAIN: usize = MAX_VOLUME as usize;
 
@@ -53,7 +53,7 @@ impl Panel for MusicPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-        _: &mut PathsState,
+        paths_state: &mut PathsState,
     ) -> Option<Snapshot> {
         // Cycle fields.
         if input.happened(&InputEvent::NextMusicPanelField) {
@@ -66,7 +66,7 @@ impl Panel for MusicPanel {
             tts.say(&text.get_with_values(
                 "MUSIC_PANEL_STATUS_TTS",
                 &[
-                    &state.music.name,
+                    &paths_state.export_settings.metadata.title,
                     &state.time.bpm.to_string(),
                     &conn.state.gain.to_string(),
                 ],
@@ -173,16 +173,16 @@ impl Panel for MusicPanel {
                         // Stop editing the name.
                         if input.happened(&InputEvent::ToggleAlphanumericInput) {
                             let s0 = state.clone();
-                            if state.music.name.is_empty() {
-                                state.music.name = DEFAULT_MUSIC_NAME.to_string();
+                            if paths_state.export_settings.metadata.title.is_empty() {
+                                paths_state.export_settings.metadata.title = "My Music".to_string();
                             }
                             state.input.alphanumeric_input = false;
                             return Some(Snapshot::from_states(s0, state));
                         } else {
-                            let mut name = state.music.name.clone();
+                            let mut name = paths_state.export_settings.metadata.title.clone();
                             if input.modify_string_abc123(&mut name) {
                                 let s0 = state.clone();
-                                state.music.name = name;
+                                paths_state.export_settings.metadata.title = name;
                                 return Some(Snapshot::from_states(s0, state));
                             }
                         }

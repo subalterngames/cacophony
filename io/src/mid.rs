@@ -1,6 +1,6 @@
 use audio::SynthState;
+use common::export_settings::ExportSettings;
 use common::*;
-use common::export_settings::Mid;
 use ghakuf::messages::*;
 use ghakuf::writer::*;
 use std::path::Path;
@@ -32,7 +32,14 @@ impl MidiNote {
 /// - `synth_state` We need this for its present names.
 /// - `text` This is is used for metadata.
 /// - `export_settings` .mid export settings.
-pub(crate) fn to_mid(path: &Path, music: &Music, time: &Time, synth_state: &SynthState, text: &Text, export_settings: &Mid) {
+pub(crate) fn to_mid(
+    path: &Path,
+    music: &Music,
+    time: &Time,
+    synth_state: &SynthState,
+    text: &Text,
+    export_settings: &ExportSettings,
+) {
     // Gather all notes.
     let mut notes: Vec<MidiNote> = vec![];
     for track in music.midi_tracks.iter() {
@@ -47,8 +54,10 @@ pub(crate) fn to_mid(path: &Path, music: &Music, time: &Time, synth_state: &Synt
     let mut messages = vec![Message::MetaEvent {
         delta_time: 0,
         event: MetaEvent::TextEvent,
-        data: music.name.as_bytes().to_vec(),
+        data: export_settings.metadata.title.as_bytes().to_vec(),
     }];
+    // Send other metadata.
+
     // Set the instrument names.
     for program in synth_state.programs.values() {
         messages.push(Message::MetaEvent {
