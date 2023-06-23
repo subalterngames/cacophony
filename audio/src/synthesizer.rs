@@ -12,7 +12,7 @@ const F32_TO_I16: f32 = 32767.5;
 const DECAY_CHUNK_SIZE: usize = 2048;
 ///  Oxisynth usually doesn't zero out its audio. This is essentially an epsilon.
 /// This is used to detect if the export is done.
-const SILENCE: [i16; 2] = [-1, 1];
+const SILENCE: [f32; 2] = [-1e-7, 1e-7];
 
 /// A convenient wrapper for a SoundFont.
 struct SoundFontBanks {
@@ -66,6 +66,8 @@ pub(crate) struct Synthesizer {
     export_state: Option<ExportState>,
     /// The export file writer.
     exporter: Option<WaveWriter<File>>,
+    /// The buffer that the exporter writes to.
+    export_buffer: [Vec<f32>; 2],
     /// If true, we need to send the export state.
     send_export_state: bool,
 }
@@ -95,6 +97,7 @@ impl Synthesizer {
             exporter: None,
             export_state: None,
             send_export_state: false,
+            export_buffer: [vec![], vec![]],
         };
         loop {
             if s.ready {
@@ -265,6 +268,9 @@ impl Synthesizer {
                                             // Remember the export state.
                                             s.exporter = Some(writer);
                                             s.export_state = Some(*state);
+                                            // Clear the buffers.
+                                            s.export_buffer[0].clear();
+                                            s.export_buffer[1].clear();
                                         }
                                         Err(error) => {
                                             panic!("Error opening the file to export: {:?}", error)
@@ -310,50 +316,46 @@ impl Synthesizer {
                 (Some(writer), Some(export_state)) => {
                     // Are we done exporting?
                     if export_state.exported >= export_state.samples {
-                        // Get the samples as f32.
-                        let mut left_f: [f32; DECAY_CHUNK_SIZE] = [0.0; DECAY_CHUNK_SIZE];
-                        let mut right_f: [f32; DECAY_CHUNK_SIZE] = [0.0; DECAY_CHUNK_SIZE];
-                        s.synth
-                            .write((left_f.as_mut_slice(), right_f.as_mut_slice()));
-                        // Are we decaying?
                         let mut decaying = false;
-                        for (lf, rf) in left_f.iter().zip(&right_f) {
-                            // Convert to i16.
-                            let left = to_i16(lf);
-                            let right = to_i16(rf);
+                        for _ in 0..DECAY_CHUNK_SIZE {
+                            // Read a sample.
+                            let sample = s.synth.read_next();
+                            // Write the sample.
+                            s.export_buffer[0].push(sample.0);
+                            s.export_buffer[1].push(sample.1);
                             // There is still sound.
-                            if left < SILENCE[0]
-                                || left > SILENCE[1]
-                                || right < SILENCE[0]
-                                || right > SILENCE[1]
+                            if sample.0 < SILENCE[0]
+                                || sample.0 > SILENCE[1]
+                                || sample.1 < SILENCE[0]
+                                || sample.1 > SILENCE[1]
                             {
                                 decaying = true;
-                            }
-                            // Export.
-                            if let Err(error) = writer.write_sample_i16(left) {
-                                panic!("Error exporting example: {}", error)
-                            }
-                            if let Err(error) = writer.write_sample_i16(right) {
-                                panic!("Error exporting example: {}", error)
                             }
                         }
                         // We're done!
                         if !decaying {
+                            // Write.
+                            for (l, r) in s.export_buffer[0].iter().zip(s.export_buffer[1].iter()) {
+                                if let Err(error) = writer.write_sample_i16(to_i16(l)) {
+                                    panic!("Error exporting example: {} {}", error, l)
+                                }
+                                if let Err(error) = writer.write_sample_i16(to_i16(r)) {
+                                    panic!("Error exporting example: {} {}", error, r)
+                                }
+                            }
                             // Sync the header.
                             writer.sync_header().unwrap();
-                            // Open the file.
+                            // Stop exporting.
                             s.export_state = None;
+                            s.export_buffer[0].clear();
+                            s.export_buffer[1].clear();
                         }
                     } else {
-                        // Get the sample.
+                        // Read a sample.
                         let sample = s.synth.read_next();
-                        // Export.
-                        if let Err(error) = writer.write_sample_i16(to_i16(&sample.0)) {
-                            panic!("Error exporting example: {}", error)
-                        }
-                        if let Err(error) = writer.write_sample_i16(to_i16(&sample.1)) {
-                            panic!("Error exporting example: {}", error)
-                        }
+                        // Write the sample.
+                        s.export_buffer[0].push(sample.0);
+                        s.export_buffer[1].push(sample.1);
                         // Increment the number of exported samples.
                         export_state.exported += 1;
                         // Increment time.

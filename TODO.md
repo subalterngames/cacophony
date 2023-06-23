@@ -29,7 +29,7 @@
 - [ ] Asterisk for changes
 - [ ] Quit unsaved prompt
 - [x] Note times should be measured in PPQ
-- [ ] Export buffer
+- [x] Export buffer
 - [ ] TTS is not helpful!!
 
 ## Bugs
