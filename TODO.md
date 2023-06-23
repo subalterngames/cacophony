@@ -49,6 +49,7 @@
 - [ ] Play only works in piano roll panel
 - [x] Can't delete a track
 - [x] Bad zoom
+- [ ] Play notes in open-file-panel file name
 
 ## Misc.
 
