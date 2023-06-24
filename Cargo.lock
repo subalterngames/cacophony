@@ -83,11 +83,11 @@ dependencies = [
 name = "audio"
 version = "0.1.0"
 dependencies = [
+ "common",
  "cpal",
  "crossbeam-channel",
- "hashbrown 0.13.2",
+ "hound",
  "oxisynth",
- "riff-wave",
  "serde",
 ]
 
@@ -175,12 +175,6 @@ name = "bytemuck"
 version = "1.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "17febce684fd15d89027105661fec94afb475cb995fbc59d2865198446ba2eea"
-
-[[package]]
-name = "byteorder"
-version = "0.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fc10e8cc6b2580fda3f36eb6dc5316657f812a3df879a44a66fc9f0fdbc4855"
 
 [[package]]
 name = "byteorder"
@@ -752,7 +746,7 @@ version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2140084e11440234ae12cd17988f5f4804233cfde7d8926e06de5423ddad63f4"
 dependencies = [
- "byteorder 1.4.3",
+ "byteorder",
  "log",
 ]
 
@@ -828,6 +822,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fed44880c466736ef9a5c5b5facefb5ed0785676d0c02d612db14e54f0d84286"
 
 [[package]]
+name = "hound"
+version = "3.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d13cdbd5dbb29f9c88095bbdc2590c9cba0d0a1269b983fef6b2cdd7e9f4db1"
+
+[[package]]
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -840,7 +840,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "527909aa81e20ac3a44803521443a765550f09b5130c2c2fa1ea59c2f8f50a3a"
 dependencies = [
  "bytemuck",
- "byteorder 1.4.3",
+ "byteorder",
  "color_quant",
  "exr",
  "gif",
@@ -1026,7 +1026,7 @@ version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "777b48df9aaab155475a83a7df3070395ea1ac6902f5cd062b8f2b028075c030"
 dependencies = [
- "byteorder 1.4.3",
+ "byteorder",
  "ogg",
  "tinyvec",
 ]
@@ -1521,7 +1521,7 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6951b4e8bf21c8193da321bcce9c9dd2e13c858fe078bf9054a288b419ae5d6e"
 dependencies = [
- "byteorder 1.4.3",
+ "byteorder",
 ]
 
 [[package]]
@@ -1568,7 +1568,7 @@ source = "git+https://github.com/PolyMeilex/OxiSynth.git?branch=master#3353ef0a7
 dependencies = [
  "bitflags",
  "byte-slice-cast",
- "byteorder 1.4.3",
+ "byteorder",
  "generational-arena",
  "lazy_static",
  "lewton",
@@ -1886,15 +1886,6 @@ name = "riff"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9b1a3d5f46d53f4a3478e2be4a5a5ce5108ea58b100dcd139830eae7f79a3a1"
-
-[[package]]
-name = "riff-wave"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a749a2a6b5d4e3659a095accc05fdb5b2439fc409c4a00d049a2e72e8352df1"
-dependencies = [
- "byteorder 0.5.3",
-]
 
 [[package]]
 name = "rust-ini"

@@ -1,9 +1,10 @@
 use crate::{AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState, TimeState};
+use common::export_settings::*;
+use common::hashbrown::HashMap;
 use crossbeam_channel::{Receiver, Sender};
-use hashbrown::HashMap;
+use hound::*;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
-use riff_wave::*;
-use std::fs::{File, OpenOptions};
+use std::fs::File;
 use std::path::PathBuf;
 
 /// Conversion factor for f32 to i16.
@@ -64,8 +65,10 @@ pub(crate) struct Synthesizer {
     state: SynthState,
     /// The export state.
     export_state: Option<ExportState>,
-    /// The export file writer.
-    exporter: Option<WaveWriter<File>>,
+    /// The export file path.
+    export_path: Option<PathBuf>,
+    /// The export settings.
+    export_settings: ExportSettings,
     /// The buffer that the exporter writes to.
     export_buffer: [Vec<f32>; 2],
     /// If true, we need to send the export state.
@@ -94,8 +97,9 @@ impl Synthesizer {
             events_queue: vec![],
             ready: true,
             state: SynthState::default(),
-            exporter: None,
+            export_path: None,
             export_state: None,
+            export_settings: ExportSettings::new(),
             send_export_state: false,
             export_buffer: [vec![], vec![]],
         };
@@ -253,33 +257,13 @@ impl Synthesizer {
                                     s.state.gain = *gain;
                                 }
                                 // Start to export audio.
-                                Command::Export { path, state } => match path.to_str() {
-                                    Some(path) => match OpenOptions::new()
-                                        .write(true)
-                                        .append(false)
-                                        .truncate(true)
-                                        .create(true)
-                                        .open(path)
-                                    {
-                                        Ok(file) => {
-                                            // Create a new writer.
-                                            let writer =
-                                                WaveWriter::new(2, 44100, 16, file).unwrap();
-                                            // Remember the export state.
-                                            s.exporter = Some(writer);
-                                            s.export_state = Some(*state);
-                                            // Clear the buffers.
-                                            s.export_buffer[0].clear();
-                                            s.export_buffer[1].clear();
-                                        }
-                                        Err(error) => {
-                                            panic!("Error opening the file to export: {:?}", error)
-                                        }
-                                    },
-                                    None => {
-                                        panic!("Error converting export path to string: {:?}", path)
-                                    }
-                                },
+                                Command::Export { path, state } => {
+                                    s.export_path = Some(path.clone());
+                                    s.export_state = Some(*state);
+                                    // Clear the buffers.
+                                    s.export_buffer[0].clear();
+                                    s.export_buffer[1].clear();
+                                }
                                 // Send the export state.
                                 Command::SendExportState => s.send_export_state = true,
                             }
@@ -312,8 +296,8 @@ impl Synthesizer {
             }
 
             // Either export audio or play the file.
-            match (&mut s.exporter, &mut s.export_state) {
-                (Some(writer), Some(export_state)) => {
+            match &mut s.export_state {
+                Some(export_state) => {
                     // Are we done exporting?
                     if export_state.exported >= export_state.samples {
                         let mut decaying = false;
@@ -334,17 +318,35 @@ impl Synthesizer {
                         }
                         // We're done!
                         if !decaying {
-                            // Write.
-                            for (l, r) in s.export_buffer[0].iter().zip(s.export_buffer[1].iter()) {
-                                if let Err(error) = writer.write_sample_i16(to_i16(l)) {
-                                    panic!("Error exporting example: {} {}", error, l)
+                            match EXPORT_TYPES[s.export_settings.export_type.get()] {
+                                ExportType::Mid => {
+                                    panic!("Tried exporting a .mid from the synthesizer")
                                 }
-                                if let Err(error) = writer.write_sample_i16(to_i16(r)) {
-                                    panic!("Error exporting example: {} {}", error, r)
+                                // Export to a .wav file.
+                                ExportType::Wav => {
+                                    // Get the path.
+                                    let path = s.export_path.as_ref().unwrap().to_str().unwrap();
+                                    // Get the spec.
+                                    let spec = WavSpec {
+                                        channels: 2,
+                                        sample_rate: s.export_settings.framerate.get_u() as u32,
+                                        bits_per_sample: 16,
+                                        sample_format: SampleFormat::Int,
+                                    };
+                                    // Write.
+                                    let mut writer = WavWriter::create(path, spec).unwrap();
+                                    let mut i16_writer =
+                                        writer.get_i16_writer(s.export_buffer[0].len() as u32 * 2);
+                                    for (l, r) in
+                                        s.export_buffer[0].iter().zip(s.export_buffer[1].iter())
+                                    {
+                                        i16_writer.write_sample(to_i16(l));
+                                        i16_writer.write_sample(to_i16(r));
+                                    }
+                                    i16_writer.flush().unwrap();
+                                    writer.finalize().unwrap();
                                 }
                             }
-                            // Sync the header.
-                            writer.sync_header().unwrap();
                             // Stop exporting.
                             s.export_state = None;
                             s.export_buffer[0].clear();
@@ -366,11 +368,8 @@ impl Synthesizer {
                     // We're ready for a new message.
                     s.ready = true;
                 }
-                // Set to None.
-                (Some(_), None) => s.exporter = None,
-                (None, Some(_)) => s.export_state = None,
                 // Play.
-                (None, None) => {
+                None => {
                     // Get the sample.
                     let sample = s.synth.read_next();
                     match send_audio.send(sample) {
@@ -391,8 +390,8 @@ impl Synthesizer {
                 }
             }
             // Stop exporting.
-            if s.export_state.is_none() && s.exporter.is_some() {
-                s.exporter = None;
+            if s.export_state.is_none() && s.export_path.is_some() {
+                s.export_path = None;
             }
             // Send the export state.
             if s.send_export_state && send_export.send(s.export_state).is_ok() {

@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 cpal = "0.13.1"
 crossbeam-channel = "0.5.8"
-riff-wave = "0.1.3"
+hound = "3.5.0"
 
 [dependencies.oxisynth]
 version = "0.0.3"
@@ -19,6 +19,5 @@ version = "1.0.153"
 default-features = false
 features = ["derive"]
 
-[dependencies.hashbrown]
-version = "0.13.2"
-features = ["serde"]
+[dependencies.common]
+path = "../common"

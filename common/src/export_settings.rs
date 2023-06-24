@@ -5,7 +5,6 @@ mod mid;
 mod mp3;
 mod multi_file;
 mod ogg;
-mod wav;
 use crate::time::DEFAULT_FRAMERATE;
 use crate::Index;
 use crate::U64orF32;
@@ -15,7 +14,6 @@ pub use mid::*;
 pub use mp3::*;
 pub use multi_file::*;
 pub use ogg::*;
-pub use wav::*;
 
 #[derive(Default, Clone, Deserialize, Serialize)]
 pub struct ExportSettings {
@@ -25,7 +23,6 @@ pub struct ExportSettings {
     pub mp3: MP3,
     pub multi_file: MultiFile,
     pub ogg: Ogg,
-    pub wav: Wav,
     /// The export type.
     pub export_type: Index,
 }

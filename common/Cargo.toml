@@ -10,9 +10,12 @@ directories = "5.0.0"
 time = "0.3.21"
 midir = "0.9.1"
 crossbeam-channel = "0.5.8"
-hashbrown = "0.13.2"
 tts = "0.25.1"
 csv = "1.2.1"
+
+[dependencies.hashbrown]
+version = "0.13.2"
+features = ["serde"]
 
 [dependencies.serde]
 version = "1.0.153"
