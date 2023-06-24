@@ -300,7 +300,7 @@ impl Synthesizer {
                                 // Send the export state.
                                 Command::SendExportState => s.send_export_state = true,
                                 // Set the MP3 export settings.
-                                Command::SetMP3 { mp3 } => s.export_settings.mp3 = *mp3
+                                Command::SetMP3 { mp3 } => s.export_settings.mp3 = *mp3,
                             }
                         }
                         // Try to send the state.
@@ -417,8 +417,7 @@ impl Synthesizer {
                                     }
                                     let tag = s.get_tag();
                                     let path = s.export_path.as_ref().unwrap();
-                                    if let Err(error) = tag.write_to_path(path, Version::Id3v24)
-                                    {
+                                    if let Err(error) = tag.write_to_path(path, Version::Id3v24) {
                                         panic!("Error writing ID3 tag to {:?}: {}", path, error);
                                     }
                                 }
