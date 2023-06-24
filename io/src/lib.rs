@@ -16,6 +16,7 @@
 //! Each panel implements the `Panel` trait.
 
 use audio::{Command, CommandsMessage, Conn, ExportState};
+use common::export_settings::ExportSettings;
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::{InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, State, MAX_VOLUME};
@@ -192,7 +193,7 @@ impl IO {
             if conn.export_state.is_none() {
                 match &paths_state.exports.try_get_path() {
                     // Export.
-                    Some(path) => self.export(path, state, conn),
+                    Some(path) => self.export(path, state, conn, &paths_state.export_settings),
                     // Get a file path.
                     None => self.open_file_panel.export(state, paths_state),
                 }
@@ -305,7 +306,9 @@ impl IO {
                             }
                         },
                         // Export.
-                        IOCommand::Export(path) => self.export(path, state, conn),
+                        IOCommand::Export(path) => {
+                            self.export(path, state, conn, &paths_state.export_settings)
+                        }
                     }
                 }
             }
@@ -328,14 +331,19 @@ impl IO {
         }
     }
 
-    // Begin to export audio.
-    fn export(&mut self, path: &Path, state: &mut State, conn: &mut Conn) {
+    /// Begin to export audio.
+    ///
+    /// - `path` The output path.
+    /// - `state` The state.
+    /// - `conn` The audio conn.
+    /// - `export` The export settings.
+    fn export(&mut self, path: &Path, state: &mut State, conn: &mut Conn, export: &ExportSettings) {
         // Enable the export panel.
         self.export_panel.enable(state);
         // Get commands and an end time.
-        let (track_commands, t1) = tracks_to_commands(state, state.time.framerate.get_f());
+        let (track_commands, t1) = tracks_to_commands(state, export.framerate.get_f());
         // Define the export state.
-        let export_state = ExportState::new(t1);
+        let export_state: ExportState = ExportState::new(t1);
         conn.export_state = Some(export_state);
         // Set the framerate.
         // Sound-off. Set the framerate. Export.

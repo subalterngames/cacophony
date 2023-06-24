@@ -1,19 +1,17 @@
+use crate::Index;
 use serde::{Deserialize, Serialize};
 
 /// Export settings for .ogg files.
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Ogg {
-    /// The framerate (sample rate).
-    pub framerate: u32,
     /// The quality value.
-    pub quality: u8,
+    pub quality: Index,
 }
 
 impl Default for Ogg {
     fn default() -> Self {
         Self {
-            framerate: 44100,
-            quality: 5,
+            quality: Index::new(4, 10),
         }
     }
 }

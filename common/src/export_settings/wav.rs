@@ -12,8 +12,6 @@ pub enum SampleFormat {
 /// Export settings for .wav files.
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Wav {
-    /// The framerate (sample rate).
-    pub framerate: u32,
     /// If true, mono. If false, stereo.
     pub mono: bool,
     /// The sample format.
@@ -23,7 +21,6 @@ pub struct Wav {
 impl Default for Wav {
     fn default() -> Self {
         Self {
-            framerate: 44100,
             mono: false,
             sample_format: SampleFormat::I16,
         }

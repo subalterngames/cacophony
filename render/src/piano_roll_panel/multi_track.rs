@@ -73,7 +73,13 @@ impl MultiTrack {
         }
     }
 
-    pub(crate) fn update(&self, renderer: &Renderer, state: &State, conn: &Conn) {
+    pub(crate) fn update(
+        &self,
+        renderer: &Renderer,
+        state: &State,
+        conn: &Conn,
+        paths_state: &PathsState,
+    ) {
         let focus = state.panels[state.focus.get()] == PanelType::PianoRoll;
         // Get the page.
         let track_heights = get_track_heights(state, conn);
@@ -109,11 +115,11 @@ impl MultiTrack {
             let track = &state.music.midi_tracks[i];
             // Get the viewable notes.
             let notes = ViewableNotes::new_from_track(
-                self.rect_f[0],
-                self.rect_f[2],
+                [self.rect_f[0], self.rect_f[2]],
                 track,
                 state,
                 conn,
+                &paths_state.export_settings,
                 focus,
                 DN,
             );

@@ -11,6 +11,8 @@ const BPM_TO_SECONDS: f32 = 60.0;
 pub const PPQ_U: u64 = 192;
 /// Pulses per quarter note.
 pub const PPQ_F: f32 = PPQ_U as f32;
+/// The default framerate.
+pub const DEFAULT_FRAMERATE: u64 = 44100;
 
 /// The time state.
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -23,8 +25,6 @@ pub struct Time {
     pub bpm: U64orF32,
     /// The current edit mode.
     pub mode: Index,
-    /// The framerate.
-    pub framerate: U64orF32,
 }
 
 impl Time {
@@ -56,7 +56,6 @@ impl Default for Time {
             playback: 0,
             bpm: U64orF32::from(DEFAULT_BPM),
             mode: get_index(),
-            framerate: U64orF32::from(44100),
         }
     }
 }
@@ -83,25 +82,27 @@ mod tests {
 
         time.bpm = U64orF32::from(DEFAULT_BPM);
 
+        let framerate: f32 = 44100.0;
+
         // PPQ to samples.
 
-        ppq_samples(0, 0, &time);
-        ppq_samples(PPQ_U, 22050, &time);
-        ppq_samples(288, 33075, &time);
+        ppq_samples(0, 0, framerate, &time);
+        ppq_samples(PPQ_U, 22050, framerate, &time);
+        ppq_samples(288, 33075, framerate, &time);
 
         time.bpm = U64orF32::from(60);
 
-        ppq_samples(PPQ_U, 44100, &time);
-        ppq_samples(288, 66150, &time);
+        ppq_samples(PPQ_U, 44100, framerate, &time);
+        ppq_samples(288, 66150, framerate, &time);
 
-        ppq_samples_framerate(PPQ_U, 48000, 48000.0, &time);
+        ppq_samples(PPQ_U, 48000, 48000.0, &time);
         time.bpm = U64orF32::from(DEFAULT_BPM);
-        ppq_samples_framerate(PPQ_U, 24000, 48000.0, &time);
+        ppq_samples(PPQ_U, 24000, 48000.0, &time);
 
         // Samples to PPQ.
-        samples_ppq(0, 0, &time);
-        samples_ppq(22050, PPQ_U, &time);
-        samples_ppq(44100, PPQ_U * 2, &time);
+        samples_ppq(0, 0, framerate, &time);
+        samples_ppq(22050, PPQ_U, framerate, &time);
+        samples_ppq(44100, PPQ_U * 2, framerate, &time);
     }
 
     fn ppq_seconds(ppq: u64, f: f32, time: &Time) {
@@ -109,17 +110,13 @@ mod tests {
         assert_eq!(t, f, "{} {}", t, f);
     }
 
-    fn ppq_samples(ppq: u64, v: u64, time: &Time) {
-        ppq_samples_framerate(ppq, v, time.framerate.get_f(), time)
-    }
-
-    fn ppq_samples_framerate(ppq: u64, v: u64, framerate: f32, time: &Time) {
+    fn ppq_samples(ppq: u64, v: u64, framerate: f32, time: &Time) {
         let s = time.ppq_to_samples(ppq, framerate);
         assert_eq!(s, v, "{} {} {} {}", ppq, s, v, framerate)
     }
 
-    fn samples_ppq(samples: u64, v: u64, time: &Time) {
-        let ppq = time.samples_to_ppq(samples, time.framerate.get_f());
+    fn samples_ppq(samples: u64, v: u64, framerate: f32, time: &Time) {
+        let ppq = time.samples_to_ppq(samples, framerate);
         assert_eq!(ppq, v, "{} {} {}", ppq, v, samples);
     }
 }

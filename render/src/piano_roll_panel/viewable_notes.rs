@@ -1,4 +1,5 @@
 use crate::panel::*;
+use common::export_settings::ExportSettings;
 use common::*;
 
 /// A viewable note.
@@ -30,18 +31,18 @@ pub(crate) struct ViewableNotes<'a> {
 
 impl<'a> ViewableNotes<'a> {
     pub(crate) fn new(
-        x: f32,
-        w: f32,
+        xw: [f32; 2],
         state: &'a State,
         conn: &Conn,
         focus: bool,
         dn: [u8; 2],
+        export: &ExportSettings,
     ) -> Self {
         match state.music.get_selected_track() {
-            Some(track) => Self::new_from_track(x, w, track, state, conn, focus, dn),
+            Some(track) => Self::new_from_track(xw, track, state, conn, export, focus, dn),
             None => Self {
-                x,
-                w,
+                x: xw[0],
+                w: xw[1],
                 notes: vec![],
                 dt: Self::get_dt(&state.view.dt),
             },
@@ -49,21 +50,21 @@ impl<'a> ViewableNotes<'a> {
     }
 
     pub(crate) fn new_from_track(
-        x: f32,
-        w: f32,
+        xw: [f32; 2],
         track: &'a MidiTrack,
         state: &'a State,
         conn: &Conn,
+        export: &ExportSettings,
         focus: bool,
         dn: [u8; 2],
     ) -> Self {
         // Get any notes being played.
         let playtime = match conn.state.time.music {
-            true => conn.state.time.time.map(|time| {
-                state
-                    .time
-                    .samples_to_ppq(time, state.time.framerate.get_f())
-            }),
+            true => conn
+                .state
+                .time
+                .time
+                .map(|time| state.time.samples_to_ppq(time, export.framerate.get_f())),
             false => None,
         };
 
@@ -90,7 +91,7 @@ impl<'a> ViewableNotes<'a> {
                 note.start
             };
             // Get the x coordinate of the note.
-            let x = get_note_x(t, x, w, &dt);
+            let x = get_note_x(t, xw[0], xw[1], &dt);
             // Is this note in the selection?
             let selected = selected.contains(&note);
             // Is this note being played?
@@ -119,7 +120,12 @@ impl<'a> ViewableNotes<'a> {
                 playing,
             });
         }
-        Self { notes, x, w, dt }
+        Self {
+            notes,
+            x: xw[0],
+            w: xw[1],
+            dt,
+        }
     }
 
     /// Returns the width of a note.
