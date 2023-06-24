@@ -19,8 +19,8 @@
 - [ ] Test all TTS
 - [ ] Metadata: name, artist, album, year, genre, track number, comments
 - [ ] Export settings
-  - [ ] MIDI: Copyright
-  - [ ] wav: framerate; 16, 24, 32
+  - [x] MIDI: Copyright
+  - [x] ~~wav: framerate; 16, 24, 32~~
   - [ ] flac: ???
   - [ ] mp3: framerate, quality, variable speed, channel mode, bit rate mode
   - [ ] ogg: framerate; quality (0-10)
@@ -50,6 +50,7 @@
 - [x] Can't delete a track
 - [x] Bad zoom
 - [ ] Play notes in open-file-panel file name
+- [ ] Don't use id3 tags for wav files.
 
 ## Misc.
 

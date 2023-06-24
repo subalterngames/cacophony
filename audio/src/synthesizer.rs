@@ -1,8 +1,10 @@
 use crate::{AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState, TimeState};
+use chrono::prelude::*;
 use common::export_settings::*;
 use common::hashbrown::HashMap;
 use crossbeam_channel::{Receiver, Sender};
 use hound::*;
+use id3::*;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use std::fs::File;
 use std::path::PathBuf;
@@ -324,27 +326,13 @@ impl Synthesizer {
                                 }
                                 // Export to a .wav file.
                                 ExportType::Wav => {
-                                    // Get the path.
-                                    let path = s.export_path.as_ref().unwrap().to_str().unwrap();
-                                    // Get the spec.
-                                    let spec = WavSpec {
-                                        channels: 2,
-                                        sample_rate: s.export_settings.framerate.get_u() as u32,
-                                        bits_per_sample: 16,
-                                        sample_format: SampleFormat::Int,
-                                    };
-                                    // Write.
-                                    let mut writer = WavWriter::create(path, spec).unwrap();
-                                    let mut i16_writer =
-                                        writer.get_i16_writer(s.export_buffer[0].len() as u32 * 2);
-                                    for (l, r) in
-                                        s.export_buffer[0].iter().zip(s.export_buffer[1].iter())
+                                    s.write_wav();
+                                    let tag = s.get_tag();
+                                    let path = s.export_path.as_ref().unwrap();
+                                    if let Err(error) = tag.write_to_wav_path(path, Version::Id3v24)
                                     {
-                                        i16_writer.write_sample(to_i16(l));
-                                        i16_writer.write_sample(to_i16(r));
+                                        panic!("Error writing ID3 tag to {:?}: {}", path, error);
                                     }
-                                    i16_writer.flush().unwrap();
-                                    writer.finalize().unwrap();
                                 }
                             }
                             // Stop exporting.
@@ -502,6 +490,53 @@ impl Synthesizer {
         self.synth
             .program_select(channel, id, bank, preset)
             .unwrap();
+    }
+
+    fn write_wav(&self) {
+        // Get the path.
+        let path = self.export_path.as_ref().unwrap().to_str().unwrap();
+        // Get the spec.
+        let spec = WavSpec {
+            channels: 2,
+            sample_rate: self.export_settings.framerate.get_u() as u32,
+            bits_per_sample: 16,
+            sample_format: SampleFormat::Int,
+        };
+        // Write.
+        let mut writer = WavWriter::create(path, spec).unwrap();
+        let mut i16_writer = writer.get_i16_writer(self.export_buffer[0].len() as u32 * 2);
+        for (l, r) in self.export_buffer[0]
+            .iter()
+            .zip(self.export_buffer[1].iter())
+        {
+            i16_writer.write_sample(to_i16(l));
+            i16_writer.write_sample(to_i16(r));
+        }
+        i16_writer.flush().unwrap();
+        writer.finalize().unwrap();
+    }
+
+    fn get_tag(&self) -> Tag {
+        let time = Local::now();
+        let mut tag = Tag::new();
+        tag.set_year(time.year());
+        tag.set_title(&self.export_settings.metadata.title);
+        if let Some(artist) = &self.export_settings.metadata.artist {
+            tag.set_artist(artist);
+        }
+        if let Some(album) = &self.export_settings.metadata.album {
+            tag.set_album(album);
+        }
+        if let Some(genre) = &self.export_settings.metadata.genre {
+            tag.set_genre(genre);
+        }
+        if let Some(comment) = &self.export_settings.metadata.comment {
+            tag.set_genre(comment);
+        }
+        if let Some(track_number) = &self.export_settings.metadata.track_number {
+            tag.set_track(*track_number);
+        }
+        tag
     }
 }
 

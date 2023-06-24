@@ -10,7 +10,7 @@ pub struct Metadata {
     /// The name of the album.
     pub album: Option<String>,
     /// The track number.
-    pub track_number: Option<u16>,
+    pub track_number: Option<u32>,
     /// The genre.
     pub genre: Option<String>,
     /// Misc. comments.

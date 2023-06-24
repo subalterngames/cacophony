@@ -1,10 +1,10 @@
 use audio::SynthState;
+use common::chrono::Datelike;
 use common::export_settings::ExportSettings;
 use common::*;
 use ghakuf::messages::*;
 use ghakuf::writer::*;
 use std::path::Path;
-use text::Text;
 
 const PULSE: u64 = 1;
 
@@ -37,7 +37,6 @@ pub(crate) fn to_mid(
     music: &Music,
     time: &Time,
     synth_state: &SynthState,
-    text: &Text,
     export_settings: &ExportSettings,
 ) {
     // Gather all notes.
@@ -56,8 +55,14 @@ pub(crate) fn to_mid(
         event: MetaEvent::TextEvent,
         data: export_settings.metadata.title.as_bytes().to_vec(),
     }];
-    // Send other metadata.
-
+    // Send copyright.
+    if export_settings.mid.copyright {
+        messages.push(Message::MetaEvent {
+            delta_time: 0,
+            event: MetaEvent::CopyrightNotice,
+            data: chrono::Local::now().year().to_le_bytes().to_vec(),
+        });
+    }
     // Set the instrument names.
     for program in synth_state.programs.values() {
         messages.push(Message::MetaEvent {

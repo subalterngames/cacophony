@@ -12,6 +12,7 @@ midir = "0.9.1"
 crossbeam-channel = "0.5.8"
 tts = "0.25.1"
 csv = "1.2.1"
+chrono = "0.4.26"
 
 [dependencies.hashbrown]
 version = "0.13.2"
