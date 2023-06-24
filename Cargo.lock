@@ -98,12 +98,12 @@ dependencies = [
 name = "audio"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "common",
  "cpal",
  "crossbeam-channel",
  "hound",
  "id3",
+ "mp3lame-encoder",
  "oxisynth",
  "serde",
 ]
@@ -113,6 +113,15 @@ name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
+
+[[package]]
+name = "autotools"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aef8da1805e028a172334c3b680f93e71126f2327622faef2ec3d893c0a4ad77"
+dependencies = [
+ "cc",
+]
 
 [[package]]
 name = "bindgen"
@@ -1267,6 +1276,27 @@ checksum = "e7810e0be55b428ada41041c41f32c9f1a42817901b4ccf45fa3d4b6561e74c7"
 dependencies = [
  "adler",
  "simd-adler32",
+]
+
+[[package]]
+name = "mp3lame-encoder"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "812d2333ca48507932255c7049b9a16ec15b53cc04e3af6033c4a630db502d6c"
+dependencies = [
+ "libc",
+ "mp3lame-sys",
+]
+
+[[package]]
+name = "mp3lame-sys"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "99896fd43ed58e957c164c5f4a1e7d8e770f358835cc6920b2eab7ab6d1a7106"
+dependencies = [
+ "autotools",
+ "cc",
+ "libc",
 ]
 
 [[package]]

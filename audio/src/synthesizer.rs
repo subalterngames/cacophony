@@ -1,5 +1,5 @@
 use crate::{AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState, TimeState};
-use chrono::prelude::*;
+use common::chrono::prelude::*;
 use common::export_settings::*;
 use common::hashbrown::HashMap;
 use crossbeam_channel::{Receiver, Sender};
@@ -8,6 +8,7 @@ use id3::*;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use std::fs::File;
 use std::path::PathBuf;
+use mp3lame_encoder::*;
 
 /// Conversion factor for f32 to i16.
 const F32_TO_I16: f32 = 32767.5;
@@ -333,6 +334,14 @@ impl Synthesizer {
                                     {
                                         panic!("Error writing ID3 tag to {:?}: {}", path, error);
                                     }
+                                }
+                                ExportType::MP3 => {
+                                    // Create the encoder.
+                                    let mut mp3_encoder = Builder::new().expect("Create LAME builder");
+                                    mp3_encoder.set_num_channels(2).expect("set channels");
+                                    mp3_encoder.set_sample_rate(s.export_settings.framerate.get_u() as u32).expect("set sample rate");
+                                    let bit_rate = Bitrate::from(BIT_RATES[s.export_settings.mp3.bit_rate.get()]);
+                                    mp3_encoder.set_brate(mp3lame_encoder::Bitrate::Kbps192).expect("set bitrate");
                                 }
                             }
                             // Stop exporting.

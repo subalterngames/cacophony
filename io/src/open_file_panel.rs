@@ -317,6 +317,13 @@ impl Panel for OpenFilePanel {
                                     paths_state.exports.directory.join(filename),
                                 )]));
                             }
+                            // Export to a .mp3 file.
+                            ExportType::MP3 => {
+                                filename.push_str(".mp3");
+                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
+                                    paths_state.exports.directory.join(filename),
+                                )]));
+                            }
                             // Export to a .mid file.
                             ExportType::Mid => {
                                 filename.push_str(".mid");

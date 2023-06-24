@@ -8,7 +8,7 @@ cpal = "0.13.1"
 crossbeam-channel = "0.5.8"
 hound = "3.5.0"
 id3 = "1.7.0"
-chrono = "0.4.26"
+mp3lame-encoder = "0.1.2"
 
 [dependencies.oxisynth]
 version = "0.0.3"

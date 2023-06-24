@@ -2,7 +2,8 @@
 pub enum ExportType {
     Wav,
     Mid,
+    MP3
 }
 
-pub const EXPORT_TYPES: [ExportType; 2] = [ExportType::Wav, ExportType::Mid];
-pub const EXPORT_TYPE_STRINGS: [&str; 2] = ["wav", "mid"];
+pub const EXPORT_TYPES: [ExportType; 3] = [ExportType::Wav, ExportType::Mid, ExportType::MP3];
+pub const EXPORT_TYPE_STRINGS: [&str; 3] = ["wav", "mid", "mp3"];
