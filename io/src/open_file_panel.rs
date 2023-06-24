@@ -1,6 +1,7 @@
 use crate::mid::to_mid;
 use crate::panel::*;
 use crate::{get_tooltip, get_tooltip_with_values, Save};
+use common::export_settings::*;
 use common::open_file::*;
 use common::PanelType;
 use text::{get_file_name_no_ex, get_folder_name};
@@ -121,7 +122,8 @@ impl Panel for OpenFilePanel {
             s.push(' ');
             // Export file type.
             if paths_state.open_file_type == OpenFileType::Export {
-                let export_type = EXPORT_TYPE_STRINGS[paths_state.export_type.get()];
+                let export_type =
+                    EXPORT_TYPE_STRINGS[paths_state.export_settings.export_type.get()];
                 s.push_str(
                     &text.get_with_values("OPEN_FILE_PANEL_STATUS_TTS_EXPORT", &[export_type]),
                 );
@@ -168,7 +170,7 @@ impl Panel for OpenFilePanel {
             }
             // Set export type.
             if paths_state.open_file_type == OpenFileType::Export {
-                let mut index = Index::new(paths_state.export_type.get(), EXPORT_TYPES.len());
+                let mut index = paths_state.export_settings.export_type;
                 index.increment(true);
                 let next_export_type = EXPORT_TYPE_STRINGS[index.get()];
                 strings.push(get_tooltip_with_values(
@@ -239,7 +241,7 @@ impl Panel for OpenFilePanel {
         else if paths_state.open_file_type == OpenFileType::Export
             && input.happened(&InputEvent::CycleExportType)
         {
-            paths_state.export_type.increment(true);
+            paths_state.export_settings.export_type.increment(true);
         }
         // We selected something.
         else if input.happened(&InputEvent::SelectFile) {
@@ -307,7 +309,7 @@ impl Panel for OpenFilePanel {
                         self.disable(state);
                         // Append the extension.
                         let mut filename = filename.clone();
-                        match &EXPORT_TYPES[paths_state.export_type.get()] {
+                        match &EXPORT_TYPES[paths_state.export_settings.export_type.get()] {
                             // Export to a .wav file.
                             ExportType::Wav => {
                                 filename.push_str(".wav");
