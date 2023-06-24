@@ -158,6 +158,7 @@ impl Drawable for OpenFilePanel {
                     match &EXPORT_TYPES[paths_state.export_settings.export_type.get()] {
                         ExportType::Wav => ".wav",
                         ExportType::Mid => ".mid",
+                        ExportType::MP3 => ".mp3"
                     }
                 }
             };

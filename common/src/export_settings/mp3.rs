@@ -1,24 +1,12 @@
 use crate::Index;
 use serde::{Deserialize, Serialize};
 
-pub const QUALITIES: [Quality; 4] = [
-    Quality::Mediocre,
-    Quality::Standard,
-    Quality::Commendable,
-    Quality::Superlative,
+const BIT_RATES: [u16; 16] = [
+    8, 16, 24, 32, 40, 48, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320,
 ];
 
-/// .mp3 export quality.
-#[derive(Clone, Deserialize, Serialize)]
-pub enum Quality {
-    Superlative,
-    Commendable,
-    Standard,
-    Mediocre,
-}
-
 /// Export settings for .mp3 files.
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Eq, PartialEq, Copy, Clone, Deserialize, Serialize)]
 pub struct MP3 {
     /// The quality index value.
     pub quality: Index,
@@ -26,11 +14,17 @@ pub struct MP3 {
     pub bit_rate: Index,
 }
 
+impl MP3 {
+    pub fn get_bit_rate(&self) -> u16 {
+        BIT_RATES[self.bit_rate.get()]
+    }
+}
+
 impl Default for MP3 {
     fn default() -> Self {
         Self {
             bit_rate: Index::new(8, 16),
-            quality: Index::new(1, QUALITIES.len()),
+            quality: Index::new(0, 10),
         }
     }
 }

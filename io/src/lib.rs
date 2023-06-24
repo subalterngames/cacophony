@@ -16,7 +16,7 @@
 //! Each panel implements the `Panel` trait.
 
 use audio::{Command, CommandsMessage, Conn, ExportState};
-use common::export_settings::ExportSettings;
+use common::export_settings::*;
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::{InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, State, MAX_VOLUME};
@@ -354,6 +354,10 @@ impl IO {
                 state: export_state,
             },
         ];
+        // MP3 settings.
+        if EXPORT_TYPES[export.export_type.get()] == ExportType::MP3 {
+            commands.push(Command::SetMP3 { mp3: export.mp3 })
+        }
         commands.extend(track_commands);
         // Send the commands.
         conn.send(commands);

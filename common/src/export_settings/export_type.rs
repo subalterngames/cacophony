@@ -1,8 +1,9 @@
 /// This determines what we're exporting to.
+#[derive(Eq, PartialEq)]
 pub enum ExportType {
     Wav,
     Mid,
-    MP3
+    MP3,
 }
 
 pub const EXPORT_TYPES: [ExportType; 3] = [ExportType::Wav, ExportType::Mid, ExportType::MP3];

@@ -5,11 +5,41 @@ use common::hashbrown::HashMap;
 use crossbeam_channel::{Receiver, Sender};
 use hound::*;
 use id3::*;
+use mp3lame_encoder::*;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use std::fs::File;
 use std::path::PathBuf;
-use mp3lame_encoder::*;
 
+const MP3_BIT_RATES: [Bitrate; 16] = [
+    Bitrate::Kbps8,
+    Bitrate::Kbps16,
+    Bitrate::Kbps24,
+    Bitrate::Kbps32,
+    Bitrate::Kbps40,
+    Bitrate::Kbps48,
+    Bitrate::Kbps64,
+    Bitrate::Kbps80,
+    Bitrate::Kbps96,
+    Bitrate::Kbps112,
+    Bitrate::Kbps128,
+    Bitrate::Kbps160,
+    Bitrate::Kbps192,
+    Bitrate::Kbps224,
+    Bitrate::Kbps256,
+    Bitrate::Kbps320,
+];
+const MP3_QUALITIES: [Quality; 10] = [
+    Quality::Best,
+    Quality::SecondBest,
+    Quality::NearBest,
+    Quality::VeryNice,
+    Quality::Nice,
+    Quality::Good,
+    Quality::Decent,
+    Quality::Ok,
+    Quality::SecondWorst,
+    Quality::Worst,
+];
 /// Conversion factor for f32 to i16.
 const F32_TO_I16: f32 = 32767.5;
 /// Export this many bytes per decay chunk.
@@ -269,6 +299,8 @@ impl Synthesizer {
                                 }
                                 // Send the export state.
                                 Command::SendExportState => s.send_export_state = true,
+                                // Set the MP3 export settings.
+                                Command::SetMP3 { mp3 } => s.export_settings.mp3 = *mp3
                             }
                         }
                         // Try to send the state.
@@ -337,11 +369,58 @@ impl Synthesizer {
                                 }
                                 ExportType::MP3 => {
                                     // Create the encoder.
-                                    let mut mp3_encoder = Builder::new().expect("Create LAME builder");
+                                    let mut mp3_encoder =
+                                        Builder::new().expect("Create LAME builder");
                                     mp3_encoder.set_num_channels(2).expect("set channels");
-                                    mp3_encoder.set_sample_rate(s.export_settings.framerate.get_u() as u32).expect("set sample rate");
-                                    let bit_rate = Bitrate::from(BIT_RATES[s.export_settings.mp3.bit_rate.get()]);
-                                    mp3_encoder.set_brate(mp3lame_encoder::Bitrate::Kbps192).expect("set bitrate");
+                                    mp3_encoder
+                                        .set_sample_rate(s.export_settings.framerate.get_u() as u32)
+                                        .expect("set sample rate");
+                                    mp3_encoder
+                                        .set_brate(
+                                            MP3_BIT_RATES[s.export_settings.mp3.bit_rate.get()],
+                                        )
+                                        .expect("set bitrate");
+                                    mp3_encoder
+                                        .set_quality(
+                                            MP3_QUALITIES[s.export_settings.mp3.quality.get()],
+                                        )
+                                        .expect("set quality");
+                                    // Build the encoder.
+                                    let mut mp3_encoder =
+                                        mp3_encoder.build().expect("To initialize LAME encoder");
+                                    // Get the input.
+                                    let input = DualPcm {
+                                        left: &s.export_buffer[0],
+                                        right: &s.export_buffer[1],
+                                    };
+                                    // Get the output buffer.
+                                    let mut mp3_out_buffer = Vec::new();
+                                    mp3_out_buffer.reserve(max_required_buffer_size(
+                                        s.export_buffer[0].len(),
+                                    ));
+                                    // Get the size.
+                                    let encoded_size = mp3_encoder
+                                        .encode(input, mp3_out_buffer.spare_capacity_mut())
+                                        .expect("To encode");
+                                    unsafe {
+                                        mp3_out_buffer.set_len(
+                                            mp3_out_buffer.len().wrapping_add(encoded_size),
+                                        );
+                                    }
+                                    let encoded_size = mp3_encoder
+                                        .flush::<FlushNoGap>(mp3_out_buffer.spare_capacity_mut())
+                                        .expect("to flush");
+                                    unsafe {
+                                        mp3_out_buffer.set_len(
+                                            mp3_out_buffer.len().wrapping_add(encoded_size),
+                                        );
+                                    }
+                                    let tag = s.get_tag();
+                                    let path = s.export_path.as_ref().unwrap();
+                                    if let Err(error) = tag.write_to_path(path, Version::Id3v24)
+                                    {
+                                        panic!("Error writing ID3 tag to {:?}: {}", path, error);
+                                    }
                                 }
                             }
                             // Stop exporting.

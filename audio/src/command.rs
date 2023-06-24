@@ -1,4 +1,5 @@
 use crate::export_state::ExportState;
+use common::export_settings::*;
 use std::path::PathBuf;
 
 /// A command for the synthesizer.
@@ -48,4 +49,5 @@ pub enum Command {
     Export { path: PathBuf, state: ExportState },
     /// Ask for the export state
     SendExportState,
+    SetMP3 { mp3: MP3 }
 }
