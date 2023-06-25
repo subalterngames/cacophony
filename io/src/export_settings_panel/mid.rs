@@ -1,15 +1,12 @@
-use super::set_exporter;
+use super::{set_exporter, ExportSetting};
 use crate::panel::*;
 use crate::{edit_optional_string, edit_string};
 
-#[derive(Eq, PartialEq)]
-enum MidField {
-    Title,
-    Artist,
-    Copyright,
-}
-
-const MID_FIELDS: [MidField; 3] = [MidField::Title, MidField::Artist, MidField::Copyright];
+const MID_FIELDS: [ExportSetting; 3] = [
+    ExportSetting::Title,
+    ExportSetting::Artist,
+    ExportSetting::Copyright,
+];
 
 pub struct Mid {
     /// The current field.
@@ -32,26 +29,28 @@ impl Panel for Mid {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-        paths_state: &mut PathsState,
+        _: &mut PathsState,
         exporter: &mut Exporter,
     ) -> Option<Snapshot> {
-        if input.happened(&InputEvent::PreviousExportSetting) {
+        if MID_FIELDS[self.field.get()].say(state, input, text, tts) {
+            None
+        } else if input.happened(&InputEvent::PreviousExportSetting) {
             self.field.increment(false);
             None
         } else if input.happened(&InputEvent::NextExportSetting) {
             self.field.increment(true);
             None
         } else if input.happened(&InputEvent::ToggleExportSettingBoolean)
-            && MID_FIELDS[self.field.get()] == MidField::Copyright
+            && MID_FIELDS[self.field.get()] == ExportSetting::Copyright
         {
             let c0 = vec![Command::SetExporter {
                 exporter: Box::new(exporter.clone()),
             }];
             exporter.copyright = !exporter.copyright;
             set_exporter(c0, conn, exporter)
-        } else if MID_FIELDS[self.field.get()] == MidField::Title {
+        } else if MID_FIELDS[self.field.get()] == ExportSetting::Title {
             edit_string(|e| &mut e.metadata.title, input, conn, state, exporter)
-        } else if MID_FIELDS[self.field.get()] == MidField::Artist {
+        } else if MID_FIELDS[self.field.get()] == ExportSetting::Artist {
             edit_optional_string(|e| &mut e.metadata.artist, input, conn, state, exporter)
         } else {
             None
