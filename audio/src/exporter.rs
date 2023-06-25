@@ -118,11 +118,13 @@ impl Exporter {
         }];
         // Send copyright.
         if self.copyright {
-            messages.push(Message::MetaEvent {
-                delta_time: 0,
-                event: MetaEvent::CopyrightNotice,
-                data: Local::now().year().to_le_bytes().to_vec(),
-            });
+            if let Some(artist) = &self.metadata.artist {
+                messages.push(Message::MetaEvent {
+                    delta_time: 0,
+                    event: MetaEvent::CopyrightNotice,
+                    data: self.get_copyright(artist).as_bytes().to_vec(),
+                });
+            }
         }
         // Set the instrument names.
         for program in synth_state.programs.values() {
@@ -274,7 +276,28 @@ impl Exporter {
             panic!("Failed to export mp3 to {:?}: {}", path, error)
         }
         // Write the tag.
-        self.write_id3_tag(path);
+        let time = Local::now();
+        let mut tag = Tag::new();
+        tag.set_year(time.year());
+        tag.set_title(&self.metadata.title);
+        if let Some(artist) = &self.metadata.artist {
+            tag.set_artist(artist);
+        }
+        if let Some(album) = &self.metadata.album {
+            tag.set_album(album);
+        }
+        if let Some(genre) = &self.metadata.genre {
+            tag.set_genre(genre);
+        }
+        if let Some(comment) = &self.metadata.comment {
+            tag.set_genre(comment);
+        }
+        if let Some(track_number) = &self.metadata.track_number {
+            tag.set_track(*track_number);
+        }
+        if let Err(error) = tag.write_to_path(path, Version::Id3v24) {
+            panic!("Error writing ID3 tag to {:?}: {}", path, error);
+        }
     }
 
     /// Export to a .ogg file.
@@ -296,18 +319,17 @@ impl Exporter {
         let samples = encoder
             .encode(&samples)
             .expect("Error encoding .ogg samples.");
-        let year = Local::now().year();
         // Get a cursor.
         let cursor = Cursor::new(&samples);
         // Write the comments.
         let mut comments = CommentHeader::new();
         comments.set_vendor("Ogg");
         comments.add_tag_single("title", &self.metadata.title);
-        comments.add_tag_single("date", &year.to_string());
+        comments.add_tag_single("date", &Local::now().year().to_string());
         if let Some(artist) = &self.metadata.artist {
             comments.add_tag_single("artist", artist);
             if self.copyright {
-                comments.add_tag_single("copyright", &format!("Copyright {} {}", year, artist));
+                comments.add_tag_single("copyright", &self.get_copyright(artist));
             }
         }
         if let Some(album) = &self.metadata.album {
@@ -353,29 +375,8 @@ impl Exporter {
         (sample * F32_TO_I16).floor() as i16
     }
 
-    /// Write an ID3 tag to a file.
-    fn write_id3_tag(&self, path: &Path) {
-        let time = Local::now();
-        let mut tag = Tag::new();
-        tag.set_year(time.year());
-        tag.set_title(&self.metadata.title);
-        if let Some(artist) = &self.metadata.artist {
-            tag.set_artist(artist);
-        }
-        if let Some(album) = &self.metadata.album {
-            tag.set_album(album);
-        }
-        if let Some(genre) = &self.metadata.genre {
-            tag.set_genre(genre);
-        }
-        if let Some(comment) = &self.metadata.comment {
-            tag.set_genre(comment);
-        }
-        if let Some(track_number) = &self.metadata.track_number {
-            tag.set_track(*track_number);
-        }
-        if let Err(error) = tag.write_to_path(path, Version::Id3v24) {
-            panic!("Error writing ID3 tag to {:?}: {}", path, error);
-        }
+    /// Returns a copyright string.
+    fn get_copyright(&self, artist: &str) -> String {
+        format!("Copyright {} {}", Local::now().year(), artist)
     }
 }

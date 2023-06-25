@@ -53,6 +53,12 @@ pub enum InputEvent {
     PreviousPath,
     CloseOpenFile,
     CycleExportType,
+    // Export settings.
+    PreviousExportSetting,
+    NextExportSetting,
+    PreviousExportSettingValue,
+    NextExportSettingValue,
+    ToggleExportSettingBoolean,
     // Piano roll.
     PianoRollCycleMode,
     PianoRollSetTime,

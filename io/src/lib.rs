@@ -45,6 +45,7 @@ use save::Save;
 use snapshot::Snapshot;
 use tooltip::*;
 use tracks_panel::TracksPanel;
+mod export_settings_panel;
 
 /// The maximum size of the undo stack.
 const MAX_UNDOS: usize = 100;
@@ -425,4 +426,149 @@ fn tracks_to_commands(state: &State, framerate: f32) -> (CommandsMessage, u64) {
     // All-off.
     commands.push(Command::StopMusicAt { time: t1 });
     (commands, t1)
+}
+
+/// Set whether alphanumeric input is allowed.
+pub(crate) fn set_alphanumeric_input(state: &mut State, value: bool) -> Option<Snapshot> {
+    let s0 = state.clone();
+    state.input.alphanumeric_input = value;
+    Some(Snapshot::from_states(s0, state))
+}
+
+/// Edit a string field.
+///
+/// - `s` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
+/// - `input` The input state. This is used to check if alphanumeric input is allowed.
+/// - `conn` The audio conn. This is used to set the exporter state.
+/// - `exporter` The exporter state.
+///
+/// Returns a snapshot.
+pub(crate) fn edit_string<F>(
+    mut s: F,
+    input: &Input,
+    conn: &mut Conn,
+    state: &mut State,
+    exporter: &mut Exporter,
+) -> Option<Snapshot>
+where
+    F: FnMut(&mut Exporter) -> &mut String,
+{
+    // Toggle alphanumeric input on or off.
+    if input.happened(&InputEvent::ToggleAlphanumericInput) {
+        // Toggle off alphanumeric input and possibly set the string.
+        if state.input.alphanumeric_input {
+            let e0 = Box::new(exporter.clone());
+            let s0 = state.clone();
+            state.input.alphanumeric_input = false;
+            let s = s(exporter);
+            // Don't allow an empty name.
+            if s.is_empty() {
+                let c0 = vec![Command::SetExporter { exporter: e0 }];
+                *s = "My Music".to_string();
+                let c1 = vec![Command::SetExporter {
+                    exporter: Box::new(exporter.clone()),
+                }];
+                let snapshot = Some(Snapshot::from_states_and_commands(s0, state, c0, &c1));
+                conn.send(c1);
+                snapshot
+            } else {
+                Some(Snapshot::from_states(s0, state))
+            }
+        }
+        // Toggle off alphanumeric input.
+        else {
+            set_alphanumeric_input(state, false)
+        }
+    }
+    // Modify the name.
+    else {
+        let mut name = s(exporter).clone();
+        if input.modify_string_abc123(&mut name) {
+            let c0 = vec![Command::SetExporter {
+                exporter: Box::new(exporter.clone()),
+            }];
+            *s(exporter) = name;
+            let c1 = vec![Command::SetExporter {
+                exporter: Box::new(exporter.clone()),
+            }];
+            let snapshot = Some(Snapshot::from_commands(c0, &c1));
+            conn.send(c1);
+            snapshot
+        } else {
+            None
+        }
+    }
+}
+
+/// Edit an optional string field.
+///
+/// - `s` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
+/// - `input` The input state. This is used to check if alphanumeric input is allowed.
+/// - `conn` The audio conn. This is used to set the exporter state.
+/// - `exporter` The exporter state.
+///
+/// Returns a snapshot.
+pub(crate) fn edit_optional_string<F>(
+    mut s: F,
+    input: &Input,
+    conn: &mut Conn,
+    state: &mut State,
+    exporter: &mut Exporter,
+) -> Option<Snapshot>
+where
+    F: FnMut(&mut Exporter) -> &mut Option<String>,
+{
+    // Toggle alphanumeric input on or off.
+    if input.happened(&InputEvent::ToggleAlphanumericInput) {
+        // Toggle off alphanumeric input and possibly set the string.
+        if state.input.alphanumeric_input {
+            let e0 = Box::new(exporter.clone());
+            let s0 = state.clone();
+            state.input.alphanumeric_input = false;
+            let s = s(exporter);
+            // Don't allow an empty name.
+            if let Some(st) = &s {
+                // Set to none.
+                if st.is_empty() {
+                    let c0 = vec![Command::SetExporter { exporter: e0 }];
+                    *s = None;
+                    let c1 = vec![Command::SetExporter {
+                        exporter: Box::new(exporter.clone()),
+                    }];
+                    let snapshot = Some(Snapshot::from_states_and_commands(s0, state, c0, &c1));
+                    conn.send(c1);
+                    snapshot
+                } else {
+                    Some(Snapshot::from_states(s0, state))
+                }
+            } else {
+                Some(Snapshot::from_states(s0, state))
+            }
+        }
+        // Toggle off alphanumeric input.
+        else {
+            set_alphanumeric_input(state, false)
+        }
+    }
+    // Modify the name.
+    else {
+        let mut name = match s(exporter) {
+            Some(s) => s.clone(),
+            None => String::new(),
+        };
+        if input.modify_string_abc123(&mut name) {
+            let c0 = vec![Command::SetExporter {
+                exporter: Box::new(exporter.clone()),
+            }];
+            *s(exporter) = Some(name);
+            let c1 = vec![Command::SetExporter {
+                exporter: Box::new(exporter.clone()),
+            }];
+            let snapshot = Some(Snapshot::from_commands(c0, &c1));
+            conn.send(c1);
+            snapshot
+        } else {
+            None
+        }
+    }
 }

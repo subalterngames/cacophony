@@ -1,4 +1,5 @@
 use crate::panel::*;
+use crate::{edit_string, set_alphanumeric_input};
 use common::music_panel_field::*;
 use common::{U64orF32, DEFAULT_BPM, MAX_VOLUME};
 
@@ -31,12 +32,6 @@ impl MusicPanel {
     fn set_field(state: &mut State, up: bool) -> Option<Snapshot> {
         let s0 = state.clone();
         state.music_panel_field.increment(up);
-        Some(Snapshot::from_states(s0, state))
-    }
-
-    fn enable_alphanumeric_input(state: &mut State) -> Option<Snapshot> {
-        let s0 = state.clone();
-        state.input.alphanumeric_input = true;
         Some(Snapshot::from_states(s0, state))
     }
 
@@ -157,7 +152,7 @@ impl Panel for MusicPanel {
                     }
                     // Enable input.
                     else if input.happened(&InputEvent::ToggleAlphanumericInput) {
-                        return Self::enable_alphanumeric_input(state);
+                        return set_alphanumeric_input(state, true);
                     }
                 }
                 // Set the gain.
@@ -170,49 +165,7 @@ impl Panel for MusicPanel {
                 }
                 // Modify the name.
                 MusicPanelField::Name => {
-                    if state.input.alphanumeric_input {
-                        // Stop editing the name.
-                        if input.happened(&InputEvent::ToggleAlphanumericInput) {
-                            let s0 = state.clone();
-                            state.input.alphanumeric_input = false;
-                            // Don't allow an empty name.
-                            if exporter.metadata.title.is_empty() {
-                                let c0 = vec![Command::SetExporter {
-                                    exporter: Box::new(exporter.clone()),
-                                }];
-                                exporter.metadata.title = "My Music".to_string();
-                                let c1 = vec![Command::SetExporter {
-                                    exporter: Box::new(exporter.clone()),
-                                }];
-                                let snapshot =
-                                    Some(Snapshot::from_states_and_commands(s0, state, c0, &c1));
-                                conn.send(c1);
-                                return snapshot;
-                            } else {
-                                return Some(Snapshot::from_states(s0, state));
-                            }
-                        }
-                        // Modify the name.
-                        else {
-                            let mut name = exporter.metadata.title.clone();
-                            if input.modify_string_abc123(&mut name) {
-                                let c0 = vec![Command::SetExporter {
-                                    exporter: Box::new(exporter.clone()),
-                                }];
-                                exporter.metadata.title = name;
-                                let c1 = vec![Command::SetExporter {
-                                    exporter: Box::new(exporter.clone()),
-                                }];
-                                let snapshot = Some(Snapshot::from_commands(c0, &c1));
-                                conn.send(c1);
-                                return snapshot;
-                            }
-                        }
-                    }
-                    // Enable input.
-                    else if input.happened(&InputEvent::ToggleAlphanumericInput) {
-                        return Self::enable_alphanumeric_input(state);
-                    }
+                    return edit_string(|e| &mut e.metadata.title, input, conn, state, exporter);
                 }
             }
             None
