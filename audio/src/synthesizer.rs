@@ -1,47 +1,14 @@
-use crate::{AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState, TimeState};
-use common::chrono::prelude::*;
-use common::export_settings::*;
+use crate::exporter::*;
+use crate::{
+    AudioBuffer, AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState,
+    TimeState,
+};
 use common::hashbrown::HashMap;
 use crossbeam_channel::{Receiver, Sender};
-use hound::*;
-use id3::*;
-use mp3lame_encoder::*;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use std::fs::File;
 use std::path::PathBuf;
 
-const MP3_BIT_RATES: [Bitrate; 16] = [
-    Bitrate::Kbps8,
-    Bitrate::Kbps16,
-    Bitrate::Kbps24,
-    Bitrate::Kbps32,
-    Bitrate::Kbps40,
-    Bitrate::Kbps48,
-    Bitrate::Kbps64,
-    Bitrate::Kbps80,
-    Bitrate::Kbps96,
-    Bitrate::Kbps112,
-    Bitrate::Kbps128,
-    Bitrate::Kbps160,
-    Bitrate::Kbps192,
-    Bitrate::Kbps224,
-    Bitrate::Kbps256,
-    Bitrate::Kbps320,
-];
-const MP3_QUALITIES: [Quality; 10] = [
-    Quality::Best,
-    Quality::SecondBest,
-    Quality::NearBest,
-    Quality::VeryNice,
-    Quality::Nice,
-    Quality::Good,
-    Quality::Decent,
-    Quality::Ok,
-    Quality::SecondWorst,
-    Quality::Worst,
-];
-/// Conversion factor for f32 to i16.
-const F32_TO_I16: f32 = 32767.5;
 /// Export this many bytes per decay chunk.
 const DECAY_CHUNK_SIZE: usize = 2048;
 ///  Oxisynth usually doesn't zero out its audio. This is essentially an epsilon.
@@ -100,10 +67,10 @@ pub(crate) struct Synthesizer {
     export_state: Option<ExportState>,
     /// The export file path.
     export_path: Option<PathBuf>,
-    /// The export settings.
-    export_settings: ExportSettings,
+    /// The exporter.
+    exporter: Exporter,
     /// The buffer that the exporter writes to.
-    export_buffer: [Vec<f32>; 2],
+    export_buffer: AudioBuffer,
     /// If true, we need to send the export state.
     send_export_state: bool,
 }
@@ -132,7 +99,7 @@ impl Synthesizer {
             state: SynthState::default(),
             export_path: None,
             export_state: None,
-            export_settings: ExportSettings::new(),
+            exporter: Exporter::new(),
             send_export_state: false,
             export_buffer: [vec![], vec![]],
         };
@@ -299,8 +266,10 @@ impl Synthesizer {
                                 }
                                 // Send the export state.
                                 Command::SendExportState => s.send_export_state = true,
-                                // Set the MP3 export settings.
-                                Command::SetMP3 { mp3 } => s.export_settings.mp3 = *mp3,
+                                // Set the exporter.
+                                Command::SetExporter { exporter } => {
+                                    s.exporter = exporter.as_ref().clone()
+                                }
                             }
                         }
                         // Try to send the state.
@@ -353,74 +322,22 @@ impl Synthesizer {
                         }
                         // We're done!
                         if !decaying {
-                            match EXPORT_TYPES[s.export_settings.export_type.get()] {
+                            match EXPORT_TYPES[s.exporter.export_type.get()] {
                                 ExportType::Mid => {
                                     panic!("Tried exporting a .mid from the synthesizer")
                                 }
                                 // Export to a .wav file.
                                 ExportType::Wav => {
-                                    s.write_wav();
-                                    let tag = s.get_tag();
-                                    let path = s.export_path.as_ref().unwrap();
-                                    if let Err(error) = tag.write_to_wav_path(path, Version::Id3v24)
-                                    {
-                                        panic!("Error writing ID3 tag to {:?}: {}", path, error);
-                                    }
+                                    s.exporter
+                                        .wav(s.export_path.as_ref().unwrap(), &s.export_buffer);
                                 }
                                 ExportType::MP3 => {
-                                    // Create the encoder.
-                                    let mut mp3_encoder =
-                                        Builder::new().expect("Create LAME builder");
-                                    mp3_encoder.set_num_channels(2).expect("set channels");
-                                    mp3_encoder
-                                        .set_sample_rate(s.export_settings.framerate.get_u() as u32)
-                                        .expect("set sample rate");
-                                    mp3_encoder
-                                        .set_brate(
-                                            MP3_BIT_RATES[s.export_settings.mp3.bit_rate.get()],
-                                        )
-                                        .expect("set bitrate");
-                                    mp3_encoder
-                                        .set_quality(
-                                            MP3_QUALITIES[s.export_settings.mp3.quality.get()],
-                                        )
-                                        .expect("set quality");
-                                    // Build the encoder.
-                                    let mut mp3_encoder =
-                                        mp3_encoder.build().expect("To initialize LAME encoder");
-                                    // Get the input.
-                                    let input = DualPcm {
-                                        left: &s.export_buffer[0],
-                                        right: &s.export_buffer[1],
-                                    };
-                                    // Get the output buffer.
-                                    let mut mp3_out_buffer = Vec::new();
-                                    mp3_out_buffer.reserve(max_required_buffer_size(
-                                        s.export_buffer[0].len(),
-                                    ));
-                                    // Get the size.
-                                    let encoded_size = mp3_encoder
-                                        .encode(input, mp3_out_buffer.spare_capacity_mut())
-                                        .expect("To encode");
-                                    unsafe {
-                                        mp3_out_buffer.set_len(
-                                            mp3_out_buffer.len().wrapping_add(encoded_size),
-                                        );
-                                    }
-                                    let encoded_size = mp3_encoder
-                                        .flush::<FlushNoGap>(mp3_out_buffer.spare_capacity_mut())
-                                        .expect("to flush");
-                                    unsafe {
-                                        mp3_out_buffer.set_len(
-                                            mp3_out_buffer.len().wrapping_add(encoded_size),
-                                        );
-                                    }
-                                    let tag = s.get_tag();
-                                    let path = s.export_path.as_ref().unwrap();
-                                    if let Err(error) = tag.write_to_path(path, Version::Id3v24) {
-                                        panic!("Error writing ID3 tag to {:?}: {}", path, error);
-                                    }
+                                    s.exporter
+                                        .mp3(s.export_path.as_ref().unwrap(), &s.export_buffer);
                                 }
+                                ExportType::Ogg => s
+                                    .exporter
+                                    .ogg(s.export_path.as_ref().unwrap(), &s.export_buffer),
                             }
                             // Stop exporting.
                             s.export_state = None;
@@ -578,56 +495,4 @@ impl Synthesizer {
             .program_select(channel, id, bank, preset)
             .unwrap();
     }
-
-    fn write_wav(&self) {
-        // Get the path.
-        let path = self.export_path.as_ref().unwrap().to_str().unwrap();
-        // Get the spec.
-        let spec = WavSpec {
-            channels: 2,
-            sample_rate: self.export_settings.framerate.get_u() as u32,
-            bits_per_sample: 16,
-            sample_format: SampleFormat::Int,
-        };
-        // Write.
-        let mut writer = WavWriter::create(path, spec).unwrap();
-        let mut i16_writer = writer.get_i16_writer(self.export_buffer[0].len() as u32 * 2);
-        for (l, r) in self.export_buffer[0]
-            .iter()
-            .zip(self.export_buffer[1].iter())
-        {
-            i16_writer.write_sample(to_i16(l));
-            i16_writer.write_sample(to_i16(r));
-        }
-        i16_writer.flush().unwrap();
-        writer.finalize().unwrap();
-    }
-
-    fn get_tag(&self) -> Tag {
-        let time = Local::now();
-        let mut tag = Tag::new();
-        tag.set_year(time.year());
-        tag.set_title(&self.export_settings.metadata.title);
-        if let Some(artist) = &self.export_settings.metadata.artist {
-            tag.set_artist(artist);
-        }
-        if let Some(album) = &self.export_settings.metadata.album {
-            tag.set_album(album);
-        }
-        if let Some(genre) = &self.export_settings.metadata.genre {
-            tag.set_genre(genre);
-        }
-        if let Some(comment) = &self.export_settings.metadata.comment {
-            tag.set_genre(comment);
-        }
-        if let Some(track_number) = &self.export_settings.metadata.track_number {
-            tag.set_track(*track_number);
-        }
-        tag
-    }
-}
-
-/// Converts an f32 sample to an i16 sample.
-fn to_i16(sample: &f32) -> i16 {
-    (sample * F32_TO_I16).floor() as i16
 }

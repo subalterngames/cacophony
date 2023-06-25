@@ -68,6 +68,7 @@ impl Panel for Time {
         _: &mut TTS,
         _: &Text,
         _: &mut PathsState,
+        _: &mut Exporter,
     ) -> Option<Snapshot> {
         // Do nothing if there is no track.
         if state.music.selected.is_none() {

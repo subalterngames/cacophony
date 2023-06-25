@@ -23,6 +23,8 @@ impl U64orF32 {
     }
 }
 
+impl Eq for U64orF32 {}
+
 impl From<u64> for U64orF32 {
     fn from(value: u64) -> Self {
         Self {

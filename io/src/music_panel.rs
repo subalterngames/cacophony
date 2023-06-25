@@ -53,7 +53,8 @@ impl Panel for MusicPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-        paths_state: &mut PathsState,
+        _: &mut PathsState,
+        exporter: &mut Exporter,
     ) -> Option<Snapshot> {
         // Cycle fields.
         if input.happened(&InputEvent::NextMusicPanelField) {
@@ -66,7 +67,7 @@ impl Panel for MusicPanel {
             tts.say(&text.get_with_values(
                 "MUSIC_PANEL_STATUS_TTS",
                 &[
-                    &paths_state.export_settings.metadata.title,
+                    &exporter.metadata.title,
                     &state.time.bpm.to_string(),
                     &conn.state.gain.to_string(),
                 ],
@@ -173,17 +174,38 @@ impl Panel for MusicPanel {
                         // Stop editing the name.
                         if input.happened(&InputEvent::ToggleAlphanumericInput) {
                             let s0 = state.clone();
-                            if paths_state.export_settings.metadata.title.is_empty() {
-                                paths_state.export_settings.metadata.title = "My Music".to_string();
-                            }
                             state.input.alphanumeric_input = false;
-                            return Some(Snapshot::from_states(s0, state));
-                        } else {
-                            let mut name = paths_state.export_settings.metadata.title.clone();
-                            if input.modify_string_abc123(&mut name) {
-                                let s0 = state.clone();
-                                paths_state.export_settings.metadata.title = name;
+                            // Don't allow an empty name.
+                            if exporter.metadata.title.is_empty() {
+                                let c0 = vec![Command::SetExporter {
+                                    exporter: Box::new(exporter.clone()),
+                                }];
+                                exporter.metadata.title = "My Music".to_string();
+                                let c1 = vec![Command::SetExporter {
+                                    exporter: Box::new(exporter.clone()),
+                                }];
+                                let snapshot =
+                                    Some(Snapshot::from_states_and_commands(s0, state, c0, &c1));
+                                conn.send(c1);
+                                return snapshot;
+                            } else {
                                 return Some(Snapshot::from_states(s0, state));
+                            }
+                        }
+                        // Modify the name.
+                        else {
+                            let mut name = exporter.metadata.title.clone();
+                            if input.modify_string_abc123(&mut name) {
+                                let c0 = vec![Command::SetExporter {
+                                    exporter: Box::new(exporter.clone()),
+                                }];
+                                exporter.metadata.title = name;
+                                let c1 = vec![Command::SetExporter {
+                                    exporter: Box::new(exporter.clone()),
+                                }];
+                                let snapshot = Some(Snapshot::from_commands(c0, &c1));
+                                conn.send(c1);
+                                return snapshot;
                             }
                         }
                     }

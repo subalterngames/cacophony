@@ -126,6 +126,7 @@ impl Drawable for MainMenu {
         _: &Input,
         _: &Text,
         _: &PathsState,
+        _: &Exporter,
     ) {
         self.panel.update_ex(&COLOR, renderer);
         for label in self.labels.iter() {

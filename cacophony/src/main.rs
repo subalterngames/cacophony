@@ -1,4 +1,5 @@
 use audio::connect;
+use audio::exporter::Exporter;
 use common::config::{load, parse_bool};
 use common::macroquad;
 use common::macroquad::prelude::*;
@@ -42,6 +43,8 @@ async fn main() {
     // Create the paths state.
     let mut paths_state = PathsState::new(&paths);
 
+    let mut exporter = Exporter::new();
+
     // Get the IO state.
     let mut io = IO::new(&config, &input, &state.input, &text);
 
@@ -71,7 +74,15 @@ async fn main() {
         clear_background(clear_color);
 
         // Draw.
-        panels.update(&renderer, &state, &conn, &input, &text, &paths_state);
+        panels.update(
+            &renderer,
+            &state,
+            &conn,
+            &input,
+            &text,
+            &paths_state,
+            &exporter,
+        );
 
         // Draw subtitles.
         draw_subtitles(&renderer, &tts);
@@ -89,6 +100,7 @@ async fn main() {
                 &mut tts,
                 &text,
                 &mut paths_state,
+                &mut exporter,
             );
         }
 

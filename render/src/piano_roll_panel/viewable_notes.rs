@@ -1,5 +1,5 @@
 use crate::panel::*;
-use common::export_settings::ExportSettings;
+use audio::exporter::Exporter;
 use common::*;
 
 /// A viewable note.
@@ -36,10 +36,10 @@ impl<'a> ViewableNotes<'a> {
         conn: &Conn,
         focus: bool,
         dn: [u8; 2],
-        export: &ExportSettings,
+        exporter: &Exporter,
     ) -> Self {
         match state.music.get_selected_track() {
-            Some(track) => Self::new_from_track(xw, track, state, conn, export, focus, dn),
+            Some(track) => Self::new_from_track(xw, track, state, conn, exporter, focus, dn),
             None => Self {
                 x: xw[0],
                 w: xw[1],
@@ -54,7 +54,7 @@ impl<'a> ViewableNotes<'a> {
         track: &'a MidiTrack,
         state: &'a State,
         conn: &Conn,
-        export: &ExportSettings,
+        exporter: &Exporter,
         focus: bool,
         dn: [u8; 2],
     ) -> Self {
@@ -64,7 +64,7 @@ impl<'a> ViewableNotes<'a> {
                 .state
                 .time
                 .time
-                .map(|time| state.time.samples_to_ppq(time, export.framerate.get_f())),
+                .map(|time| state.time.samples_to_ppq(time, exporter.framerate.get_f())),
             false => None,
         };
 

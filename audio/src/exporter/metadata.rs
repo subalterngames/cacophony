@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Export metadata.
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Metadata {
     /// The title of the music.
     pub title: String,

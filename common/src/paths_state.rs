@@ -1,4 +1,3 @@
-use crate::export_settings::*;
 use crate::open_file::*;
 use crate::{Index, Paths};
 use serde::{Deserialize, Serialize};
@@ -17,8 +16,6 @@ pub struct PathsState {
     pub saves: FileAndDirectory,
     /// When the user wants to export a file, it will be exported to this path.
     pub exports: FileAndDirectory,
-    /// The export settings.
-    pub export_settings: ExportSettings,
     /// The child paths within the current working directory.
     #[serde(skip_serializing, skip_deserializing)]
     pub children: ChildPaths,
@@ -32,12 +29,10 @@ impl PathsState {
         let soundfonts = FileAndDirectory::new_directory(paths.soundfonts_directory.clone());
         let saves = FileAndDirectory::new_directory(paths.saves_directory.clone());
         let exports = FileAndDirectory::new_directory(paths.export_directory.clone());
-        let export_settings = ExportSettings::new();
         Self {
             soundfonts,
             saves,
             exports,
-            export_settings,
             ..Default::default()
         }
     }

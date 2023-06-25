@@ -69,6 +69,7 @@ impl Drawable for TracksPanel {
         _: &Input,
         text: &Text,
         _: &PathsState,
+        _: &Exporter,
     ) {
         // Get the focus,
         let focus = self.panel.has_focus(state);

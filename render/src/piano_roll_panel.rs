@@ -174,6 +174,7 @@ impl Drawable for PianoRollPanel {
         _: &Input,
         text: &Text,
         paths_state: &PathsState,
+        exporter: &Exporter,
     ) {
         let panel = if state.view.single_track {
             &self.panel_single_track
@@ -273,7 +274,7 @@ impl Drawable for PianoRollPanel {
                 conn,
                 focus,
                 state.view.dn,
-                &paths_state.export_settings,
+                exporter,
             );
 
             // Draw the selection background.
@@ -319,7 +320,8 @@ impl Drawable for PianoRollPanel {
         }
         // Multi-track.
         else {
-            self.multi_track.update(renderer, state, conn, paths_state);
+            self.multi_track
+                .update(renderer, state, conn, paths_state, exporter);
         }
 
         // Draw time lines.

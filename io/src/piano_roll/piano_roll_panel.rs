@@ -131,6 +131,7 @@ impl Panel for PianoRollPanel {
         tts: &mut TTS,
         text: &Text,
         paths_state: &mut PathsState,
+        exporter: &mut Exporter,
     ) -> Option<Snapshot> {
         // Do nothing.
         if state.music.selected.is_none() {
@@ -468,13 +469,22 @@ impl Panel for PianoRollPanel {
             // Sub-panel actions.
             let mode = state.piano_roll_mode;
             match mode {
-                PianoRollMode::Edit => self.edit.update(state, conn, input, tts, text, paths_state),
+                PianoRollMode::Edit => {
+                    self.edit
+                        .update(state, conn, input, tts, text, paths_state, exporter)
+                }
                 PianoRollMode::Select => {
                     self.select
-                        .update(state, conn, input, tts, text, paths_state)
+                        .update(state, conn, input, tts, text, paths_state, exporter)
                 }
-                PianoRollMode::Time => self.time.update(state, conn, input, tts, text, paths_state),
-                PianoRollMode::View => self.view.update(state, conn, input, tts, text, paths_state),
+                PianoRollMode::Time => {
+                    self.time
+                        .update(state, conn, input, tts, text, paths_state, exporter)
+                }
+                PianoRollMode::View => {
+                    self.view
+                        .update(state, conn, input, tts, text, paths_state, exporter)
+                }
             }
         }
     }

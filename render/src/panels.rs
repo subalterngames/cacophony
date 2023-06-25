@@ -54,7 +54,9 @@ impl Panels {
     /// - `conn` The synthesizer-player connection.
     /// - `input` Input events, key presses, etc.
     /// - `text` The text.
-    /// - `open_file` The open-file context.
+    /// - `paths_state` The state of the file paths.
+    /// - `exporter` The exporter.
+    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &self,
         renderer: &Renderer,
@@ -63,10 +65,11 @@ impl Panels {
         input: &Input,
         text: &Text,
         paths_state: &PathsState,
+        exporter: &Exporter,
     ) {
         // Draw the main panel.
         self.main_menu
-            .update(renderer, state, conn, input, text, paths_state);
+            .update(renderer, state, conn, input, text, paths_state, exporter);
         for panel_type in &state.panels {
             // Get the panel.
             let panel: &dyn Drawable = match panel_type {
@@ -78,7 +81,7 @@ impl Panels {
                 PanelType::Export => &self.export_panel,
             };
             // Draw the panel.
-            panel.update(renderer, state, conn, input, text, paths_state);
+            panel.update(renderer, state, conn, input, text, paths_state, exporter);
         }
     }
 

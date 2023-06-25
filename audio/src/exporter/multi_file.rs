@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// How should we name files of separate tracks?
-#[derive(Clone, Default, Deserialize, Serialize)]
+#[derive(Clone, Default, PartialEq, Eq, Deserialize, Serialize)]
 pub enum MultiFile {
     /// Preset name suffix.
     Preset,

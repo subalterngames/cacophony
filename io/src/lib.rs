@@ -15,8 +15,8 @@
 //! `IO` divides input listening into discrete panels, e.g. the music panel and the tracks panel.
 //! Each panel implements the `Panel` trait.
 
+use audio::exporter::*;
 use audio::{Command, CommandsMessage, Conn, ExportState};
-use common::export_settings::*;
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::{InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, State, MAX_VOLUME};
@@ -45,7 +45,6 @@ use save::Save;
 use snapshot::Snapshot;
 use tooltip::*;
 use tracks_panel::TracksPanel;
-mod mid;
 
 /// The maximum size of the undo stack.
 const MAX_UNDOS: usize = 100;
@@ -123,6 +122,7 @@ impl IO {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         state: &mut State,
@@ -131,6 +131,7 @@ impl IO {
         tts: &mut TTS,
         text: &Text,
         paths_state: &mut PathsState,
+        exporter: &mut Exporter,
     ) -> bool {
         // Quit.
         if input.happened(&InputEvent::Quit) {
@@ -178,7 +179,7 @@ impl IO {
         else if input.happened(&InputEvent::SaveFile) {
             match &paths_state.saves.try_get_path() {
                 // Save to the existing path,
-                Some(path) => Save::write(path, state, conn, paths_state),
+                Some(path) => Save::write(path, state, conn, paths_state, exporter),
                 // Set a new path.
                 None => self.open_file_panel.write_save(state, paths_state),
             }
@@ -193,7 +194,7 @@ impl IO {
             if conn.export_state.is_none() {
                 match &paths_state.exports.try_get_path() {
                     // Export.
-                    Some(path) => self.export(path, state, conn, &paths_state.export_settings),
+                    Some(path) => self.export(path, state, conn, exporter),
                     // Get a file path.
                     None => self.open_file_panel.export(state, paths_state),
                 }
@@ -265,24 +266,25 @@ impl IO {
 
         // Listen to the focused panel.
         let resp = match state.panels[state.focus.get()] {
-            PanelType::Music => self
-                .music_panel
-                .update(state, conn, input, tts, text, paths_state),
+            PanelType::Music => {
+                self.music_panel
+                    .update(state, conn, input, tts, text, paths_state, exporter)
+            }
             PanelType::Tracks => {
                 self.tracks_panel
-                    .update(state, conn, input, tts, text, paths_state)
+                    .update(state, conn, input, tts, text, paths_state, exporter)
             }
             PanelType::OpenFile => {
                 self.open_file_panel
-                    .update(state, conn, input, tts, text, paths_state)
+                    .update(state, conn, input, tts, text, paths_state, exporter)
             }
             PanelType::PianoRoll => {
                 self.piano_roll_panel
-                    .update(state, conn, input, tts, text, paths_state)
+                    .update(state, conn, input, tts, text, paths_state, exporter)
             }
             PanelType::Export => {
                 self.export_panel
-                    .update(state, conn, input, tts, text, paths_state)
+                    .update(state, conn, input, tts, text, paths_state, exporter)
             }
             PanelType::MainMenu => panic!("This should never happen!"),
         };
@@ -306,9 +308,7 @@ impl IO {
                             }
                         },
                         // Export.
-                        IOCommand::Export(path) => {
-                            self.export(path, state, conn, &paths_state.export_settings)
-                        }
+                        IOCommand::Export(path) => self.export(path, state, conn, exporter),
                     }
                 }
             }
@@ -336,12 +336,12 @@ impl IO {
     /// - `path` The output path.
     /// - `state` The state.
     /// - `conn` The audio conn.
-    /// - `export` The export settings.
-    fn export(&mut self, path: &Path, state: &mut State, conn: &mut Conn, export: &ExportSettings) {
+    /// - `exporter` The exporter.
+    fn export(&mut self, path: &Path, state: &mut State, conn: &mut Conn, exporter: &Exporter) {
         // Enable the export panel.
         self.export_panel.enable(state);
         // Get commands and an end time.
-        let (track_commands, t1) = tracks_to_commands(state, export.framerate.get_f());
+        let (track_commands, t1) = tracks_to_commands(state, exporter.framerate.get_f());
         // Define the export state.
         let export_state: ExportState = ExportState::new(t1);
         conn.export_state = Some(export_state);
@@ -354,10 +354,6 @@ impl IO {
                 state: export_state,
             },
         ];
-        // MP3 settings.
-        if EXPORT_TYPES[export.export_type.get()] == ExportType::MP3 {
-            commands.push(Command::SetMP3 { mp3: export.mp3 })
-        }
         commands.extend(track_commands);
         // Send the commands.
         conn.send(commands);

@@ -1,4 +1,5 @@
 pub(crate) use crate::Renderer;
+pub(crate) use audio::exporter::Exporter;
 pub(crate) use audio::Conn;
 pub(crate) use common::{PathsState, State};
 pub(crate) use input::Input;
@@ -13,7 +14,9 @@ pub(crate) trait Drawable {
     /// - `conn` The synthesizer-player connection.
     /// - `input` Input events, key presses, etc.
     /// - `text` The text.
-    /// - `open_file` The open-file context.
+    /// - `paths_state` The file paths state.
+    /// - `exporter` The exporter state.
+    #[allow(clippy::too_many_arguments)]
     fn update(
         &self,
         renderer: &Renderer,
@@ -22,5 +25,6 @@ pub(crate) trait Drawable {
         input: &Input,
         text: &Text,
         paths_state: &PathsState,
+        exporter: &Exporter,
     );
 }
