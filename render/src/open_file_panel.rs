@@ -1,7 +1,6 @@
 use crate::get_page;
 use crate::panel::*;
 use crate::Popup;
-use audio::exporter::ExportType;
 use common::open_file::*;
 use text::truncate;
 
@@ -152,15 +151,11 @@ impl Drawable for OpenFilePanel {
 
             // Draw the extension.
             let mut extension = String::from(".");
+            let e = exporter.export_type.get();
             let ext = match paths_state.open_file_type {
                 OpenFileType::ReadSave | OpenFileType::WriteSave => ".cac",
                 OpenFileType::SoundFont => ".sf2",
-                OpenFileType::Export => match exporter.export_type.get() {
-                    ExportType::Wav => ".wav",
-                    ExportType::Mid => ".mid",
-                    ExportType::MP3 => ".mp3",
-                    ExportType::Ogg => ".ogg",
-                },
+                OpenFileType::Export => e.get_extension(true),
             };
             extension.push_str(ext);
             renderer.text(&self.extension.to_label(&extension), &ColorKey::Arrow);

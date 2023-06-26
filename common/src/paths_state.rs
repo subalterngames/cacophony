@@ -56,13 +56,13 @@ impl PathsState {
     }
 
     /// Try to go up a directory.
-    pub fn up_directory(&mut self) -> bool {
+    pub fn up_directory(&mut self, extensions: &[String]) -> bool {
         match self.open_file_type {
             OpenFileType::Export => match &self.exports.directory.parent() {
                 Some(parent) => {
                     self.children.set(
                         &self.exports.directory,
-                        &self.open_file_type,
+                        extensions,
                         Some(parent.to_path_buf()),
                     );
                     self.exports.directory = parent.to_path_buf();
@@ -75,7 +75,7 @@ impl PathsState {
                     Some(parent) => {
                         self.children.set(
                             &self.saves.directory,
-                            &self.open_file_type,
+                            extensions,
                             Some(parent.to_path_buf()),
                         );
                         self.saves.directory = parent.to_path_buf();
@@ -88,7 +88,7 @@ impl PathsState {
                 Some(parent) => {
                     self.children.set(
                         &self.soundfonts.directory,
-                        &self.open_file_type,
+                        extensions,
                         Some(parent.to_path_buf()),
                     );
                     self.soundfonts.directory = parent.to_path_buf();
@@ -100,7 +100,7 @@ impl PathsState {
     }
 
     /// Try to go down a directory.
-    pub fn down_directory(&mut self) -> bool {
+    pub fn down_directory(&mut self, extensions: &[String]) -> bool {
         if self.children.children.is_empty() {
             false
         } else {
@@ -118,7 +118,7 @@ impl PathsState {
                         };
                         let cwd1 = self.children.children[*selected].path.clone();
                         // Set the children.
-                        self.children.set(&cwd1, &self.open_file_type, Some(cwd0));
+                        self.children.set(&cwd1, extensions, Some(cwd0));
                         // Set the directory.
                         match &self.open_file_type {
                             OpenFileType::Export => self.exports.directory = cwd1,

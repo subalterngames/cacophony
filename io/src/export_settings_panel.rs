@@ -25,7 +25,7 @@ enum ExportSetting {
     OggQuality,
 }
 
-pub struct ExportSettingsPanel {
+pub(crate) struct ExportSettingsPanel {
     mid_settings: IndexedValues<ExportSetting, 3>,
     wav_settings: IndexedValues<ExportSetting, 2>,
     mp3_settings: IndexedValues<ExportSetting, 10>,

@@ -6,12 +6,24 @@ use common::PanelType;
 use text::{get_file_name_no_ex, get_folder_name};
 
 /// Data for an open-file panel.
-#[derive(Default)]
 pub struct OpenFilePanel {
     /// The index of the previously-focused panel.
     previous_focus: Index,
     /// The previously-active panels.
     previous_panels: Vec<PanelType>,
+    soundfont_extensions: Vec<String>,
+    save_file_extensions: Vec<String>,
+}
+
+impl Default for OpenFilePanel {
+    fn default() -> Self {
+        Self {
+            previous_focus: Index::default(),
+            previous_panels: vec![],
+            soundfont_extensions: vec![".sf2".to_string(), ".sf3".to_string()],
+            save_file_extensions: vec![".cac".to_string()],
+        }
+    }
 }
 
 impl OpenFilePanel {
@@ -39,9 +51,11 @@ impl OpenFilePanel {
     /// Enable the panel for loading SoundFonts.
     pub fn soundfont(&mut self, state: &mut State, paths_state: &mut PathsState) {
         let open_file_type = OpenFileType::SoundFont;
-        paths_state
-            .children
-            .set(&paths_state.soundfonts.directory, &open_file_type, None);
+        paths_state.children.set(
+            &paths_state.soundfonts.directory,
+            &self.soundfont_extensions,
+            None,
+        );
         self.enable(open_file_type, state, paths_state);
     }
 
@@ -56,12 +70,24 @@ impl OpenFilePanel {
     }
 
     /// Enable a panel for setting the export path.
-    pub fn export(&mut self, state: &mut State, paths_state: &mut PathsState) {
+    pub fn export(&mut self, state: &mut State, paths_state: &mut PathsState, exporter: &Exporter) {
         let open_file_type = OpenFileType::Export;
-        paths_state
-            .children
-            .set(&paths_state.exports.directory, &open_file_type, None);
+        paths_state.children.set(
+            &paths_state.exports.directory,
+            &[exporter.export_type.get().get_extension(true).to_string()],
+            None,
+        );
         self.enable(open_file_type, state, paths_state);
+    }
+
+    fn get_extensions(&self, paths_state: &PathsState, exporter: &Exporter) -> Vec<String> {
+        match paths_state.open_file_type {
+            OpenFileType::Export => {
+                vec![exporter.export_type.get().get_extension(true).to_string()]
+            }
+            OpenFileType::ReadSave | OpenFileType::WriteSave => self.save_file_extensions.clone(),
+            OpenFileType::SoundFont => self.soundfont_extensions.clone(),
+        }
     }
 
     fn enable_as_save(
@@ -70,9 +96,11 @@ impl OpenFilePanel {
         state: &mut State,
         paths_state: &mut PathsState,
     ) {
-        paths_state
-            .children
-            .set(&paths_state.saves.directory, &open_file_type, None);
+        paths_state.children.set(
+            &paths_state.saves.directory,
+            &self.save_file_extensions,
+            None,
+        );
         self.enable(open_file_type, state, paths_state);
     }
 
@@ -224,11 +252,11 @@ impl Panel for OpenFilePanel {
         }
         // Go up a directory.
         else if input.happened(&InputEvent::UpDirectory) {
-            paths_state.up_directory();
+            paths_state.up_directory(&self.get_extensions(paths_state, exporter));
         }
         // Go down a directory.
         else if input.happened(&InputEvent::DownDirectory) {
-            paths_state.down_directory();
+            paths_state.down_directory(&self.get_extensions(paths_state, exporter));
         }
         // Scroll up.
         else if input.happened(&InputEvent::PreviousPath) {

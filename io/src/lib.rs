@@ -197,7 +197,7 @@ impl IO {
                     // Export.
                     Some(path) => self.export(path, state, conn, exporter),
                     // Get a file path.
-                    None => self.open_file_panel.export(state, paths_state),
+                    None => self.open_file_panel.export(state, paths_state, exporter),
                 }
             }
         }
@@ -297,7 +297,9 @@ impl IO {
                     match command {
                         // Enable the open-file panel.
                         IOCommand::EnableOpenFile(open_file_type) => match open_file_type {
-                            OpenFileType::Export => self.open_file_panel.export(state, paths_state),
+                            OpenFileType::Export => {
+                                self.open_file_panel.export(state, paths_state, exporter)
+                            }
                             OpenFileType::ReadSave => {
                                 self.open_file_panel.read_save(state, paths_state)
                             }
