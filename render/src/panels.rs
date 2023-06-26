@@ -78,7 +78,7 @@ impl Panels {
                 PanelType::Tracks => &self.tracks_panel,
                 PanelType::OpenFile => &self.open_file_panel,
                 PanelType::PianoRoll => &self.piano_roll_panel,
-                PanelType::Export => &self.export_panel,
+                PanelType::ExportState => &self.export_panel,
             };
             // Draw the panel.
             panel.update(renderer, state, conn, input, text, paths_state, exporter);

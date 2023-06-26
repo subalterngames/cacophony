@@ -283,7 +283,7 @@ impl IO {
                 self.piano_roll_panel
                     .update(state, conn, input, tts, text, paths_state, exporter)
             }
-            PanelType::Export => {
+            PanelType::ExportState => {
                 self.export_panel
                     .update(state, conn, input, tts, text, paths_state, exporter)
             }

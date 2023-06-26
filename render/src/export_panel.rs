@@ -17,8 +17,8 @@ impl ExportPanel {
         let y = window_grid_size[1] / 2 - 1;
         let w = window_grid_size[0] / 4;
         let x = window_grid_size[0] / 2 - w / 2;
-        let panel = Panel::new(PanelType::Export, [x, y], [w, h], text);
-        let popup = Popup::new(PanelType::Export);
+        let panel = Panel::new(PanelType::ExportState, [x, y], [w, h], text);
+        let popup = Popup::new(PanelType::ExportState);
         Self { panel, popup }
     }
 }

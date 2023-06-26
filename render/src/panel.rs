@@ -26,7 +26,7 @@ impl Panel {
             PanelType::OpenFile => "TITLE_OPEN_FILE",
             PanelType::PianoRoll => "TITLE_PIANO_ROLL",
             PanelType::Tracks => "TITLE_TRACKS",
-            PanelType::Export => "TITLE_EXPORT",
+            PanelType::ExportState => "TITLE_EXPORT",
         };
         let title = text.get(title_key);
         let title_position = [position[0] + 2, position[1]];

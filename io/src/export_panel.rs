@@ -15,7 +15,7 @@ impl ExportPanel {
     pub fn enable(&mut self, state: &mut State) {
         self.panels = state.panels.clone();
         self.focus = state.focus.get();
-        state.panels = vec![PanelType::Export];
+        state.panels = vec![PanelType::ExportState];
         state.focus.set(0);
     }
 }
