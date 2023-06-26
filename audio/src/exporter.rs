@@ -1,4 +1,5 @@
 mod export_type;
+use common::IndexedValues;
 use serde::{Deserialize, Serialize};
 mod metadata;
 mod multi_file;
@@ -78,14 +79,23 @@ pub struct Exporter {
     /// The .ogg file quality index.
     pub ogg_quality: Index,
     /// The export type.
-    pub export_type: Index,
+    pub export_type: IndexedValues<ExportType, 4>,
 }
 
 impl Exporter {
     pub fn new() -> Self {
+        let export_type = IndexedValues::new(
+            0,
+            [
+                ExportType::Wav,
+                ExportType::Mid,
+                ExportType::MP3,
+                ExportType::Ogg,
+            ],
+        );
         Self {
             framerate: U64orF32::from(DEFAULT_FRAMERATE),
-            export_type: Index::new(0, EXPORT_TYPES.len()),
+            export_type,
             mp3_bit_rate: Index::new(8, MP3_BIT_RATES.len()),
             mp3_quality: Index::new(0, MP3_QUALITIES.len()),
             ogg_quality: Index::new(5, 10),

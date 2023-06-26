@@ -444,7 +444,7 @@ pub(crate) fn set_alphanumeric_input(state: &mut State, value: bool) -> Option<S
 ///
 /// Returns a snapshot.
 pub(crate) fn edit_string<F>(
-    mut s: F,
+    mut f: F,
     input: &Input,
     conn: &mut Conn,
     state: &mut State,
@@ -460,7 +460,7 @@ where
             let e0 = Box::new(exporter.clone());
             let s0 = state.clone();
             state.input.alphanumeric_input = false;
-            let s = s(exporter);
+            let s = f(exporter);
             // Don't allow an empty name.
             if s.is_empty() {
                 let c0 = vec![Command::SetExporter { exporter: e0 }];
@@ -482,12 +482,12 @@ where
     }
     // Modify the name.
     else {
-        let mut name = s(exporter).clone();
+        let mut name = f(exporter).clone();
         if input.modify_string_abc123(&mut name) {
             let c0 = vec![Command::SetExporter {
                 exporter: Box::new(exporter.clone()),
             }];
-            *s(exporter) = name;
+            *f(exporter) = name;
             let c1 = vec![Command::SetExporter {
                 exporter: Box::new(exporter.clone()),
             }];

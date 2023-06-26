@@ -122,7 +122,8 @@ impl Panel for OpenFilePanel {
             s.push(' ');
             // Export file type.
             if paths_state.open_file_type == OpenFileType::Export {
-                let export_type = EXPORT_TYPE_STRINGS[exporter.export_type.get()];
+                let e = exporter.export_type.get();
+                let export_type = e.get_extension(false);
                 s.push_str(
                     &text.get_with_values("OPEN_FILE_PANEL_STATUS_TTS_EXPORT", &[export_type]),
                 );
@@ -170,8 +171,9 @@ impl Panel for OpenFilePanel {
             // Set export type.
             if paths_state.open_file_type == OpenFileType::Export {
                 let mut index = exporter.export_type;
-                index.increment(true);
-                let next_export_type = EXPORT_TYPE_STRINGS[index.get()];
+                index.index.increment(true);
+                let e = index.get();
+                let next_export_type = e.get_extension(false);
                 strings.push(get_tooltip_with_values(
                     "OPEN_FILE_PANEL_INPUT_TTS_CYCLE_EXPORT",
                     &[InputEvent::CycleExportType],
@@ -243,7 +245,7 @@ impl Panel for OpenFilePanel {
             let c0 = vec![Command::SetExporter {
                 exporter: Box::new(exporter.clone()),
             }];
-            exporter.export_type.increment(true);
+            exporter.export_type.index.increment(true);
             let c1 = vec![Command::SetExporter {
                 exporter: Box::new(exporter.clone()),
             }];
@@ -318,30 +320,27 @@ impl Panel for OpenFilePanel {
                         self.disable(state);
                         // Append the extension.
                         let mut filename = filename.clone();
-                        match &EXPORT_TYPES[exporter.export_type.get()] {
+                        filename.push_str(exporter.export_type.get().get_extension(true));
+                        match &exporter.export_type.get() {
                             // Export to a .wav file.
                             ExportType::Wav => {
-                                filename.push_str(".wav");
                                 return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
                                     paths_state.exports.directory.join(filename),
                                 )]));
                             }
                             // Export to a .mp3 file.
                             ExportType::MP3 => {
-                                filename.push_str(".mp3");
                                 return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
                                     paths_state.exports.directory.join(filename),
                                 )]));
                             }
                             ExportType::Ogg => {
-                                filename.push_str(".ogg");
                                 return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
                                     paths_state.exports.directory.join(filename),
                                 )]));
                             }
                             // Export to a .mid file.
                             ExportType::Mid => {
-                                filename.push_str(".mid");
                                 exporter.mid(
                                     &paths_state.exports.directory.join(filename),
                                     &state.music,

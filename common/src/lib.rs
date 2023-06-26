@@ -27,6 +27,8 @@ pub use crossbeam_channel;
 pub use csv;
 pub use hashbrown;
 pub use index::Index;
+mod indexed_values;
+pub use indexed_values::IndexedValues;
 pub use ini;
 pub use input_state::InputState;
 pub use macroquad;

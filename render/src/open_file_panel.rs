@@ -1,7 +1,7 @@
 use crate::get_page;
 use crate::panel::*;
 use crate::Popup;
-use audio::exporter::{ExportType, EXPORT_TYPES};
+use audio::exporter::ExportType;
 use common::open_file::*;
 use text::truncate;
 
@@ -155,7 +155,7 @@ impl Drawable for OpenFilePanel {
             let ext = match paths_state.open_file_type {
                 OpenFileType::ReadSave | OpenFileType::WriteSave => ".cac",
                 OpenFileType::SoundFont => ".sf2",
-                OpenFileType::Export => match &EXPORT_TYPES[exporter.export_type.get()] {
+                OpenFileType::Export => match exporter.export_type.get() {
                     ExportType::Wav => ".wav",
                     ExportType::Mid => ".mid",
                     ExportType::MP3 => ".mp3",

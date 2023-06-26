@@ -322,7 +322,7 @@ impl Synthesizer {
                         }
                         // We're done!
                         if !decaying {
-                            match EXPORT_TYPES[s.exporter.export_type.get()] {
+                            match s.exporter.export_type.get() {
                                 ExportType::Mid => {
                                     panic!("Tried exporting a .mid from the synthesizer")
                                 }

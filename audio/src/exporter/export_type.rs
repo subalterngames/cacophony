@@ -1,16 +1,49 @@
+use serde::{Deserialize, Serialize};
+
 /// This determines what we're exporting to.
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Copy, Clone, Deserialize, Serialize, Default)]
 pub enum ExportType {
+    #[default]
     Wav,
     Mid,
     MP3,
     Ogg,
 }
 
-pub const EXPORT_TYPES: [ExportType; 4] = [
-    ExportType::Wav,
-    ExportType::Mid,
-    ExportType::MP3,
-    ExportType::Ogg,
-];
-pub const EXPORT_TYPE_STRINGS: [&str; 4] = ["wav", "mid", "mp3", "ogg"];
+impl ExportType {
+    /// Returns the file extension associated with the export type.
+    ///
+    /// - `period` If true, the extension starts with a ".", e.g. ".wav".
+    pub fn get_extension(&self, period: bool) -> &str {
+        match self {
+            Self::Wav => {
+                if period {
+                    ".wav"
+                } else {
+                    "wav"
+                }
+            }
+            Self::Mid => {
+                if period {
+                    ".mid"
+                } else {
+                    "mid "
+                }
+            }
+            Self::MP3 => {
+                if period {
+                    ".mp3"
+                } else {
+                    "ogg"
+                }
+            }
+            Self::Ogg => {
+                if period {
+                    ".ogg"
+                } else {
+                    "ogg"
+                }
+            }
+        }
+    }
+}
