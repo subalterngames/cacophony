@@ -23,6 +23,8 @@ use std::io::Read;
 use std::io::{Cursor, Write};
 use std::path::Path;
 use vorbis_encoder::Encoder;
+mod export_setting;
+pub use export_setting::ExportSetting;
 
 /// A MIDI pulse. This just reminds us what we're trying to accomplish.
 const PULSE: u64 = 1;
@@ -75,11 +77,22 @@ pub struct Exporter {
     pub mp3_quality: Index,
     /// The bit rate index.
     pub bit_rate: Index,
-    pub multi_file: MultiFile,
+    /// If true, export to multiple files.
+    pub multi_file: bool,
+    /// Multi-file suffix setting.
+    pub multi_file_suffix: IndexedValues<MultiFile, 3>,
     /// The .ogg file quality index.
     pub ogg_quality: Index,
     /// The export type.
     pub export_type: IndexedValues<ExportType, 4>,
+    /// Export settings for .mid files.
+    pub mid_settings: IndexedValues<ExportSetting, 3>,
+    /// Export settings for .wav files.
+    pub wav_settings: IndexedValues<ExportSetting, 4>,
+    /// Export settings for .mp3 files.
+    pub mp3_settings: IndexedValues<ExportSetting, 12>,
+    /// Export settings for .ogg files.
+    pub ogg_settings: IndexedValues<ExportSetting, 11>,
 }
 
 impl Exporter {
@@ -93,12 +106,68 @@ impl Exporter {
                 ExportType::Ogg,
             ],
         );
+        let mid_settings = IndexedValues::new(
+            0,
+            [
+                ExportSetting::Title,
+                ExportSetting::Artist,
+                ExportSetting::Copyright,
+            ],
+        );
+        let wav_settings = IndexedValues::new(
+            0,
+            [
+                ExportSetting::Framerate,
+                ExportSetting::Title,
+                ExportSetting::MultiFile,
+                ExportSetting::MultiFileSuffix,
+            ],
+        );
+        let mp3_settings = IndexedValues::new(
+            0,
+            [
+                ExportSetting::Framerate,
+                ExportSetting::Mp3BitRate,
+                ExportSetting::Mp3Quality,
+                ExportSetting::Title,
+                ExportSetting::Artist,
+                ExportSetting::Copyright,
+                ExportSetting::Album,
+                ExportSetting::TrackNumber,
+                ExportSetting::Genre,
+                ExportSetting::Comment,
+                ExportSetting::MultiFile,
+                ExportSetting::MultiFileSuffix,
+            ],
+        );
+        let ogg_settings = IndexedValues::new(
+            0,
+            [
+                ExportSetting::Framerate,
+                ExportSetting::OggQuality,
+                ExportSetting::Title,
+                ExportSetting::Artist,
+                ExportSetting::Copyright,
+                ExportSetting::Album,
+                ExportSetting::TrackNumber,
+                ExportSetting::Genre,
+                ExportSetting::Comment,
+                ExportSetting::MultiFile,
+                ExportSetting::MultiFileSuffix,
+            ],
+        );
+        let multi_file_suffix = IndexedValues::new(0, [MultiFile::ChannelAndPreset, MultiFile::Preset, MultiFile::Channel]);
         Self {
             framerate: U64orF32::from(DEFAULT_FRAMERATE),
             export_type,
             mp3_bit_rate: Index::new(8, MP3_BIT_RATES.len()),
             mp3_quality: Index::new(0, MP3_QUALITIES.len()),
             ogg_quality: Index::new(5, 10),
+            wav_settings,
+            mid_settings,
+            mp3_settings,
+            ogg_settings,
+            multi_file_suffix,
             ..Default::default()
         }
     }

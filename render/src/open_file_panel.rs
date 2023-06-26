@@ -24,12 +24,7 @@ pub(crate) struct OpenFilePanel {
 
 impl OpenFilePanel {
     pub fn new(config: &Ini, text: &Text) -> Self {
-        let window_grid_size = get_window_grid_size(config);
-        let size = [window_grid_size[0] / 2, window_grid_size[1] / 2];
-        let position = [
-            window_grid_size[0] / 2 - size[0] / 2,
-            window_grid_size[1] / 2 - size[1] / 2,
-        ];
+        let (position, size) = get_open_file_rect(config);
         let panel = Panel::new(PanelType::OpenFile, position, size, text);
 
         let prompt = Rectangle::new(

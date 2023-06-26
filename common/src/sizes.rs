@@ -84,3 +84,14 @@ pub fn get_viewport_size(config: &Ini) -> [u32; 2] {
     let height = piano_roll_panel_size[1] - PIANO_ROLL_PANEL_TOP_BAR_HEIGHT - 2;
     [width, height]
 }
+
+/// Returns the position and dimensions of the open-file panel.
+pub fn get_open_file_rect(config: &Ini) -> ([u32; 2], [u32; 2]) {
+    let window_grid_size = get_window_grid_size(config);
+    let size = [window_grid_size[0] / 2, window_grid_size[1] / 2];
+    let position = [
+        window_grid_size[0] / 2 - size[0] / 2,
+        window_grid_size[1] / 2 - size[1] / 2,
+    ];
+    (position, size)
+}

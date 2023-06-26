@@ -72,6 +72,11 @@ impl Index {
             self.index = index
         }
     }
+
+    /// Returns the length of the value range.
+    pub fn get_length(&self) -> usize {
+        self.length
+    }
 }
 
 impl Default for Index {

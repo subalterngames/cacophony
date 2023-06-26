@@ -9,4 +9,5 @@ pub enum PanelType {
     PianoRoll,
     OpenFile,
     ExportState,
+    ExportSettings,
 }

@@ -4,82 +4,12 @@ use audio::exporter::*;
 use audio::{Command, Conn};
 use common::{IndexedValues, U64orF32};
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 const FRAMERATES: [u64; 3] = [22050, 44100, 48000];
 
-/// Enum values for export settings.
-#[derive(Eq, PartialEq, Copy, Clone, Default, Deserialize, Serialize)]
-enum ExportSetting {
-    #[default]
-    Framerate,
-    Title,
-    Artist,
-    Copyright,
-    Album,
-    TrackNumber,
-    Genre,
-    Comment,
-    Mp3BitRate,
-    Mp3Quality,
-    OggQuality,
-}
-
-pub(crate) struct ExportSettingsPanel {
-    mid_settings: IndexedValues<ExportSetting, 3>,
-    wav_settings: IndexedValues<ExportSetting, 2>,
-    mp3_settings: IndexedValues<ExportSetting, 10>,
-    ogg_settings: IndexedValues<ExportSetting, 9>,
-}
-
-impl Default for ExportSettingsPanel {
-    fn default() -> Self {
-        let mid_settings = IndexedValues::new(
-            0,
-            [
-                ExportSetting::Title,
-                ExportSetting::Artist,
-                ExportSetting::Copyright,
-            ],
-        );
-        let wav_settings = IndexedValues::new(0, [ExportSetting::Framerate, ExportSetting::Title]);
-        let mp3_settings = IndexedValues::new(
-            0,
-            [
-                ExportSetting::Framerate,
-                ExportSetting::Mp3BitRate,
-                ExportSetting::Mp3Quality,
-                ExportSetting::Title,
-                ExportSetting::Artist,
-                ExportSetting::Copyright,
-                ExportSetting::Album,
-                ExportSetting::TrackNumber,
-                ExportSetting::Genre,
-                ExportSetting::Comment,
-            ],
-        );
-        let ogg_settings = IndexedValues::new(
-            0,
-            [
-                ExportSetting::Framerate,
-                ExportSetting::OggQuality,
-                ExportSetting::Title,
-                ExportSetting::Artist,
-                ExportSetting::Copyright,
-                ExportSetting::Album,
-                ExportSetting::TrackNumber,
-                ExportSetting::Genre,
-                ExportSetting::Comment,
-            ],
-        );
-        Self {
-            mid_settings,
-            wav_settings,
-            mp3_settings,
-            ogg_settings,
-        }
-    }
-}
+#[derive(Default)]
+pub(crate) struct ExportSettingsPanel {}
 
 impl ExportSettingsPanel {
     fn set_exporter(c0: Vec<Command>, conn: &mut Conn, exporter: &Exporter) -> Option<Snapshot> {
@@ -112,6 +42,21 @@ impl ExportSettingsPanel {
                 text,
             )
         }
+    }
+
+    fn get_status_bool_tts(
+        if_true: &str,
+        if_false: &str,
+        value: bool,
+        input: &Input,
+        text: &Text,
+    ) -> String {
+        get_tooltip(
+            if value { if_true } else { if_false },
+            &[InputEvent::ToggleExportSettingBoolean],
+            input,
+            text,
+        )
     }
 
     fn get_input_abc123_tts(
@@ -214,8 +159,8 @@ impl ExportSettingsPanel {
         }
     }
 
-    fn update_settings<const N: usize>(
-        settings: &mut IndexedValues<ExportSetting, N>,
+    fn update_settings<F, const N: usize>(
+        mut f: F,
         state: &mut State,
         conn: &mut Conn,
         input: &Input,
@@ -224,11 +169,12 @@ impl ExportSettingsPanel {
         exporter: &mut Exporter,
     ) -> Option<Snapshot>
     where
+        F: FnMut(&mut Exporter) -> &mut IndexedValues<ExportSetting, N>,
         [ExportSetting; N]: Serialize + DeserializeOwned,
     {
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {
-            let s = match &settings.get() {
+            let s = match &f(exporter).get() {
                 ExportSetting::Framerate => text.get("EXPORT_SETTINGS_PANEL_STATUS_TTS_FRAMERATE"),
                 ExportSetting::Title => Self::get_status_ab123_tts(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TITLE_ABC123",
@@ -246,13 +192,10 @@ impl ExportSettingsPanel {
                     input,
                     text,
                 ),
-                ExportSetting::Copyright => get_tooltip(
-                    if exporter.copyright {
-                        "EXPORT_SETTINGS_PANEL_STATUS_TTS_COPYRIGHT_ENABLED"
-                    } else {
-                        "EXPORT_SETTINGS_PANEL_STATUS_TTS_COPYRIGHT_DISABLED"
-                    },
-                    &[InputEvent::ToggleExportSettingBoolean],
+                ExportSetting::Copyright => Self::get_status_bool_tts(
+                    "EXPORT_SETTINGS_PANEL_STATUS_TTS_COPYRIGHT_ENABLED",
+                    "EXPORT_SETTINGS_PANEL_STATUS_TTS_COPYRIGHT_DISABLED",
+                    exporter.copyright,
                     input,
                     text,
                 ),
@@ -302,13 +245,33 @@ impl ExportSettingsPanel {
                         None => text.get("NONE"),
                     }],
                 ),
+                ExportSetting::MultiFile => Self::get_status_bool_tts(
+                    "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_ENABLED",
+                    "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_DISABLED",
+                    exporter.multi_file,
+                    input,
+                    text,
+                ),
+                ExportSetting::MultiFileSuffix => {
+                    if exporter.multi_file {
+                        let key = match &exporter.multi_file_suffix.get() {
+                            MultiFile::Preset => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET",
+                            MultiFile::Channel => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL",
+                            MultiFile::ChannelAndPreset => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL_AND_PRESET",
+                        };
+                        text.get(key)
+                    }
+                    else {
+                        return None;
+                    }
+                }
             };
             tts.say(&s);
             None
         }
         // Input TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let s = match &settings.get() {
+            let s = match &f(exporter).get() {
                 ExportSetting::Framerate => {
                     Self::get_input_lr_tts("EXPORT_SETTINGS_PANEL_INPUT_TTS_FRAMERATE", input, text)
                 }
@@ -366,21 +329,34 @@ impl ExportSettingsPanel {
                 ExportSetting::Mp3Quality | ExportSetting::OggQuality => {
                     Self::get_input_lr_tts("EXPORT_SETTINGS_PANEL_INPUT_TTS_QUALITY", input, text)
                 }
+                ExportSetting::MultiFile => get_tooltip(
+                    "EXPORT_SETTINGS_PANEL_INPUT_TTS_MULTI_FILE",
+                    &[InputEvent::ToggleExportSettingBoolean],
+                    input,
+                    text,
+                ),
+                ExportSetting::MultiFileSuffix => Self::get_input_lr_tts(
+                    "EXPORT_SETTINGS_PANEL_INPUT_TTS_MULTI_FILE_SUFFIX",
+                    input,
+                    text,
+                ),
             };
             tts.say(&s);
             None
         }
         // Previous setting.
         else if input.happened(&InputEvent::PreviousExportSetting) {
-            settings.index.increment(false);
+            let s = f(exporter);
+            s.index.increment(false);
             None
         }
         // Next setting.
         else if input.happened(&InputEvent::NextExportSetting) {
-            settings.index.increment(true);
+            let s = f(exporter);
+            s.index.increment(true);
             None
         } else {
-            match &settings.get() {
+            match &f(exporter).get() {
                 // Framerate.
                 ExportSetting::Framerate => {
                     if input.happened(&InputEvent::PreviousExportSettingValue) {
@@ -435,6 +411,20 @@ impl ExportSettingsPanel {
                 ExportSetting::OggQuality => {
                     Self::set_index(|e| &mut e.ogg_quality, conn, input, exporter)
                 }
+                ExportSetting::MultiFile => {
+                    if input.happened(&InputEvent::ToggleExportSettingBoolean) {
+                        let c0 = vec![Command::SetExporter {
+                            exporter: Box::new(exporter.clone()),
+                        }];
+                        exporter.multi_file = !exporter.multi_file;
+                        Self::set_exporter(c0, conn, exporter)
+                    } else {
+                        None
+                    }
+                }
+                ExportSetting::MultiFileSuffix => {
+                    Self::set_index(|e: &mut Exporter| &mut e.multi_file_suffix.index, conn, input, exporter)
+                }
             }
         }
     }
@@ -453,7 +443,7 @@ impl Panel for ExportSettingsPanel {
     ) -> Option<Snapshot> {
         match exporter.export_type.get() {
             ExportType::Mid => Self::update_settings(
-                &mut self.mid_settings,
+                |e| &mut e.mid_settings,
                 state,
                 conn,
                 input,
@@ -462,7 +452,7 @@ impl Panel for ExportSettingsPanel {
                 exporter,
             ),
             ExportType::MP3 => Self::update_settings(
-                &mut self.mp3_settings,
+                |e: &mut Exporter| &mut e.mp3_settings,
                 state,
                 conn,
                 input,
@@ -471,7 +461,7 @@ impl Panel for ExportSettingsPanel {
                 exporter,
             ),
             ExportType::Ogg => Self::update_settings(
-                &mut self.ogg_settings,
+                |e| &mut e.ogg_settings,
                 state,
                 conn,
                 input,
@@ -480,7 +470,7 @@ impl Panel for ExportSettingsPanel {
                 exporter,
             ),
             ExportType::Wav => Self::update_settings(
-                &mut self.wav_settings,
+                |e| &mut e.wav_settings,
                 state,
                 conn,
                 input,
