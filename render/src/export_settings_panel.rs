@@ -121,10 +121,10 @@ impl ExportSettingsPanel {
                 }
                 ExportSetting::Title => {
                     let key_input = KeyInput::new_from_padding(
-                        "EXPORT_SETTINGS_PANEL_TITLE",
+                        &text.get("EXPORT_SETTINGS_PANEL_TITLE"),
                         &exporter.metadata.title,
                         [x, y],
-                        self.width,
+                        self.width - 2,
                         KV_PADDING,
                     );
                     renderer.key_input(

@@ -43,7 +43,7 @@ impl KeyInput {
         let key_width_x = position[0] + 1;
         // The input rect can be larger than the value width.
         let input_x = key_width_x + key.chars().count() as u32 + padding;
-        let input_width = width - (input_x - key_width_x);
+        let input_width = width - 2 - (input_x - key_width_x);
         let mut value_width = value.chars().count() as u32;
         // Truncate to the input width.
         if input_width < value_width {
