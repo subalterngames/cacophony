@@ -563,13 +563,13 @@ where
                 Some(Snapshot::from_states(s0, state))
             }
         }
-        // Toggle off alphanumeric input.
+        // Toggle on alphanumeric input.
         else {
-            set_alphanumeric_input(state, false)
+            set_alphanumeric_input(state, true)
         }
     }
     // Modify the name.
-    else {
+    else if state.input.alphanumeric_input {
         let mut name = match s(exporter) {
             Some(s) => s.clone(),
             None => String::new(),
@@ -588,5 +588,8 @@ where
         } else {
             None
         }
+    }
+    else {
+        None
     }
 }

@@ -165,7 +165,7 @@ impl ExportSettingsPanel {
                     }
                 }
                 ExportSetting::Artist => self.draw_optional_input(
-                    "EXPORT_SETTINGS_PANEL_ARTIST",
+                    &text.get("EXPORT_SETTINGS_PANEL_ARTIST"),
                     &exporter.metadata.artist,
                     (x, &mut y),
                     renderer,
@@ -181,10 +181,6 @@ impl ExportSettingsPanel {
                         text,
                         setting_focus,
                     );
-                    // For .mid files, draw a separator here.
-                    if export_type == ExportType::Mid {
-                        self.draw_separator((x, &mut y), renderer, &line_color);
-                    }
                 }
                 ExportSetting::Album => self.draw_optional_input(
                     "EXPORT_SETTINGS_PANEL_ALBUM",
@@ -327,14 +323,14 @@ impl Drawable for ExportSettingsPanel {
         let focus = state.panels[state.focus.get()] == PanelType::ExportSettings;
 
         // Get the height of the panel.
-        let mut h = exporter.export_type.index.get_length() as u32 + 2;
+        let mut h = exporter.export_type.index.get_length() as u32 + 1;
         let e = exporter.export_type.get();
 
         // Add spaces for divider lines.
         if e == ExportType::MP3 || e == ExportType::Ogg {
-            h += 3;
+            h += 4;
         } else if e == ExportType::Wav {
-            h += 2;
+            h += 3;
         }
 
         // Draw the panel.
