@@ -1,4 +1,5 @@
 mod boolean;
+mod key_input;
 mod key_list;
 mod key_width;
 mod label;
@@ -7,6 +8,7 @@ mod rectangle;
 pub(super) mod util;
 mod width;
 pub(crate) use boolean::Boolean;
+pub(crate) use key_input::KeyInput;
 pub(crate) use key_list::KeyList;
 pub(crate) use key_width::KeyWidth;
 pub(crate) use label::Label;

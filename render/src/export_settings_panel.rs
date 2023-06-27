@@ -1,8 +1,10 @@
-use serde::Serialize;
-use serde::de::DeserializeOwned;
+use crate::panel::*;
+use crate::Focus;
 use audio::exporter::*;
 use common::IndexedValues;
-use crate::panel::*;
+use serde::de::DeserializeOwned;
+use serde::Serialize;
+use util::KV_PADDING;
 
 /// Export settings panel.
 pub(crate) struct ExportSettingsPanel {
@@ -25,7 +27,10 @@ pub(crate) struct ExportSettingsPanel {
 impl ExportSettingsPanel {
     pub fn new(config: &Ini, text: &Text) -> Self {
         let (open_file_position, open_file_size) = get_open_file_rect(config);
-        let position = [open_file_position[0], open_file_position[1] + open_file_size[1]];
+        let position = [
+            open_file_position[0],
+            open_file_position[1] + open_file_size[1],
+        ];
         let width: u32 = open_file_size[0];
         let title = text.get("TITLE_EXPORT_SETTINGS");
         let title_position = [position[0] + 2, position[1]];
@@ -39,60 +44,261 @@ impl ExportSettingsPanel {
         let y = position[1] + 1;
         let w = width - 2;
         let framerate = KeyList::new("EXPORT_SETTINGS_PANEL_FRAMERATE", [x, y], w, 5);
-        let mp3_bit_rate = KeyList::new("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE", [x, y + 1], w, 3);
-        let quality = KeyList::new("EXPORT_SETTINGS_PANEL_QUALITY", [x, y + 2], w, 1);
-        Self { position, width, title, title_rect, framerate, mp3_bit_rate, quality }
+        let quality = KeyList::new("EXPORT_SETTINGS_PANEL_QUALITY", [x, y + 1], w, 1);
+        let mp3_bit_rate = KeyList::new("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE", [x, y + 2], w, 3);
+        Self {
+            position,
+            width,
+            title,
+            title_rect,
+            framerate,
+            mp3_bit_rate,
+            quality,
+        }
     }
 
-    fn update_settings<F, const N: usize>(&self, f: F, renderer: &Renderer, exporter: &Exporter, focus: bool) 
-    where
-    F: Fn(&Exporter) -> &IndexedValues<ExportSetting, N>,
-    [ExportSetting; N]: Serialize + DeserializeOwned {
+    fn update_settings<F, const N: usize>(
+        &self,
+        f: F,
+        renderer: &Renderer,
+        state: &State,
+        text: &Text,
+        exporter: &Exporter,
+        focus: bool,
+    ) where
+        F: Fn(&Exporter) -> &IndexedValues<ExportSetting, N>,
+        [ExportSetting; N]: Serialize + DeserializeOwned,
+    {
+        // This is used to decide where to draw separators.
+        let export_type = exporter.export_type.get();
+        // Get the color of the separator line.
+        let line_color = if focus {
+            ColorKey::Separator
+        } else {
+            ColorKey::NoFocus
+        };
+        // Get the start positions.
         let x = self.position[0] + 1;
         let mut y = self.position[1] + 1;
-        let mut i = 0;
         let (settings, values) = f(exporter).get_values();
-        // Data settings.
         for (setting, value) in settings.iter().zip(values) {
             let setting_focus = [focus, value];
             match setting {
-                ExportSetting::Framerate => renderer.key_list(&exporter.framerate.to_string(), &self.framerate, setting_focus),
-                ExportSetting::Mp3BitRate => renderer.key_list(&exporter.mp3_bit_rate.get().to_string(), &self.mp3_bit_rate, setting_focus),
-                ExportSetting::Mp3Quality => renderer.key_list(&exporter.mp3_quality.get().to_string(), &self.quality, setting_focus),
-                ExportSetting::OggQuality => renderer.key_list(&exporter.ogg_quality.get().to_string(), &self.quality, setting_focus),
-                _ => ()
-            }
-            y += 1;
-            i += 1;
-        }
-        let line_color = if focus { ColorKey::Separator } else { ColorKey::NoFocus };
-        // There are more settings. Add a divider.
-        if i < N {
-            renderer.horizontal_line(x, x + self.width - 2, [0.0, 0.0], y, 0.0, &line_color);
-            y += 1;
-            // Metadata settings.
-            for (setting, value) in settings.iter().zip(values) {
-                let setting_focus = [focus, value];
-                match setting {
+                ExportSetting::Framerate => {
+                    renderer.key_list(
+                        &exporter.framerate.to_string(),
+                        &self.framerate,
+                        setting_focus,
+                    );
+                    // For .wav files, draw a separator here.
+                    if export_type == ExportType::Wav {
+                        y = self.framerate.key.position[1] + 1;
+                        self.draw_separator((x, &mut y), renderer, &line_color);
+                    }
                 }
-                y += 1;
-                i += 1;
+                ExportSetting::Mp3BitRate => {
+                    renderer.key_list(
+                        &exporter.mp3_bit_rate.get().to_string(),
+                        &self.mp3_bit_rate,
+                        setting_focus,
+                    );
+                    y = self.mp3_bit_rate.key.position[1] + 1;
+                    self.draw_separator((x, &mut y), renderer, &line_color);
+                }
+                ExportSetting::Mp3Quality => renderer.key_list(
+                    &exporter.mp3_quality.get().to_string(),
+                    &self.quality,
+                    setting_focus,
+                ),
+                ExportSetting::OggQuality => {
+                    renderer.key_list(
+                        &exporter.ogg_quality.get().to_string(),
+                        &self.quality,
+                        setting_focus,
+                    );
+                    y = self.quality.key.position[1] + 1;
+                    self.draw_separator((x, &mut y), renderer, &line_color);
+                }
+                ExportSetting::Title => {
+                    let key_input = KeyInput::new_from_padding(
+                        "EXPORT_SETTINGS_PANEL_TITLE",
+                        &exporter.metadata.title,
+                        [x, y],
+                        self.width,
+                        KV_PADDING,
+                    );
+                    renderer.key_input(
+                        &exporter.metadata.title,
+                        &key_input,
+                        state.input.alphanumeric_input,
+                        setting_focus,
+                    );
+                    y += 1;
+                }
+                ExportSetting::Artist => self.draw_optional_input(
+                    "EXPORT_SETTINGS_PANEL_ARTIST",
+                    &exporter.metadata.artist,
+                    (x, &mut y),
+                    renderer,
+                    state,
+                    setting_focus,
+                ),
+                ExportSetting::Copyright => {
+                    self.draw_boolean(
+                        "EXPORT_SETTINGS_PANEL_COPYRIGHT",
+                        exporter.copyright,
+                        (x, &mut y),
+                        renderer,
+                        text,
+                        focus,
+                    );
+                    // For .mid files, draw a separator here.
+                    if export_type == ExportType::Mid {
+                        self.draw_separator((x, &mut y), renderer, &line_color);
+                    }
+                }
+                ExportSetting::Album => self.draw_optional_input(
+                    "EXPORT_SETTINGS_PANEL_ALBUM",
+                    &exporter.metadata.album,
+                    (x, &mut y),
+                    renderer,
+                    state,
+                    setting_focus,
+                ),
+                ExportSetting::TrackNumber => {
+                    let value = match &exporter.metadata.track_number {
+                        Some(value) => value.to_string(),
+                        None => String::new(),
+                    };
+                    let key_input = KeyInput::new_from_padding(
+                        "EXPORT_SETTINGS_PANEL_TRACK_NUMBER",
+                        &value,
+                        [x, y],
+                        self.width - 2,
+                        KV_PADDING,
+                    );
+                    renderer.key_input(
+                        &value,
+                        &key_input,
+                        state.input.alphanumeric_input,
+                        setting_focus,
+                    );
+                    y += 1;
+                }
+                ExportSetting::Genre => self.draw_optional_input(
+                    "EXPORT_SETTINGS_PANEL_GENRE",
+                    &exporter.metadata.album,
+                    (x, &mut y),
+                    renderer,
+                    state,
+                    setting_focus,
+                ),
+                ExportSetting::Comment => {
+                    self.draw_optional_input(
+                        "EXPORT_SETTINGS_PANEL_COMMENT",
+                        &exporter.metadata.album,
+                        (x, &mut y),
+                        renderer,
+                        state,
+                        setting_focus,
+                    );
+                    // This is always the last of the metadata. Draw a line.
+                    self.draw_separator((x, &mut y), renderer, &line_color);
+                }
+                ExportSetting::MultiFile => self.draw_boolean(
+                    "EXPORT_SETTINGS_PANEL_MULTI_FILE",
+                    exporter.multi_file,
+                    (x, &mut y),
+                    renderer,
+                    text,
+                    focus,
+                ),
+                ExportSetting::MultiFileSuffix => {
+                    let value_key = match &exporter.multi_file_suffix.get() {
+                        MultiFile::Channel => "EXPORT_SETTINGS_PANEL_FILE_SUFFIX_CHANNEL",
+                        MultiFile::Preset => "EXPORT_SETTINGS_PANEL_FILE_SUFFIX_PRESET",
+                        MultiFile::ChannelAndPreset => {
+                            "EXPORT_SETTINGS_PANEL_FILE_SUFFIX_CHANNEL_AND_PRESET"
+                        }
+                    };
+                    let value = text.get(value_key);
+                    let key_list = KeyList::new(
+                        "EXPORT_SETTINGS_PANEL_MULTI_FILE_SUFFIX",
+                        [x, y],
+                        self.width - 2,
+                        (self.width - 2) / 2,
+                    );
+                    renderer.key_list(&value, &key_list, setting_focus);
+                    y += 1;
+                }
             }
         }
+    }
+
+    /// Draw a separator line after a section.
+    fn draw_separator(&self, position: (u32, &mut u32), renderer: &Renderer, color: &ColorKey) {
+        renderer.horizontal_line(
+            position.0,
+            position.0 + self.width - 2,
+            [0.0, 0.0],
+            *position.1,
+            0.0,
+            color,
+        );
+        *position.1 += 1;
+    }
+
+    /// Draw an input with optional text.
+    fn draw_optional_input(
+        &self,
+        key: &str,
+        value: &Option<String>,
+        position: (u32, &mut u32),
+        renderer: &Renderer,
+        state: &State,
+        focus: Focus,
+    ) {
+        let value = match value {
+            Some(value) => value,
+            None => "",
+        };
+        let key_input = KeyInput::new_from_padding(
+            key,
+            value,
+            [position.0, *position.1],
+            self.width - 2,
+            KV_PADDING,
+        );
+        renderer.key_input(value, &key_input, state.input.alphanumeric_input, focus);
+        *position.1 += 1;
+    }
+
+    fn draw_boolean(
+        &self,
+        key: &str,
+        value: bool,
+        position: (u32, &mut u32),
+        renderer: &Renderer,
+        text: &Text,
+        focus: bool,
+    ) {
+        let boolean = Boolean::new(key, [position.0, *position.1], text);
+        renderer.boolean(value, &boolean, focus, text);
+        *position.1 += 1;
     }
 }
 
 impl Drawable for ExportSettingsPanel {
     fn update(
-            &self,
-            renderer: &Renderer,
-            state: &State,
-            conn: &Conn,
-            input: &Input,
-            text: &Text,
-            paths_state: &PathsState,
-            exporter: &Exporter,
-        ) {
+        &self,
+        renderer: &Renderer,
+        state: &State,
+        _: &Conn,
+        _: &Input,
+        text: &Text,
+        _: &PathsState,
+        exporter: &Exporter,
+    ) {
         // Get the focus.
         let focus = state.panels[state.focus.get()] == PanelType::ExportSettings;
 
@@ -103,8 +309,7 @@ impl Drawable for ExportSettingsPanel {
         // Add spaces for divider lines.
         if e == ExportType::MP3 || e == ExportType::Ogg {
             h += 2;
-        }
-        else if e == ExportType::Wav {
+        } else if e == ExportType::Wav {
             h += 1;
         }
 
@@ -122,10 +327,18 @@ impl Drawable for ExportSettingsPanel {
 
         // Draw the fields.
         match &exporter.export_type.get() {
-            ExportType::Wav => self.update_settings(|e| &e.wav_settings, renderer, exporter),
-            ExportType::Mid => self.update_settings(|e| &e.mid_settings, renderer, exporter),
-            ExportType::MP3 => self.update_settings(|e| &e.mp3_settings, renderer, exporter),
-            ExportType::Ogg => self.update_settings(|e| &e.ogg_settings, renderer, exporter),
+            ExportType::Wav => {
+                self.update_settings(|e| &e.wav_settings, renderer, state, text, exporter, focus)
+            }
+            ExportType::Mid => {
+                self.update_settings(|e| &e.mid_settings, renderer, state, text, exporter, focus)
+            }
+            ExportType::MP3 => {
+                self.update_settings(|e| &e.mp3_settings, renderer, state, text, exporter, focus)
+            }
+            ExportType::Ogg => {
+                self.update_settings(|e| &e.ogg_settings, renderer, state, text, exporter, focus)
+            }
         }
     }
 }

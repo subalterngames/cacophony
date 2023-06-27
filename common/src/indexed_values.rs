@@ -42,15 +42,15 @@ where
     }
 
     /// Returns a tuple:
-    /// 
+    ///
     /// - A reference to the values array.
     /// - An array of booleans of whether each element is at the `self.index.get()`.
-    pub fn get_values<'a>(&'a self) -> (&'a [T; N], [bool; N]) {
+    pub fn get_values(&self) -> (&[T; N], [bool; N]) {
         let index = self.index.get();
         let mut values = [false; N];
-        for i in 0..N {
+        for (i, v) in values.iter_mut().enumerate() {
             if index == i {
-                values[i] = true;
+                *v = true;
                 break;
             }
         }

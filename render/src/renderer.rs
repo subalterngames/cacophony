@@ -1,5 +1,5 @@
 use crate::field_params::*;
-use crate::ColorKey;
+use crate::{ColorKey, Focus};
 use common::config::parse_bool;
 use common::font::*;
 use common::get_bytes;
@@ -11,7 +11,6 @@ use common::sizes::*;
 use text::Text;
 
 const TEXTURE_COLOR: Color = common::macroquad::color::colors::WHITE;
-type Focus = [bool; 2];
 
 /// Draw shapes and text. This also stores colors, fonts, etc.
 pub struct Renderer {
@@ -469,6 +468,43 @@ impl Renderer {
     pub(crate) fn key_value(&self, text: &str, kv: &KeyWidth, colors: [&ColorKey; 2]) {
         self.text(&kv.key, colors[0]);
         self.text(&kv.get_value(text), colors[1]);
+    }
+
+    /// Draw a key-input pair.
+    ///
+    /// - `text` The text in the label.
+    /// - `ki` The `KeyInput` draw parameters.
+    /// - `alphanumeric_input` If true, alphanumeric input is enabled.
+    /// - `focus` A two-element array. Element 0: Panel focus. Element 1: Widget focus.
+    pub(crate) fn key_input(
+        &self,
+        value: &str,
+        ki: &KeyInput,
+        alphanumeric_input: bool,
+        focus: Focus,
+    ) {
+        if focus[1] {
+            // Draw corners.
+            self.corners(&ki.corners_rect, focus[0]);
+            // Draw a rectangle for input.
+            if alphanumeric_input {
+                self.rectangle(&ki.input_rect, &ColorKey::TextFieldBG);
+            }
+        }
+        let key_color = &Self::get_key_color(focus[0]);
+        if value.is_empty() {
+            self.text(&ki.key_width.key, key_color);
+        } else {
+            // Draw the key-value pair.
+            self.key_value(
+                value,
+                &ki.key_width,
+                [
+                    &Self::get_key_color(focus[0]),
+                    &Self::get_value_color(focus),
+                ],
+            );
+        }
     }
 
     /// Draw a horizontally-aligned key-value boolean pair.

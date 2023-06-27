@@ -12,11 +12,7 @@ pub(crate) struct MusicPanel {
     /// The rectangle of the backround of the namefield.
     name_input_rect: Rectangle,
     /// The BPM field.
-    bpm: KeyWidth,
-    /// The total span of the BPM field, including where the corners are renderered.
-    bpm_rect: Rectangle,
-    /// The rectangle of the backround of the BPM field.
-    bpm_input_rect: Rectangle,
+    bpm: KeyInput,
     /// The gain field.
     gain: KeyList,
     /// The rectangle of the background of the name field.
@@ -47,9 +43,7 @@ impl MusicPanel {
         let name_rect = Rectangle::new([x, y], [width, 1]);
         let name_input_rect = Rectangle::new(name.position, [name.width_u32, 1]);
         y += 1;
-        let bpm = KeyWidth::new_from_width(&text.get("TITLE_BPM"), [x + 1, y], width - 2, 4);
-        let bpm_rect = Rectangle::new([x, y], [width, 1]);
-        let bpm_input_rect = Rectangle::new(bpm.value.position, [bpm.value.width_u32, 1]);
+        let bpm = KeyInput::new_from_value_width(&text.get("TITLE_BPM"), [x, y], width, 4);
         // Move the position of the value to align it with the gain field.
         y += 1;
         let gain = KeyList::new(&text.get("TITLE_GAIN"), [x + 1, y], width - 2, 3);
@@ -62,8 +56,6 @@ impl MusicPanel {
             name_rect,
             name_input_rect,
             bpm,
-            bpm_rect,
-            bpm_input_rect,
             gain,
             gain_rect,
         }
@@ -110,16 +102,16 @@ impl Drawable for MusicPanel {
         let bpm_focus = focused_field == MusicPanelField::BPM;
         if bpm_focus {
             // Draw corners.
-            renderer.corners(&self.bpm_rect, focus);
+            renderer.corners(&self.bpm.corners_rect, focus);
             // Draw a rectangle for input.
             if state.input.alphanumeric_input {
-                renderer.rectangle(&self.bpm_input_rect, &ColorKey::TextFieldBG);
+                renderer.rectangle(&self.bpm.input_rect, &ColorKey::TextFieldBG);
             }
         }
         // Draw the BPM.
         renderer.key_value(
             &state.time.bpm.to_string(),
-            &self.bpm,
+            &self.bpm.key_width,
             [&key_color, &Renderer::get_value_color([focus, bpm_focus])],
         );
 

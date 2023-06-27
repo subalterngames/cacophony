@@ -32,7 +32,9 @@ mod piano_roll_panel;
 use focusable_texture::FocusableTexture;
 use text::TTS;
 mod popup;
+mod types;
 pub(crate) use popup::Popup;
+use types::*;
 
 pub(crate) const TRACK_HEIGHT_SOUNDFONT: u32 = 4;
 pub(crate) const TRACK_HEIGHT_NO_SOUNDFONT: u32 = 1;

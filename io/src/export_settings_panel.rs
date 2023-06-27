@@ -255,13 +255,18 @@ impl ExportSettingsPanel {
                 ExportSetting::MultiFileSuffix => {
                     if exporter.multi_file {
                         let key = match &exporter.multi_file_suffix.get() {
-                            MultiFile::Preset => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET",
-                            MultiFile::Channel => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL",
-                            MultiFile::ChannelAndPreset => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL_AND_PRESET",
+                            MultiFile::Preset => {
+                                "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET"
+                            }
+                            MultiFile::Channel => {
+                                "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL"
+                            }
+                            MultiFile::ChannelAndPreset => {
+                                "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL_AND_PRESET"
+                            }
                         };
                         text.get(key)
-                    }
-                    else {
+                    } else {
                         return None;
                     }
                 }
@@ -422,9 +427,12 @@ impl ExportSettingsPanel {
                         None
                     }
                 }
-                ExportSetting::MultiFileSuffix => {
-                    Self::set_index(|e: &mut Exporter| &mut e.multi_file_suffix.index, conn, input, exporter)
-                }
+                ExportSetting::MultiFileSuffix => Self::set_index(
+                    |e: &mut Exporter| &mut e.multi_file_suffix.index,
+                    conn,
+                    input,
+                    exporter,
+                ),
             }
         }
     }

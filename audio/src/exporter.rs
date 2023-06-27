@@ -156,7 +156,14 @@ impl Exporter {
                 ExportSetting::MultiFileSuffix,
             ],
         );
-        let multi_file_suffix = IndexedValues::new(0, [MultiFile::ChannelAndPreset, MultiFile::Preset, MultiFile::Channel]);
+        let multi_file_suffix = IndexedValues::new(
+            0,
+            [
+                MultiFile::ChannelAndPreset,
+                MultiFile::Preset,
+                MultiFile::Channel,
+            ],
+        );
         Self {
             framerate: U64orF32::from(DEFAULT_FRAMERATE),
             export_type,
