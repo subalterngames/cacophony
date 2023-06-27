@@ -4,6 +4,7 @@ use audio::exporter::*;
 use common::IndexedValues;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use text::ValueMap;
 use util::KV_PADDING;
 
 /// Export settings panel.
@@ -22,6 +23,8 @@ pub(crate) struct ExportSettingsPanel {
     mp3_bit_rate: KeyList,
     /// The MP3/ogg quality field.
     quality: KeyList,
+    /// String values of multi-file suffixes.
+    multi_file_suffixes: ValueMap<MultiFile>
 }
 
 impl ExportSettingsPanel {
@@ -43,9 +46,30 @@ impl ExportSettingsPanel {
         let x = position[0] + 1;
         let y = position[1] + 1;
         let w = width - 2;
-        let framerate = KeyListCorners::new(&text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"), [x, y], w, 5);
+        let framerate =
+            KeyListCorners::new(&text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"), [x, y], w, 5);
         let quality = KeyList::new(&text.get("EXPORT_SETTINGS_PANEL_QUALITY"), [x, y + 1], w, 1);
-        let mp3_bit_rate = KeyList::new(&text.get("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE"), [x, y + 2], w, 3);
+        let mp3_bit_rate = KeyList::new(
+            &text.get("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE"),
+            [x, y + 2],
+            w,
+            3,
+        );
+
+        let multi_file_suffixes = ValueMap::new(
+            [
+                MultiFile::Channel,
+                MultiFile::Preset,
+                MultiFile::ChannelAndPreset,
+            ],
+            [
+                "EXPORT_SETTINGS_PANEL_FILE_SUFFIX_CHANNEL",
+                "EXPORT_SETTINGS_PANEL_FILE_SUFFIX_PRESET",
+                "EXPORT_SETTINGS_PANEL_FILE_SUFFIX_CHANNEL_AND_PRESET",
+            ],
+            text,
+        );
+
         Self {
             position,
             width,
@@ -54,6 +78,7 @@ impl ExportSettingsPanel {
             framerate,
             mp3_bit_rate,
             quality,
+            multi_file_suffixes,
         }
     }
 
@@ -218,21 +243,14 @@ impl ExportSettingsPanel {
                     focus,
                 ),
                 ExportSetting::MultiFileSuffix => {
-                    let value_key = match &exporter.multi_file_suffix.get() {
-                        MultiFile::Channel => "EXPORT_SETTINGS_PANEL_FILE_SUFFIX_CHANNEL",
-                        MultiFile::Preset => "EXPORT_SETTINGS_PANEL_FILE_SUFFIX_PRESET",
-                        MultiFile::ChannelAndPreset => {
-                            "EXPORT_SETTINGS_PANEL_FILE_SUFFIX_CHANNEL_AND_PRESET"
-                        }
-                    };
-                    let value = text.get(value_key);
-                    let key_list = KeyList::new(
-                        "EXPORT_SETTINGS_PANEL_MULTI_FILE_SUFFIX",
+                    let value = self.multi_file_suffixes.get(&exporter.multi_file_suffix.get());
+                    let key_list = KeyListCorners::new(
+                        &text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE_SUFFIX"),
                         [x, y],
                         self.width - 2,
-                        (self.width - 2) / 2,
+                        self.multi_file_suffixes.max_length,
                     );
-                    renderer.key_list(&value, &key_list, setting_focus);
+                    renderer.key_list_corners(&value, &key_list, setting_focus);
                     y += 1;
                 }
             }

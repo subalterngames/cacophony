@@ -454,7 +454,6 @@ impl Renderer {
         self.list(text, &key_list.key_list.value, focus);
     }
 
-
     /// Draw a value with left and right arrows.
     ///
     /// - `text` The text in the label.
