@@ -33,6 +33,26 @@ impl Boolean {
         }
     }
 
+    pub fn new_from_width(key: &str, position: [u32; 2], width: u32, text: &Text) -> Self {
+        // The key is on the left.
+        let key = Label {
+            position,
+            text: key.to_string(),
+        };
+
+        // The value is on the right.
+        let value_position = [
+            position[0] + width - text.get_max_boolean_length() as u32,
+            position[1],
+        ];
+
+        Self {
+            key,
+            value_position,
+            width,
+        }
+    }
+
     /// Converts a boolean `value` into a `Label`.
     pub fn get_boolean_label(&self, value: bool, text: &Text) -> Label {
         Label {

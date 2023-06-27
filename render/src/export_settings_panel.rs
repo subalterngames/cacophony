@@ -24,7 +24,7 @@ pub(crate) struct ExportSettingsPanel {
     /// The MP3/ogg quality field.
     quality: KeyList,
     /// String values of multi-file suffixes.
-    multi_file_suffixes: ValueMap<MultiFile>
+    multi_file_suffixes: ValueMap<MultiFile>,
 }
 
 impl ExportSettingsPanel {
@@ -174,12 +174,12 @@ impl ExportSettingsPanel {
                 ),
                 ExportSetting::Copyright => {
                     self.draw_boolean(
-                        "EXPORT_SETTINGS_PANEL_COPYRIGHT",
+                        &text.get("EXPORT_SETTINGS_PANEL_COPYRIGHT"),
                         exporter.copyright,
                         (x, &mut y),
                         renderer,
                         text,
-                        focus,
+                        setting_focus,
                     );
                     // For .mid files, draw a separator here.
                     if export_type == ExportType::Mid {
@@ -235,22 +235,24 @@ impl ExportSettingsPanel {
                     self.draw_separator((x, &mut y), renderer, &line_color);
                 }
                 ExportSetting::MultiFile => self.draw_boolean(
-                    "EXPORT_SETTINGS_PANEL_MULTI_FILE",
+                    &text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE"),
                     exporter.multi_file,
                     (x, &mut y),
                     renderer,
                     text,
-                    focus,
+                    setting_focus,
                 ),
                 ExportSetting::MultiFileSuffix => {
-                    let value = self.multi_file_suffixes.get(&exporter.multi_file_suffix.get());
+                    let value = self
+                        .multi_file_suffixes
+                        .get(&exporter.multi_file_suffix.get());
                     let key_list = KeyListCorners::new(
                         &text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE_SUFFIX"),
                         [x, y],
                         self.width - 2,
                         self.multi_file_suffixes.max_length,
                     );
-                    renderer.key_list_corners(&value, &key_list, setting_focus);
+                    renderer.key_list_corners(value, &key_list, setting_focus);
                     y += 1;
                 }
             }
@@ -302,10 +304,10 @@ impl ExportSettingsPanel {
         position: (u32, &mut u32),
         renderer: &Renderer,
         text: &Text,
-        focus: bool,
+        focus: Focus,
     ) {
-        let boolean = Boolean::new(key, [position.0, *position.1], text);
-        renderer.boolean(value, &boolean, focus, text);
+        let boolean = BooleanCorners::new(key, [position.0, *position.1], self.width - 2, text);
+        renderer.boolean_corners(value, &boolean, focus, text);
         *position.1 += 1;
     }
 }

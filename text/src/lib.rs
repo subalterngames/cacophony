@@ -4,14 +4,14 @@
 //! 2. `TTS` converts text-to-speech strings into spoken audio.
 //! 3. This crate also contains language-agnostic string manipulation functions e.g. `truncate`.
 
-mod value_map;
 mod text;
 mod tts;
+mod value_map;
 pub use self::tts::TTS;
 use common::{PPQ_F, PPQ_U};
 use std::path::Path;
-pub use value_map::*;
 pub use text::Text;
+pub use value_map::*;
 
 pub fn ppq_to_string(ppq: u64) -> String {
     // This is a whole note.

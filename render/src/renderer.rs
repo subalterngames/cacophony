@@ -537,6 +537,26 @@ impl Renderer {
         );
     }
 
+    /// Draw a horizontally-aligned key-value boolean pair with corners.
+    ///
+    /// - `value` The value of the boolean.
+    /// - `boolean` Parameters for drawing a key-value string-bool pair.
+    /// - `focus` If true, the panel has focus.
+    /// - `text` This is used to get the boolean data.
+    pub(crate) fn boolean_corners(
+        &self,
+        value: bool,
+        boolean: &BooleanCorners,
+        focus: Focus,
+        text: &Text,
+    ) {
+        if focus[1] {
+            // Draw corners.
+            self.corners(&boolean.corners_rect, focus[0]);
+        }
+        self.boolean(value, &boolean.boolean, focus[0], text);
+    }
+
     /// Returns the color of the value text.
     ///
     /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.

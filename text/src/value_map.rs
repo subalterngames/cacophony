@@ -27,7 +27,10 @@ where
             lengths.push(length);
         }
         let max_length = *lengths.iter().max().unwrap();
-        Self { values: vs, max_length }
+        Self {
+            values: vs,
+            max_length,
+        }
     }
 
     pub fn get(&self, key: &T) -> &String {
