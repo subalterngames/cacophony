@@ -17,7 +17,7 @@ pub(crate) struct ExportSettingsPanel {
     /// The position and size of the title in grid units.
     title_rect: Rectangle,
     /// The framerate field.
-    framerate: KeyList,
+    framerate: KeyListCorners,
     /// The MP3 bit rate field.
     mp3_bit_rate: KeyList,
     /// The MP3/ogg quality field.
@@ -43,9 +43,9 @@ impl ExportSettingsPanel {
         let x = position[0] + 1;
         let y = position[1] + 1;
         let w = width - 2;
-        let framerate = KeyList::new("EXPORT_SETTINGS_PANEL_FRAMERATE", [x, y], w, 5);
-        let quality = KeyList::new("EXPORT_SETTINGS_PANEL_QUALITY", [x, y + 1], w, 1);
-        let mp3_bit_rate = KeyList::new("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE", [x, y + 2], w, 3);
+        let framerate = KeyListCorners::new(&text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"), [x, y], w, 5);
+        let quality = KeyList::new(&text.get("EXPORT_SETTINGS_PANEL_QUALITY"), [x, y + 1], w, 1);
+        let mp3_bit_rate = KeyList::new(&text.get("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE"), [x, y + 2], w, 3);
         Self {
             position,
             width,
@@ -85,14 +85,14 @@ impl ExportSettingsPanel {
             let setting_focus = [focus, value];
             match setting {
                 ExportSetting::Framerate => {
-                    renderer.key_list(
+                    renderer.key_list_corners(
                         &exporter.framerate.to_string(),
                         &self.framerate,
                         setting_focus,
                     );
                     // For .wav files, draw a separator here.
                     if export_type == ExportType::Wav {
-                        y = self.framerate.key.position[1] + 1;
+                        y = self.framerate.key_list.key.position[1] + 1;
                         self.draw_separator((x, &mut y), renderer, &line_color);
                     }
                 }
@@ -134,6 +134,10 @@ impl ExportSettingsPanel {
                         setting_focus,
                     );
                     y += 1;
+                    // For .wav files, draw a separator here.
+                    if export_type == ExportType::Wav {
+                        self.draw_separator((x, &mut y), renderer, &line_color);
+                    }
                 }
                 ExportSetting::Artist => self.draw_optional_input(
                     "EXPORT_SETTINGS_PANEL_ARTIST",
@@ -242,7 +246,7 @@ impl ExportSettingsPanel {
             position.0 + self.width - 2,
             [0.0, 0.0],
             *position.1,
-            0.0,
+            0.5,
             color,
         );
         *position.1 += 1;
@@ -308,9 +312,9 @@ impl Drawable for ExportSettingsPanel {
 
         // Add spaces for divider lines.
         if e == ExportType::MP3 || e == ExportType::Ogg {
-            h += 2;
+            h += 3;
         } else if e == ExportType::Wav {
-            h += 1;
+            h += 2;
         }
 
         // Draw the panel.

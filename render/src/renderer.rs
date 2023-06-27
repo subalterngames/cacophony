@@ -438,6 +438,23 @@ impl Renderer {
         self.list(text, &key_list.value, focus);
     }
 
+    /// Draw a value with left and right arrows with a key, and possible corners.
+    ///
+    /// - `text` The value text.
+    /// - `key_list` The key-list parameters pair.
+    /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
+    pub(crate) fn key_list_corners(&self, text: &str, key_list: &KeyListCorners, focus: Focus) {
+        // Draw corners.
+        if focus[1] {
+            self.corners(&key_list.corners_rect, focus[0]);
+        }
+        // Draw the key.
+        self.text(&key_list.key_list.key, &Renderer::get_key_color(focus[0]));
+        // Draw the value.
+        self.list(text, &key_list.key_list.value, focus);
+    }
+
+
     /// Draw a value with left and right arrows.
     ///
     /// - `text` The text in the label.
