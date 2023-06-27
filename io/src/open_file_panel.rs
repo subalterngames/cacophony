@@ -40,10 +40,14 @@ impl OpenFilePanel {
         state.panels.clear();
         // Make this the only active panel.
         state.panels.push(PanelType::OpenFile);
+        // Show export settings.
+        if open_file_type == OpenFileType::Export {
+            state.panels.push(PanelType::ExportSettings);
+        }
         // Remember the focus.
         self.previous_focus = state.focus;
         // Set a new index.
-        state.focus = Index::new(0, 1);
+        state.focus = Index::new(0, state.panels.len());
         // Set the file type.
         paths_state.open_file_type = open_file_type;
     }
