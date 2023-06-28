@@ -11,19 +11,19 @@
 - [ ] Rewrite README
 - [x] Export MIDI
 - [ ] Export separate tracks
-- [ ] Export ogg
+- [x] Export ogg
 - [x] Export mp3
 - [x] ~~Export flac~~
 - [x] Export chunks
 - [ ] More MIDI bindings
 - [ ] Test all TTS
-- [ ] Metadata: name, artist, album, year, genre, track number, comments
+- [x] Metadata: name, artist, album, year, genre, track number, comments
 - [ ] Export settings
   - [x] MIDI: Copyright
   - [x] ~~wav: framerate; 16, 24, 32~~
   - [x] ~~flac: ???~~
   - [x] mp3: framerate, quality, variable speed, channel mode, bit rate mode
-  - [ ] ogg: framerate; quality (0-10)
+  - [x] ogg: framerate; quality (0-10)
   - [x] MIDI: copyright
   - [ ] Separate tracks: auto-name
 - [ ] Asterisk for changes
