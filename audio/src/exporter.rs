@@ -127,8 +127,8 @@ impl Exporter {
             0,
             [
                 ExportSetting::Framerate,
-                ExportSetting::Mp3BitRate,
                 ExportSetting::Mp3Quality,
+                ExportSetting::Mp3BitRate,
                 ExportSetting::Title,
                 ExportSetting::Artist,
                 ExportSetting::Copyright,

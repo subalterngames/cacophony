@@ -323,15 +323,14 @@ impl Drawable for ExportSettingsPanel {
         let focus = state.panels[state.focus.get()] == PanelType::ExportSettings;
 
         // Get the height of the panel.
-        let mut h = exporter.export_type.index.get_length() as u32 + 1;
         let e = exporter.export_type.get();
-
-        // Add spaces for divider lines.
-        if e == ExportType::MP3 || e == ExportType::Ogg {
-            h += 4;
-        } else if e == ExportType::Wav {
-            h += 3;
-        }
+        let h = match &e {
+            ExportType::Wav => exporter.wav_settings.index.get_length() + 3,
+            ExportType::Mid => exporter.mid_settings.index.get_length() + 1,
+            ExportType::MP3 => exporter.mp3_settings.index.get_length() + 3,
+            ExportType::Ogg => exporter.ogg_settings.index.get_length() + 3,
+        } as u32
+            + 1;
 
         // Draw the panel.
         let color: ColorKey = if focus {
