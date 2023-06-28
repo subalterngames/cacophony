@@ -20,9 +20,9 @@ pub(crate) struct ExportSettingsPanel {
     /// The framerate field.
     framerate: KeyListCorners,
     /// The MP3 bit rate field.
-    mp3_bit_rate: KeyList,
+    mp3_bit_rate: KeyListCorners,
     /// The MP3/ogg quality field.
-    quality: KeyList,
+    quality: KeyListCorners,
     /// String values of multi-file suffixes.
     multi_file_suffixes: ValueMap<MultiFile>,
 }
@@ -48,12 +48,13 @@ impl ExportSettingsPanel {
         let w = width - 2;
         let framerate =
             KeyListCorners::new(&text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"), [x, y], w, 5);
-        let quality = KeyList::new(&text.get("EXPORT_SETTINGS_PANEL_QUALITY"), [x, y + 1], w, 1);
-        let mp3_bit_rate = KeyList::new(
+        let quality =
+            KeyListCorners::new(&text.get("EXPORT_SETTINGS_PANEL_QUALITY"), [x, y + 1], w, 1);
+        let mp3_bit_rate = KeyListCorners::new(
             &text.get("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE"),
             [x, y + 2],
             w,
-            3,
+            6,
         );
 
         let multi_file_suffixes = ValueMap::new(
@@ -122,26 +123,27 @@ impl ExportSettingsPanel {
                     }
                 }
                 ExportSetting::Mp3BitRate => {
-                    renderer.key_list(
-                        &exporter.mp3_bit_rate.get().to_string(),
+                    renderer.key_list_corners(
+                        &((MP3_BIT_RATES[exporter.mp3_bit_rate.get()] as u16) as u32 * 1000)
+                            .to_string(),
                         &self.mp3_bit_rate,
                         setting_focus,
                     );
-                    y = self.mp3_bit_rate.key.position[1] + 1;
+                    y = self.mp3_bit_rate.key_list.key.position[1] + 1;
                     self.draw_separator((x, &mut y), renderer, &line_color);
                 }
-                ExportSetting::Mp3Quality => renderer.key_list(
+                ExportSetting::Mp3Quality => renderer.key_list_corners(
                     &exporter.mp3_quality.get().to_string(),
                     &self.quality,
                     setting_focus,
                 ),
                 ExportSetting::OggQuality => {
-                    renderer.key_list(
+                    renderer.key_list_corners(
                         &exporter.ogg_quality.get().to_string(),
                         &self.quality,
                         setting_focus,
                     );
-                    y = self.quality.key.position[1] + 1;
+                    y = self.quality.key_list.key.position[1] + 1;
                     self.draw_separator((x, &mut y), renderer, &line_color);
                 }
                 ExportSetting::Title => {
