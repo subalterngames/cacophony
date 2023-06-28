@@ -49,7 +49,7 @@
 - [ ] Play only works in piano roll panel
 - [x] Can't delete a track
 - [x] Bad zoom
-- [ ] Play notes in open-file-panel file name
+- [x] Play notes in open-file-panel file name
 - [x] Don't use id3 tags for wav files.
 - [ ] Can't change export settings after the first time you export
 

@@ -145,7 +145,7 @@ impl IO {
         }
 
         // Play notes.
-        if !state.input.alphanumeric_input && !&input.play_now.is_empty() {
+        if !state.input.alphanumeric_input && !&input.play_now.is_empty() && !state.panels.contains(&PanelType::OpenFile) {
             if let Some(track) = state.music.get_selected_track() {
                 if conn.state.programs.get(&track.channel).is_some() {
                     let gain = track.gain as f64 / 127.0;
