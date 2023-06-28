@@ -12,7 +12,7 @@
 - [x] Export MIDI
 - [ ] Export separate tracks
 - [ ] Export ogg
-- [ ] Export mp3
+- [x] Export mp3
 - [x] ~~Export flac~~
 - [x] Export chunks
 - [ ] More MIDI bindings
@@ -22,7 +22,7 @@
   - [x] MIDI: Copyright
   - [x] ~~wav: framerate; 16, 24, 32~~
   - [x] ~~flac: ???~~
-  - [ ] mp3: framerate, quality, variable speed, channel mode, bit rate mode
+  - [x] mp3: framerate, quality, variable speed, channel mode, bit rate mode
   - [ ] ogg: framerate; quality (0-10)
   - [x] MIDI: copyright
   - [ ] Separate tracks: auto-name
