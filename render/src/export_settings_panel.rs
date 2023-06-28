@@ -185,7 +185,7 @@ impl ExportSettingsPanel {
                     );
                 }
                 ExportSetting::Album => self.draw_optional_input(
-                    "EXPORT_SETTINGS_PANEL_ALBUM",
+                    &text.get("EXPORT_SETTINGS_PANEL_ALBUM"),
                     &exporter.metadata.album,
                     (x, &mut y),
                     renderer,
@@ -193,28 +193,24 @@ impl ExportSettingsPanel {
                     setting_focus,
                 ),
                 ExportSetting::TrackNumber => {
+                    let n = text.get("NONE");
+                    let value_width = n.chars().count() as u32;
                     let value = match &exporter.metadata.track_number {
                         Some(value) => value.to_string(),
-                        None => String::new(),
+                        None => n,
                     };
-                    let key_input = KeyInput::new_from_padding(
-                        "EXPORT_SETTINGS_PANEL_TRACK_NUMBER",
-                        &value,
+                    let key_list = KeyListCorners::new(
+                        &text.get("EXPORT_SETTINGS_PANEL_TRACK_NUMBER"),
                         [x, y],
                         self.width - 2,
-                        KV_PADDING,
+                        value_width,
                     );
-                    renderer.key_input(
-                        &value,
-                        &key_input,
-                        state.input.alphanumeric_input,
-                        setting_focus,
-                    );
+                    renderer.key_list_corners(&value, &key_list, setting_focus);
                     y += 1;
                 }
                 ExportSetting::Genre => self.draw_optional_input(
-                    "EXPORT_SETTINGS_PANEL_GENRE",
-                    &exporter.metadata.album,
+                    &text.get("EXPORT_SETTINGS_PANEL_GENRE"),
+                    &exporter.metadata.genre,
                     (x, &mut y),
                     renderer,
                     state,
@@ -222,8 +218,8 @@ impl ExportSettingsPanel {
                 ),
                 ExportSetting::Comment => {
                     self.draw_optional_input(
-                        "EXPORT_SETTINGS_PANEL_COMMENT",
-                        &exporter.metadata.album,
+                        &text.get("EXPORT_SETTINGS_PANEL_COMMENT"),
+                        &exporter.metadata.comment,
                         (x, &mut y),
                         renderer,
                         state,
