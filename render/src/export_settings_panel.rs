@@ -323,7 +323,7 @@ impl Drawable for ExportSettingsPanel {
         // Get the height of the panel.
         let e = exporter.export_type.get();
         let h = match &e {
-            ExportType::Wav => exporter.wav_settings.index.get_length() + 3,
+            ExportType::Wav => exporter.wav_settings.index.get_length() + 2,
             ExportType::Mid => exporter.mid_settings.index.get_length() + 1,
             ExportType::MP3 => exporter.mp3_settings.index.get_length() + 3,
             ExportType::Ogg => exporter.ogg_settings.index.get_length() + 3,

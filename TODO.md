@@ -13,7 +13,7 @@
 - [ ] Export separate tracks
 - [ ] Export ogg
 - [ ] Export mp3
-- [ ] Export flac
+- [x] ~~Export flac~~
 - [x] Export chunks
 - [ ] More MIDI bindings
 - [ ] Test all TTS
@@ -21,10 +21,10 @@
 - [ ] Export settings
   - [x] MIDI: Copyright
   - [x] ~~wav: framerate; 16, 24, 32~~
-  - [ ] flac: ???
+  - [x] ~~flac: ???~~
   - [ ] mp3: framerate, quality, variable speed, channel mode, bit rate mode
   - [ ] ogg: framerate; quality (0-10)
-  - [ ] MIDI: copyright
+  - [x] MIDI: copyright
   - [ ] Separate tracks: auto-name
 - [ ] Asterisk for changes
 - [ ] Quit unsaved prompt
@@ -50,7 +50,8 @@
 - [x] Can't delete a track
 - [x] Bad zoom
 - [ ] Play notes in open-file-panel file name
-- [ ] Don't use id3 tags for wav files.
+- [x] Don't use id3 tags for wav files.
+- [ ] Can't change export settings after the first time you export
 
 ## Misc.
 

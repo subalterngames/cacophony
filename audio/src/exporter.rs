@@ -88,7 +88,7 @@ pub struct Exporter {
     /// Export settings for .mid files.
     pub mid_settings: IndexedValues<ExportSetting, 3>,
     /// Export settings for .wav files.
-    pub wav_settings: IndexedValues<ExportSetting, 4>,
+    pub wav_settings: IndexedValues<ExportSetting, 3>,
     /// Export settings for .mp3 files.
     pub mp3_settings: IndexedValues<ExportSetting, 12>,
     /// Export settings for .ogg files.
@@ -118,7 +118,6 @@ impl Exporter {
             0,
             [
                 ExportSetting::Framerate,
-                ExportSetting::Title,
                 ExportSetting::MultiFile,
                 ExportSetting::MultiFileSuffix,
             ],
