@@ -588,8 +588,7 @@ where
         } else {
             None
         }
-    }
-    else {
+    } else {
         None
     }
 }

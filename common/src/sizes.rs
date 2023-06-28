@@ -91,9 +91,6 @@ pub fn get_viewport_size(config: &Ini) -> [u32; 2] {
 pub fn get_open_file_rect(config: &Ini) -> ([u32; 2], [u32; 2]) {
     let window_grid_size = get_window_grid_size(config);
     let size = [window_grid_size[0] / 2, window_grid_size[1] / 2];
-    let position = [
-        window_grid_size[0] / 2 - size[0] / 2,
-        MAIN_MENU_HEIGHT,
-    ];
+    let position = [window_grid_size[0] / 2 - size[0] / 2, MAIN_MENU_HEIGHT];
     (position, size)
 }

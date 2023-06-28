@@ -111,21 +111,26 @@ impl Drawable for OpenFilePanel {
         for index in page {
             let path = &paths_state.children.children[index];
             // Get the color of the text. Flip the fg/bg colors for the selected element.
-            let c = if focus { if path.is_file {
-                ColorKey::Value
+            let c = if focus {
+                if path.is_file {
+                    ColorKey::Value
+                } else {
+                    ColorKey::FocusDefault
+                }
             } else {
-                ColorKey::FocusDefault
-            } }
-            else {
                 ColorKey::NoFocus
             };
-            let (text_color, bg_color) = if focus { match paths_state.children.selected {
-                Some(selected) => match selected == index {
-                    true => (ColorKey::Background, Some(c)),
-                    false => (c, None),
-                },
-                None => (c, None),
-            }} else { (ColorKey::NoFocus, None) };
+            let (text_color, bg_color) = if focus {
+                match paths_state.children.selected {
+                    Some(selected) => match selected == index {
+                        true => (ColorKey::Background, Some(c)),
+                        false => (c, None),
+                    },
+                    None => (c, None),
+                }
+            } else {
+                (ColorKey::NoFocus, None)
+            };
             let position = [x, y];
             // Draw the background.
             if let Some(bg_color) = bg_color {
@@ -146,7 +151,14 @@ impl Drawable for OpenFilePanel {
         if let Some(filename) = &paths_state.get_filename() {
             // Draw the background of the prompt.
             renderer.rectangle(&self.prompt, &ColorKey::Background);
-            renderer.border(&self.prompt, &if focus { ColorKey::FocusDefault} else {ColorKey::NoFocus });
+            renderer.border(
+                &self.prompt,
+                &if focus {
+                    ColorKey::FocusDefault
+                } else {
+                    ColorKey::NoFocus
+                },
+            );
 
             // Draw the extension.
             let mut extension = String::from(".");
@@ -157,7 +169,14 @@ impl Drawable for OpenFilePanel {
                 OpenFileType::Export => e.get_extension(true),
             };
             extension.push_str(ext);
-            renderer.text(&self.extension.to_label(&extension), &if focus { ColorKey::Arrow } else { ColorKey::NoFocus });
+            renderer.text(
+                &self.extension.to_label(&extension),
+                &if focus {
+                    ColorKey::Arrow
+                } else {
+                    ColorKey::NoFocus
+                },
+            );
 
             // Draw the input background.
             if focus {
@@ -165,7 +184,14 @@ impl Drawable for OpenFilePanel {
             }
 
             // Draw the input text.
-            renderer.text(&self.input.to_label(filename), &if focus { ColorKey::Key } else { ColorKey::NoFocus });
+            renderer.text(
+                &self.input.to_label(filename),
+                &if focus {
+                    ColorKey::Key
+                } else {
+                    ColorKey::NoFocus
+                },
+            );
         }
     }
 }
