@@ -32,7 +32,7 @@ impl ExportSettingsPanel {
         let (open_file_position, open_file_size) = get_open_file_rect(config);
         let position = [
             open_file_position[0],
-            open_file_position[1] + open_file_size[1],
+            open_file_position[1] + open_file_size[1] + OPEN_FILE_PANEL_PROMPT_HEIGHT,
         ];
         let width: u32 = open_file_size[0];
         let title = text.get("TITLE_EXPORT_SETTINGS");
