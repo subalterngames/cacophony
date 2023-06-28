@@ -20,8 +20,8 @@ impl Default for OpenFilePanel {
         Self {
             previous_focus: Index::default(),
             previous_panels: vec![],
-            soundfont_extensions: vec![".sf2".to_string(), ".sf3".to_string()],
-            save_file_extensions: vec![".cac".to_string()],
+            soundfont_extensions: vec!["sf2".to_string(), "sf3".to_string()],
+            save_file_extensions: vec!["cac".to_string()],
         }
     }
 }
@@ -305,9 +305,9 @@ impl Panel for OpenFilePanel {
                 // Load a SoundFont.
                 OpenFileType::SoundFont => {
                     if let Some(selected) = paths_state.children.selected {
+                        // Disable the panel.
+                        self.disable(state);
                         if paths_state.children.children[selected].is_file {
-                            // Disable the panel.
-                            self.disable(state);
                             // Get the selected track's channel.
                             let channel = state.music.get_selected_track().unwrap().channel;
                             // To revert: unset the program.

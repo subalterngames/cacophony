@@ -449,6 +449,10 @@ impl Panel for ExportSettingsPanel {
         _: &mut PathsState,
         exporter: &mut Exporter,
     ) -> Option<Snapshot> {
+        // Close this.
+        if input.happened(&InputEvent::CloseOpenFile) {
+            return Some(Snapshot::from_io_commands(vec![IOCommand::CloseOpenFile]));
+        }
         match exporter.export_type.get() {
             ExportType::Mid => Self::update_settings(
                 |e| &mut e.mid_settings,

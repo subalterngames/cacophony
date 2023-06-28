@@ -311,9 +311,7 @@ impl IO {
                     match command {
                         // Enable the open-file panel.
                         IOCommand::EnableOpenFile(open_file_type) => match open_file_type {
-                            OpenFileType::Export => {
-                                self.open_file_panel.export(state, paths_state, exporter)
-                            }
+                            OpenFileType::Export => (),
                             OpenFileType::ReadSave => {
                                 self.open_file_panel.read_save(state, paths_state)
                             }
@@ -326,6 +324,8 @@ impl IO {
                         },
                         // Export.
                         IOCommand::Export(path) => self.export(path, state, conn, exporter),
+                        // Close the open-file panel.
+                        IOCommand::CloseOpenFile => self.open_file_panel.disable(state),
                     }
                 }
             }

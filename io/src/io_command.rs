@@ -8,6 +8,8 @@ pub(crate) enum IOCommand {
     EnableOpenFile(OpenFileType),
     /// Begin to export.
     Export(PathBuf),
+    /// Close the open-file panel.
+    CloseOpenFile,
 }
 
 pub(crate) type IOCommands = Option<Vec<IOCommand>>;
