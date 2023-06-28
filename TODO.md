@@ -51,7 +51,7 @@
 - [x] Bad zoom
 - [x] Play notes in open-file-panel file name
 - [x] Don't use id3 tags for wav files.
-- [ ] Can't change export settings after the first time you export
+- [x] Can't change export settings after the first time you export
 
 ## Misc.
 

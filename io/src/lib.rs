@@ -198,12 +198,7 @@ impl IO {
         else if input.happened(&InputEvent::ExportFile) {
             // We aren't exporting already.
             if conn.export_state.is_none() {
-                match &paths_state.exports.try_get_path() {
-                    // Export.
-                    Some(path) => self.export(path, state, conn, exporter),
-                    // Get a file path.
-                    None => self.open_file_panel.export(state, paths_state, exporter),
-                }
+                self.open_file_panel.export(state, paths_state, exporter)
             }
         }
         // Open config file.
