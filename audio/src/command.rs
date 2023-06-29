@@ -51,4 +51,6 @@ pub enum Command {
     SendExportState,
     /// Set the exporter.
     SetExporter { exporter: Box<Exporter> },
+    /// Append silence to all but the longest audio.
+    AppendSilences { paths: Vec<PathBuf> },
 }

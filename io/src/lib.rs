@@ -51,7 +51,7 @@ mod export_settings_panel;
 /// The maximum size of the undo stack.
 const MAX_UNDOS: usize = 100;
 /// Commands that are queued for export.
-type QueuedExportCommands = (CommandsMessage, ExportState);
+type QueuedExportCommands = (CommandsMessage, Option<ExportState>);
 
 pub struct IO {
     /// A stack of snapshots that can be popped to undo an action.
@@ -163,7 +163,7 @@ impl IO {
             // Get the commands and state.
             let export_commands = self.export_queue.remove(0);
             // Set the state.
-            conn.export_state = Some(export_commands.1);
+            conn.export_state = export_commands.1;
             // Send the commands.
             conn.send(export_commands.0);
         }
@@ -426,31 +426,41 @@ impl IO {
         exporter: &Exporter,
     ) {
         self.export_queue.clear();
+        let e0 = exporter.clone();
+        // Get base path information.
         let extension = path.extension().unwrap().to_str().unwrap();
         let filename_base = path.file_stem().unwrap().to_str().unwrap();
         let directory = path.parent().unwrap();
         // Get the framerate.
-        let framerate = exporter.framerate.get_f();
+        let framerate_f = exporter.framerate.get_f();
+        let framerate_u = exporter.framerate.get_u() as u32;
         // Start playing music.
-        let t0 = state.time.ppq_to_samples(0, framerate);
+        let t0 = state.time.ppq_to_samples(0, framerate_f);
+        let mut paths = vec![];
         // Get playable tracks.
         for track in get_playable_tracks(&state.music) {
             let mut t1 = t0;
+            // Export to wav.
+            let mut e1 = exporter.clone();
+            e1.export_type.index.set(0);
             // Start to play music.
             let mut commands = vec![
+                Command::SetExporter {
+                    exporter: Box::new(e1),
+                },
                 Command::SetFramerate {
-                    framerate: exporter.framerate.get_u() as u32,
+                    framerate: framerate_u,
                 },
                 Command::PlayMusic { time: t0 },
             ];
             let notes = get_playback_notes(state, track);
             for note in notes.iter() {
                 // Convert the start and duration to sample lengths.
-                let start = state.time.ppq_to_samples(note.start, framerate);
+                let start = state.time.ppq_to_samples(note.start, framerate_f);
                 if start < t0 {
                     continue;
                 }
-                let end = state.time.ppq_to_samples(note.end, framerate);
+                let end = state.time.ppq_to_samples(note.end, framerate_f);
                 if end > t1 {
                     t1 = end;
                 }
@@ -481,6 +491,7 @@ impl IO {
             };
             // Get the path.
             let track_path = directory.join(format!("{}_{}.{}", filename_base, suffix, extension));
+            paths.push(track_path.clone());
             // Get the export state.
             let export_state = ExportState::new(t1);
             // Export.
@@ -491,8 +502,17 @@ impl IO {
                     state: export_state,
                 },
             ]);
-            self.export_queue.push((commands, export_state));
+            self.export_queue.push((commands, Some(export_state)));
         }
+        self.export_queue.push((
+            vec![
+                Command::SetExporter {
+                    exporter: Box::new(e0),
+                },
+                Command::AppendSilences { paths },
+            ],
+            None,
+        ));
     }
 }
 

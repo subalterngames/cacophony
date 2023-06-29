@@ -270,6 +270,9 @@ impl Synthesizer {
                                 Command::SetExporter { exporter } => {
                                     s.exporter = exporter.as_ref().clone()
                                 }
+                                Command::AppendSilences { paths } => {
+                                    s.exporter.append_silences(paths)
+                                }
                             }
                         }
                         // Try to send the state.

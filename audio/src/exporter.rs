@@ -21,7 +21,7 @@ use oggvorbismeta::*;
 use std::fs::OpenOptions;
 use std::io::Read;
 use std::io::{Cursor, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use vorbis_encoder::Encoder;
 mod export_setting;
 pub use export_setting::ExportSetting;
@@ -68,6 +68,7 @@ pub const MP3_QUALITIES: [Quality; 10] = [
 pub struct Exporter {
     /// The framerate.
     pub framerate: U64orF32,
+    /// Export metadata.
     pub metadata: Metadata,
     /// If true, write copyright info.
     pub copyright: bool,
@@ -313,7 +314,10 @@ impl Exporter {
     ///
     /// - `path` The output path.
     /// - `buffer` A buffer of wav data.
-    pub(crate) fn mp3(&self, path: &Path, buffer: &AudioBuffer) {
+    pub(crate) fn mp3<'a, T: 'a>(&self, path: &Path, buffer: &'a [Vec<T>; 2])
+    where
+        mp3lame_encoder::DualPcm<'a, T>: mp3lame_encoder::EncoderInput,
+    {
         // Create the encoder.
         let mut mp3_encoder = Builder::new().expect("Create LAME builder");
         mp3_encoder.set_num_channels(2).expect("set channels");
@@ -385,7 +389,7 @@ impl Exporter {
         }
     }
 
-    /// Export to a .ogg file.
+    /// Export to an .ogg file.
     ///
     /// - `path` The output path.
     /// - `buffer` A buffer of wav data.
@@ -395,6 +399,11 @@ impl Exporter {
             samples.push(Self::to_i16(l));
             samples.push(Self::to_i16(r));
         }
+        self.ogg_i16(path, &samples);
+    }
+
+    /// Export an i16 samples buffer to an .ogg file.
+    fn ogg_i16(&self, path: &Path, samples: &Vec<i16>) {
         let mut encoder = Encoder::new(
             2,
             self.framerate.get_u(),
@@ -402,7 +411,7 @@ impl Exporter {
         )
         .expect("Error creating .ogg file encoder.");
         let samples = encoder
-            .encode(&samples)
+            .encode(samples)
             .expect("Error encoding .ogg samples.");
         // Get a cursor.
         let cursor = Cursor::new(&samples);
@@ -444,6 +453,61 @@ impl Exporter {
             .expect("Error opening file.");
         file.write_all(&out)
             .expect("Failed to write samples to file.");
+    }
+
+    /// Open a bunch of wav files. Get the longest one. Export to the correct export type, appending silence to the shorter waveforms.
+    pub(crate) fn append_silences(&self, paths: &[PathBuf]) {
+        // Get the longest file.
+        let max_time = paths
+            .iter()
+            .map(|p| WavReader::open(p).unwrap().duration())
+            .max()
+            .unwrap();
+        let export_type = self.export_type.get();
+        // Open the files.
+        for path in paths.iter() {
+            let time = WavReader::open(path).unwrap().duration();
+            let silence = max_time - time;
+            if silence == 0 {
+                continue;
+            }
+            match export_type {
+                ExportType::Wav => {
+                    // Write silence.
+                    let mut writer = WavWriter::append(path).unwrap();
+                    let i16_writer = writer.get_i16_writer(silence * 2);
+                    i16_writer.flush().unwrap();
+                    writer.finalize().unwrap();
+                }
+                ExportType::Mid => (),
+                // Encode to mp3.
+                ExportType::MP3 => {
+                    self.mp3(
+                        path,
+                        &Self::samples_and_silence_to_i16_buffer(path, silence),
+                    );
+                }
+                ExportType::Ogg => {
+                    let mut buffer = Self::samples_and_silence_to_i16_buffer(path, silence);
+                    let mut samples = buffer[0].clone();
+                    samples.append(&mut buffer[1]);
+                    self.ogg_i16(path, &samples);
+                }
+            }
+        }
+    }
+
+    /// Read a .wav file into a samples buffer. Append some silence.
+    fn samples_and_silence_to_i16_buffer(path: &Path, silence: u32) -> [Vec<i16>; 2] {
+        let reader = WavReader::open(path).unwrap();
+        let samples = reader.into_samples::<i16>();
+        let mut buffer: [Vec<i16>; 2] = [vec![], vec![]];
+        for sample in samples.filter_map(|s| s.ok()).enumerate() {
+            buffer[if sample.0 % 2 == 0 { 0 } else { 1 }].push(sample.1);
+        }
+        buffer[0].append(&mut vec![0; silence as usize]);
+        buffer[1].append(&mut vec![0; silence as usize]);
+        buffer
     }
 
     /// Converts a PPQ value into a MIDI time delta and resets `ppq` to zero.

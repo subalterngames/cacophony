@@ -10,7 +10,7 @@
 - [x] ~~Text ref~~
 - [ ] Rewrite README
 - [x] Export MIDI
-- [ ] Export separate tracks
+- [x] Export separate tracks
 - [x] Export ogg
 - [x] Export mp3
 - [x] ~~Export flac~~
@@ -18,14 +18,14 @@
 - [ ] More MIDI bindings
 - [ ] Test all TTS
 - [x] Metadata: name, artist, album, year, genre, track number, comments
-- [ ] Export settings
+- [x] Export settings
   - [x] MIDI: Copyright
   - [x] ~~wav: framerate; 16, 24, 32~~
   - [x] ~~flac: ???~~
   - [x] mp3: framerate, quality, variable speed, channel mode, bit rate mode
   - [x] ogg: framerate; quality (0-10)
   - [x] MIDI: copyright
-  - [ ] Separate tracks: auto-name
+  - [x] Separate tracks: auto-name
 - [ ] Asterisk for changes
 - [ ] Quit unsaved prompt
 - [x] Note times should be measured in PPQ
@@ -52,6 +52,9 @@
 - [x] Play notes in open-file-panel file name
 - [x] Don't use id3 tags for wav files.
 - [x] Can't change export settings after the first time you export
+- [ ] Bugs when saving for the first or second time??
+- [ ] View range and dt bugs on reload
+- [ ] Copy+paste crash
 
 ## Misc.
 
