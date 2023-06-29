@@ -52,10 +52,11 @@
 - [x] Play notes in open-file-panel file name
 - [x] Don't use id3 tags for wav files.
 - [x] Can't change export settings after the first time you export
-- [ ] Bugs when saving for the first or second time??
+- [x] Bugs when saving for the first or second time??
 - [x] View range is wrong if moved
 - [ ] View dt rounds incorrectly on reload
 - [x] Copy+paste crash
+- [ ] Wrong gain on reload
 
 ## Misc.
 

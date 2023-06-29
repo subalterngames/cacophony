@@ -217,7 +217,13 @@ impl IO {
         else if input.happened(&InputEvent::SaveFile) {
             match &paths_state.saves.try_get_path() {
                 // Save to the existing path,
-                Some(path) => Save::write(path, state, conn, paths_state, exporter),
+                Some(path) => Save::write(
+                    &path.with_extension("cac"),
+                    state,
+                    conn,
+                    paths_state,
+                    exporter,
+                ),
                 // Set a new path.
                 None => self.open_file_panel.write_save(state, paths_state),
             }
