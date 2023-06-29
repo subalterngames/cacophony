@@ -1,6 +1,6 @@
 use super::*;
+use crate::combine_tracks_to_commands;
 use crate::panel::*;
-use crate::tracks_to_commands;
 use common::config::parse_fractions;
 use common::ini::Ini;
 use common::{Index, Note, PianoRollMode, SelectMode, U64orF32, PPQ_F};
@@ -357,7 +357,7 @@ impl Panel for PianoRollPanel {
                 // Stop playing.
                 true => conn.send(vec![Command::StopMusic]),
                 false => {
-                    conn.send(tracks_to_commands(state, conn.framerate).0);
+                    conn.send(combine_tracks_to_commands(state, conn.framerate).0);
                 }
             }
             None
