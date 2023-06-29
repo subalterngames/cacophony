@@ -12,9 +12,9 @@ pub(crate) struct ExportPanel {
 
 impl ExportPanel {
     /// Enable this panel.
-    pub fn enable(&mut self, state: &mut State) {
-        self.panels = state.panels.clone();
-        self.focus = state.focus.get();
+    pub fn enable(&mut self, state: &mut State, panels: &[PanelType], focus: usize) {
+        self.panels = panels.to_vec();
+        self.focus = focus;
         state.panels = vec![PanelType::ExportState];
         state.focus.set(0);
     }

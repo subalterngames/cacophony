@@ -50,6 +50,8 @@ mod export_settings_panel;
 
 /// The maximum size of the undo stack.
 const MAX_UNDOS: usize = 100;
+/// Commands that are queued for export.
+type QueuedExportCommands = (CommandsMessage, ExportState);
 
 pub struct IO {
     /// A stack of snapshots that can be popped to undo an action.
@@ -70,6 +72,12 @@ pub struct IO {
     export_panel: ExportPanel,
     /// The export settings panel.
     export_settings_panel: ExportSettingsPanel,
+    /// Queued commands that will be used to export audio to multiple files.
+    export_queue: Vec<QueuedExportCommands>,
+    /// The active panels prior to exporting audio.
+    pre_export_panels: Vec<PanelType>,
+    /// The index of the focused panel prior to exporting audio.
+    pre_export_focus: usize,
 }
 
 impl IO {
@@ -125,6 +133,9 @@ impl IO {
             export_settings_panel,
             redo: vec![],
             undo: vec![],
+            export_queue: vec![],
+            pre_export_panels: vec![],
+            pre_export_focus: 0,
         }
     }
 
@@ -142,6 +153,24 @@ impl IO {
         // Quit.
         if input.happened(&InputEvent::Quit) {
             return true;
+        }
+
+        // Export multiple files.
+        if conn.export_state.is_none() && !self.export_queue.is_empty() {
+            // Enable the panel.
+            self.export_panel
+                .enable(state, &self.pre_export_panels, self.pre_export_focus);
+            // Get the commands and state.
+            let export_commands = self.export_queue.remove(0);
+            // Set the state.
+            conn.export_state = Some(export_commands.1);
+            // Send the commands.
+            conn.send(export_commands.0);
+        }
+
+        // Don't do anything while exporting.
+        if conn.export_state.is_some() {
+            return false;
         }
 
         // Play notes.
@@ -353,14 +382,18 @@ impl IO {
     /// - `conn` The audio conn.
     /// - `exporter` The exporter.
     fn export(&mut self, path: &Path, state: &mut State, conn: &mut Conn, exporter: &Exporter) {
+        self.pre_export_panels = state.panels.clone();
+        self.pre_export_focus = state.focus.get();
         // Enable the export panel.
-        self.export_panel.enable(state);
+        self.export_panel
+            .enable(state, &self.pre_export_panels, self.pre_export_focus);
+        // Export multiple files.
         if exporter.multi_file {
-            export_multi_file(path, state, conn, exporter);
+            self.queue_multi_file_export(path, state, conn, exporter);
         } else {
             // Get commands and an end time.
             let (track_commands, t1) =
-                combine_tracks_to_commands(state, exporter.framerate.get_f());
+                combine_tracks_to_commands(state, exporter.framerate.get_f(), 0);
             // Define the export state.
             let export_state: ExportState = ExportState::new(t1);
             conn.export_state = Some(export_state);
@@ -376,6 +409,89 @@ impl IO {
             commands.extend(track_commands);
             // Send the commands.
             conn.send(commands);
+        }
+    }
+
+    /// Enqueue multi-file export commands.
+    ///
+    /// - `path` The root path, without tracks-specific suffixes.
+    /// - `state` The state.
+    /// - `conn` The audio connection.
+    /// - `exporter` The exporter.
+    fn queue_multi_file_export(
+        &mut self,
+        path: &Path,
+        state: &State,
+        conn: &Conn,
+        exporter: &Exporter,
+    ) {
+        self.export_queue.clear();
+        let extension = path.extension().unwrap().to_str().unwrap();
+        let filename_base = path.file_stem().unwrap().to_str().unwrap();
+        let directory = path.parent().unwrap();
+        // Get the framerate.
+        let framerate = exporter.framerate.get_f();
+        // Start playing music.
+        let t0 = state.time.ppq_to_samples(0, framerate);
+        // Get playable tracks.
+        for track in get_playable_tracks(&state.music) {
+            let mut t1 = t0;
+            // Start to play music.
+            let mut commands = vec![
+                Command::SetFramerate {
+                    framerate: exporter.framerate.get_u() as u32,
+                },
+                Command::PlayMusic { time: t0 },
+            ];
+            let notes = get_playback_notes(state, track);
+            for note in notes.iter() {
+                // Convert the start and duration to sample lengths.
+                let start = state.time.ppq_to_samples(note.start, framerate);
+                if start < t0 {
+                    continue;
+                }
+                let end = state.time.ppq_to_samples(note.end, framerate);
+                if end > t1 {
+                    t1 = end;
+                }
+                // Add the command.
+                commands.push(Command::NoteOnAt {
+                    channel: track.channel,
+                    key: note.note,
+                    velocity: note.velocity,
+                    start,
+                    end,
+                })
+            }
+            // Get the path for this track.
+            let suffix = match exporter.multi_file_suffix.get() {
+                MultiFile::Channel => track.channel.to_string(),
+                MultiFile::Preset => conn
+                    .state
+                    .programs
+                    .get(&track.channel)
+                    .unwrap()
+                    .preset_name
+                    .clone(),
+                MultiFile::ChannelAndPreset => format!(
+                    "{}_{}",
+                    track.channel,
+                    conn.state.programs.get(&track.channel).unwrap().preset_name
+                ),
+            };
+            // Get the path.
+            let track_path = directory.join(format!("{}_{}.{}", filename_base, suffix, extension));
+            // Get the export state.
+            let export_state = ExportState::new(t1);
+            // Export.
+            commands.extend([
+                Command::SoundOff,
+                Command::Export {
+                    path: track_path,
+                    state: export_state,
+                },
+            ]);
+            self.export_queue.push((commands, export_state));
         }
     }
 }
@@ -408,9 +524,13 @@ fn get_playback_notes(state: &State, track: &MidiTrack) -> Vec<Note> {
     notes
 }
 /// Converts all playable tracks to note-on commands.
-fn combine_tracks_to_commands(state: &State, framerate: f32) -> (CommandsMessage, u64) {
+fn combine_tracks_to_commands(
+    state: &State,
+    framerate: f32,
+    start_time: u64,
+) -> (CommandsMessage, u64) {
     // Start playing music.
-    let t0 = state.time.ppq_to_samples(state.time.playback, framerate);
+    let t0 = state.time.ppq_to_samples(start_time, framerate);
     let mut t1 = t0;
     let mut commands = vec![
         Command::PlayMusic { time: t0 },
@@ -444,87 +564,6 @@ fn combine_tracks_to_commands(state: &State, framerate: f32) -> (CommandsMessage
     // All-off.
     commands.push(Command::StopMusicAt { time: t1 });
     (commands, t1)
-}
-
-/// Export the audio as separate files.
-///
-/// - `path` The root path, without tracks-specific suffixes.
-/// - `state` The state.
-/// - `conn` The audio connection.
-/// - `exporter` The exporter.
-fn export_multi_file(path: &Path, state: &State, conn: &mut Conn, exporter: &Exporter) {
-    let extension = path.extension().unwrap().to_str().unwrap();
-    let filename_base = path.file_stem().unwrap().to_str().unwrap();
-    let directory = path.parent().unwrap();
-    // Get the framerate.
-    let framerate = exporter.framerate.get_f();
-    // Start playing music.
-    let t0 = state.time.ppq_to_samples(state.time.playback, framerate);
-    let mut t1 = t0;
-    let mut commands = vec![Command::SetFramerate {
-        framerate: exporter.framerate.get_u() as u32,
-    }];
-    // Get playable tracks.
-    for track in get_playable_tracks(&state.music) {
-        let mut track_t1 = 0;
-        commands.push(Command::PlayMusic { time: t0 });
-        let notes = get_playback_notes(state, track);
-        for note in notes.iter() {
-            // Convert the start and duration to sample lengths.
-            let start = state.time.ppq_to_samples(note.start, framerate);
-            if start < t0 {
-                continue;
-            }
-            let end = state.time.ppq_to_samples(note.end, framerate);
-            if end > t1 {
-                t1 = end;
-            }
-            if end > track_t1 {
-                track_t1 = end;
-            }
-            // Add the command.
-            commands.push(Command::NoteOnAt {
-                channel: track.channel,
-                key: note.note,
-                velocity: note.velocity,
-                start,
-                end,
-            })
-        }
-        // Get the path for this track.
-        let suffix = match exporter.multi_file_suffix.get() {
-            MultiFile::Channel => track.channel.to_string(),
-            MultiFile::Preset => conn
-                .state
-                .programs
-                .get(&track.channel)
-                .unwrap()
-                .preset_name
-                .clone(),
-            MultiFile::ChannelAndPreset => format!(
-                "{}_{}",
-                track.channel,
-                conn.state.programs.get(&track.channel).unwrap().preset_name
-            ),
-        };
-        // Get the path.
-        let track_path = directory.join(format!("{}_{}.{}", filename_base, suffix, extension));
-        // Get the export state.
-        let export_state = ExportState::new(track_t1);
-        // Export.
-        commands.extend([
-            Command::SoundOff,
-            Command::Export {
-                path: track_path,
-                state: export_state,
-            },
-        ]);
-    }
-    // Define the combined export state.
-    let export_state: ExportState = ExportState::new(t1);
-    conn.export_state = Some(export_state);
-    // Send the commands.
-    conn.send(commands);
 }
 
 /// Set whether alphanumeric input is allowed.

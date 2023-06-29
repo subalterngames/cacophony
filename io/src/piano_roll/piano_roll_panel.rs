@@ -357,7 +357,9 @@ impl Panel for PianoRollPanel {
                 // Stop playing.
                 true => conn.send(vec![Command::StopMusic]),
                 false => {
-                    conn.send(combine_tracks_to_commands(state, conn.framerate).0);
+                    conn.send(
+                        combine_tracks_to_commands(state, conn.framerate, state.time.playback).0,
+                    );
                 }
             }
             None
