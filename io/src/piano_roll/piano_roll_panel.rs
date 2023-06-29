@@ -393,12 +393,12 @@ impl Panel for PianoRollPanel {
                         .min_by(|a, b| a.start.cmp(&b.start))
                         .unwrap()
                         .start;
-                    // Get the time delta.
-                    let dt = min_time - state.time.cursor;
-                    // Clone the copied notes.
+                    // Adjust the start and end time.
                     let mut notes = self.copied_notes.to_vec();
-                    // Adjust the start time.
-                    notes.iter_mut().for_each(|n| n.start -= dt);
+                    notes.iter_mut().for_each(|n| {
+                        n.start = (n.start - min_time) + state.time.cursor;
+                        n.end = (n.end - min_time) + state.time.cursor;
+                    });
                     // Add the notes.
                     track.notes.append(&mut notes);
                     // Return the undo state.

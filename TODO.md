@@ -54,7 +54,7 @@
 - [x] Can't change export settings after the first time you export
 - [ ] Bugs when saving for the first or second time??
 - [ ] View range and dt bugs on reload
-- [ ] Copy+paste crash
+- [x] Copy+paste crash
 
 ## Misc.
 
