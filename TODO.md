@@ -53,7 +53,8 @@
 - [x] Don't use id3 tags for wav files.
 - [x] Can't change export settings after the first time you export
 - [ ] Bugs when saving for the first or second time??
-- [ ] View range and dt bugs on reload
+- [ ] View range is wrong if moved
+- [ ] View dt rounds incorrectly on reload
 - [x] Copy+paste crash
 
 ## Misc.
