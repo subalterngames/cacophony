@@ -85,6 +85,9 @@ impl Save {
                                 }];
                                 // Set each program.
                                 for program in s.synth_state.programs.iter() {
+                                    if !program.1.path.exists() {
+                                        continue;
+                                    }
                                     let channel = *program.0;
                                     // Load the SoundFont.
                                     commands.push(Command::LoadSoundFont {

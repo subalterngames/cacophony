@@ -39,7 +39,7 @@
 - [x] Don't show input backgrounds if alphanumeric input is disabled.
 - [x] Channel overflow
 - [x] Don't hide notes beyond dn in multi-track view
-- [ ] Soundfont paths if they don't exist
+- [x] Soundfont paths if they don't exist
 - [x] Splash is off-center
 - [x] Music panel height to align everything better
 - [x] Can't add spaces or underscores to alphanumeric input
