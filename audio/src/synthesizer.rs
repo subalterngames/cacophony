@@ -103,6 +103,7 @@ impl Synthesizer {
             send_export_state: false,
             export_buffer: [vec![], vec![]],
         };
+        s.synth.set_gain(127.0);
         loop {
             if s.ready {
                 // Try to receive commands.

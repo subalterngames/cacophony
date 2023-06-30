@@ -56,7 +56,7 @@
 - [x] View range is wrong if moved
 - [x] View dt rounds incorrectly on reload
 - [x] Copy+paste crash
-- [ ] Wrong gain on reload
+- [x] Wrong gain on reload
 
 ## Misc.
 
