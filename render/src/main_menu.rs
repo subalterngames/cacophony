@@ -10,6 +10,8 @@ const COLOR: ColorKey = ColorKey::Key;
 pub(crate) struct MainMenu {
     /// The panel background.
     panel: Panel,
+    /// The title if there are unsaved changes.
+    title_changes: LabelRectangle,
     /// The field labels and the version label.
     labels: [Label; 7],
 }
@@ -33,6 +35,7 @@ impl MainMenu {
             [width, MAIN_MENU_HEIGHT],
             text,
         );
+        let title_changes = LabelRectangle::new(panel.title.label.position, format!("*{}", panel.title.label.text));
 
         // Get the fields.
         let mut x = panel.rect.position[0] + 1;
@@ -84,6 +87,7 @@ impl MainMenu {
         Self {
             panel,
             labels: fields,
+            title_changes
         }
     }
 
@@ -121,7 +125,7 @@ impl Drawable for MainMenu {
     fn update(
         &self,
         renderer: &Renderer,
-        _: &State,
+        state: &State,
         _: &Conn,
         _: &Input,
         _: &Text,
@@ -129,6 +133,10 @@ impl Drawable for MainMenu {
         _: &Exporter,
     ) {
         self.panel.update_ex(&COLOR, renderer);
+        if state.unsaved_changes {
+            renderer.rectangle(&self.title_changes.rect, &ColorKey::Background);
+            renderer.text(&self.title_changes.label, &COLOR);
+        }
         for label in self.labels.iter() {
             renderer.text(label, &COLOR)
         }

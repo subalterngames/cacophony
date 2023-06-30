@@ -334,6 +334,7 @@ impl Panel for OpenFilePanel {
                         // Append the extension.
                         let mut filename = filename.clone();
                         filename.push_str(".cac");
+                        state.unsaved_changes = false;
                         // Write.
                         Save::write(
                             &paths_state.saves.directory.join(filename),

@@ -26,6 +26,9 @@ pub struct State {
     pub edit_mode: Index,
     /// The current selection.
     pub select_mode: SelectMode,
+    /// If true, there are unsaved changes.
+    #[serde(skip_serializing, skip_deserializing)]
+    pub unsaved_changes: bool,
 }
 
 impl State {
@@ -51,6 +54,7 @@ impl State {
             piano_roll_mode,
             edit_mode,
             select_mode,
+            unsaved_changes: false
         }
     }
 }

@@ -19,3 +19,5 @@ pub(crate) use label::Label;
 pub(crate) use list::List;
 pub(crate) use rectangle::Rectangle;
 pub(super) use width::Width;
+pub(crate) use label_rectangle::LabelRectangle;
+mod label_rectangle;

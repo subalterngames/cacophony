@@ -217,13 +217,15 @@ impl IO {
         else if input.happened(&InputEvent::SaveFile) {
             match &paths_state.saves.try_get_path() {
                 // Save to the existing path,
-                Some(path) => Save::write(
+                Some(path) => { Save::write(
                     &path.with_extension("cac"),
                     state,
                     conn,
                     paths_state,
                     exporter,
-                ),
+                );
+                state.unsaved_changes = false;
+            }
                 // Set a new path.
                 None => self.open_file_panel.write_save(state, paths_state),
             }
@@ -264,6 +266,7 @@ impl IO {
                 }
                 // Push to the redo stack.
                 self.redo.push(redo);
+                state.unsaved_changes = true;
             }
         // Redo.
         } else if input.happened(&InputEvent::Redo) {
@@ -279,16 +282,19 @@ impl IO {
                 }
                 // Push to the undo stack.
                 self.undo.push(undo);
+                state.unsaved_changes = true;
             }
         }
         // Cycle panels.
         else if input.happened(&InputEvent::NextPanel) {
             let s0 = state.clone();
             state.focus.increment(true);
+            state.unsaved_changes = true;
             self.undo.push(Snapshot::from_states(s0, state));
         } else if input.happened(&InputEvent::PreviousPanel) {
             let s0 = state.clone();
             state.focus.increment(false);
+            state.unsaved_changes = true;
             self.undo.push(Snapshot::from_states(s0, state));
         }
 
@@ -364,6 +370,7 @@ impl IO {
             }
             // Push to the undo stack.
             if snapshot.from_state.is_some() || snapshot.from_commands.is_some() {
+                state.unsaved_changes = true;
                 self.push_undo(snapshot);
             }
         }

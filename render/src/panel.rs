@@ -12,9 +12,7 @@ pub(crate) struct Panel {
     /// The position and size of the panel in grid units.
     pub rect: Rectangle,
     /// The title label for the panel.
-    title: Label,
-    /// The position and size of the title in grid units.
-    title_rect: Rectangle,
+    pub title: LabelRectangle,
 }
 
 impl Panel {
@@ -31,15 +29,11 @@ impl Panel {
         };
         let title = text.get(title_key);
         let title_position = [position[0] + 2, position[1]];
-        let title_width = title.chars().count() as u32;
+        let title = LabelRectangle::new(title_position, title);
         Self {
             panel_type,
-            title: Label {
-                position: title_position,
-                text: title,
-            },
+            title,
             rect: Rectangle::new(position, size),
-            title_rect: Rectangle::new(title_position, [title_width, 1]),
         }
     }
 
@@ -57,8 +51,8 @@ impl Panel {
     pub fn update_ex(&self, color: &ColorKey, renderer: &Renderer) {
         renderer.rectangle(&self.rect, &ColorKey::Background);
         renderer.border(&self.rect, color);
-        renderer.rectangle(&self.title_rect, &ColorKey::Background);
-        renderer.text(&self.title, color);
+        renderer.rectangle(&self.title.rect, &ColorKey::Background);
+        renderer.text(&self.title.label, color);
     }
 
     /// Returns true if this panel has focus.
