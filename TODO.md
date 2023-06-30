@@ -26,7 +26,7 @@
   - [x] ogg: framerate; quality (0-10)
   - [x] MIDI: copyright
   - [x] Separate tracks: auto-name
-- [ ] Asterisk for changes
+- [x] Asterisk for changes
 - [ ] Quit unsaved prompt
 - [x] Note times should be measured in PPQ
 - [x] Export buffer
