@@ -44,8 +44,8 @@ impl View {
     fn zoom(&self, state: &mut State, zoom_in: bool) -> Option<Snapshot> {
         // Get the zoom factor.
         let mut zoom = self.deltas.get_dz(&EDIT_MODES[state.view.mode.get()]);
-        if !zoom_in {
-            zoom = 1.0 / zoom;
+        if zoom_in {
+            zoom.invert();
         }
         // Set the viewport.
         let s0 = state.clone();

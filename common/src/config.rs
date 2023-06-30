@@ -3,6 +3,7 @@ use ini::{Ini, Properties};
 use serde_json::from_str;
 use std::fmt::Display;
 use std::str::FromStr;
+use crate::fraction::*;
 
 /// Load the config file.
 pub fn load() -> Ini {
@@ -61,7 +62,7 @@ pub fn parse_bool(properties: &Properties, key: &str) -> bool {
 pub fn parse_fractions(properties: &Properties, key: &str) -> Vec<f32> {
     match properties.get(key) {
         Some(value) => match from_str::<Vec<&str>>(value) {
-            Ok(value) => value.iter().map(|v| parse_fraction_kv(key, v)).collect(),
+            Ok(value) => value.iter().map(|v| parse_float_kv(key, v)).collect(),
             Err(error) => panic!(
                 "Error parsing list of fractions {} for key {}: {}",
                 value, key, error
@@ -71,16 +72,24 @@ pub fn parse_fractions(properties: &Properties, key: &str) -> Vec<f32> {
     }
 }
 
-/// Parse a value string as a fraction or decimal number.
-pub fn parse_fraction(properties: &Properties, key: &str) -> f32 {
+/// Parse a value string as a float.
+pub fn parse_float(properties: &Properties, key: &str) -> f32 {
+    match properties.get(key) {
+        Some(value) => parse_float_kv(key, value),
+        None => panic!("Missing key {}", key),
+    }
+}
+
+/// Parse a value string as a fraction.
+pub fn parse_fraction(properties: &Properties, key: &str) -> Fraction {
     match properties.get(key) {
         Some(value) => parse_fraction_kv(key, value),
         None => panic!("Missing key {}", key),
     }
 }
 
-/// Parse a value string as a fraction or decimal number.
-fn parse_fraction_kv(key: &str, value: &str) -> f32 {
+/// Parse a value string as a float.
+fn parse_float_kv(key: &str, value: &str) -> f32 {
     // Is this formatted like a fraction, e.g. "1/2"?
     match value.contains('/') {
         true => {
@@ -102,6 +111,34 @@ fn parse_fraction_kv(key: &str, value: &str) -> f32 {
         // Is this formated like a decimal, e.g. "0.5" or "5"?
         false => match value.parse::<f32>() {
             Ok(value) => value,
+            Err(error) => panic!("Invalid value {} for key {}: {}", value, key, error),
+        },
+    }
+}
+
+/// Parse a value string as a Fraction.
+fn parse_fraction_kv(key: &str, value: &str) -> Fraction {
+    // Is this formatted like a fraction, e.g. "1/2"?
+    match value.contains('/') {
+        true => {
+            let nd: Vec<&str> = value.split('/').collect();
+            match nd[0].parse::<u64>() {
+                Ok(n) => match nd[1].parse::<u64>() {
+                    Ok(d) => Fraction::new(n, d),
+                    Err(error) => panic!(
+                        "Invalid denominator in fraction {} for key {}: {}",
+                        value, key, error
+                    ),
+                },
+                Err(error) => panic!(
+                    "Invalid numerator in fraction {} for key {}: {}",
+                    value, key, error
+                ),
+            }
+        }
+        // Is this formated like a decimal, e.g. "0.5" or "5"?
+        false => match value.parse::<u64>() {
+            Ok(value) => Fraction::from(value),
             Err(error) => panic!("Invalid value {} for key {}: {}", value, key, error),
         },
     }

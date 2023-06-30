@@ -54,7 +54,7 @@
 - [x] Can't change export settings after the first time you export
 - [x] Bugs when saving for the first or second time??
 - [x] View range is wrong if moved
-- [ ] View dt rounds incorrectly on reload
+- [x] View dt rounds incorrectly on reload
 - [x] Copy+paste crash
 - [ ] Wrong gain on reload
 

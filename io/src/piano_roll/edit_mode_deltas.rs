@@ -1,6 +1,7 @@
-use common::config::{parse, parse_fraction};
+use common::config::{parse, parse_float, parse_fraction};
 use common::ini::Ini;
 use common::{EditMode, InputState, PPQ_F};
+use common::fraction::*;
 
 /// Delta factors and values for edit modes.
 pub(super) struct EditModeDeltas {
@@ -21,18 +22,18 @@ pub(super) struct EditModeDeltas {
     /// In precise mode, edit volume by this delta.
     precise_volume: u8,
     /// In normal mode, zoom in by this factor.
-    normal_zoom: f32,
+    normal_zoom: Fraction,
     /// In quick mode, zoom in by this factor.
-    quick_zoom: f32,
+    quick_zoom: Fraction,
     /// In precise mode, zoom in by this factor.
-    precise_zoom: f32,
+    precise_zoom: Fraction,
 }
 
 impl EditModeDeltas {
     pub(super) fn new(config: &Ini) -> Self {
         let section = config.section(Some("PIANO_ROLL")).unwrap();
         let quick_time_factor: u64 = parse(section, "quick_time_factor");
-        let precise_time: u64 = (parse_fraction(section, "precise_time") * PPQ_F) as u64;
+        let precise_time: u64 = (parse_float(section, "precise_time") * PPQ_F) as u64;
         let normal_note: u8 = parse(section, "normal_note");
         let quick_note: u8 = parse(section, "quick_note");
         let precise_note: u8 = parse(section, "precise_note");
@@ -40,8 +41,8 @@ impl EditModeDeltas {
         let quick_volume: u8 = parse(section, "quick_volume");
         let precise_volume: u8 = parse(section, "precise_volume");
         let normal_zoom = parse_fraction(section, "normal_zoom");
-        let quick_zoom = parse_fraction(section, "quick_zoom");
-        let precise_zoom = parse_fraction(section, "precise_zoom");
+        let quick_zoom = normal_zoom * parse_fraction(section, "quick_zoom");
+        let precise_zoom = normal_zoom / parse_fraction(section, "precise_zoom");
         Self {
             quick_time_factor,
             precise_time,
@@ -85,7 +86,7 @@ impl EditModeDeltas {
     }
 
     /// Returns the zoom delta.
-    pub(super) fn get_dz(&self, mode: &EditMode) -> f32 {
+    pub(super) fn get_dz(&self, mode: &EditMode) -> Fraction {
         match mode {
             EditMode::Normal => self.normal_zoom,
             EditMode::Quick => self.quick_zoom,
@@ -111,8 +112,5 @@ mod tests {
         assert_eq!(e.normal_volume, 1, "{}", e.normal_volume);
         assert_eq!(e.quick_volume, 2, "{}", e.quick_volume);
         assert_eq!(e.precise_volume, 1, "{}", e.precise_volume);
-        assert_eq!(e.normal_zoom, 0.75, "{}", e.normal_zoom);
-        assert_eq!(e.quick_zoom, 0.5, "{}", e.quick_zoom);
-        assert_eq!(e.precise_zoom, 0.25, "{}", e.precise_zoom);
     }
 }

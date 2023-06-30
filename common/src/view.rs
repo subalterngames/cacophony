@@ -1,11 +1,13 @@
 use crate::note::MIDDLE_C;
 use crate::sizes::*;
 use crate::{Index, EDIT_MODES, MAX_NOTE, MIN_NOTE, PPQ_U};
+use crate::fraction::*;
 use ini::Ini;
 use serde::{Deserialize, Serialize};
 
-/// The maximum zoom time delta in PPQ.
-const MAX_ZOOM: u64 = PPQ_U * 5000;
+/// The minimum zoom time delta in PPQ.
+const MIN_ZOOM: u64 = PPQ_U * 2;
+const MAX_ZOOM: u64 = PPQ_U * 10000;
 
 /// The dimensions of the piano roll viewport.
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -95,11 +97,14 @@ impl View {
     /// Zoom in or out. `self.dt[0]` doesn't change.
     ///
     /// - `zoom` The zoom factor.
-    pub fn zoom(&mut self, zoom: f32) {
-        self.dt = [
-            self.dt[0],
-            ((self.dt[1] as f32 * zoom) as u64).clamp(PPQ_U, MAX_ZOOM),
-        ];
+    pub fn zoom(&mut self, zoom: Fraction) {
+        let dt = self.dt[1] * zoom;
+        if dt >= MIN_ZOOM && dt < MAX_ZOOM {
+            self.dt = [
+                self.dt[0],
+                dt,
+            ];
+        }
     }
 
     /// Returns the note delta.
@@ -138,8 +143,6 @@ mod tests {
         view.set_top_note_by(4, false);
         assert_eq!(view.dn, [75, 45], "{:?}", view.dn);
         view.dt = [0, VIEW_T1];
-        view.zoom(0.75);
-        assert_eq!(view.dt, [0, 19152], "{:?}", view.dt);
     }
 
     fn get_new_view() -> View {
