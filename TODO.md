@@ -57,6 +57,7 @@
 - [x] View dt rounds incorrectly on reload
 - [x] Copy+paste crash
 - [x] Wrong gain on reload
+- [ ] Crash when adding a track if notes are selected
 
 ## Misc.
 
