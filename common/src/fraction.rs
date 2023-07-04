@@ -1,17 +1,19 @@
-use std::ops::{Mul, Div};
 use std::fmt::Display;
-
+use std::ops::{Div, Mul};
 
 /// A fraction has a numerator and denominator and can be multiplied or divided.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Fraction {
     pub numerator: u64,
-    pub denominator: u64
+    pub denominator: u64,
 }
 
 impl Fraction {
     pub fn new(numerator: u64, denominator: u64) -> Self {
-        Self { numerator, denominator }
+        Self {
+            numerator,
+            denominator,
+        }
     }
 
     /// Flip the numerator and denominator.
@@ -54,7 +56,10 @@ impl Mul<Fraction> for Fraction {
     type Output = Fraction;
 
     fn mul(self, rhs: Fraction) -> Self::Output {
-        Self::new(self.numerator * rhs.numerator, self.denominator * rhs.denominator)
+        Self::new(
+            self.numerator * rhs.numerator,
+            self.denominator * rhs.denominator,
+        )
     }
 }
 
@@ -78,6 +83,9 @@ impl Div<Fraction> for Fraction {
     type Output = Fraction;
 
     fn div(self, rhs: Fraction) -> Self::Output {
-        Self::new(self.numerator * rhs.denominator, self.denominator * rhs.numerator)
+        Self::new(
+            self.numerator * rhs.denominator,
+            self.denominator * rhs.numerator,
+        )
     }
 }

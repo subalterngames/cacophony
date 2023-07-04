@@ -38,7 +38,12 @@ where
 
     /// Returns the value at the index.
     pub fn get(&self) -> T {
-        self.values[self.index.get()]
+        *self.get_ref()
+    }
+
+    /// Returns a reference to the value at the index.
+    pub fn get_ref(&self) -> &T {
+        &self.values[self.index.get()]
     }
 
     /// Returns a tuple:

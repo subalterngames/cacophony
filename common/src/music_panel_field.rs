@@ -1,13 +1,10 @@
+use serde::{Deserialize, Serialize};
+
 /// Enum values defining the music panel fields.
-#[derive(Eq, PartialEq, Copy, Clone, Hash)]
+#[derive(Debug, Default, Eq, PartialEq, Copy, Clone, Hash, Deserialize, Serialize)]
 pub enum MusicPanelField {
+    #[default]
     Name,
     BPM,
     Gain,
 }
-
-pub const MUSIC_PANEL_FIELDS: [MusicPanelField; 3] = [
-    MusicPanelField::Name,
-    MusicPanelField::BPM,
-    MusicPanelField::Gain,
-];

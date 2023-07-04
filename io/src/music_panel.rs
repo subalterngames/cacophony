@@ -31,12 +31,8 @@ impl MusicPanel {
     /// Increment the current music panel field. Returns a new undo state.
     fn set_field(state: &mut State, up: bool) -> Option<Snapshot> {
         let s0 = state.clone();
-        state.music_panel_field.increment(up);
+        state.music_panel_field.index.increment(up);
         Some(Snapshot::from_states(s0, state))
-    }
-
-    fn get_music_panel_field(state: &State) -> MusicPanelField {
-        MUSIC_PANEL_FIELDS[state.music_panel_field.get()]
     }
 }
 
@@ -80,7 +76,7 @@ impl Panel for MusicPanel {
                 input,
                 text,
             );
-            let tts_text = match Self::get_music_panel_field(state) {
+            let tts_text = match state.music_panel_field.get_ref() {
                 MusicPanelField::BPM => {
                     let key = if state.input.alphanumeric_input {
                         "MUSIC_PANEL_INPUT_TTS_BPM_ABC123"
@@ -125,7 +121,7 @@ impl Panel for MusicPanel {
             None
         } else {
             // Field-specific actions.
-            match Self::get_music_panel_field(state) {
+            match state.music_panel_field.get_ref() {
                 // Modify the BPM.
                 MusicPanelField::BPM => {
                     if state.input.alphanumeric_input {

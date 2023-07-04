@@ -78,7 +78,7 @@ impl Drawable for MusicPanel {
         // Draw the rect.
         self.panel.update(focus, renderer);
         // Get the enum value of the focused widget.
-        let focused_field = MUSIC_PANEL_FIELDS[state.music_panel_field.get()];
+        let focused_field = state.music_panel_field.get();
 
         let key_color = Renderer::get_key_color(focus);
 

@@ -1,7 +1,7 @@
 use common::config::{parse, parse_float, parse_fraction};
+use common::fraction::*;
 use common::ini::Ini;
 use common::{EditMode, InputState, PPQ_F};
-use common::fraction::*;
 
 /// Delta factors and values for edit modes.
 pub(super) struct EditModeDeltas {

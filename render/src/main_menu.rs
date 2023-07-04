@@ -35,7 +35,10 @@ impl MainMenu {
             [width, MAIN_MENU_HEIGHT],
             text,
         );
-        let title_changes = LabelRectangle::new(panel.title.label.position, format!("*{}", panel.title.label.text));
+        let title_changes = LabelRectangle::new(
+            panel.title.label.position,
+            format!("*{}", panel.title.label.text),
+        );
 
         // Get the fields.
         let mut x = panel.rect.position[0] + 1;
@@ -87,7 +90,7 @@ impl MainMenu {
         Self {
             panel,
             labels: fields,
-            title_changes
+            title_changes,
         }
     }
 

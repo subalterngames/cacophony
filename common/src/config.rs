@@ -1,9 +1,9 @@
+use crate::fraction::*;
 use crate::Paths;
 use ini::{Ini, Properties};
 use serde_json::from_str;
 use std::fmt::Display;
 use std::str::FromStr;
-use crate::fraction::*;
 
 /// Load the config file.
 pub fn load() -> Ini {

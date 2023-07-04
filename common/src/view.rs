@@ -1,7 +1,7 @@
+use crate::fraction::*;
 use crate::note::MIDDLE_C;
 use crate::sizes::*;
 use crate::{Index, EDIT_MODES, MAX_NOTE, MIN_NOTE, PPQ_U};
-use crate::fraction::*;
 use ini::Ini;
 use serde::{Deserialize, Serialize};
 
@@ -100,10 +100,7 @@ impl View {
     pub fn zoom(&mut self, zoom: Fraction) {
         let dt = self.dt[1] * zoom;
         if dt >= MIN_ZOOM && dt < MAX_ZOOM {
-            self.dt = [
-                self.dt[0],
-                dt,
-            ];
+            self.dt = [self.dt[0], dt];
         }
     }
 
