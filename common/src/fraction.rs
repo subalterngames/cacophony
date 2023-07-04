@@ -18,9 +18,7 @@ impl Fraction {
 
     /// Flip the numerator and denominator.
     pub fn invert(&mut self) {
-        let temp = self.numerator;
-        self.numerator = self.denominator;
-        self.denominator = temp;
+        std::mem::swap(&mut self.numerator, &mut self.denominator);
     }
 }
 

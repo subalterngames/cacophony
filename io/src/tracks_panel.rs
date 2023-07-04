@@ -25,9 +25,7 @@ impl TracksPanel {
             bank_index: program.bank_index,
             preset_index,
         }];
-        let snapshot = Snapshot::from_commands(c0, &c1);
-        conn.send(c1);
-        Some(snapshot)
+        Some(Snapshot::from_commands(c0, c1, conn))
     }
 
     /// Increment or decrement the bank index, setting the preset index to 0. Returns a new undo-redo state.
@@ -49,9 +47,7 @@ impl TracksPanel {
             bank_index,
             preset_index: 0,
         }];
-        let snapshot = Snapshot::from_commands(c0, &c1);
-        conn.send(c1);
-        Some(snapshot)
+        Some(Snapshot::from_commands(c0, c1, conn))
     }
 
     /// Increment or decrement the track gain. Returns a new undo-redo state.
@@ -262,10 +258,7 @@ impl Panel for TracksPanel {
                             preset_index: program.preset_index,
                         }];
                         let c1 = vec![Command::UnsetProgram { channel }];
-                        let undo_redo = Snapshot::from_states_and_commands(s0, state, c0, &c1);
-                        // Remove the program.
-                        conn.send(c1);
-                        return Some(undo_redo);
+                        Some(Snapshot::from_states_and_commands(s0, state, c0, c1, conn))
                     }
                     None => Some(Snapshot::from_states(s0, state)),
                 }

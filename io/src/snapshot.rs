@@ -81,21 +81,47 @@ impl Snapshot {
         let c1 = vec![Command::SetExporter {
             exporter: Box::new(exporter.clone()),
         }];
-        let snapshot = Snapshot::from_commands(c0, &c1);
-        conn.send(c1);
-        snapshot
+        Snapshot::from_commands(c0, c1, conn)
+    }
+
+    /// Call an exporter function.
+    /// Send a copy of the exporter to the `Conn`'s `SynthState`.
+    /// Returns a snapshot of the delta.
+    ///
+    /// - `f` A function that accepts an `Exporter` and returns a value of type T.
+    /// - `conn` The audio connection.
+    /// - `exporter` The local exporter.
+    pub fn from_exporter<F>(mut f: F, conn: &mut Conn, exporter: &mut Exporter) -> Self
+    where
+        F: FnMut(&mut Exporter),
+    {
+        let c0 = vec![Command::SetExporter {
+            exporter: Box::new(exporter.clone()),
+        }];
+        f(exporter);
+        let c1 = vec![Command::SetExporter {
+            exporter: Box::new(exporter.clone()),
+        }];
+        Snapshot::from_commands(c0, c1, conn)
     }
 
     /// Returns a snapshot of the delta between to synth states.
     ///
     /// - `from_commands` A list of commands that will revert the `SynthState` to the initial state.
     /// - `to_commands` A list of commands that will set the `SynthState` to the new state. This list will be sent by the `Conn`.
-    pub fn from_commands(from_commands: CommandsMessage, to_commands: &CommandsMessage) -> Self {
-        Self {
+    /// - `conn` The audio connection that will send the commands.
+    pub fn from_commands(
+        from_commands: CommandsMessage,
+        to_commands: CommandsMessage,
+        conn: &mut Conn,
+    ) -> Self {
+        let snapshot = Self {
             from_commands: Some(from_commands),
             to_commands: Some(to_commands.clone()),
             ..Default::default()
-        }
+        };
+        conn.send(to_commands);
+        snapshot
     }
 
     /// Returns a snapshot of the delta between two states as well as two synth states.
@@ -104,19 +130,23 @@ impl Snapshot {
     /// - `to_state` The final state of the delta. This is a reference to the primary `State`.
     /// - `from_commands` A list of commands that will revert the `SynthState` to the initial state.
     /// - `to_commands` A list of commands that will set the `SynthState` to the new state. This list will be sent by the `Conn`.
+    /// - `conn` The audio connection.
     pub fn from_states_and_commands(
         from_state: State,
         to_state: &mut State,
         from_commands: CommandsMessage,
-        to_commands: &CommandsMessage,
+        to_commands: CommandsMessage,
+        conn: &mut Conn,
     ) -> Self {
-        Self {
+        let snapshot = Self {
             from_state: Some(from_state),
             to_state: Some(to_state.clone()),
             from_commands: Some(from_commands),
             to_commands: Some(to_commands.clone()),
             io_commands: None,
-        }
+        };
+        conn.send(to_commands);
+        snapshot
     }
 
     /// Returns a snapshot that just contains IOCommands.

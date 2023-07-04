@@ -99,7 +99,7 @@ impl View {
     /// - `zoom` The zoom factor.
     pub fn zoom(&mut self, zoom: Fraction) {
         let dt = self.dt[1] * zoom;
-        if dt >= MIN_ZOOM && dt < MAX_ZOOM {
+        if (MIN_ZOOM..MAX_ZOOM).contains(&dt) {
             self.dt = [self.dt[0], dt];
         }
     }

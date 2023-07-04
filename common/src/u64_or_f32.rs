@@ -21,6 +21,11 @@ impl U64orF32 {
     pub fn get_f(&self) -> f32 {
         self.f
     }
+
+    pub fn set(&mut self, value: u64) {
+        self.u = value;
+        self.f = value as f32;
+    }
 }
 
 impl Eq for U64orF32 {}

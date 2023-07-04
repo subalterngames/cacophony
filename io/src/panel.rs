@@ -15,7 +15,6 @@ pub(crate) trait Panel {
     /// - `input` Input events, key presses, etc.
     /// - `tts` Text-to-speech.
     /// - `text` The text.
-    /// - `paths` Static path data. This is used for setting default paths.
     /// - `paths_state` Dynamic path data.
     /// - `exporter` Export settings.
     ///

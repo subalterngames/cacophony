@@ -503,7 +503,7 @@ impl Exporter {
         let samples = reader.into_samples::<i16>();
         let mut buffer: [Vec<i16>; 2] = [vec![], vec![]];
         for sample in samples.filter_map(|s| s.ok()).enumerate() {
-            buffer[if sample.0 % 2 == 0 { 0 } else { 1 }].push(sample.1);
+            buffer[usize::from(sample.0 % 2 != 0)].push(sample.1);
         }
         buffer[0].append(&mut vec![0; silence as usize]);
         buffer[1].append(&mut vec![0; silence as usize]);

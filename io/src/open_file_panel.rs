@@ -281,9 +281,7 @@ impl Panel for OpenFilePanel {
             let c1 = vec![Command::SetExporter {
                 exporter: Box::new(exporter.clone()),
             }];
-            let snapshot = Some(Snapshot::from_commands(c0, &c1));
-            conn.send(c1);
-            return snapshot;
+            return Some(Snapshot::from_commands(c0, c1, conn));
         }
         // We selected something.
         else if input.happened(&InputEvent::SelectFile) {
@@ -317,11 +315,7 @@ impl Panel for OpenFilePanel {
                                 channel,
                                 path: paths_state.children.children[selected].path.clone(),
                             }];
-                            // *click*
-                            let snapshot = Snapshot::from_commands(c0, &c1);
-                            // Send the commands.
-                            conn.send(c1);
-                            return Some(snapshot);
+                            return Some(Snapshot::from_commands(c0, c1, conn));
                         }
                     }
                 }

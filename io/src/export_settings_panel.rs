@@ -1,7 +1,7 @@
+use crate::abc123::abc123_exporter;
 use crate::panel::*;
-use crate::{edit_optional_string, edit_string};
 use audio::exporter::*;
-use audio::{Command, Conn};
+use audio::Conn;
 use common::{IndexedValues, U64orF32};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -12,15 +12,6 @@ const FRAMERATES: [u64; 3] = [22050, 44100, 48000];
 pub(crate) struct ExportSettingsPanel {}
 
 impl ExportSettingsPanel {
-    fn set_exporter(c0: Vec<Command>, conn: &mut Conn, exporter: &Exporter) -> Option<Snapshot> {
-        let c1 = vec![Command::SetExporter {
-            exporter: Box::new(exporter.clone()),
-        }];
-        let snapshot = Some(Snapshot::from_commands(c0, &c1));
-        conn.send(c1);
-        snapshot
-    }
-
     fn get_status_ab123_tts(
         if_true: &str,
         if_false: &str,
@@ -102,24 +93,22 @@ impl ExportSettingsPanel {
     }
 
     fn set_framerate(conn: &mut Conn, exporter: &mut Exporter, up: bool) -> Option<Snapshot> {
-        let c0 = vec![Command::SetExporter {
-            exporter: Box::new(exporter.clone()),
-        }];
         let i = FRAMERATES
             .iter()
             .position(|f| *f == exporter.framerate.get_u())
             .unwrap();
         let mut index = Index::new(i, FRAMERATES.len());
         index.increment(up);
-        exporter.framerate = U64orF32::from(FRAMERATES[index.get()]);
-        Self::set_exporter(c0, conn, exporter)
+        Some(Snapshot::from_exporter_value(
+            |e| &mut e.framerate,
+            U64orF32::from(FRAMERATES[index.get()]),
+            conn,
+            exporter,
+        ))
     }
 
     fn set_track_number(conn: &mut Conn, exporter: &mut Exporter, up: bool) -> Option<Snapshot> {
-        let c0 = vec![Command::SetExporter {
-            exporter: Box::new(exporter.clone()),
-        }];
-        exporter.metadata.track_number = if up {
+        let track_number = if up {
             match &exporter.metadata.track_number {
                 Some(n) => Some(n + 1),
                 None => Some(0),
@@ -130,7 +119,12 @@ impl ExportSettingsPanel {
                 None => None,
             }
         };
-        Self::set_exporter(c0, conn, exporter)
+        Some(Snapshot::from_exporter_value(
+            |e| &mut e.metadata.track_number,
+            track_number,
+            conn,
+            exporter,
+        ))
     }
 
     fn set_index<F>(
@@ -143,17 +137,17 @@ impl ExportSettingsPanel {
         F: FnMut(&mut Exporter) -> &mut Index,
     {
         if input.happened(&InputEvent::PreviousExportSettingValue) {
-            let c0 = vec![Command::SetExporter {
-                exporter: Box::new(exporter.clone()),
-            }];
-            f(exporter).increment(false);
-            Self::set_exporter(c0, conn, exporter)
+            Some(Snapshot::from_exporter(
+                |e| f(e).increment(false),
+                conn,
+                exporter,
+            ))
         } else if input.happened(&InputEvent::NextExportSettingValue) {
-            let c0 = vec![Command::SetExporter {
-                exporter: Box::new(exporter.clone()),
-            }];
-            f(exporter).increment(true);
-            Self::set_exporter(c0, conn, exporter)
+            Some(Snapshot::from_exporter(
+                |e| f(e).increment(true),
+                conn,
+                exporter,
+            ))
         } else {
             None
         }
@@ -374,30 +368,56 @@ impl ExportSettingsPanel {
                 }
                 ExportSetting::Copyright => {
                     if input.happened(&InputEvent::ToggleExportSettingBoolean) {
-                        let c0 = vec![Command::SetExporter {
-                            exporter: Box::new(exporter.clone()),
-                        }];
-                        exporter.copyright = !exporter.copyright;
-                        Self::set_exporter(c0, conn, exporter)
+                        Some(Snapshot::from_exporter_value(
+                            |e| &mut e.copyright,
+                            !exporter.copyright,
+                            conn,
+                            exporter,
+                        ))
                     } else {
                         None
                     }
                 }
-                ExportSetting::Title => {
-                    edit_string(|e| &mut e.metadata.title, input, conn, state, exporter)
-                }
-                ExportSetting::Artist => {
-                    edit_optional_string(|e| &mut e.metadata.artist, input, conn, state, exporter)
-                }
-                ExportSetting::Album => {
-                    edit_optional_string(|e| &mut e.metadata.album, input, conn, state, exporter)
-                }
-                ExportSetting::Genre => {
-                    edit_optional_string(|e| &mut e.metadata.genre, input, conn, state, exporter)
-                }
-                ExportSetting::Comment => {
-                    edit_optional_string(|e| &mut e.metadata.comment, input, conn, state, exporter)
-                }
+                ExportSetting::Title => abc123_exporter(
+                    |e| &mut e.metadata.title,
+                    state,
+                    conn,
+                    input,
+                    exporter,
+                    "My Music".to_string(),
+                ),
+                ExportSetting::Artist => abc123_exporter(
+                    |e| &mut e.metadata.artist,
+                    state,
+                    conn,
+                    input,
+                    exporter,
+                    None,
+                ),
+                ExportSetting::Album => abc123_exporter(
+                    |e| &mut e.metadata.album,
+                    state,
+                    conn,
+                    input,
+                    exporter,
+                    None,
+                ),
+                ExportSetting::Genre => abc123_exporter(
+                    |e| &mut e.metadata.genre,
+                    state,
+                    conn,
+                    input,
+                    exporter,
+                    None,
+                ),
+                ExportSetting::Comment => abc123_exporter(
+                    |e| &mut e.metadata.comment,
+                    state,
+                    conn,
+                    input,
+                    exporter,
+                    None,
+                ),
                 ExportSetting::TrackNumber => {
                     if input.happened(&InputEvent::PreviousExportSettingValue) {
                         Self::set_track_number(conn, exporter, false)
@@ -418,11 +438,12 @@ impl ExportSettingsPanel {
                 }
                 ExportSetting::MultiFile => {
                     if input.happened(&InputEvent::ToggleExportSettingBoolean) {
-                        let c0 = vec![Command::SetExporter {
-                            exporter: Box::new(exporter.clone()),
-                        }];
-                        exporter.multi_file = !exporter.multi_file;
-                        Self::set_exporter(c0, conn, exporter)
+                        Some(Snapshot::from_exporter_value(
+                            |e: &mut Exporter| &mut e.multi_file,
+                            !exporter.multi_file,
+                            conn,
+                            exporter,
+                        ))
                     } else {
                         None
                     }

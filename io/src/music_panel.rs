@@ -1,5 +1,5 @@
+use crate::abc123::{abc123_exporter, abc123_state};
 use crate::panel::*;
-use crate::{edit_string, set_alphanumeric_input};
 use common::music_panel_field::*;
 use common::{U64orF32, DEFAULT_BPM, MAX_VOLUME};
 
@@ -20,12 +20,8 @@ impl MusicPanel {
         index.increment(up);
         let gain = index.get() as u8;
         let gain1 = vec![Command::SetGain { gain }];
-        // Get the state.
-        let snapshot = Snapshot::from_commands(gain0, &gain1);
         // Send the commands.
-        conn.send(gain1);
-        // Return the state.
-        Some(snapshot)
+        Some(Snapshot::from_commands(gain0, gain1, conn))
     }
 }
 
@@ -123,32 +119,12 @@ impl Panel for MusicPanel {
             match state.music_panel_field.get_ref() {
                 // Modify the BPM.
                 MusicPanelField::BPM => {
-                    if state.input.alphanumeric_input {
-                        // Stop editing the BPM.
-                        if input.happened(&InputEvent::ToggleAlphanumericInput) {
-                            let s0 = state.clone();
-                            // Set a default BPM.
-                            if state.time.bpm.get_u() == 0 {
-                                state.time.bpm = U64orF32::from(DEFAULT_BPM)
-                            }
-                            // Toggle off alphanumeric input.
-                            state.input.alphanumeric_input = false;
-                            return Some(Snapshot::from_states(s0, state));
-                        }
-                        // Edit the BPM.
-                        else {
-                            let mut bpm = state.time.bpm.get_u();
-                            if input.modify_u64(&mut bpm) {
-                                let s0: State = state.clone();
-                                state.time.bpm = U64orF32::from(bpm);
-                                return Some(Snapshot::from_states(s0, state));
-                            }
-                        }
-                    }
-                    // Enable input.
-                    else if input.happened(&InputEvent::ToggleAlphanumericInput) {
-                        return set_alphanumeric_input(state, true);
-                    }
+                    return abc123_state(
+                        |s| &mut s.time.bpm,
+                        state,
+                        input,
+                        U64orF32::from(DEFAULT_BPM),
+                    );
                 }
                 // Set the gain.
                 MusicPanelField::Gain => {
@@ -160,7 +136,14 @@ impl Panel for MusicPanel {
                 }
                 // Modify the name.
                 MusicPanelField::Name => {
-                    return edit_string(|e| &mut e.metadata.title, input, conn, state, exporter);
+                    return abc123_exporter(
+                        |e| &mut e.metadata.title,
+                        state,
+                        conn,
+                        input,
+                        exporter,
+                        "My Music".to_string(),
+                    );
                 }
             }
             None
