@@ -17,6 +17,33 @@ pub(crate) struct Snapshot {
 }
 
 impl Snapshot {
+    /// Sets a value and returns a snapshot of the delta between two states.
+    ///
+    /// - `f` A function that accepts a `State` parameter and returns a mutable reference value of type T.
+    /// - `value` The new value of `f(state)`.
+    /// - `state` The current state. This will be cloned, then modified, to create a delta.
+    pub fn from_state_value<F, T>(mut f: F, value: T, state: &mut State) -> Self
+    where
+        F: FnMut(&mut State) -> &mut T,
+    {
+        let s0 = state.clone();
+        *f(state) = value;
+        Self::from_states(s0, state)
+    }
+
+    /// Calls a function and returns a snapshot of the delta between two states.
+    ///
+    /// - `f` A function that accepts a `State` parameter and returns a mutable reference value of type T.
+    /// - `state` The current state. This will be cloned, then modified, to create a delta.
+    pub fn from_state<F>(mut f: F, state: &mut State) -> Self
+    where
+        F: FnMut(&mut State),
+    {
+        let s0 = state.clone();
+        f(state);
+        Self::from_states(s0, state)
+    }
+
     /// Returns a snapshot of the delta between two states.
     ///
     /// - `from_state` The initial state of the delta. This is usually a clone of a `State` prior to modifying the primary `State`.

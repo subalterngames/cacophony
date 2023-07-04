@@ -27,13 +27,6 @@ impl MusicPanel {
         // Return the state.
         Some(snapshot)
     }
-
-    /// Increment the current music panel field. Returns a new undo state.
-    fn set_field(state: &mut State, up: bool) -> Option<Snapshot> {
-        let s0 = state.clone();
-        state.music_panel_field.index.increment(up);
-        Some(Snapshot::from_states(s0, state))
-    }
 }
 
 impl Panel for MusicPanel {
@@ -49,9 +42,15 @@ impl Panel for MusicPanel {
     ) -> Option<Snapshot> {
         // Cycle fields.
         if input.happened(&InputEvent::NextMusicPanelField) {
-            MusicPanel::set_field(state, true)
+            Some(Snapshot::from_state(
+                |s| s.music_panel_field.index.increment(true),
+                state,
+            ))
         } else if input.happened(&InputEvent::PreviousMusicPanelField) {
-            MusicPanel::set_field(state, false)
+            Some(Snapshot::from_state(
+                |s| s.music_panel_field.index.increment(false),
+                state,
+            ))
         }
         // Panel TTS.
         else if input.happened(&InputEvent::StatusTTS) {
