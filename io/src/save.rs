@@ -83,18 +83,23 @@ impl Save {
                                 let mut commands = vec![Command::SetGain {
                                     gain: s.synth_state.gain,
                                 }];
-                                // Set each program.
+                                // Load each SoundFont.
                                 for program in s.synth_state.programs.iter() {
                                     if !program.1.path.exists() {
                                         continue;
                                     }
                                     let channel = *program.0;
-                                    // Load the SoundFont.
                                     commands.push(Command::LoadSoundFont {
                                         channel,
                                         path: program.1.path.clone(),
                                     });
-                                    // Set hte program.
+                                }
+                                // Set each program.                            // Load each SoundFont.
+                                for program in s.synth_state.programs.iter() {
+                                    if !program.1.path.exists() {
+                                        continue;
+                                    }
+                                    let channel = *program.0;
                                     commands.push(Command::SetProgram {
                                         channel,
                                         path: program.1.path.clone(),

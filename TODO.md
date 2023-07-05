@@ -59,6 +59,7 @@
 - [x] Wrong gain on reload
 - [x] Crash when adding a track if notes are selected
 - [ ] We should save relative paths only
+- [x] Wrong soundfont if there is more than one!
 
 ## Misc.
 
