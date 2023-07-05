@@ -3,7 +3,7 @@ use crate::exporter::Exporter;
 use std::path::PathBuf;
 
 /// A command for the synthesizer.
-#[derive(Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Command {
     /// Set the synthesizer's framerate.
     SetFramerate { framerate: u32 },

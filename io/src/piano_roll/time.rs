@@ -47,7 +47,7 @@ impl Time {
         if add {
             state.time.playback += dt;
         } else {
-            state.time.playback = state.time.cursor.saturating_sub(dt);
+            state.time.playback = state.time.playback.saturating_sub(dt);
         }
         Some(Snapshot::from_states(s0, state))
     }

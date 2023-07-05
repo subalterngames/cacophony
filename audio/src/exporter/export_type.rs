@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// This determines what we're exporting to.
-#[derive(Eq, PartialEq, Copy, Clone, Deserialize, Serialize, Default)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Deserialize, Serialize, Default)]
 pub enum ExportType {
     #[default]
     Wav,

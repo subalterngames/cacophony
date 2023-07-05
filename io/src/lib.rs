@@ -19,7 +19,9 @@ use audio::exporter::*;
 use audio::{Command, CommandsMessage, Conn, ExportState};
 use common::hashbrown::HashMap;
 use common::ini::Ini;
-use common::{InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, State, MAX_VOLUME};
+use common::{
+    InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, SelectMode, State, MAX_VOLUME,
+};
 use edit::edit_file;
 use input::{Input, InputEvent};
 use std::path::Path;
@@ -600,4 +602,33 @@ fn combine_tracks_to_commands(
     // All-off.
     commands.push(Command::StopMusicAt { time: t1 });
     (commands, t1)
+}
+
+pub(crate) fn select_track(state: &mut State, input: &Input) -> Option<Snapshot> {
+    if let Some(selected) = state.music.selected {
+        if input.happened(&InputEvent::NextTrack) && selected < state.music.midi_tracks.len() - 1 {
+            let s0 = state.clone();
+            state.music.selected = Some(selected + 1);
+            deselect(state);
+            Some(Snapshot::from_states(s0, state))
+        }
+        // Previous track.
+        else if input.happened(&InputEvent::PreviousTrack) && selected > 0 {
+            let s0 = state.clone();
+            state.music.selected = Some(selected - 1);
+            deselect(state);
+            Some(Snapshot::from_states(s0, state))
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
+fn deselect(state: &mut State) {
+    state.select_mode = match &state.select_mode {
+        SelectMode::Single(_) => SelectMode::Single(None),
+        SelectMode::Many(_) => SelectMode::Many(None),
+    };
 }

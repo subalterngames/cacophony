@@ -64,7 +64,7 @@ pub const MP3_QUALITIES: [Quality; 10] = [
 ];
 
 /// This struct contains all export settings, as well as exporter functions.
-#[derive(Default, Eq, PartialEq, Clone, Deserialize, Serialize)]
+#[derive(Default, Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
 pub struct Exporter {
     /// The framerate.
     pub framerate: U64orF32,

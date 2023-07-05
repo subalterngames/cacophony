@@ -1,5 +1,5 @@
 use super::*;
-use crate::combine_tracks_to_commands;
+use crate::{combine_tracks_to_commands, select_track};
 use crate::panel::*;
 use common::config::parse_fractions;
 use common::ini::Ini;
@@ -133,6 +133,12 @@ impl Panel for PianoRollPanel {
         paths_state: &mut PathsState,
         exporter: &mut Exporter,
     ) -> Option<Snapshot> {
+        // Select a track.
+        if !state.view.single_track {
+            if let Some(snapshot) = select_track(state, input) {
+                return Some(snapshot)
+            }
+        }
         // Do nothing.
         if state.music.selected.is_none() {
             None
@@ -459,36 +465,7 @@ impl Panel for PianoRollPanel {
         } else if input.happened(&InputEvent::PianoRollSetView) {
             PianoRollPanel::set_mode(PianoRollMode::View, state)
         }
-        // Multi-track: previous track.
-        else if !state.view.single_track && input.happened(&InputEvent::PianoRollPreviousTrack) {
-            match &state.music.selected {
-                Some(selected) => {
-                    if *selected > 0 {
-                        let s0 = state.clone();
-                        state.music.selected = Some(selected - 1);
-                        Some(Snapshot::from_states(s0, state))
-                    } else {
-                        None
-                    }
-                }
-                None => None,
-            }
-        }
-        // Multi-track: next track.
-        else if !state.view.single_track && input.happened(&InputEvent::PianoRollNextTrack) {
-            match &state.music.selected {
-                Some(selected) => {
-                    if *selected < state.music.midi_tracks.len() - 1 {
-                        let s0 = state.clone();
-                        state.music.selected = Some(selected + 1);
-                        Some(Snapshot::from_states(s0, state))
-                    } else {
-                        None
-                    }
-                }
-                None => None,
-            }
-        } else {
+        else {
             // Sub-panel actions.
             let mode = state.piano_roll_mode;
             match mode {

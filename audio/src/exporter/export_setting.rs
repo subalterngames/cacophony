@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Enum values for export settings.
-#[derive(Eq, PartialEq, Copy, Clone, Default, Deserialize, Serialize)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Default, Deserialize, Serialize)]
 pub enum ExportSetting {
     #[default]
     Framerate,

@@ -1,4 +1,5 @@
 use crate::panel::*;
+use crate::select_track;
 use common::open_file::OpenFileType;
 use common::{MidiTrack, SelectMode};
 use text::get_file_name_no_ex;
@@ -277,27 +278,9 @@ impl Panel for TracksPanel {
                     OpenFileType::SoundFont,
                 )]));
             }
-            // Next track.
-            else if input.happened(&InputEvent::NextTrack)
-                && selected < state.music.midi_tracks.len() - 1
-            {
-                let s0 = state.clone();
-                state.music.selected = Some(selected + 1);
-                state.select_mode = match &state.select_mode {
-                    SelectMode::Single(_) => SelectMode::Single(None),
-                    SelectMode::Many(_) => SelectMode::Many(None),
-                };
-                return Some(Snapshot::from_states(s0, state));
-            }
-            // Previous track.
-            else if input.happened(&InputEvent::PreviousTrack) && selected > 0 {
-                let s0 = state.clone();
-                state.music.selected = Some(selected - 1);
-                state.select_mode = match &state.select_mode {
-                    SelectMode::Single(_) => SelectMode::Single(None),
-                    SelectMode::Many(_) => SelectMode::Many(None),
-                };
-                return Some(Snapshot::from_states(s0, state));
+            // Select a track.
+            else if let Some(snapshot) = select_track(state, input) {
+                return Some(snapshot)
             }
             // Track-specific operations.
             else {
