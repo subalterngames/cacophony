@@ -1,6 +1,6 @@
 use crate::panel::*;
 use common::open_file::OpenFileType;
-use common::MidiTrack;
+use common::{MidiTrack, SelectMode};
 use text::get_file_name_no_ex;
 
 pub(crate) struct TracksPanel {}
@@ -220,6 +220,11 @@ impl Panel for TracksPanel {
             // Get all available channels and get the minimum availabe channel.
             match (0u8..255u8).filter(|c| !track_channels.contains(c)).min() {
                 Some(channel) => {
+                    // Deselect.
+                    state.select_mode = match &state.select_mode {
+                        SelectMode::Single(_) => SelectMode::Single(None),
+                        SelectMode::Many(_) => SelectMode::Many(None),
+                    };
                     // Set the selection.
                     state.music.selected = Some(state.music.midi_tracks.len());
                     // Add a track.
@@ -244,6 +249,11 @@ impl Panel for TracksPanel {
                         0 => Some(0),
                         other => Some(other - 1),
                     },
+                };
+                // Deselect.
+                state.select_mode = match &state.select_mode {
+                    SelectMode::Single(_) => SelectMode::Single(None),
+                    SelectMode::Many(_) => SelectMode::Many(None),
                 };
                 // Remove the track.
                 state.music.midi_tracks.retain(|t| t.channel != channel);
@@ -273,12 +283,20 @@ impl Panel for TracksPanel {
             {
                 let s0 = state.clone();
                 state.music.selected = Some(selected + 1);
+                state.select_mode = match &state.select_mode {
+                    SelectMode::Single(_) => SelectMode::Single(None),
+                    SelectMode::Many(_) => SelectMode::Many(None)
+                };
                 return Some(Snapshot::from_states(s0, state));
             }
             // Previous track.
             else if input.happened(&InputEvent::PreviousTrack) && selected > 0 {
                 let s0 = state.clone();
                 state.music.selected = Some(selected - 1);
+                state.select_mode = match &state.select_mode {
+                    SelectMode::Single(_) => SelectMode::Single(None),
+                    SelectMode::Many(_) => SelectMode::Many(None)
+                };
                 return Some(Snapshot::from_states(s0, state));
             }
             // Track-specific operations.

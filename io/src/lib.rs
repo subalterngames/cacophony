@@ -575,7 +575,8 @@ fn combine_tracks_to_commands(
     ];
     // Get playable tracks.
     for track in get_playable_tracks(&state.music) {
-        let notes = get_playback_notes(state, track);
+        let mut notes = get_playback_notes(state, track);
+        notes.sort();
         for note in notes.iter() {
             // Convert the start and duration to sample lengths.
             let start = state.time.ppq_to_samples(note.start, framerate);

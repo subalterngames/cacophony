@@ -1,9 +1,12 @@
 use crate::panel::*;
 use common::U64orF32;
 
+/// A type that can be modified by user alphanumeric input.
 pub(crate) trait AlphanumericModifiable {
+    /// Returns true if the value is "valid" i.e. we don't need to set it to a default.
     fn is_valid(&self) -> bool;
 
+    /// Modify the value.
     fn modify(&mut self, input: &Input) -> bool;
 }
 

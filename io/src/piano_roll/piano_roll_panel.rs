@@ -396,8 +396,9 @@ impl Panel for PianoRollPanel {
                     // Adjust the start and end time.
                     let mut notes = self.copied_notes.to_vec();
                     notes.iter_mut().for_each(|n| {
+                        let dt = n.end - n.start;
                         n.start = (n.start - min_time) + state.time.cursor;
-                        n.end = (n.end - min_time) + state.time.cursor;
+                        n.end = n.start + dt;
                     });
                     // Add the notes.
                     track.notes.append(&mut notes);
@@ -418,15 +419,23 @@ impl Panel for PianoRollPanel {
         }
         // Toggle tracks view.
         else if input.happened(&InputEvent::PianoRollToggleTracks) {
-            let s0 = state.clone();
-            state.view.single_track = !state.view.single_track;
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(|s| &mut s.view.single_track, !state.view.single_track, state))
         }
         // Set the input beat.
         else if input.happened(&InputEvent::InputBeatLeft) {
             self.set_input_beat(false, state)
         } else if input.happened(&InputEvent::InputBeatRight) {
             self.set_input_beat(true, state)
+        }
+        // Set the volume.
+        else if input.happened(&InputEvent::ToggleInputVolume) {
+            Some(Snapshot::from_state_value(|s| &mut s.input.use_volume, !state.input.use_volume, state))
+        }
+        else if input.happened(&InputEvent::DecreaseInputVolume) {
+            Some(Snapshot::from_state(|s| s.input.volume.increment(false), state))
+        }
+        else if input.happened(&InputEvent::IncreaseInputVolume) {
+            Some(Snapshot::from_state(|s| s.input.volume.increment(true), state))
         }
         // Set the mode.
         else if input.happened(&InputEvent::PianoRollSetEdit) {
