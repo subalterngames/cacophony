@@ -1,6 +1,6 @@
 use crate::panel::*;
 use common::hashbrown::HashMap;
-use common::{EditMode, Index, PianoRollMode, SelectMode, EDIT_MODES};
+use common::{EditMode, IndexedEditModes, PianoRollMode, SelectMode};
 use text::ppq_to_string;
 
 const PADDING: u32 = 4;
@@ -192,9 +192,8 @@ impl TopBar {
         );
     }
 
-    fn get_edit_mode_text(edit_mode: &Index, text: &Text) -> String {
-        let edit_mode = EDIT_MODES[edit_mode.get()];
-        let key = match edit_mode {
+    fn get_edit_mode_text(edit_mode: &IndexedEditModes, text: &Text) -> String {
+        let key = match edit_mode.get_ref() {
             EditMode::Normal => "PIANO_ROLL_PANEL_EDIT_MODE_NORMAL",
             EditMode::Quick => "PIANO_ROLL_PANEL_EDIT_MODE_QUICK",
             EditMode::Precise => "PIANO_ROLL_PANEL_EDIT_MODE_PRECISE",

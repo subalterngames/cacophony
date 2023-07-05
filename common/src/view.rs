@@ -1,7 +1,7 @@
 use crate::fraction::*;
 use crate::note::MIDDLE_C;
 use crate::sizes::*;
-use crate::{Index, EDIT_MODES, MAX_NOTE, MIN_NOTE, PPQ_U};
+use crate::{IndexedEditModes, MAX_NOTE, MIN_NOTE, PPQ_U};
 use ini::Ini;
 use serde::{Deserialize, Serialize};
 
@@ -17,7 +17,7 @@ pub struct View {
     /// The start and end note of the viewport.
     pub dn: [u8; 2],
     /// The current edit mode.
-    pub mode: Index,
+    pub mode: IndexedEditModes,
     /// If true, we're viewing a single track. If false, we're viewing multiple tracks.
     pub single_track: bool,
 }
@@ -38,7 +38,7 @@ impl View {
         let n0 = MIDDLE_C + h / 2;
         let n1 = n0 - h;
         let dn = [n0, n1];
-        let mode = Index::new(0, EDIT_MODES.len());
+        let mode = IndexedEditModes::default();
         Self {
             dt,
             dn,
@@ -123,7 +123,7 @@ mod tests {
         let view = get_new_view();
         assert_eq!(view.dn, [75, 45], "{:?}", view.dn);
         assert_eq!(view.dt, [0, VIEW_T1], "{:?}", view.dt);
-        assert_eq!(view.mode.get(), 0, "{}", view.mode.get());
+        assert_eq!(view.mode.index.get(), 0, "{}", view.mode.index.get());
         assert_eq!(view.single_track, true, "{}", view.single_track);
     }
 

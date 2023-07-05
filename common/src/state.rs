@@ -1,7 +1,7 @@
-use crate::edit_mode::EDIT_MODES;
 use crate::music_panel_field::MusicPanelField;
 use crate::{
-    Index, IndexedValues, InputState, Music, PanelType, PianoRollMode, SelectMode, Time, View,
+    EditMode, Index, IndexedEditModes, IndexedValues, InputState, Music, PanelType, PianoRollMode,
+    SelectMode, Time, View,
 };
 use ini::Ini;
 use serde::{Deserialize, Serialize};
@@ -25,7 +25,7 @@ pub struct State {
     /// The piano roll panel's current mode.
     pub piano_roll_mode: PianoRollMode,
     /// The index of the current piano roll edit mode.
-    pub edit_mode: Index,
+    pub edit_mode: IndexedEditModes,
     /// The current selection.
     pub select_mode: SelectMode,
     /// If true, there are unsaved changes.
@@ -50,7 +50,7 @@ impl State {
             ],
         );
         let piano_roll_mode = PianoRollMode::Time;
-        let edit_mode = Index::new(0, EDIT_MODES.len());
+        let edit_mode = EditMode::indexed();
         let select_mode = SelectMode::Single(None);
         Self {
             music,

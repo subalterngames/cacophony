@@ -4,7 +4,6 @@ use super::{
 use crate::panel::*;
 use common::ini::Ini;
 use common::sizes::get_viewport_size;
-use common::EDIT_MODES;
 
 /// The piano roll view sub-panel.
 pub(super) struct View {
@@ -25,25 +24,26 @@ impl View {
     }
 
     fn set_top_note_by(&self, state: &mut State, add: bool) -> Option<Snapshot> {
-        let mode = EDIT_MODES[state.view.mode.get()];
-        let s0 = state.clone();
-        state.view.set_top_note_by(self.deltas.get_dn(&mode), add);
-        Some(Snapshot::from_states(s0, state))
+        let mode = state.view.mode.get();
+        Some(Snapshot::from_state(
+            |s| s.view.set_top_note_by(self.deltas.get_dn(&mode), add),
+            state,
+        ))
     }
 
     fn set_start_time_by(&self, state: &mut State, add: bool) -> Option<Snapshot> {
-        let mode = EDIT_MODES[state.view.mode.get()];
         let s0 = state.clone();
-        state
-            .view
-            .set_start_time_by(self.deltas.get_dt(&mode, &state.input), add);
+        state.view.set_start_time_by(
+            self.deltas.get_dt(state.view.mode.get_ref(), &state.input),
+            add,
+        );
         Some(Snapshot::from_states(s0, state))
     }
 
     /// Zoom in or out.
     fn zoom(&self, state: &mut State, zoom_in: bool) -> Option<Snapshot> {
         // Get the zoom factor.
-        let mut zoom = self.deltas.get_dz(&EDIT_MODES[state.view.mode.get()]);
+        let mut zoom = self.deltas.get_dz(state.view.mode.get_ref());
         if zoom_in {
             zoom.invert();
         }
@@ -71,15 +71,18 @@ impl Panel for View {
         }
         // Cycle the mode.
         else if input.happened(&InputEvent::PianoRollCycleMode) {
-            let s0 = state.clone();
-            state.view.mode.increment(true);
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state(
+                |s| s.view.mode.index.increment(true),
+                state,
+            ))
         }
         // Move the view to t0.
         else if input.happened(&InputEvent::ViewStart) {
-            let s0 = state.clone();
-            state.view.dt = [0, state.view.get_dt()];
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(
+                |s| &mut s.view.dt,
+                [0, state.view.get_dt()],
+                state,
+            ))
         }
         // Move the view to t1.
         else if input.happened(&InputEvent::ViewEnd) {
@@ -87,17 +90,17 @@ impl Panel for View {
             let track = state.music.get_selected_track().unwrap();
             match track.get_end() {
                 // Move the view to the end.
-                Some(max) => {
-                    let s0 = state.clone();
-                    state.view.dt = [max, max + dt];
-                    Some(Snapshot::from_states(s0, state))
-                }
+                Some(max) => Some(Snapshot::from_state_value(
+                    |s| &mut s.view.dt,
+                    [max, max + dt],
+                    state,
+                )),
                 // Move the view one viewport's dt rightwards.
-                None => {
-                    let s0 = state.clone();
-                    state.view.dt = [dt, dt * 2];
-                    Some(Snapshot::from_states(s0, state))
-                }
+                None => Some(Snapshot::from_state_value(
+                    |s| &mut s.view.dt,
+                    [dt, dt * 2],
+                    state,
+                )),
             }
         }
         // Move the view leftwards.
@@ -126,9 +129,11 @@ impl Panel for View {
         }
         // Zoom default.
         else if state.view.single_track && input.happened(&InputEvent::ViewZoomDefault) {
-            let s0 = state.clone();
-            state.view.dt = [state.view.dt[0], state.view.dt[0] + self.dt_0];
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(
+                |s| &mut s.view.dt,
+                [state.view.dt[0], state.view.dt[0] + self.dt_0],
+                state,
+            ))
         } else {
             None
         }
@@ -147,10 +152,7 @@ impl PianoRollSubPanel for View {
             ],
         );
         s.push(' ');
-        s.push_str(&get_edit_mode_status_tts(
-            &EDIT_MODES[state.view.mode.get()],
-            text,
-        ));
+        s.push_str(&get_edit_mode_status_tts(state.view.mode.get_ref(), text));
         s
     }
 

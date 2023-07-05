@@ -1,5 +1,5 @@
 use crate::panel::*;
-use common::{EditMode, EDIT_MODES};
+use common::{EditMode, IndexedEditModes};
 
 /// A sub-panel (a mode) of the piano roll panel.
 pub(crate) trait PianoRollSubPanel {
@@ -18,14 +18,17 @@ pub(crate) fn get_edit_mode_status_tts(mode: &EditMode, text: &Text) -> String {
     )
 }
 
-pub(crate) fn get_cycle_edit_mode_input_tts(mode: &Index, input: &Input, text: &Text) -> String {
+pub(crate) fn get_cycle_edit_mode_input_tts(
+    mode: &IndexedEditModes,
+    input: &Input,
+    text: &Text,
+) -> String {
     let mut m1 = *mode;
-    m1.increment(true);
-    let index = m1.get();
+    m1.index.increment(true);
     get_tooltip_with_values(
         "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_MODE",
         &[InputEvent::PianoRollCycleMode],
-        &[&text.get_edit_mode(&EDIT_MODES[index])],
+        &[&text.get_edit_mode(m1.get_ref())],
         input,
         text,
     )

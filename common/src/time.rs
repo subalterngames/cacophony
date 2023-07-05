@@ -1,5 +1,5 @@
-use crate::edit_mode::get_index;
-use crate::{Index, U64orF32};
+use crate::edit_mode::*;
+use crate::U64orF32;
 use serde::{Deserialize, Serialize};
 use time::Duration;
 
@@ -24,7 +24,7 @@ pub struct Time {
     /// The beats per minute.
     pub bpm: U64orF32,
     /// The current edit mode.
-    pub mode: Index,
+    pub mode: IndexedEditModes,
 }
 
 impl Time {
@@ -55,7 +55,7 @@ impl Default for Time {
             cursor: 0,
             playback: 0,
             bpm: U64orF32::from(DEFAULT_BPM),
-            mode: get_index(),
+            mode: EditMode::indexed(),
         }
     }
 }

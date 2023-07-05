@@ -43,7 +43,7 @@ pub use tts;
 use view::View;
 mod edit_mode;
 pub mod music_panel_field;
-pub use edit_mode::{EditMode, EDIT_MODES};
+pub use edit_mode::*;
 mod select_mode;
 pub use select_mode::SelectMode;
 mod piano_roll_mode;

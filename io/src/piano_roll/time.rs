@@ -1,7 +1,6 @@
 use super::{get_edit_mode_status_tts, EditModeDeltas, PianoRollSubPanel};
 use crate::panel::*;
 use common::ini::Ini;
-use common::*;
 
 /// The piano roll time sub-panel.
 pub(super) struct Time {
@@ -30,8 +29,8 @@ impl Time {
     /// Move the cursor time.
     fn set_cursor(&self, state: &mut State, add: bool) -> Option<Snapshot> {
         let s0 = state.clone();
-        let mode = EDIT_MODES[state.time.mode.get()];
-        let dt = self.deltas.get_dt(&mode, &state.input);
+        let mode = state.time.mode.get_ref();
+        let dt = self.deltas.get_dt(mode, &state.input);
         if add {
             state.time.cursor += dt;
         } else {
@@ -43,8 +42,8 @@ impl Time {
     /// Move the playback time.
     fn set_playback(&self, state: &mut State, add: bool) -> Option<Snapshot> {
         let s0 = state.clone();
-        let mode = EDIT_MODES[state.time.mode.get()];
-        let dt = self.deltas.get_dt(&mode, &state.input);
+        let mode = state.time.mode.get_ref();
+        let dt = self.deltas.get_dt(mode, &state.input);
         if add {
             state.time.playback += dt;
         } else {
@@ -76,53 +75,66 @@ impl Panel for Time {
         }
         // Cycle the mode.
         else if input.happened(&InputEvent::PianoRollCycleMode) {
-            let s0 = state.clone();
-            state.time.mode.increment(true);
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state(
+                |s| s.time.mode.index.increment(true),
+                state,
+            ))
         }
         // Move the cursor.
         else if input.happened(&InputEvent::TimeCursorStart) {
-            let s0 = state.clone();
-            state.time.cursor = 0;
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(|s| &mut s.time.cursor, 0, state))
         } else if input.happened(&InputEvent::TimeCursorEnd) {
-            let s0 = state.clone();
-            state.time.cursor = Time::get_end(state);
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(
+                |s| &mut s.time.cursor,
+                Time::get_end(state),
+                state,
+            ))
         } else if input.happened(&InputEvent::TimeCursorLeft) {
             self.set_cursor(state, false)
         } else if input.happened(&InputEvent::TimeCursorRight) {
             self.set_cursor(state, true)
         } else if input.happened(&InputEvent::TimeCursorPlayback) {
-            let s0 = state.clone();
-            state.time.cursor = state.time.playback;
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(
+                |s: &mut State| &mut s.time.cursor,
+                state.time.playback,
+                state,
+            ))
         } else if input.happened(&InputEvent::TimeCursorBeat) {
-            let s0 = state.clone();
-            state.time.cursor = Time::get_nearest_beat(state.time.cursor, state);
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(
+                |s: &mut State| &mut s.time.cursor,
+                Time::get_nearest_beat(state.time.cursor, state),
+                state,
+            ))
         }
         // Move the playback.
         else if input.happened(&InputEvent::TimePlaybackStart) {
-            let s0 = state.clone();
-            state.time.playback = 0;
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(
+                |s: &mut State| &mut s.time.playback,
+                0,
+                state,
+            ))
         } else if input.happened(&InputEvent::TimePlaybackEnd) {
-            let s0 = state.clone();
-            state.time.playback = Time::get_end(state);
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(
+                |s: &mut State| &mut s.time.playback,
+                Time::get_end(state),
+                state,
+            ))
         } else if input.happened(&InputEvent::TimePlaybackLeft) {
             self.set_playback(state, false)
         } else if input.happened(&InputEvent::TimePlaybackRight) {
             self.set_playback(state, true)
         } else if input.happened(&InputEvent::TimePlaybackCursor) {
-            let s0 = state.clone();
-            state.time.playback = state.time.cursor;
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(
+                |s: &mut State| &mut s.time.playback,
+                state.time.cursor,
+                state,
+            ))
         } else if input.happened(&InputEvent::TimePlaybackBeat) {
-            let s0 = state.clone();
-            state.time.playback = Time::get_nearest_beat(state.time.playback, state);
-            Some(Snapshot::from_states(s0, state))
+            Some(Snapshot::from_state_value(
+                |s| &mut s.time.playback,
+                Time::get_nearest_beat(state.time.playback, state),
+                state,
+            ))
         } else {
             None
         }
@@ -131,7 +143,7 @@ impl Panel for Time {
 
 impl PianoRollSubPanel for Time {
     fn get_status_tts(&self, state: &State, text: &Text) -> String {
-        let mut s = get_edit_mode_status_tts(&EDIT_MODES[state.time.mode.get()], text);
+        let mut s = get_edit_mode_status_tts(state.time.mode.get_ref(), text);
         s.push(' ');
         s.push_str(&text.get_with_values(
             "PIANO_ROLL_PANEL_STATUS_TTS_TIME",
