@@ -287,7 +287,7 @@ impl Synthesizer {
 
             if let Some(time) = s.state.time.time {
                 // Execute any commands that are at t0 = t.
-                if s.events_queue[0].time == time {
+                if !s.events_queue.is_empty() && s.events_queue[0].time == time {
                     s.events_queue
                         .iter()
                         .filter(|e| e.time == time)
