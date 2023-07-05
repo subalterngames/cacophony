@@ -142,7 +142,8 @@ impl Synthesizer {
                                             time: *time,
                                             event: MidiEvent::AllNotesOff { channel: *c },
                                         });
-                                    })
+                                    });
+                                    s.sort_queue();
                                 }
                                 // Turn off all sound.
                                 Command::SoundOff => {
@@ -179,6 +180,7 @@ impl Synthesizer {
                                             key: k,
                                         },
                                     });
+                                    s.sort_queue();
                                 }
                                 // Schedule a note-on and a note-off.
                                 Command::NoteOnAt {
@@ -202,6 +204,7 @@ impl Synthesizer {
                                         time: *end,
                                         event: MidiEvent::NoteOff { channel, key },
                                     });
+                                    s.sort_queue();
                                 }
                                 // Note-off ASAP.
                                 Command::NoteOff { channel, key } => Synthesizer::send_event(
@@ -284,21 +287,25 @@ impl Synthesizer {
 
             if let Some(time) = s.state.time.time {
                 // Execute any commands that are at t0 = t.
-                s.events_queue
-                    .iter()
-                    .filter(|e| e.time == time)
-                    .for_each(|e| {
-                        // Stop time.
-                        if let MidiEvent::AllNotesOff { channel: _ } = e.event {
-                            s.state.time.time = None;
-                            s.state.time.music = false;
-                        }
-                        // Send.
-                        Synthesizer::send_event(
-                            Synthesizer::copy_midi_event(&e.event),
-                            &mut s.synth,
-                        )
-                    });
+                if s.events_queue[0].time == time {
+                    s.events_queue
+                        .iter()
+                        .filter(|e| e.time == time)
+                        .for_each(|e| {
+                            // Stop time.
+                            if let MidiEvent::AllNotesOff { channel: _ } = e.event {
+                                s.state.time.time = None;
+                                s.state.time.music = false;
+                            }
+                            // Send.
+                            Synthesizer::send_event(
+                                Synthesizer::copy_midi_event(&e.event),
+                                &mut s.synth,
+                            )
+                        });
+                    // Remove the events.
+                    s.events_queue.retain(|e| e.time != time);
+                }
             }
 
             // Either export audio or play the file.
@@ -496,5 +503,10 @@ impl Synthesizer {
         self.synth
             .program_select(channel, id, bank, preset)
             .unwrap();
+    }
+
+    /// Sort the events queue by time.
+    fn sort_queue(&mut self) {
+        self.events_queue.sort_by(|a, b| a.time.cmp(&b.time))
     }
 }
