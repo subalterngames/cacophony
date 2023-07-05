@@ -1,7 +1,7 @@
 use crate::fraction::*;
 use crate::note::MIDDLE_C;
 use crate::sizes::*;
-use crate::{IndexedEditModes, MAX_NOTE, MIN_NOTE, PPQ_U};
+use crate::{EditMode, IndexedEditModes, MAX_NOTE, MIN_NOTE, PPQ_U};
 use ini::Ini;
 use serde::{Deserialize, Serialize};
 
@@ -38,7 +38,7 @@ impl View {
         let n0 = MIDDLE_C + h / 2;
         let n1 = n0 - h;
         let dn = [n0, n1];
-        let mode = IndexedEditModes::default();
+        let mode = EditMode::indexed();
         Self {
             dt,
             dn,

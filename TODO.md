@@ -58,6 +58,7 @@
 - [x] Copy+paste crash
 - [x] Wrong gain on reload
 - [x] Crash when adding a track if notes are selected
+- [ ] We should save relative paths only
 
 ## Misc.
 
