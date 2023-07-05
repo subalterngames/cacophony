@@ -45,7 +45,7 @@
 - [x] Can't add spaces or underscores to alphanumeric input
 - [ ] Audio crackling with some soundfonts??
 - [x] Audio playing on music name input, save file input
-- [ ] Open file name doesn't change if you're saving or exporting
+- [x] Open file name doesn't change if you're saving or exporting
 - [ ] Play only works in piano roll panel
 - [x] Can't delete a track
 - [x] Bad zoom
@@ -57,7 +57,7 @@
 - [x] View dt rounds incorrectly on reload
 - [x] Copy+paste crash
 - [x] Wrong gain on reload
-- [ ] Crash when adding a track if notes are selected
+- [x] Crash when adding a track if notes are selected
 
 ## Misc.
 

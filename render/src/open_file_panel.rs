@@ -1,6 +1,7 @@
 use crate::get_page;
 use crate::panel::*;
 use crate::Popup;
+use common::hashbrown::HashMap;
 use common::open_file::*;
 use text::truncate;
 
@@ -10,6 +11,8 @@ const EXTENSION_WIDTH: u32 = 4;
 pub(crate) struct OpenFilePanel {
     /// The panel.
     panel: Panel,
+    /// The titles for each open-file type.
+    titles: HashMap<OpenFileType, LabelRectangle>,
     /// The background of the filename prompt.
     prompt: Rectangle,
     /// The filename extension.
@@ -50,6 +53,37 @@ impl OpenFilePanel {
 
         let popup = Popup::new(PanelType::OpenFile);
 
+        // Define the titles.
+        let mut titles = HashMap::new();
+        titles.insert(
+            OpenFileType::SoundFont,
+            LabelRectangle::new(
+                panel.title.label.position,
+                text.get("OPEN_FILE_PANEL_TITLE_SOUNDFONT"),
+            ),
+        );
+        titles.insert(
+            OpenFileType::ReadSave,
+            LabelRectangle::new(
+                panel.title.label.position,
+                text.get("OPEN_FILE_PANEL_TITLE_READ_SAVE"),
+            ),
+        );
+        titles.insert(
+            OpenFileType::WriteSave,
+            LabelRectangle::new(
+                panel.title.label.position,
+                text.get("OPEN_FILE_PANEL_TITLE_WRITE_SAVE"),
+            ),
+        );
+        titles.insert(
+            OpenFileType::Export,
+            LabelRectangle::new(
+                panel.title.label.position,
+                text.get("OPEN_FILE_PANEL_TITLE_EXPORT"),
+            ),
+        );
+
         Self {
             panel,
             prompt,
@@ -57,6 +91,7 @@ impl OpenFilePanel {
             input,
             input_rect,
             popup,
+            titles,
         }
     }
 }
@@ -74,8 +109,18 @@ impl Drawable for OpenFilePanel {
     ) {
         let focus = self.panel.has_focus(state);
         self.popup.update(renderer);
+        let focus_color = if focus {
+            ColorKey::FocusDefault
+        } else {
+            ColorKey::NoFocus
+        };
         // Draw the panel background.
-        self.panel.update(focus, renderer);
+        renderer.rectangle(&self.panel.rect, &ColorKey::Background);
+        renderer.border(&self.panel.rect, &focus_color);
+        // Draw the title.
+        let title = &self.titles[&paths_state.open_file_type];
+        renderer.rectangle(&title.rect, &ColorKey::Background);
+        renderer.text(&title.label, &focus_color);
         // Draw the working directory.
         let mut x = self.panel.rect.position[0] + 1;
         let mut y = self.panel.rect.position[1] + 1;

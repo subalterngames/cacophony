@@ -285,7 +285,7 @@ impl Panel for TracksPanel {
                 state.music.selected = Some(selected + 1);
                 state.select_mode = match &state.select_mode {
                     SelectMode::Single(_) => SelectMode::Single(None),
-                    SelectMode::Many(_) => SelectMode::Many(None)
+                    SelectMode::Many(_) => SelectMode::Many(None),
                 };
                 return Some(Snapshot::from_states(s0, state));
             }
@@ -295,7 +295,7 @@ impl Panel for TracksPanel {
                 state.music.selected = Some(selected - 1);
                 state.select_mode = match &state.select_mode {
                     SelectMode::Single(_) => SelectMode::Single(None),
-                    SelectMode::Many(_) => SelectMode::Many(None)
+                    SelectMode::Many(_) => SelectMode::Many(None),
                 };
                 return Some(Snapshot::from_states(s0, state));
             }

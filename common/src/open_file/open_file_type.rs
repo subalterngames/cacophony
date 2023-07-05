@@ -1,5 +1,5 @@
 /// This defines the files we care about and what we can do with them.
-#[derive(Debug, Eq, PartialEq, Clone, Default)]
+#[derive(Debug, Eq, PartialEq, Clone, Default, Hash)]
 pub enum OpenFileType {
     /// Read a save file.
     ReadSave,
