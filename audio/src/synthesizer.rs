@@ -299,8 +299,6 @@ impl Synthesizer {
                             &mut s.synth,
                         )
                     });
-                // Remove those commands.
-                s.events_queue.retain(|e| e.time != time);
             }
 
             // Either export audio or play the file.

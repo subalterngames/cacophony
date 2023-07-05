@@ -280,7 +280,7 @@ impl Panel for TracksPanel {
             }
             // Select a track.
             else if let Some(snapshot) = select_track(state, input) {
-                return Some(snapshot)
+                return Some(snapshot);
             }
             // Track-specific operations.
             else {

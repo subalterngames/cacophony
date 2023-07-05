@@ -1,6 +1,6 @@
 use super::*;
-use crate::{combine_tracks_to_commands, select_track};
 use crate::panel::*;
+use crate::{combine_tracks_to_commands, select_track};
 use common::config::parse_fractions;
 use common::ini::Ini;
 use common::{Index, Note, PianoRollMode, SelectMode, U64orF32, PPQ_F};
@@ -136,7 +136,7 @@ impl Panel for PianoRollPanel {
         // Select a track.
         if !state.view.single_track {
             if let Some(snapshot) = select_track(state, input) {
-                return Some(snapshot)
+                return Some(snapshot);
             }
         }
         // Do nothing.
@@ -464,8 +464,7 @@ impl Panel for PianoRollPanel {
             PianoRollPanel::set_mode(PianoRollMode::Time, state)
         } else if input.happened(&InputEvent::PianoRollSetView) {
             PianoRollPanel::set_mode(PianoRollMode::View, state)
-        }
-        else {
+        } else {
             // Sub-panel actions.
             let mode = state.piano_roll_mode;
             match mode {
