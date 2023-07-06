@@ -470,7 +470,7 @@ impl IO {
                 },
                 Command::PlayMusic { time: t0 },
             ];
-            let notes = get_playback_notes(state, track);
+            let notes = get_playback_notes(track);
             for note in notes.iter() {
                 // Convert the start and duration to sample lengths.
                 let start = state.time.ppq_to_samples(note.start, framerate_f);
@@ -546,13 +546,12 @@ fn get_playable_tracks(music: &Music) -> Vec<&MidiTrack> {
 }
 
 /// Returns all notes in the track that can be played (they are after t0).
-fn get_playback_notes(state: &State, track: &MidiTrack) -> Vec<Note> {
+fn get_playback_notes(track: &MidiTrack) -> Vec<Note> {
     let gain = track.gain as f64 / MAX_VOLUME as f64;
     let mut notes = vec![];
     for note in track
         .notes
         .iter()
-        .filter(|n| n.start >= state.time.playback)
     {
         let mut n1 = *note;
         n1.velocity = (n1.velocity as f64 * gain) as u8;
@@ -578,7 +577,7 @@ fn combine_tracks_to_commands(
     ];
     // Get playable tracks.
     for track in get_playable_tracks(&state.music) {
-        let notes = get_playback_notes(state, track);
+        let notes = get_playback_notes(track);
         for note in notes.iter() {
             // Convert the start and duration to sample lengths.
             let start = state.time.ppq_to_samples(note.start, framerate);

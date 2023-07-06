@@ -67,7 +67,8 @@
 - [x] Incorrect default mp3 quality
 - [x] Crash when setting artist
 - [x] Export settings don't save
-- [ ] Export seems to only include some notes sometimes, and can also crash due to not enough samples
+- [x] Export seems to only include some notes sometimes
+- [ ] Exporter can crash due to not enough samples
 - [x] Multi track wav doesn't append silence
 
 ## Misc.
