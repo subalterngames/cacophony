@@ -78,7 +78,7 @@ impl OpenFilePanel {
         let open_file_type = OpenFileType::Export;
         paths_state.children.set(
             &paths_state.exports.directory,
-            &[exporter.export_type.get().get_extension(true).to_string()],
+            &[exporter.export_type.get().get_extension(false).to_string()],
             None,
         );
         self.enable(open_file_type, state, paths_state);

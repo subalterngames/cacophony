@@ -63,7 +63,7 @@
 - [ ] Playing note highlighting is very off
 - [ ] View numbers are wrong in multitrack
 - [ ] Multitrack cuts off one early
-- [ ] Export panel doesn't list mp3s
+- [x] Export panel doesn't list mp3s
 - [x] Incorrect default mp3 quality
 - [x] Crash when setting artist
 - [x] Export settings don't save
@@ -75,6 +75,7 @@
 
 - [x] Qwerty note play
 - [x] Splash version
+- [ ] We need to see the select time range and maybe selection should be by time range.
 
 ## Piano Roll Panel
 
