@@ -558,6 +558,7 @@ fn get_playback_notes(state: &State, track: &MidiTrack) -> Vec<Note> {
         n1.velocity = (n1.velocity as f64 * gain) as u8;
         notes.push(n1);
     }
+    notes.sort();
     notes
 }
 /// Converts all playable tracks to note-on commands.
@@ -577,8 +578,7 @@ fn combine_tracks_to_commands(
     ];
     // Get playable tracks.
     for track in get_playable_tracks(&state.music) {
-        let mut notes = get_playback_notes(state, track);
-        notes.sort();
+        let notes = get_playback_notes(state, track);
         for note in notes.iter() {
             // Convert the start and duration to sample lengths.
             let start = state.time.ppq_to_samples(note.start, framerate);

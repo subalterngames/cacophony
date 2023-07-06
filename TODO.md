@@ -60,6 +60,15 @@
 - [x] Crash when adding a track if notes are selected
 - [ ] We should save relative paths only
 - [x] Wrong soundfont if there is more than one!
+- [ ] Playing note highlighting is very off
+- [ ] View numbers are wrong in multitrack
+- [ ] Multitrack cuts off one early
+- [ ] Export panel doesn't list mp3s
+- [ ] Incorrect default mp3 quality
+- [x] Crash when setting artist
+- [ ] Export settings don't save
+- [ ] Export seems to only include some notes sometimes, and can also crash due to not enough samples
+- [ ] Multi track wav doesn't append silence
 
 ## Misc.
 

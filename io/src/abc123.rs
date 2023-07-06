@@ -26,7 +26,17 @@ impl AlphanumericModifiable for Option<String> {
     }
 
     fn modify(&mut self, input: &Input) -> bool {
-        input.modify_string_abc123(self.as_mut().unwrap())
+        let mut value = match self {
+            Some(string) => string.clone(),
+            None => String::new()
+        };
+        if input.modify_string_abc123(&mut value) {
+            *self = if value.is_empty() { None } else { Some(value)};
+            true
+        }
+        else {
+            false
+        }
     }
 }
 
