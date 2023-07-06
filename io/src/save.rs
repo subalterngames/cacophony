@@ -63,7 +63,13 @@ impl Save {
     }
 
     /// Load a file and deserialize.
-    pub fn read(path: &PathBuf, state: &mut State, conn: &mut Conn, paths_state: &mut PathsState, exporter: &mut Exporter) {
+    pub fn read(
+        path: &PathBuf,
+        state: &mut State,
+        conn: &mut Conn,
+        paths_state: &mut PathsState,
+        exporter: &mut Exporter,
+    ) {
         match File::open(path) {
             Ok(mut file) => {
                 let mut string = String::new();

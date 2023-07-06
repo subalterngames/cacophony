@@ -475,7 +475,11 @@ impl Exporter {
                 ExportType::Wav => {
                     // Write silence.
                     let mut writer = WavWriter::append(path).unwrap();
-                    let i16_writer = writer.get_i16_writer(silence * 2);
+                    let mut i16_writer = writer.get_i16_writer(silence * 2);
+                    for _ in 0..silence {
+                        i16_writer.write_sample(0);
+                        i16_writer.write_sample(0);
+                    }
                     i16_writer.flush().unwrap();
                     writer.finalize().unwrap();
                 }
