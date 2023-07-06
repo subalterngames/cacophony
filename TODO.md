@@ -64,9 +64,9 @@
 - [ ] View numbers are wrong in multitrack
 - [ ] Multitrack cuts off one early
 - [ ] Export panel doesn't list mp3s
-- [ ] Incorrect default mp3 quality
+- [x] Incorrect default mp3 quality
 - [x] Crash when setting artist
-- [ ] Export settings don't save
+- [x] Export settings don't save
 - [ ] Export seems to only include some notes sometimes, and can also crash due to not enough samples
 - [ ] Multi track wav doesn't append silence
 

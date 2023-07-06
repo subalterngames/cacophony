@@ -63,7 +63,7 @@ impl Save {
     }
 
     /// Load a file and deserialize.
-    pub fn read(path: &PathBuf, state: &mut State, conn: &mut Conn, paths_state: &mut PathsState) {
+    pub fn read(path: &PathBuf, state: &mut State, conn: &mut Conn, paths_state: &mut PathsState, exporter: &mut Exporter) {
         match File::open(path) {
             Ok(mut file) => {
                 let mut string = String::new();
@@ -77,6 +77,9 @@ impl Save {
 
                                 // Set the paths.
                                 *paths_state = s.paths_state;
+
+                                // Set the exporter.
+                                *exporter = s.exporter;
 
                                 // Set the synthesizer.
                                 // Set the gain.

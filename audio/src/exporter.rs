@@ -51,16 +51,16 @@ pub const MP3_BIT_RATES: [Bitrate; 16] = [
 ];
 /// An ordererd list of mp3 qualities.
 pub const MP3_QUALITIES: [Quality; 10] = [
-    Quality::Best,
-    Quality::SecondBest,
-    Quality::NearBest,
-    Quality::VeryNice,
-    Quality::Nice,
-    Quality::Good,
-    Quality::Decent,
-    Quality::Ok,
-    Quality::SecondWorst,
     Quality::Worst,
+    Quality::SecondWorst,
+    Quality::Ok,
+    Quality::Decent,
+    Quality::Good,
+    Quality::Nice,
+    Quality::VeryNice,
+    Quality::NearBest,
+    Quality::SecondBest,
+    Quality::Best,
 ];
 
 /// This struct contains all export settings, as well as exporter functions.
@@ -167,9 +167,9 @@ impl Exporter {
         Self {
             framerate: U64orF32::from(DEFAULT_FRAMERATE),
             export_type,
-            mp3_bit_rate: Index::new(8, MP3_BIT_RATES.len()),
-            mp3_quality: Index::new(0, MP3_QUALITIES.len()),
-            ogg_quality: Index::new(5, 10),
+            mp3_bit_rate: Index::new(12, MP3_BIT_RATES.len()),
+            mp3_quality: Index::new(9, MP3_QUALITIES.len()),
+            ogg_quality: Index::new(9, 10),
             wav_settings,
             mid_settings,
             mp3_settings,

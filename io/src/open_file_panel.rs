@@ -295,7 +295,7 @@ impl Panel for OpenFilePanel {
                         // Get the path.
                         let path = paths_state.children.children[selected].path.clone();
                         // Read the save file.
-                        Save::read(&path, state, conn, paths_state);
+                        Save::read(&path, state, conn, paths_state, exporter);
                         // Set the saves directory.
                         paths_state.saves = FileAndDirectory::new_path(path);
                     }
