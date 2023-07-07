@@ -9,8 +9,7 @@ mod top_bar;
 mod viewable_notes;
 mod volume;
 use super::FocusableTexture;
-use common::State;
-use common::{MAX_NOTE, MIN_NOTE};
+use common::{State, U64orF32, MAX_NOTE, MIN_NOTE};
 use multi_track::MultiTrack;
 use text::ppq_to_string;
 use top_bar::TopBar;
@@ -121,6 +120,7 @@ impl PianoRollPanel {
         color: &ColorKey,
         state: &State,
         renderer: &Renderer,
+        dt: &[U64orF32; 2],
     ) {
         // Get the pixel position of the start coordinate.
         let x0 = x as f32 * self.cell_size[0];
@@ -142,7 +142,7 @@ impl PianoRollPanel {
                     time,
                     self.piano_roll_rows_rect[0],
                     self.piano_roll_rows_rect[2],
-                    &ViewableNotes::get_dt(&state.view.dt),
+                    dt,
                 ),
                 true,
             )
@@ -325,12 +325,14 @@ impl Drawable for PianoRollPanel {
         }
 
         // Draw time lines.
+        let dt = ViewableNotes::get_dt(&state.view.dt);
         self.draw_time_lines(
             cursor_line_x0,
             state.time.cursor,
             &cursor_color,
             state,
             renderer,
+            &dt,
         );
         self.draw_time_lines(
             playback_line_x0,
@@ -338,6 +340,36 @@ impl Drawable for PianoRollPanel {
             &playback_color,
             state,
             renderer,
+            &dt,
         );
+        // Show where we are in the music.
+        if conn.state.time.music {
+            if let Some(music_time) = conn.state.time.time {
+                let music_time = state.time.samples_to_ppq(music_time, conn.framerate);
+                if music_time >= state.view.dt[0] && music_time <= state.view.dt[1] {
+                    let x = get_note_x(
+                        music_time,
+                        self.piano_roll_rows_rect[0],
+                        self.piano_roll_rows_rect[2],
+                        &dt,
+                    );
+                    let music_color = if focus {
+                        ColorKey::FocusDefault
+                    } else {
+                        ColorKey::NoFocus
+                    };
+                    renderer.vertical_line_pixel(
+                        x,
+                        self.piano_roll_rows_rect[1],
+                        if state.view.single_track {
+                            self.time_line_bottoms[0]
+                        } else {
+                            self.time_line_bottoms[1]
+                        },
+                        &music_color,
+                    );
+                }
+            }
+        }
     }
 }

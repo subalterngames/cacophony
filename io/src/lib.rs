@@ -549,10 +549,7 @@ fn get_playable_tracks(music: &Music) -> Vec<&MidiTrack> {
 fn get_playback_notes(track: &MidiTrack) -> Vec<Note> {
     let gain = track.gain as f64 / MAX_VOLUME as f64;
     let mut notes = vec![];
-    for note in track
-        .notes
-        .iter()
-    {
+    for note in track.notes.iter() {
         let mut n1 = *note;
         n1.velocity = (n1.velocity as f64 * gain) as u8;
         notes.push(n1);
