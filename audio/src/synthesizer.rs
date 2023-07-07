@@ -33,10 +33,9 @@ impl SoundFontBanks {
                 banks.insert(b, presets);
             }
         });
-        Self {
-            id: synth.add_font(font, true),
-            banks,
-        }
+
+        let id = synth.add_font(font, true);
+        Self { id, banks }
     }
 }
 
@@ -237,7 +236,7 @@ impl Synthesizer {
                                     s.state.programs.remove(channel);
                                 }
                                 // Load SoundFont.
-                                Command::LoadSoundFont { channel, path } => match s
+                                Command::LoadSoundFont { channel, path } => match &s
                                     .soundfonts
                                     .get(path)
                                 {
@@ -250,6 +249,20 @@ impl Synthesizer {
                                             s.soundfonts.insert(path.clone(), banks);
                                             // Set the default program.
                                             s.set_program_default(*channel, path);
+                                            // Restore the other programs.
+                                            let programs = s.state.programs.clone();
+                                            for program in
+                                                programs.iter().filter(|p| p.0 != channel)
+                                            {
+                                                s.synth
+                                                    .program_select(
+                                                        *program.0,
+                                                        s.soundfonts[&program.1.path].id,
+                                                        program.1.bank,
+                                                        program.1.preset,
+                                                    )
+                                                    .unwrap();
+                                            }
                                         }
                                         Err(error) => {
                                             panic!("Failed to load SoundFont: {:?}", error)
@@ -484,6 +497,7 @@ impl Synthesizer {
             num_presets,
             preset_index,
             preset_name,
+            preset,
         };
         // Remember the program.
         self.state.programs.insert(channel, program);

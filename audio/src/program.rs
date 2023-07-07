@@ -14,6 +14,8 @@ pub struct Program {
     pub bank: u32,
     /// The total number of presets in the bank.
     pub num_presets: usize,
+    /// The preset number.
+    pub preset: u8,
     /// The index of the preset in `presets`.
     pub preset_index: usize,
     /// The name of the preset.
@@ -28,6 +30,7 @@ impl Clone for Program {
             bank_index: self.bank_index,
             bank: self.bank,
             num_presets: self.num_presets,
+            preset: self.preset,
             preset_index: self.preset_index,
             preset_name: self.preset_name.clone(),
         }
