@@ -9,7 +9,7 @@ mod top_bar;
 mod viewable_notes;
 mod volume;
 use super::FocusableTexture;
-use common::{State, U64orF32, MAX_NOTE, MIN_NOTE};
+use common::{State, U64orF32, MAX_NOTE};
 use multi_track::MultiTrack;
 use text::ppq_to_string;
 use top_bar::TopBar;
@@ -200,7 +200,7 @@ impl Drawable for PianoRollPanel {
             let texture = self.note_names.get(focus);
             let rect = [
                 0,
-                ((MAX_NOTE - MIN_NOTE) - state.view.dn[0]) as u32,
+                (MAX_NOTE - state.view.dn[0]) as u32,
                 PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
                 self.piano_roll_height,
             ];
