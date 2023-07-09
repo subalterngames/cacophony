@@ -9,12 +9,14 @@ mod top_bar;
 mod viewable_notes;
 mod volume;
 use super::FocusableTexture;
-use common::{State, U64orF32, MAX_NOTE};
+use common::{SelectMode, State, U64orF32, MAX_NOTE, PPQ_U};
 use multi_track::MultiTrack;
 use text::ppq_to_string;
 use top_bar::TopBar;
 use viewable_notes::*;
 use volume::Volume;
+
+const TIME_PADDING: u32 = 3;
 
 /// Draw the piano roll panel.
 pub struct PianoRollPanel {
@@ -223,7 +225,7 @@ impl Drawable for PianoRollPanel {
             &[&ppq_to_string(state.time.cursor)],
         );
         let cursor_string_width = cursor_string.chars().count() as u32;
-        let playback_x = cursor_x + cursor_string_width + 3;
+        let playback_x = cursor_x + cursor_string_width + TIME_PADDING;
         let cursor_label = Label {
             text: cursor_string,
             position: [cursor_x, self.time_y],
@@ -243,12 +245,61 @@ impl Drawable for PianoRollPanel {
             "PIANO_ROLL_PANEL_PLAYBACK_TIME",
             &[&ppq_to_string(state.time.playback)],
         );
-        let playback_line_x0 = playback_x + playback_string.chars().count() as u32 / 2;
+        let playback_string_width = playback_string.chars().count() as u32;
+        let playback_line_x0 = playback_x + playback_string_width / 2;
+        let selection_x = playback_x + playback_string_width + TIME_PADDING;
+        let (selection_string, selected) = match &state.select_mode {
+            SelectMode::Single(index) => match index {
+                Some(index) => {
+                    let note = &state.music.get_selected_track().unwrap().notes[*index];
+                    (
+                        text.get_with_values(
+                            "PIANO_ROLL_PANEL_SELECTED_SINGLE",
+                            &[note.get_name(), &(note.start / PPQ_U).to_string()],
+                        ),
+                        true,
+                    )
+                }
+                None => (text.get("PIANO_ROLL_PANEL_SELECTED_NONE"), false),
+            },
+            SelectMode::Many(indices) => match indices {
+                Some(_) => {
+                    let mut notes = state.select_mode.get_notes(&state.music).unwrap();
+                    notes.sort();
+                    let min = notes[0].start / PPQ_U;
+                    let max = notes.last().unwrap().end / PPQ_U;
+                    (
+                        text.get_with_values(
+                            "PIANO_ROLL_PANEL_SELECTED_MANY",
+                            &[&min.to_string(), &max.to_string()],
+                        ),
+                        true,
+                    )
+                }
+                None => (text.get("PIANO_ROLL_PANEL_SELECTED_NONE"), false),
+            },
+        };
         let playback_label = Label {
             text: playback_string,
             position: [playback_x, self.time_y],
         };
         renderer.text(&playback_label, &playback_color);
+        let selection_label = Label {
+            text: selection_string,
+            position: [selection_x, self.time_y],
+        };
+        renderer.text(
+            &selection_label,
+            &if focus {
+                if selected {
+                    ColorKey::NoteSelected
+                } else {
+                    ColorKey::SelectedNotesBackground
+                }
+            } else {
+                ColorKey::NoFocus
+            },
+        );
 
         // Time delta label.
         let dt_string = text.get_with_values(

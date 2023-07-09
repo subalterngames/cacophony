@@ -76,7 +76,7 @@
 
 - [x] Qwerty note play
 - [x] Splash version
-- [ ] We need to see the select time range and maybe selection should be by time range.
+- [x] We need to see the select time range and maybe selection should be by time range.
 - [ ] View should move while playing
 - [x] Playing line
 
