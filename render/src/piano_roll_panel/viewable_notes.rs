@@ -54,7 +54,7 @@ impl<'a> ViewableNotes<'a> {
         track: &'a MidiTrack,
         state: &'a State,
         conn: &Conn,
-        exporter: &Exporter,
+        _: &Exporter,
         focus: bool,
         dn: [u8; 2],
     ) -> Self {
@@ -64,7 +64,7 @@ impl<'a> ViewableNotes<'a> {
                 .state
                 .time
                 .time
-                .map(|time| state.time.samples_to_ppq(time, exporter.framerate.get_f())),
+                .map(|time| state.time.samples_to_ppq(time, conn.framerate)),
             false => None,
         };
 

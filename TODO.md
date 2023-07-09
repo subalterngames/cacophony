@@ -60,7 +60,7 @@
 - [x] Crash when adding a track if notes are selected
 - [ ] We should save relative paths only
 - [x] Wrong soundfont if there is more than one!
-- [ ] Playing note highlighting is very off
+- [x] Playing note highlighting is very off
 - [x] ~~View numbers are wrong in multitrack~~
 - [x] Multitrack cuts off one early
 - [x] Export panel doesn't list mp3s
