@@ -61,7 +61,7 @@
 - [ ] We should save relative paths only
 - [x] Wrong soundfont if there is more than one!
 - [ ] Playing note highlighting is very off
-- [ ] View numbers are wrong in multitrack
+- [x] ~~View numbers are wrong in multitrack~~
 - [x] Multitrack cuts off one early
 - [x] Export panel doesn't list mp3s
 - [x] Incorrect default mp3 quality
@@ -77,7 +77,6 @@
 - [x] Qwerty note play
 - [x] Splash version
 - [x] We need to see the select time range and maybe selection should be by time range.
-- [ ] View should move while playing
 - [x] Playing line
 
 ## Piano Roll Panel
@@ -90,6 +89,8 @@
 - [x] Playback to cursor
 - [x] Up/down tracks in multi-track
 - [ ] Qwerty note input TTS
+- [ ] Multi-track zoom
+- [ ] View should move while playing
 
 ## Tracks view
 
