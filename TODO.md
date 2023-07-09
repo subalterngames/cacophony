@@ -62,7 +62,7 @@
 - [x] Wrong soundfont if there is more than one!
 - [ ] Playing note highlighting is very off
 - [ ] View numbers are wrong in multitrack
-- [ ] Multitrack cuts off one early
+- [x] Multitrack cuts off one early
 - [x] Export panel doesn't list mp3s
 - [x] Incorrect default mp3 quality
 - [x] Crash when setting artist

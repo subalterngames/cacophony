@@ -51,7 +51,7 @@ impl MultiTrack {
         ];
         let size = [
             piano_roll_panel_size[0] - 2 - PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
-            piano_roll_panel_size[1] - PIANO_ROLL_PANEL_TOP_BAR_HEIGHT - 1,
+            piano_roll_panel_size[1],
         ];
         let rect = Rectangle::new(position, size);
         let position_f = renderer.grid_to_pixel(position);
