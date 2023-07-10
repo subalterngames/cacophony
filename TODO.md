@@ -80,6 +80,7 @@
 - [x] Splash version
 - [x] We need to see the select time range and maybe selection should be by time range.
 - [x] Playing line
+- [ ] A faster export is probably possible
 
 ## Piano Roll Panel
 

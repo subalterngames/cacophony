@@ -523,6 +523,7 @@ impl IO {
         }
         self.export_queue.push((
             vec![
+                Command::StopMusic,
                 Command::SetExporter {
                     exporter: Box::new(e0),
                 },
