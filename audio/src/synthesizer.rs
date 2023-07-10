@@ -366,18 +366,27 @@ impl Synthesizer {
                             s.export_buffer[0].clear();
                             s.export_buffer[1].clear();
                         }
-                    } else {
-                        // Read a sample.
-                        let sample = s.synth.read_next();
-                        // Write the sample.
-                        s.export_buffer[0].push(sample.0);
-                        s.export_buffer[1].push(sample.1);
-                        // Increment the number of exported samples.
-                        export_state.exported += 1;
-                        // Increment time.
-                        if let Some(time) = s.state.time.time.as_mut() {
+                    } else if let Some(time) = s.state.time.time.as_mut() {
+                        // There are no more events or the next event is right now. Export 1 sample.
+                        if s.events_queue.is_empty() || s.events_queue[0].time == *time {
                             *time += 1;
+                            s.export_sample();
                         }
+                        // Export up to the next event.
+                        else {
+                            let dt = s.events_queue[0].time - *time;
+                            let dtu = dt as usize;
+                            let mut left = vec![0.0; dtu];
+                            let mut right = vec![0.0; dtu];
+                            s.synth.write((left.as_mut_slice(), right.as_mut_slice()));
+                            s.export_buffer[0].append(&mut left);
+                            s.export_buffer[1].append(&mut right);
+                            *time += dt;
+                            // Increment the number of exported samples.
+                            s.export_state.as_mut().unwrap().exported += dt;
+                        }
+                    } else {
+                        s.export_sample();
                     }
                     // We're ready for a new message.
                     s.ready = true;
@@ -522,5 +531,14 @@ impl Synthesizer {
     /// Sort the events queue by time.
     fn sort_queue(&mut self) {
         self.events_queue.sort_by(|a, b| a.time.cmp(&b.time))
+    }
+
+    fn export_sample(&mut self) {
+        let sample = self.synth.read_next();
+        // Write the sample.
+        self.export_buffer[0].push(sample.0);
+        self.export_buffer[1].push(sample.1);
+        // Increment the number of exported samples.
+        self.export_state.as_mut().unwrap().exported += 1;
     }
 }
