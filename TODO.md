@@ -110,5 +110,5 @@
 
 ## Open File
 
-- [ ] Don't show full path of files
+- [x] Don't show full path of files
 - [ ] Show relative paths
