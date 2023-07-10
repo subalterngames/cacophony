@@ -183,7 +183,15 @@ impl Drawable for OpenFilePanel {
             }
             // Draw the text.
             let s = truncate(
-                &path.path.components().last().unwrap().as_os_str().to_str().unwrap().replace('\\', "/"),
+                &path
+                    .path
+                    .components()
+                    .last()
+                    .unwrap()
+                    .as_os_str()
+                    .to_str()
+                    .unwrap()
+                    .replace('\\', "/"),
                 length,
                 true,
             );

@@ -9,7 +9,7 @@ pub const MAX_NOTE: u8 = 127;
 pub const MIN_NOTE: u8 = 12;
 /// The MIDI value for C4.
 pub const MIDDLE_C: u8 = 60;
-/// The name of each note, in order. 
+/// The name of each note, in order.
 /// Question: Why not just calculate the name from the MIDI value?
 /// Answer: 1) Because I couldn't find an accurate formula. 2) This is probably slightly faster.
 const NOTE_NAMES: [&str; 115] = [
