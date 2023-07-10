@@ -71,6 +71,8 @@
 - [ ] Exporter can crash due to not enough samples
 - [x] Multi track wav doesn't append silence
 - [x] Incorrect sound font if you load them while we have notes
+- [ ] View range can get messed up by multitrack?
+- [ ] Playing line after exporting
 
 ## Misc.
 
@@ -104,3 +106,8 @@
 
 - [x] Make it
 - [x] Use Popup
+
+## Open File
+
+- [ ] Don't show full path of files
+- [ ] Show relative paths
