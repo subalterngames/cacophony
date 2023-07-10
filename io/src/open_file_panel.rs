@@ -87,7 +87,7 @@ impl OpenFilePanel {
     fn get_extensions(&self, paths_state: &PathsState, exporter: &Exporter) -> Vec<String> {
         match paths_state.open_file_type {
             OpenFileType::Export => {
-                vec![exporter.export_type.get().get_extension(true).to_string()]
+                vec![exporter.export_type.get().get_extension(false).to_string()]
             }
             OpenFileType::ReadSave | OpenFileType::WriteSave => self.save_file_extensions.clone(),
             OpenFileType::SoundFont => self.soundfont_extensions.clone(),

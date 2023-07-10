@@ -130,11 +130,17 @@ impl Drawable for OpenFilePanel {
         let cwd = Label {
             position: [x, y],
             text: truncate(
-                &paths_state
-                    .get_directory()
-                    .to_str()
-                    .unwrap()
-                    .replace('\\', "/"),
+                &format!(
+                    "{}/",
+                    paths_state
+                        .get_directory()
+                        .components()
+                        .last()
+                        .unwrap()
+                        .as_os_str()
+                        .to_str()
+                        .unwrap()
+                ),
                 length,
                 true,
             ),
@@ -183,15 +189,13 @@ impl Drawable for OpenFilePanel {
             }
             // Draw the text.
             let s = truncate(
-                &path
-                    .path
+                path.path
                     .components()
                     .last()
                     .unwrap()
                     .as_os_str()
                     .to_str()
-                    .unwrap()
-                    .replace('\\', "/"),
+                    .unwrap(),
                 length,
                 true,
             );

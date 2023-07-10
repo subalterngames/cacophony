@@ -89,6 +89,8 @@ pub(crate) fn get_page(selected: &Option<usize>, elements: &[u32], height: u32) 
             if *selected == i {
                 this_page = true;
             }
+        } else {
+            this_page = true;
         }
     }
     // We couldn't find the any selected track.

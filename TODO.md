@@ -43,7 +43,7 @@
 - [x] Splash is off-center
 - [x] Music panel height to align everything better
 - [x] Can't add spaces or underscores to alphanumeric input
-- [ ] Audio crackling with some soundfonts??
+- [x] ~~Audio crackling with some soundfonts??~~
 - [x] Audio playing on music name input, save file input
 - [x] Open file name doesn't change if you're saving or exporting
 - [ ] Play only works in piano roll panel
@@ -58,7 +58,7 @@
 - [x] Copy+paste crash
 - [x] Wrong gain on reload
 - [x] Crash when adding a track if notes are selected
-- [ ] We should save relative paths only
+- [x] ~~We should save relative paths only~~
 - [x] Wrong soundfont if there is more than one!
 - [x] Playing note highlighting is very off
 - [x] ~~View numbers are wrong in multitrack~~
@@ -111,4 +111,4 @@
 ## Open File
 
 - [x] Don't show full path of files
-- [ ] Show relative paths
+- [x] Show relative paths

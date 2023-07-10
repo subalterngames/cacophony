@@ -21,28 +21,28 @@ impl ChildPaths {
         // Get the folders. This sets the selection.
         let folders: Vec<&FileOrDirectory> = children.iter().filter(|p| !p.is_file).collect();
         // Set the selection index.
-        self.selected = match previous_directory {
-            // Select the previous directory.
-            Some(previous_directory) => children
+        // Try to select the previous directory.
+        if let Some(previous_directory) = previous_directory {
+            self.selected = children
                 .iter()
                 .enumerate()
                 .filter(|p| p.1.path == previous_directory)
                 .map(|p| p.0)
-                .next(),
-            // Select the first file if possible. Otherwise select the first folder if possible.
-            None => match !children.is_empty() {
-                true => {
-                    // Start at the first file.
-                    match (folders.is_empty(), !children.iter().any(|p| p.is_file)) {
-                        (true, true) => None,
-                        (true, false) => Some(0),
-                        (false, true) => Some(0),
-                        (false, false) => Some(folders.len()),
-                    }
+                .next();
+        }
+        // Try to select a child.
+        if self.selected.is_none() {
+            self.selected = if children.is_empty() {
+                None
+            } else {
+                match (folders.is_empty(), children.iter().any(|p| p.is_file)) {
+                    (true, false) => None,
+                    (true, true) => Some(0),
+                    (false, true) => Some(0),
+                    (false, false) => Some(folders.len()),
                 }
-                false => None,
-            },
-        };
+            };
+        }
         self.children = children;
     }
 

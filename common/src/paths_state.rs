@@ -61,9 +61,9 @@ impl PathsState {
             OpenFileType::Export => match &self.exports.directory.parent() {
                 Some(parent) => {
                     self.children.set(
-                        &self.exports.directory,
+                        parent,
                         extensions,
-                        Some(parent.to_path_buf()),
+                        Some(self.exports.directory.to_path_buf()),
                     );
                     self.exports.directory = parent.to_path_buf();
                     true
@@ -74,9 +74,9 @@ impl PathsState {
                 match &self.saves.directory.parent() {
                     Some(parent) => {
                         self.children.set(
-                            &self.saves.directory,
+                            parent,
                             extensions,
-                            Some(parent.to_path_buf()),
+                            Some(self.saves.directory.to_path_buf()),
                         );
                         self.saves.directory = parent.to_path_buf();
                         true
@@ -87,9 +87,9 @@ impl PathsState {
             OpenFileType::SoundFont => match &self.soundfonts.directory.parent() {
                 Some(parent) => {
                     self.children.set(
-                        &self.soundfonts.directory,
+                        parent,
                         extensions,
-                        Some(parent.to_path_buf()),
+                        Some(self.soundfonts.directory.to_path_buf()),
                     );
                     self.soundfonts.directory = parent.to_path_buf();
                     true
@@ -110,11 +110,11 @@ impl PathsState {
                         false
                     } else {
                         let cwd0 = match &self.open_file_type {
-                            OpenFileType::Export => self.exports.directory.clone(),
+                            OpenFileType::Export => self.exports.directory.to_path_buf(),
                             OpenFileType::ReadSave | OpenFileType::WriteSave => {
-                                self.saves.directory.clone()
+                                self.saves.directory.to_path_buf()
                             }
-                            OpenFileType::SoundFont => self.soundfonts.directory.clone(),
+                            OpenFileType::SoundFont => self.soundfonts.directory.to_path_buf(),
                         };
                         let cwd1 = self.children.children[*selected].path.clone();
                         // Set the children.
