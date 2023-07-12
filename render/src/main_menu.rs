@@ -23,10 +23,7 @@ impl MainMenu {
         let window_grid_size = get_window_grid_size(config);
         let width = window_grid_size[0] - tracks_panel_width;
 
-        let position = [
-            MUSIC_PANEL_POSITION[0] + tracks_panel_width,
-            MUSIC_PANEL_POSITION[1],
-        ];
+        let position = get_main_menu_position(config);
 
         // Get the panel.
         let panel = Panel::new(

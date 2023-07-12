@@ -77,9 +77,9 @@ impl Renderer {
         // Sizes.
         let font_size = get_font_size(config);
         let cell_size = get_cell_size(config);
-        let grid_size = get_window_grid_size(config);
         let pixel_size = get_window_pixel_size(config);
-        let subtitle_position = [cell_size[0], cell_size[1] * (grid_size[1] - 2) as f32];
+        let main_menu_position = get_main_menu_position(config);
+        let subtitle_position = [(main_menu_position[0] + 1) as f32 * cell_size[0], (main_menu_position[1] + 2) as f32 * cell_size[1]];
         let border_offsets: [f32; 4] = [
             cell_size[0] / 2.0,
             cell_size[1] / 3.0,
@@ -366,8 +366,8 @@ impl Renderer {
     ///
     /// - `text` The text.
     pub fn subtitle(&self, text: &str) {
-        let mut xy = self.subtitle_position;
-        let dim = measure_text(text, Some(self.subtitle_font), self.font_size, 1.0);
+        let xy = self.subtitle_position;
+        let dim = measure_text(text, Some(self.subtitle_font), self.subtitle_font_size, 1.0);
         let color = self.colors[&ColorKey::Subtitle];
         let text_params = TextParams {
             font: self.subtitle_font,
@@ -377,10 +377,10 @@ impl Renderer {
             rotation: 0.0,
             color,
         };
-        xy[1] += self.cell_size[1] - dim.offset_y / 3.0;
         let width = self.pixel_size[0] - xy[0];
         // One row.
         if dim.width < width {
+            draw_rectangle(xy[0], xy[1] - dim.offset_y, dim.width, dim.height, self.colors[&ColorKey::SubtitleBackground]);
             draw_text_ex(text, xy[0], xy[1], text_params);
         }
         // Multi-row.
@@ -392,7 +392,7 @@ impl Renderer {
                 let mut row1 = row.clone();
                 row1.push(' ');
                 row1.push_str(words[0]);
-                let dim = measure_text(&row1, Some(self.subtitle_font), self.font_size, 1.0);
+                let dim = measure_text(&row1, Some(self.subtitle_font), self.subtitle_font_size, 1.0);
                 // The row doesn't fit.
                 if dim.width >= width {
                     // Add the row.
@@ -411,11 +411,12 @@ impl Renderer {
             if row.chars().count() > 0 {
                 rows.push(row.trim().to_string());
             }
-            for (i, row) in rows.iter().enumerate() {
-                let dim = measure_text(row, Some(self.subtitle_font), self.font_size, 1.0);
-                let y =
-                    xy[1] - (self.cell_size[1] - dim.offset_y / 3.0) * (rows.len() - i - 1) as f32;
+            let mut y = self.subtitle_position[1];
+            for row in rows.iter() {
+                let dim = measure_text(row, Some(self.subtitle_font), self.subtitle_font_size, 1.0);
+                draw_rectangle(xy[0], y - dim.offset_y, dim.width, dim.height, self.colors[&ColorKey::SubtitleBackground]);
                 draw_text_ex(row, xy[0], y, text_params);
+                y += dim.offset_y * 1.25;
             }
         }
     }

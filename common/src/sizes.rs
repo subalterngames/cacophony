@@ -99,3 +99,12 @@ pub fn get_open_file_rect(config: &Ini) -> ([u32; 2], [u32; 2]) {
     let position = [window_grid_size[0] / 2 - size[0] / 2, MAIN_MENU_HEIGHT];
     (position, size)
 }
+
+/// Returns the position of the main menu.
+pub fn get_main_menu_position(config: &Ini) -> [u32; 2] {
+    let tracks_panel_width = get_tracks_panel_width(config);
+    [
+        MUSIC_PANEL_POSITION[0] + tracks_panel_width,
+        MUSIC_PANEL_POSITION[1],
+    ]
+}
