@@ -1,10 +1,3 @@
-#[cfg(target_os = "macos")]
-use cocoa_foundation::base::id;
-#[cfg(target_os = "macos")]
-use cocoa_foundation::foundation::NSRunLoop;
-#[cfg(target_os = "macos")]
-use objc::{msg_send, sel, sel_impl};
-
 use common::config::{parse, parse_bool};
 use common::ini::Ini;
 use tts::Tts;
@@ -34,7 +27,8 @@ impl TTS {
                     {}
                 }
                 // Try to set the rate.
-                if t.set_rate(parse(section, "rate")).is_ok() {}
+let rate_key = if cfg!(windows) { "rate_windows" } else if cfg!(target_os = "macos") { "rate_macos" } else { "rate_linux" };
+                if t.set_rate(parse(section, rate_key)).is_ok() {}
                 Some(t)
             }
             Err(_) => None,
