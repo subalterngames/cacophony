@@ -33,5 +33,5 @@ pub enum ColorKey {
     Track4NoFocus,
     Track5Focus,
     Track5NoFocus,
-    SubtitleBackground
+    SubtitleBackground,
 }

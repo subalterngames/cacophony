@@ -3,5 +3,5 @@
 pub enum Token {
     Word(String),
     MIDI(String),
-    Qwerty(String)
+    Qwerty(String),
 }

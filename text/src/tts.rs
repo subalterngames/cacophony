@@ -82,9 +82,9 @@ impl TTS {
         match &self.tts {
             Some(tts) => match tts.is_speaking() {
                 Ok(speaking) => speaking,
-                Err(_) => false
-            }
-            None => false
+                Err(_) => false,
+            },
+            None => false,
         }
     }
 }

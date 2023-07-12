@@ -13,7 +13,9 @@ use std::path::Path;
 pub use text::Text;
 pub use value_map::*;
 mod token;
+mod tooltip;
 mod tts_string;
+pub use token::Token;
 
 pub fn ppq_to_string(ppq: u64) -> String {
     // This is a whole note.

@@ -1,6 +1,6 @@
 use common::macroquad::input::KeyCode;
 
-pub(crate) const KEYS: [KeyCode; 121] = [
+pub const KEYS: [KeyCode; 121] = [
     KeyCode::Space,
     KeyCode::Apostrophe,
     KeyCode::Comma,

@@ -4,15 +4,143 @@ use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::input::KeyCode;
 use common::{EditMode, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U};
+use input::KEYS;
 
 const LANGUAGES: [&str; 1] = ["en"];
+const KEYCODE_LOOKUPS: [&str; 121] = [
+    "Space",
+    "Apostrophe",
+    "Comma",
+    "Minus",
+    "Period",
+    "Slash",
+    "Key0",
+    "Key1",
+    "Key2",
+    "Key3",
+    "Key4",
+    "Key5",
+    "Key6",
+    "Key7",
+    "Key8",
+    "Key9",
+    "Semicolon",
+    "Equal",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+    "LeftBracket",
+    "Backslash",
+    "RightBracket",
+    "GraveAccent",
+    "World1",
+    "World2",
+    "Escape",
+    "Enter",
+    "Tab",
+    "Backspace",
+    "Insert",
+    "Delete",
+    "Right",
+    "Left",
+    "Down",
+    "Up",
+    "PageUp",
+    "PageDown",
+    "Home",
+    "End",
+    "CapsLock",
+    "ScrollLock",
+    "NumLock",
+    "PrintScreen",
+    "Pause",
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5",
+    "F6",
+    "F7",
+    "F8",
+    "F9",
+    "F10",
+    "F11",
+    "F12",
+    "F13",
+    "F14",
+    "F15",
+    "F16",
+    "F17",
+    "F18",
+    "F19",
+    "F20",
+    "F21",
+    "F22",
+    "F23",
+    "F24",
+    "F25",
+    "Kp0",
+    "Kp1",
+    "Kp2",
+    "Kp3",
+    "Kp4",
+    "Kp5",
+    "Kp6",
+    "Kp7",
+    "Kp8",
+    "Kp9",
+    "KpDecimal",
+    "KpDivide",
+    "KpMultiply",
+    "KpSubtract",
+    "KpAdd",
+    "KpEnter",
+    "KpEqual",
+    "LeftShift",
+    "LeftControl",
+    "LeftAlt",
+    "LeftSuper",
+    "RightShift",
+    "RightControl",
+    "RightAlt",
+    "RightSuper",
+    "Menu",
+    "Unknown",
+];
+
+type TextMap = HashMap<String, String>;
 
 /// Localized text lookup.
 pub struct Text {
     /// The text key-value map.
-    text: HashMap<String, String>,
-    /// A map of key codes to displayable/sayable text.
-    keycodes: HashMap<KeyCode, String>,
+    text: TextMap,
+    /// A map of key codes to spoken text.
+    keycodes_spoken: HashMap<KeyCode, String>,
+    /// A map of key codes to seen text.
+    keycodes_seen: HashMap<KeyCode, String>,
     /// The text for each edit mode.
     edit_modes: HashMap<EditMode, String>,
     /// The text for each piano roll mode.
@@ -30,7 +158,7 @@ impl Text {
         // Find the column with the language.
         let column = LANGUAGES.iter().position(|&lang| lang == language).unwrap() + 1;
         // Get the text.
-        let mut text: HashMap<String, String> = HashMap::new();
+        let mut text = HashMap::new();
         // Read the .csv file.
         let mut reader = Reader::from_path(&paths.text_path).unwrap();
         for record in reader.records().filter(|r| r.is_ok()).flatten() {
@@ -44,7 +172,8 @@ impl Text {
             .split(", ")
             .map(|s| s.to_string())
             .collect();
-        let keycodes = Text::get_keycode_map(&text);
+        let keycodes_spoken = Text::get_keycode_map(&text, true);
+        let keycodes_seen = Text::get_keycode_map(&text, false);
         let edit_modes = Text::get_edit_mode_map(&text);
         let piano_roll_modes = Text::get_piano_roll_mode_map(&text);
         let mut booleans = HashMap::new();
@@ -52,7 +181,8 @@ impl Text {
         booleans.insert(false, text["FALSE"].clone());
         Self {
             text,
-            keycodes,
+            keycodes_spoken,
+            keycodes_seen,
             edit_modes,
             piano_roll_modes,
             note_names,
@@ -89,9 +219,15 @@ impl Text {
     }
 
     /// Returns the string version of a key code.
-    pub fn get_keycode(&self, key: &KeyCode) -> String {
-        match self.keycodes.get(key) {
-            Some(t) => t.to_uppercase(),
+    pub fn get_keycode(&self, key: &KeyCode, spoken: bool) -> &str {
+        match (if spoken {
+            &self.keycodes_spoken
+        } else {
+            &self.keycodes_seen
+        })
+        .get(key)
+        {
+            Some(t) => t,
             None => panic!("Invalid key code {:?}", key),
         }
     }
@@ -179,129 +315,14 @@ impl Text {
     }
 
     /// Returns a map of keycodes to displayable/sayable text (NOT string keys).
-    fn get_keycode_map(text: &HashMap<String, String>) -> HashMap<KeyCode, String> {
+    fn get_keycode_map(text: &HashMap<String, String>, spoken: bool) -> HashMap<KeyCode, String> {
+        let suffix = if spoken { "_SPOKEN" } else { "_SEEN" };
         let mut keycodes = HashMap::new();
-        keycodes.insert(KeyCode::Space, text["Space"].clone());
-        keycodes.insert(KeyCode::Apostrophe, text["Apostrophe"].clone());
-        keycodes.insert(KeyCode::Comma, text["Comma"].clone());
-        keycodes.insert(KeyCode::Minus, text["Minus"].clone());
-        keycodes.insert(KeyCode::Period, text["Period"].clone());
-        keycodes.insert(KeyCode::Slash, text["Slash"].clone());
-        keycodes.insert(KeyCode::Key0, text["Key0"].clone());
-        keycodes.insert(KeyCode::Key1, text["Key1"].clone());
-        keycodes.insert(KeyCode::Key2, text["Key2"].clone());
-        keycodes.insert(KeyCode::Key3, text["Key3"].clone());
-        keycodes.insert(KeyCode::Key4, text["Key4"].clone());
-        keycodes.insert(KeyCode::Key5, text["Key5"].clone());
-        keycodes.insert(KeyCode::Key6, text["Key6"].clone());
-        keycodes.insert(KeyCode::Key7, text["Key7"].clone());
-        keycodes.insert(KeyCode::Key8, text["Key8"].clone());
-        keycodes.insert(KeyCode::Key9, text["Key9"].clone());
-        keycodes.insert(KeyCode::Semicolon, text["Semicolon"].clone());
-        keycodes.insert(KeyCode::Equal, text["Equal"].clone());
-        keycodes.insert(KeyCode::A, text["A"].clone());
-        keycodes.insert(KeyCode::B, text["B"].clone());
-        keycodes.insert(KeyCode::C, text["C"].clone());
-        keycodes.insert(KeyCode::D, text["D"].clone());
-        keycodes.insert(KeyCode::E, text["E"].clone());
-        keycodes.insert(KeyCode::F, text["F"].clone());
-        keycodes.insert(KeyCode::G, text["G"].clone());
-        keycodes.insert(KeyCode::H, text["H"].clone());
-        keycodes.insert(KeyCode::I, text["I"].clone());
-        keycodes.insert(KeyCode::J, text["J"].clone());
-        keycodes.insert(KeyCode::K, text["K"].clone());
-        keycodes.insert(KeyCode::L, text["L"].clone());
-        keycodes.insert(KeyCode::M, text["M"].clone());
-        keycodes.insert(KeyCode::N, text["N"].clone());
-        keycodes.insert(KeyCode::O, text["O"].clone());
-        keycodes.insert(KeyCode::P, text["P"].clone());
-        keycodes.insert(KeyCode::Q, text["Q"].clone());
-        keycodes.insert(KeyCode::R, text["R"].clone());
-        keycodes.insert(KeyCode::S, text["S"].clone());
-        keycodes.insert(KeyCode::T, text["T"].clone());
-        keycodes.insert(KeyCode::U, text["U"].clone());
-        keycodes.insert(KeyCode::V, text["V"].clone());
-        keycodes.insert(KeyCode::W, text["W"].clone());
-        keycodes.insert(KeyCode::X, text["X"].clone());
-        keycodes.insert(KeyCode::Y, text["Y"].clone());
-        keycodes.insert(KeyCode::Z, text["Z"].clone());
-        keycodes.insert(KeyCode::LeftBracket, text["LeftBracket"].clone());
-        keycodes.insert(KeyCode::Backslash, text["Backslash"].clone());
-        keycodes.insert(KeyCode::RightBracket, text["RightBracket"].clone());
-        keycodes.insert(KeyCode::GraveAccent, text["GraveAccent"].clone());
-        keycodes.insert(KeyCode::World1, text["World1"].clone());
-        keycodes.insert(KeyCode::World2, text["World2"].clone());
-        keycodes.insert(KeyCode::Escape, text["Escape"].clone());
-        keycodes.insert(KeyCode::Enter, text["Enter"].clone());
-        keycodes.insert(KeyCode::Tab, text["Tab"].clone());
-        keycodes.insert(KeyCode::Backspace, text["Backspace"].clone());
-        keycodes.insert(KeyCode::Insert, text["Insert"].clone());
-        keycodes.insert(KeyCode::Delete, text["Delete"].clone());
-        keycodes.insert(KeyCode::Right, text["Right"].clone());
-        keycodes.insert(KeyCode::Left, text["Left"].clone());
-        keycodes.insert(KeyCode::Down, text["Down"].clone());
-        keycodes.insert(KeyCode::Up, text["Up"].clone());
-        keycodes.insert(KeyCode::PageUp, text["PageUp"].clone());
-        keycodes.insert(KeyCode::PageDown, text["PageDown"].clone());
-        keycodes.insert(KeyCode::Home, text["Home"].clone());
-        keycodes.insert(KeyCode::End, text["End"].clone());
-        keycodes.insert(KeyCode::CapsLock, text["CapsLock"].clone());
-        keycodes.insert(KeyCode::ScrollLock, text["ScrollLock"].clone());
-        keycodes.insert(KeyCode::NumLock, text["NumLock"].clone());
-        keycodes.insert(KeyCode::PrintScreen, text["PrintScreen"].clone());
-        keycodes.insert(KeyCode::Pause, text["Pause"].clone());
-        keycodes.insert(KeyCode::F1, text["F1"].clone());
-        keycodes.insert(KeyCode::F2, text["F2"].clone());
-        keycodes.insert(KeyCode::F3, text["F3"].clone());
-        keycodes.insert(KeyCode::F4, text["F4"].clone());
-        keycodes.insert(KeyCode::F5, text["F5"].clone());
-        keycodes.insert(KeyCode::F6, text["F6"].clone());
-        keycodes.insert(KeyCode::F7, text["F7"].clone());
-        keycodes.insert(KeyCode::F8, text["F8"].clone());
-        keycodes.insert(KeyCode::F9, text["F9"].clone());
-        keycodes.insert(KeyCode::F10, text["F10"].clone());
-        keycodes.insert(KeyCode::F11, text["F11"].clone());
-        keycodes.insert(KeyCode::F12, text["F12"].clone());
-        keycodes.insert(KeyCode::F13, text["F13"].clone());
-        keycodes.insert(KeyCode::F14, text["F14"].clone());
-        keycodes.insert(KeyCode::F15, text["F15"].clone());
-        keycodes.insert(KeyCode::F16, text["F16"].clone());
-        keycodes.insert(KeyCode::F17, text["F17"].clone());
-        keycodes.insert(KeyCode::F18, text["F18"].clone());
-        keycodes.insert(KeyCode::F19, text["F19"].clone());
-        keycodes.insert(KeyCode::F20, text["F20"].clone());
-        keycodes.insert(KeyCode::F21, text["F21"].clone());
-        keycodes.insert(KeyCode::F22, text["F22"].clone());
-        keycodes.insert(KeyCode::F23, text["F23"].clone());
-        keycodes.insert(KeyCode::F24, text["F24"].clone());
-        keycodes.insert(KeyCode::F25, text["F25"].clone());
-        keycodes.insert(KeyCode::Kp0, text["Kp0"].clone());
-        keycodes.insert(KeyCode::Kp1, text["Kp1"].clone());
-        keycodes.insert(KeyCode::Kp2, text["Kp2"].clone());
-        keycodes.insert(KeyCode::Kp3, text["Kp3"].clone());
-        keycodes.insert(KeyCode::Kp4, text["Kp4"].clone());
-        keycodes.insert(KeyCode::Kp5, text["Kp5"].clone());
-        keycodes.insert(KeyCode::Kp6, text["Kp6"].clone());
-        keycodes.insert(KeyCode::Kp7, text["Kp7"].clone());
-        keycodes.insert(KeyCode::Kp8, text["Kp8"].clone());
-        keycodes.insert(KeyCode::Kp9, text["Kp9"].clone());
-        keycodes.insert(KeyCode::KpDecimal, text["KpDecimal"].clone());
-        keycodes.insert(KeyCode::KpDivide, text["KpDivide"].clone());
-        keycodes.insert(KeyCode::KpMultiply, text["KpMultiply"].clone());
-        keycodes.insert(KeyCode::KpSubtract, text["KpSubtract"].clone());
-        keycodes.insert(KeyCode::KpAdd, text["KpAdd"].clone());
-        keycodes.insert(KeyCode::KpEnter, text["KpEnter"].clone());
-        keycodes.insert(KeyCode::KpEqual, text["KpEqual"].clone());
-        keycodes.insert(KeyCode::LeftShift, text["LeftShift"].clone());
-        keycodes.insert(KeyCode::LeftControl, text["LeftControl"].clone());
-        keycodes.insert(KeyCode::LeftAlt, text["LeftAlt"].clone());
-        keycodes.insert(KeyCode::LeftSuper, text["LeftSuper"].clone());
-        keycodes.insert(KeyCode::RightShift, text["RightShift"].clone());
-        keycodes.insert(KeyCode::RightControl, text["RightControl"].clone());
-        keycodes.insert(KeyCode::RightAlt, text["RightAlt"].clone());
-        keycodes.insert(KeyCode::RightSuper, text["RightSuper"].clone());
-        keycodes.insert(KeyCode::Menu, text["Menu"].clone());
-        keycodes.insert(KeyCode::Unknown, text["Unknown"].clone());
+        for (key, lookup) in KEYS.iter().zip(KEYCODE_LOOKUPS) {
+            let mut lookup_key = lookup.to_string();
+            lookup_key.push_str(suffix);
+            keycodes.insert(*key, text[&lookup_key].clone());
+        }
         keycodes
     }
 
