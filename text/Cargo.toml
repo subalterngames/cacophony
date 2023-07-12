@@ -3,6 +3,10 @@ name = "text"
 version = "0.1.0"
 edition = "2021"
 
+[target.'cfg(target_os = "macos")'.dependencies]
+objc = "0.2.7"
+cocoa-foundation = "0.1.1"
+
 [dependencies.common]
 path = "../common"
 

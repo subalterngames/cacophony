@@ -2268,7 +2268,9 @@ dependencies = [
 name = "text"
 version = "0.1.0"
 dependencies = [
+ "cocoa-foundation",
  "common",
+ "objc",
  "tts",
 ]
 

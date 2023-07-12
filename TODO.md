@@ -3,7 +3,7 @@
 ## Big picture
 
 - [ ] Test on Linux
-- [ ] Test on OSX
+- [x] Test on OSX
 - [ ] Help links
 - [x] Multi-track view
 - [x] ~~Effects~~
