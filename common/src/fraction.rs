@@ -1,3 +1,4 @@
+use crate::U64orF32;
 use std::fmt::Display;
 use std::ops::{Div, Mul};
 
@@ -28,6 +29,12 @@ impl From<u64> for Fraction {
     }
 }
 
+impl From<U64orF32> for Fraction {
+    fn from(value: U64orF32) -> Self {
+        Self::new(value.get_u(), 1)
+    }
+}
+
 impl Display for Fraction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}/{}", self.numerator, self.denominator)
@@ -47,6 +54,22 @@ impl Mul<Fraction> for u64 {
 
     fn mul(self, rhs: Fraction) -> Self::Output {
         (self * rhs.numerator) / rhs.denominator
+    }
+}
+
+impl Mul<U64orF32> for Fraction {
+    type Output = U64orF32;
+
+    fn mul(self, rhs: U64orF32) -> Self::Output {
+        U64orF32::from(rhs.get_u() * self)
+    }
+}
+
+impl Mul<Fraction> for U64orF32 {
+    type Output = Fraction;
+
+    fn mul(self, rhs: Fraction) -> Self::Output {
+        Fraction::new(self.get_u() * rhs.numerator, rhs.denominator)
     }
 }
 
@@ -74,6 +97,22 @@ impl Div<Fraction> for u64 {
 
     fn div(self, rhs: Fraction) -> Self::Output {
         (self * rhs.denominator) / rhs.numerator
+    }
+}
+
+impl Div<U64orF32> for Fraction {
+    type Output = U64orF32;
+
+    fn div(self, rhs: U64orF32) -> Self::Output {
+        U64orF32::from(rhs.get_u() / self)
+    }
+}
+
+impl Div<Fraction> for U64orF32 {
+    type Output = Fraction;
+
+    fn div(self, rhs: Fraction) -> Self::Output {
+        Fraction::new(self.get_u(), 1) / rhs
     }
 }
 

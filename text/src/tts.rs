@@ -27,7 +27,13 @@ impl TTS {
                     {}
                 }
                 // Try to set the rate.
-let rate_key = if cfg!(windows) { "rate_windows" } else if cfg!(target_os = "macos") { "rate_macos" } else { "rate_linux" };
+                let rate_key = if cfg!(windows) {
+                    "rate_windows"
+                } else if cfg!(target_os = "macos") {
+                    "rate_macos"
+                } else {
+                    "rate_linux"
+                };
                 if t.set_rate(parse(section, rate_key)).is_ok() {}
                 Some(t)
             }
