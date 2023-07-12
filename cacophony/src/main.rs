@@ -108,6 +108,9 @@ async fn main() {
             // Update time itself.
             conn.update();
 
+            // Update the subtitles.
+            tts.update();
+
             // Late update to do stuff like screen capture.
             panels.late_update(&state, &renderer);
 

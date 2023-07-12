@@ -20,6 +20,8 @@ pub struct Renderer {
     font: Font,
     /// The font used for subtitles.
     subtitle_font: Font,
+    /// The font size used for subtitles.
+    subtitle_font_size: u16,
     /// The size of a single cell.
     cell_size: [f32; 2],
     /// The font size.
@@ -70,6 +72,7 @@ impl Renderer {
             get_font_section(config).get("subtitle_font").unwrap(),
         ))
         .unwrap();
+        let subtitle_font_size = get_subtitle_font_size(config);
 
         // Sizes.
         let font_size = get_font_size(config);
@@ -104,6 +107,7 @@ impl Renderer {
             border_offsets,
             flip_y,
             subtitle_position,
+            subtitle_font_size
         }
     }
 
@@ -367,7 +371,7 @@ impl Renderer {
         let color = self.colors[&ColorKey::Subtitle];
         let text_params = TextParams {
             font: self.subtitle_font,
-            font_size: self.font_size,
+            font_size: self.subtitle_font_size,
             font_scale: 1.0,
             font_scale_aspect: 1.0,
             rotation: 0.0,

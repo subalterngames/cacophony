@@ -62,13 +62,29 @@ impl TTS {
 
     /// Stop speaking.
     pub fn stop(&mut self) {
-        if let Some(tts) = &mut self.tts {
-            if let Ok(speaking) = tts.is_speaking() {
-                if speaking {
-                    if tts.stop().is_ok() {}
-                    self.speech = None;
-                }
+        if self.is_speaking() {
+            if let Some(tts) = &mut self.tts {
+                if tts.stop().is_ok() {}
             }
+            self.speech = None;
+        }
+    }
+
+    /// Update the subtitle state.
+    pub fn update(&mut self) {
+        if self.speech.is_some() && !self.is_speaking() {
+            self.speech = None;
+        }
+    }
+
+    /// Returns true if Casey is speaking.
+    fn is_speaking(&self) -> bool {
+        match &self.tts {
+            Some(tts) => match tts.is_speaking() {
+                Ok(speaking) => speaking,
+                Err(_) => false
+            }
+            None => false
         }
     }
 }
