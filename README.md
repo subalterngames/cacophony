@@ -9,7 +9,7 @@
 3. *Linux only\** `apt install clang libclang1 libspeechd-dev`
 4. `cargo build --release`
 
-\* *Tested on Ubuntu 20.04 x64*
+\* *Tested on Ubuntu 20.04 x64 and Ubuntu 18.04 x64*
 
 ## 1. What is Cacophony
 

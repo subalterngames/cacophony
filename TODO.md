@@ -32,6 +32,10 @@
 - [x] Export buffer
 - [ ] TTS is not helpful!!
 
+## Major Bugs
+
+- [ ] Can't resize window in Linux.
+
 ## Bugs
 
 - [x] Open file panel background screen capture
