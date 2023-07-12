@@ -6,6 +6,9 @@ edition = "2021"
 [dependencies.common]
 path = "../common"
 
+[dependencies.input]
+path = "../input"
+
 [dependencies.tts]
 version = "0.25.5"
 default-features = false

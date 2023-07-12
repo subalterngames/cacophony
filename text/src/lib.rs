@@ -12,6 +12,8 @@ use common::{PPQ_F, PPQ_U};
 use std::path::Path;
 pub use text::Text;
 pub use value_map::*;
+mod token;
+mod tts_string;
 
 pub fn ppq_to_string(ppq: u64) -> String {
     // This is a whole note.
