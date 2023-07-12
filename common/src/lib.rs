@@ -39,7 +39,6 @@ pub use note::{Note, MAX_NOTE, MIN_NOTE};
 pub use panel_type::PanelType;
 pub use paths::Paths;
 pub use state::State;
-pub use tts;
 use view::View;
 mod edit_mode;
 pub mod music_panel_field;

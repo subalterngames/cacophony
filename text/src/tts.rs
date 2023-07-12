@@ -7,7 +7,7 @@ use objc::{msg_send, sel, sel_impl};
 
 use common::config::{parse, parse_bool};
 use common::ini::Ini;
-use common::tts::Tts;
+use tts::Tts;
 
 /// Text-to-speech.
 pub struct TTS {

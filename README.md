@@ -74,3 +74,20 @@ Why Cacophony? Doesn't that literally mean *bad sound*? Well, guess what:
 ## 6. Mascot
 
 Cacophony's mascot is Casey the Transgender Cacodemon. No official artwork of Casey exists because I don't want to be cursed.
+
+## How to compile
+
+### Linux
+
+*Tested on Ubuntu 20.04 with an x64 processor.*
+
+1. `apt install clang libclang1 libspeechd-dev`
+2. `cargo build --release`
+
+## MacOS
+
+
+
+### Windows
+
+1. `cargo build --release`

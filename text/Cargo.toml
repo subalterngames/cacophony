@@ -5,3 +5,7 @@ edition = "2021"
 
 [dependencies.common]
 path = "../common"
+
+[dependencies.tts]
+version = "0.25.1"
+features = ["speech_dispatcher_0_9"]
