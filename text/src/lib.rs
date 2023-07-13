@@ -13,7 +13,7 @@ use std::path::Path;
 pub use text::Text;
 pub use value_map::*;
 mod token;
-mod tooltip;
+mod tooltips;
 mod tts_string;
 pub use token::Token;
 
