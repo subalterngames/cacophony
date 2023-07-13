@@ -61,6 +61,10 @@ impl TTS {
         }
     }
 
+    pub fn say_str(&mut self, text: &str) {
+        self.say(TtsString { spoken: text.to_string(), seen: text.to_string() })
+    }
+
     /// Stop speaking.
     pub fn stop(&mut self) {
         if self.is_speaking() {

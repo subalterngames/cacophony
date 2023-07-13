@@ -111,9 +111,9 @@ impl Panel for TracksPanel {
                         // No SoundFont.
                         None => s.push_str(&text.get("TRACKS_PANEL_STATUS_TTS_NO_SOUNDFONT")),
                     }
-                    tts.say(&s)
+                    tts.say_str(&s)
                 }
-                None => tts.say(&text.get("TRACKS_PANEL_STATUS_TTS_NO_SELECTION")),
+                None => tts.say_str(&text.get("TRACKS_PANEL_STATUS_TTS_NO_SELECTION")),
             }
             None
         }
