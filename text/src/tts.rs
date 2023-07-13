@@ -9,14 +9,14 @@ pub struct TTS {
     /// What text, if any, Casey is saying.
     pub speech: Option<String>,
     /// If true, return subtitle text.
-    subtitles: bool,
+    show_subtitles: bool,
 }
 
 impl TTS {
     pub fn new(config: &Ini) -> Self {
         let section = config.section(Some("TEXT_TO_SPEECH")).unwrap();
         // Get subtitles.
-        let subtitles = parse_bool(section, "subtitles");
+        let show_subtitles = parse_bool(section, "subtitles");
         // Try to load the text-to-speech engine.
         let tts = match Tts::default() {
             Ok(mut t) => {
@@ -40,7 +40,7 @@ impl TTS {
             Err(_) => None,
         };
         Self {
-            subtitles,
+            show_subtitles,
             tts,
             speech: None,
         }
@@ -53,7 +53,7 @@ impl TTS {
             // Speak!
             if tts.speak(text, true).is_ok() {
                 // Remember what we're saying for subtitles.
-                if self.subtitles {
+                if self.show_subtitles {
                     self.speech = Some(text.to_string());
                 }
             }

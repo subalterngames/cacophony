@@ -2,7 +2,6 @@ use crate::field_params::*;
 use crate::{ColorKey, Focus};
 use common::config::parse_bool;
 use common::font::*;
-use common::get_bytes;
 use common::hashbrown::HashMap;
 use common::ini::Ini;
 use common::macroquad::prelude::*;
@@ -68,10 +67,7 @@ impl Renderer {
 
         // Fonts.
         let font = get_font(config);
-        let subtitle_font = load_ttf_font_from_bytes(&get_bytes(
-            get_font_section(config).get("subtitle_font").unwrap(),
-        ))
-        .unwrap();
+        let subtitle_font = get_subtitle_font(config);
         let subtitle_font_size = get_subtitle_font_size(config);
 
         // Sizes.

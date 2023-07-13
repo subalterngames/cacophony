@@ -6,4 +6,6 @@ pub struct TtsString {
     pub spoken: String,
     /// These tokens will be displayed on the screen.
     pub tokens: Vec<Token>,
+    /// The width and height of the text of this string.
+    pub size: [f32; 2]
 }

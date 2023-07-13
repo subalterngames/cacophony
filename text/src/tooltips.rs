@@ -3,6 +3,10 @@ use crate::{Text, Token};
 use common::hashbrown::HashMap;
 use input::{Input, InputEvent, QwertyBinding};
 use regex::Regex;
+use common::macroquad::prelude::*;
+use common::ini::Ini;
+use common::font::get_subtitle_font;
+use common::sizes::*;
 
 type RegexMap = HashMap<usize, Regex>;
 
@@ -21,21 +25,28 @@ pub struct Tooltips {
     re_values: RegexMap,
     /// The regex used to find an arbitrary value wildcard.
     re_value: Regex,
-}
-
-impl Default for Tooltips {
-    fn default() -> Self {
-        let re_binding = Regex::new(r"(\\\d+)").unwrap();
-        let re_value = Regex::new(r"(%(\d+))").unwrap();
-        Self { re_bindings: RegexMap::new(), 
-            re_binding,
-            re_values: RegexMap::new(),
-            re_value
-        }
-    }
+    subtitle_font: Font,
+    subtitle_font_size: u16,
+    subtitle_width: f32,
 }
 
 impl Tooltips {
+    pub fn new(config: &Ini) -> Self {
+        let subtitle_font = get_subtitle_font(config);
+        let subtitle_font_size = get_subtitle_font_size(config);
+        let re_binding = Regex::new(r"(\\\d+)").unwrap();
+        let re_value = Regex::new(r"(%(\d+))").unwrap();
+        let subtitle_width = get_subtitle_width(config);
+        Self { re_bindings: RegexMap::new(), 
+            re_binding,
+            re_values: RegexMap::new(),
+            re_value,
+            subtitle_font,
+            subtitle_font_size,
+            subtitle_width
+        }
+    }
+
     /// Build a tooltip from a text lookup key and a list of events.
     /// 
     /// - `key` The text lookup key, for example "TITLE_MAIN_MENU".
@@ -62,7 +73,7 @@ impl Tooltips {
     /// - `input` The input manager.
     /// - `text` The text manager.
     /// 
-    /// Returns a tooltip `TtsString`.
+    /// Returns a list of text-to-speech strings.
     pub fn get_tooltip_with_values(
         &mut self,
         key: &str,
@@ -70,7 +81,7 @@ impl Tooltips {
         values: &[&str],
         input: &Input,
         text: &Text,
-    ) -> TtsString {
+    ) -> Vec<TtsString> {
         let mut spoken = text.get(key);
         let mut seen_bindings = HashMap::new();
         let mut regexes = HashMap::new();

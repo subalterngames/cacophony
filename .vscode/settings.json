@@ -7,6 +7,5 @@
         ".\\io\\Cargo.toml",
         ".\\render\\Cargo.toml",
         ".\\text\\Cargo.toml",
-        ".\\tooltip\\Cargo.toml",
     ],
 }

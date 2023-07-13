@@ -16,3 +16,10 @@ pub fn get_font_bytes(config: &Ini) -> Vec<u8> {
 pub fn get_font(config: &Ini) -> Font {
     load_ttf_font_from_bytes(&get_font_bytes(config)).unwrap()
 }
+
+pub fn get_subtitle_font(config: &Ini) -> Font {
+    load_ttf_font_from_bytes(&get_bytes(
+        get_font_section(config).get("subtitle_font").unwrap(),
+    ))
+    .unwrap()
+}

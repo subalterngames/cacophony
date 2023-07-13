@@ -108,3 +108,15 @@ pub fn get_main_menu_position(config: &Ini) -> [u32; 2] {
         MUSIC_PANEL_POSITION[1],
     ]
 }
+
+/// Returns the pixel width of the subtitles.
+pub fn get_subtitle_width(config: &Ini) -> f32 {
+    (get_main_menu_width(config) - 2) as f32 * get_cell_size(config)[0]
+}
+
+/// Returns the width of main menu.
+pub fn get_main_menu_width(config: &Ini) -> u32 {
+    let tracks_panel_width = get_tracks_panel_width(config);
+    let window_grid_size = get_window_grid_size(config);
+    window_grid_size[0] - tracks_panel_width
+}

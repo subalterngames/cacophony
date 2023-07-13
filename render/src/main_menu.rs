@@ -19,9 +19,7 @@ pub(crate) struct MainMenu {
 impl MainMenu {
     pub fn new(config: &Ini, input: &Input, text: &Text) -> Self {
         // Get the width of the panel.
-        let tracks_panel_width = get_tracks_panel_width(config);
-        let window_grid_size = get_window_grid_size(config);
-        let width = window_grid_size[0] - tracks_panel_width;
+        let width = get_main_menu_width(config);
 
         let position = get_main_menu_position(config);
 
