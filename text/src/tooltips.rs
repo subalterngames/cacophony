@@ -25,14 +25,14 @@ pub struct Tooltips {
     re_values: RegexMap,
     /// The regex used to find an arbitrary value wildcard.
     re_value: Regex,
-    subtitle_font: Font,
+    subtitle_font: Option<Font>,
     subtitle_font_size: u16,
     subtitle_width: f32,
 }
 
 impl Tooltips {
     pub fn new(config: &Ini) -> Self {
-        let subtitle_font = get_subtitle_font(config);
+        let subtitle_font = Some(get_subtitle_font(config));
         let subtitle_font_size = get_subtitle_font_size(config);
         let re_binding = Regex::new(r"(\\\d+)").unwrap();
         let re_value = Regex::new(r"(%(\d+))").unwrap();
@@ -82,9 +82,31 @@ impl Tooltips {
         input: &Input,
         text: &Text,
     ) -> Vec<TtsString> {
-        let mut spoken = text.get(key);
+        // Get the string with the wildcards.
+        let raw_string = text.get(key);
         let mut seen_bindings = HashMap::new();
         let mut regexes = HashMap::new();
+        let mut x = 0.0;
+        let re_bindings = Regex::new(r"(\\\d+)").unwrap();
+        let re_values = Regex::new(r"(%(\d+))").unwrap();
+        // The final list of TTS strings.
+        let mut tts_strings = vec![];
+        // The current TTS string.
+        let mut tts_string = TtsString::default();
+        // Iterate through each word.
+        for word in raw_string.split_whitespace() {
+            // This is a value.
+            if let Some(caps) = self.re_value.captures(word) {
+                let num = str::parse::<usize>(caps.get(2).unwrap().as_str()).unwrap();
+                let v = values[num];
+                let dim = measure_text(v, self.subtitle_font, self.subtitle_font_size, 1.0);
+                if dim.offset_y > tts_string.size[1] {
+                    tts_string.size[1] = dim.offset_y;
+                }
+                tts_string.size[1] = dim.offset_y
+                tts_string.tokens.push(values[&num].clone());
+            }
+        }
         // Iterate through each event.
         for (i, event) in events.iter().enumerate() {
             let regex = self.get_regex(&i, true);
