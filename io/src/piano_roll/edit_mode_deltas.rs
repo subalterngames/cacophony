@@ -1,5 +1,4 @@
-use common::config::{parse, parse_float, parse_fraction};
-use common::fraction::*;
+use common::config::{parse, parse_float};
 use common::ini::Ini;
 use common::{EditMode, InputState, PPQ_F};
 
@@ -21,12 +20,6 @@ pub(super) struct EditModeDeltas {
     quick_volume: u8,
     /// In precise mode, edit volume by this delta.
     precise_volume: u8,
-    /// In normal mode, zoom in by this factor.
-    normal_zoom: Fraction,
-    /// In quick mode, zoom in by this factor.
-    quick_zoom: Fraction,
-    /// In precise mode, zoom in by this factor.
-    precise_zoom: Fraction,
 }
 
 impl EditModeDeltas {
@@ -40,9 +33,7 @@ impl EditModeDeltas {
         let normal_volume: u8 = parse(section, "normal_volume");
         let quick_volume: u8 = parse(section, "quick_volume");
         let precise_volume: u8 = parse(section, "precise_volume");
-        let normal_zoom = parse_fraction(section, "normal_zoom");
-        let quick_zoom = normal_zoom * parse_fraction(section, "quick_zoom");
-        let precise_zoom = normal_zoom / parse_fraction(section, "precise_zoom");
+
         Self {
             quick_time_factor,
             precise_time,
@@ -52,9 +43,6 @@ impl EditModeDeltas {
             normal_volume,
             quick_volume,
             precise_volume,
-            normal_zoom,
-            quick_zoom,
-            precise_zoom,
         }
     }
 
@@ -82,15 +70,6 @@ impl EditModeDeltas {
             EditMode::Normal => self.normal_volume,
             EditMode::Quick => self.quick_volume,
             EditMode::Precise => self.precise_volume,
-        }
-    }
-
-    /// Returns the zoom delta.
-    pub(super) fn get_dz(&self, mode: &EditMode) -> Fraction {
-        match mode {
-            EditMode::Normal => self.normal_zoom,
-            EditMode::Quick => self.quick_zoom,
-            EditMode::Precise => self.precise_zoom,
         }
     }
 }

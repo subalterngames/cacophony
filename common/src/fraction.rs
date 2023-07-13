@@ -1,3 +1,4 @@
+use crate::U64orF32;
 use std::fmt::Display;
 use std::ops::{Div, Mul};
 
@@ -61,6 +62,22 @@ impl Mul<Fraction> for Fraction {
     }
 }
 
+impl Mul<Fraction> for U64orF32 {
+    type Output = U64orF32;
+
+    fn mul(self, rhs: Fraction) -> Self::Output {
+        Self::from((self.get_u() * rhs.numerator) / rhs.denominator)
+    }
+}
+
+impl Mul<U64orF32> for Fraction {
+    type Output = Fraction;
+
+    fn mul(self, rhs: U64orF32) -> Self::Output {
+        Self::new(rhs.get_u() * self.numerator, self.denominator)
+    }
+}
+
 impl Div<u64> for Fraction {
     type Output = u64;
 
@@ -85,5 +102,21 @@ impl Div<Fraction> for Fraction {
             self.numerator * rhs.denominator,
             self.denominator * rhs.numerator,
         )
+    }
+}
+
+impl Div<Fraction> for U64orF32 {
+    type Output = U64orF32;
+
+    fn div(self, rhs: Fraction) -> Self::Output {
+        Self::from((self.get_u() * rhs.denominator) / rhs.numerator)
+    }
+}
+
+impl Div<U64orF32> for Fraction {
+    type Output = Fraction;
+
+    fn div(self, rhs: U64orF32) -> Self::Output {
+        Self::new(rhs.get_u() * self.denominator, self.numerator)
     }
 }

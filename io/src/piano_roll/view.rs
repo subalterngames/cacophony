@@ -42,14 +42,8 @@ impl View {
 
     /// Zoom in or out.
     fn zoom(&self, state: &mut State, zoom_in: bool) -> Option<Snapshot> {
-        // Get the zoom factor.
-        let mut zoom = self.deltas.get_dz(state.view.mode.get_ref());
-        if zoom_in {
-            zoom.invert();
-        }
-        // Set the viewport.
         let s0 = state.clone();
-        state.view.zoom(zoom);
+        state.view.zoom(zoom_in);
         Some(Snapshot::from_states(s0, state))
     }
 }
