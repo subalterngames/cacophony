@@ -1,12 +1,8 @@
 use crate::tts_string::TtsString;
-use crate::{Text, Token};
+use crate::Text;
 use common::hashbrown::HashMap;
 use input::{Input, InputEvent, QwertyBinding};
 use regex::Regex;
-use common::macroquad::prelude::*;
-use common::ini::Ini;
-use common::font::get_subtitle_font;
-use common::sizes::*;
 
 type RegexMap = HashMap<usize, Regex>;
 
@@ -19,31 +15,17 @@ type RegexMap = HashMap<usize, Regex>;
 pub struct Tooltips {
     /// The regex used to find bindings.
     re_bindings: RegexMap,
-    /// The regex used to find an arbitrary binding wildcard.
-    re_binding: Regex,
     /// The regex used to find wildcard values.
     re_values: RegexMap,
-    /// The regex used to find an arbitrary value wildcard.
-    re_value: Regex,
-    subtitle_font: Option<Font>,
-    subtitle_font_size: u16,
-    subtitle_width: f32,
+    or_str: String,
 }
 
 impl Tooltips {
-    pub fn new(config: &Ini) -> Self {
-        let subtitle_font = Some(get_subtitle_font(config));
-        let subtitle_font_size = get_subtitle_font_size(config);
-        let re_binding = Regex::new(r"(\\\d+)").unwrap();
-        let re_value = Regex::new(r"(%(\d+))").unwrap();
-        let subtitle_width = get_subtitle_width(config);
+    pub fn new(text: &Text) -> Self {
+        let or_str = text.get("OR").trim().to_string();
         Self { re_bindings: RegexMap::new(), 
-            re_binding,
             re_values: RegexMap::new(),
-            re_value,
-            subtitle_font,
-            subtitle_font_size,
-            subtitle_width
+            or_str
         }
     }
 
@@ -81,32 +63,12 @@ impl Tooltips {
         values: &[&str],
         input: &Input,
         text: &Text,
-    ) -> Vec<TtsString> {
+    ) -> TtsString {
         // Get the string with the wildcards.
         let raw_string = text.get(key);
-        let mut seen_bindings = HashMap::new();
+        let mut spoken = raw_string.clone();
+        let mut seen = raw_string.clone();
         let mut regexes = HashMap::new();
-        let mut x = 0.0;
-        let re_bindings = Regex::new(r"(\\\d+)").unwrap();
-        let re_values = Regex::new(r"(%(\d+))").unwrap();
-        // The final list of TTS strings.
-        let mut tts_strings = vec![];
-        // The current TTS string.
-        let mut tts_string = TtsString::default();
-        // Iterate through each word.
-        for word in raw_string.split_whitespace() {
-            // This is a value.
-            if let Some(caps) = self.re_value.captures(word) {
-                let num = str::parse::<usize>(caps.get(2).unwrap().as_str()).unwrap();
-                let v = values[num];
-                let dim = measure_text(v, self.subtitle_font, self.subtitle_font_size, 1.0);
-                if dim.offset_y > tts_string.size[1] {
-                    tts_string.size[1] = dim.offset_y;
-                }
-                tts_string.size[1] = dim.offset_y
-                tts_string.tokens.push(values[&num].clone());
-            }
-        }
         // Iterate through each event.
         for (i, event) in events.iter().enumerate() {
             let regex = self.get_regex(&i, true);
@@ -114,7 +76,7 @@ impl Tooltips {
             // Get the key bindings.
             let bindings = input.get_bindings(event);
             // The replacement string.
-            let mut spoken_replacement = String::new();
+            let mut spoken_replacement = vec![];
             let mut seen_replacement = vec![];
             let mut has_qwerty = false;
             // Get the qwerty binding.
@@ -122,29 +84,27 @@ impl Tooltips {
                 has_qwerty = true;
                 // Add spoken mods.
                 for m in Self::get_mods(qwerty, text, true) {
-                    spoken_replacement.push_str(m);
-                    spoken_replacement.push(' ');
+                    spoken_replacement.push(m.to_string());
                 }
                 // Add seen mod tokens.
                 for m in Self::get_mods(qwerty, text, false) {
-                    seen_replacement.push(Token::Qwerty(m.to_string()))
+                    seen_replacement.push(m.to_string());
                 }
                 // Add spoken keys.
                 for k in Self::get_keys(qwerty, text, true) {
-                    spoken_replacement.push_str(k);
-                    spoken_replacement.push(' ');
+                    spoken_replacement.push(k.to_string());
                 }
                 // Add seen key tokens.
                 for k in Self::get_keys(qwerty, text, false) {
-                    seen_replacement.push(Token::Qwerty(k.to_string()))
+                    seen_replacement.push(k.to_string());
                 }
             }
             // Get the MIDI binding.
             if let Some(midi) = bindings.1 {
                 if has_qwerty {
                     // Or...
-                    spoken_replacement.push_str(&text.get("OR"));
-                    seen_replacement.push(Token::Word(text.get("OR").trim().to_string()));
+                    spoken_replacement.push(self.or_str.clone());
+                    seen_replacement.push(self.or_str.clone());
                     // Get the MIDI binding.
                     let midi = match &midi.alias {
                         Some(alias) => alias.clone(),
@@ -153,17 +113,15 @@ impl Tooltips {
                             &[&midi.bytes[0].to_string(), &midi.bytes[1].to_string()],
                         ),
                     };
-                    spoken_replacement.push_str(&midi);
-                    seen_replacement.push(Token::MIDI(midi));
+                    spoken_replacement.push(midi.clone());
+                    seen_replacement.push(midi);
                 }
             }
-            // Replace the value.
-            spoken = regexes[&i].replace(&spoken, &spoken_replacement).to_string();
-            // Add the value to the tokens map.
-            seen_bindings.insert(i, seen_replacement);
+            // Replace.
+            spoken = regexes[&i].replace(&spoken, &spoken_replacement.join(" ")).to_string();
+            seen = regexes[&i].replace(&seen, &seen_replacement.join(" ")).to_string();
         }
         // Iterate through each value.
-        let mut seen_values = HashMap::new();
         let mut regexes = HashMap::new();
         for (i, value) in values.iter().enumerate() {
             // Get the value regex.
@@ -171,32 +129,9 @@ impl Tooltips {
             regexes.insert(i, regex.clone());
             // Replace the value wildcard.
             spoken = regex.replace(&spoken, *value).to_string();
-            // Update the scene values.
-            seen_values.insert(i, Token::Word(value.to_string()));
+            seen = regex.replace(&seen, *value).to_string();
         }
-        // Tokenize the string.
-        let mut tokens = vec![];
-        let string = text.get(key);
-        for word in string.split_whitespace() {
-            if word.is_empty() {
-                continue;
-            }
-            // This is a binding.       
-            else if let Some(caps) = self.re_binding.captures(word) {
-                let num = str::parse::<usize>(caps.get(2).unwrap().as_str()).unwrap();
-                tokens.extend(seen_bindings[&num].clone());
-            }
-            // This is a value.
-            else if let Some(caps) = self.re_value.captures(word) {
-                let num = str::parse::<usize>(caps.get(2).unwrap().as_str()).unwrap();
-                tokens.push(seen_values[&num].clone());
-            }
-            // This is a word.
-            else {
-                tokens.push(Token::Word(word.to_string()));
-            }
-        }
-        TtsString { spoken, tokens }
+        TtsString { spoken, seen }
     }
 
     /// Returns a regex that searches for wildcard `i`. Creates a regext if there is none.

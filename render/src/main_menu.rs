@@ -1,7 +1,7 @@
 use crate::panel::*;
 use common::VERSION;
 use input::InputEvent;
-use tooltip::get_tooltip;
+use text::Tooltips;
 
 /// The color of the panel and the text.
 const COLOR: ColorKey = ColorKey::Key;
@@ -35,6 +35,8 @@ impl MainMenu {
             format!("*{}", panel.title.label.text),
         );
 
+        let mut tooltips = Tooltips::new(text);
+
         // Get the fields.
         let mut x = panel.rect.position[0] + 1;
         let y = panel.rect.position[1] + 1;
@@ -47,6 +49,7 @@ impl MainMenu {
             y,
             input,
             text,
+            &mut tooltips
         );
         let input_field = Self::tooltip(
             "MAIN_MENU_INPUT",
@@ -55,8 +58,9 @@ impl MainMenu {
             y,
             input,
             text,
+            &mut tooltips
         );
-        let app = Self::tooltip("MAIN_MENU_APP", InputEvent::AppTTS, &mut x, y, input, text);
+        let app = Self::tooltip("MAIN_MENU_APP", InputEvent::AppTTS, &mut x, y, input, text, &mut tooltips);
         let file = Self::tooltip(
             "MAIN_MENU_FILE",
             InputEvent::FileTTS,
@@ -64,6 +68,7 @@ impl MainMenu {
             y,
             input,
             text,
+            &mut tooltips
         );
         let stop = Self::tooltip(
             "MAIN_MENU_STOP",
@@ -72,6 +77,7 @@ impl MainMenu {
             y,
             input,
             text,
+            &mut tooltips
         );
         let version = Label {
             position: [
@@ -110,8 +116,9 @@ impl MainMenu {
         y: u32,
         input: &Input,
         text: &Text,
+        tooltips: &mut Tooltips
     ) -> Label {
-        let text = get_tooltip(key, &[event], input, text);
+        let text = tooltips.get_tooltip(key, &[event], input, text).seen;
         let width = key.chars().count() as u32;
         let position = [*x, y];
         *x += width;

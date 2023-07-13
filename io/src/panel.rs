@@ -1,5 +1,5 @@
 pub(crate) use crate::io_command::IOCommand;
-pub(crate) use crate::{get_tooltip, get_tooltip_with_values, Snapshot};
+pub(crate) use crate::{Tooltips, Snapshot};
 pub(crate) use audio::exporter::Exporter;
 pub(crate) use audio::{Command, Conn};
 pub(crate) use common::{Index, PathsState, State};

@@ -1,13 +1,14 @@
 use common::config::{parse, parse_bool};
 use common::ini::Ini;
 use tts::Tts;
+use crate::TtsString;
 
 /// Text-to-speech.
 pub struct TTS {
     /// The text-to-speech engine.
     tts: Option<Tts>,
     /// What text, if any, Casey is saying.
-    pub speech: Option<String>,
+    pub speech: Option<TtsString>,
     /// If true, return subtitle text.
     show_subtitles: bool,
 }
@@ -47,14 +48,14 @@ impl TTS {
     }
 
     /// Say something. Optionally sets subtitles.
-    pub fn say(&mut self, text: &str) {
+    pub fn say(&mut self, text: TtsString) {
         self.speech = None;
         if let Some(tts) = &mut self.tts {
             // Speak!
-            if tts.speak(text, true).is_ok() {
+            if tts.speak(&text.spoken, true).is_ok() {
                 // Remember what we're saying for subtitles.
                 if self.show_subtitles {
-                    self.speech = Some(text.to_string());
+                    self.speech = Some(text);
                 }
             }
         }

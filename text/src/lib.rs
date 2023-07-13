@@ -12,10 +12,10 @@ use common::{PPQ_F, PPQ_U};
 use std::path::Path;
 pub use text::Text;
 pub use value_map::*;
-mod token;
 mod tooltips;
 mod tts_string;
-pub use token::Token;
+pub use tts_string::TtsString;
+pub use tooltips::Tooltips;
 
 pub fn ppq_to_string(ppq: u64) -> String {
     // This is a whole note.

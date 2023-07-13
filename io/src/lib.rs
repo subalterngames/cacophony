@@ -46,7 +46,7 @@ use panel::Panel;
 use piano_roll::PianoRollPanel;
 use save::Save;
 use snapshot::Snapshot;
-use tooltip::*;
+use text::{Tooltips, TtsString};
 use tracks_panel::TracksPanel;
 mod abc123;
 mod export_settings_panel;
@@ -62,7 +62,7 @@ pub struct IO {
     /// A stack of snapshots that can be popped to redo an action.
     redo: Vec<Snapshot>,
     /// Top-level text-to-speech lookups.
-    tts: HashMap<InputEvent, String>,
+    tts: HashMap<InputEvent, TtsString>,
     /// The music panel.
     music_panel: MusicPanel,
     /// The tracks panel.
@@ -85,9 +85,10 @@ pub struct IO {
 
 impl IO {
     pub fn new(config: &Ini, input: &Input, input_state: &InputState, text: &Text) -> Self {
+        let mut tooltips = Tooltips::new(text);
         let mut tts = HashMap::new();
         // App TTS.
-        let app = get_tooltip(
+        let app = tooltips.get_tooltip(
             "APP_TTS",
             &[
                 InputEvent::StatusTTS,
@@ -106,7 +107,7 @@ impl IO {
         );
         tts.insert(InputEvent::AppTTS, app);
         // File TTS.
-        let file = get_tooltip(
+        let file = tooltips.get_tooltip(
             "FILE_TTS",
             &[
                 InputEvent::NewFile,
@@ -305,7 +306,7 @@ impl IO {
         // App-level TTS.
         for tts_e in self.tts.iter() {
             if input.happened(tts_e.0) {
-                tts.say(tts_e.1)
+                tts.say(tts_e.1.clone())
             }
         }
         // Stop talking.

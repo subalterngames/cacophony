@@ -42,7 +42,7 @@ pub(crate) const TRACK_HEIGHT_NO_SOUNDFONT: u32 = 1;
 /// If subtitles are enabled and Casey is speaking, draw the subtitles.
 pub fn draw_subtitles(renderer: &Renderer, tts: &TTS) {
     if let Some(speech) = &tts.speech {
-        renderer.subtitle(speech)
+        renderer.subtitle(&speech.seen)
     }
 }
 
