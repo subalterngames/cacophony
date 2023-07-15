@@ -26,7 +26,7 @@ async fn main() {
     let config = load();
 
     // Create the text.
-    let text = Text::new(&config, &paths);
+    let mut text = Text::new(&config, &paths);
 
     // Try to load the text-to-speech engine.
     let mut tts = TTS::new(&config);
@@ -46,13 +46,13 @@ async fn main() {
     let mut exporter = Exporter::new();
 
     // Get the IO state.
-    let mut io = IO::new(&config, &input, &state.input, &text);
+    let mut io = IO::new(&config, &input, &state.input, &mut text);
 
     // Load the renderer.
     let renderer = Renderer::new(&config);
 
     // Load the panels.
-    let mut panels = Panels::new(&config, &state, &input, &text, &renderer);
+    let mut panels = Panels::new(&config, &state, &input, &mut text, &renderer);
 
     // Resize the screen.
     let window_size = get_window_pixel_size(&config);
@@ -98,7 +98,7 @@ async fn main() {
                 &mut conn,
                 &input,
                 &mut tts,
-                &text,
+                &mut text,
                 &mut paths_state,
                 &mut exporter,
             );

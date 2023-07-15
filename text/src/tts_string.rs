@@ -9,7 +9,10 @@ pub struct TtsString {
 
 impl From<String> for TtsString {
     fn from(value: String) -> Self {
-        Self { spoken: value.clone(), seen: value.clone() }
+        Self {
+            spoken: value.clone(),
+            seen: value,
+        }
     }
 }
 

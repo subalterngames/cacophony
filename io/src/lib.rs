@@ -46,7 +46,7 @@ use panel::Panel;
 use piano_roll::PianoRollPanel;
 use save::Save;
 use snapshot::Snapshot;
-use text::{Tooltips, TtsString};
+use text::TtsString;
 use tracks_panel::TracksPanel;
 mod abc123;
 mod export_settings_panel;
@@ -84,11 +84,10 @@ pub struct IO {
 }
 
 impl IO {
-    pub fn new(config: &Ini, input: &Input, input_state: &InputState, text: &Text) -> Self {
-        let mut tooltips = Tooltips::new(text);
+    pub fn new(config: &Ini, input: &Input, input_state: &InputState, text: &mut Text) -> Self {
         let mut tts = HashMap::new();
         // App TTS.
-        let app = tooltips.get_tooltip(
+        let app = text.get_tooltip(
             "APP_TTS",
             &[
                 InputEvent::StatusTTS,
@@ -103,11 +102,10 @@ impl IO {
                 InputEvent::StopTTS,
             ],
             input,
-            text,
         );
         tts.insert(InputEvent::AppTTS, app);
         // File TTS.
-        let file = tooltips.get_tooltip(
+        let file = text.get_tooltip(
             "FILE_TTS",
             &[
                 InputEvent::NewFile,
@@ -118,15 +116,14 @@ impl IO {
                 InputEvent::EditConfig,
             ],
             input,
-            text,
         );
         tts.insert(InputEvent::FileTTS, file);
-        let music_panel = MusicPanel::new(text);
-        let tracks_panel = TracksPanel::new(text);
-        let open_file_panel = OpenFilePanel::new(text);
+        let music_panel = MusicPanel {};
+        let tracks_panel = TracksPanel {};
+        let open_file_panel = OpenFilePanel::default();
         let piano_roll_panel = PianoRollPanel::new(&input_state.beat.get_u(), config);
         let export_panel = ExportPanel::default();
-        let export_settings_panel = ExportSettingsPanel::new(text);
+        let export_settings_panel = ExportSettingsPanel {};
         Self {
             tts,
             music_panel,
@@ -150,7 +147,7 @@ impl IO {
         conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &Text,
+        text: &mut Text,
         paths_state: &mut PathsState,
         exporter: &mut Exporter,
     ) -> bool {

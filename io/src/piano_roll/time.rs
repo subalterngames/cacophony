@@ -155,7 +155,7 @@ impl PianoRollSubPanel for Time {
     }
 
     fn get_input_tts(&self, _: &State, input: &Input, text: &mut Text) -> TtsString {
-        text.tooltips.get_tooltip(
+        text.get_tooltip(
             "PIANO_ROLL_PANEL_INPUT_TTS_TIME",
             &[
                 InputEvent::TimeCursorLeft,
@@ -172,7 +172,6 @@ impl PianoRollSubPanel for Time {
                 InputEvent::TimePlaybackCursor,
             ],
             input,
-            text,
         )
     }
 }

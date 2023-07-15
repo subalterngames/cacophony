@@ -157,7 +157,7 @@ impl PianoRollSubPanel for View {
 
     fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> TtsString {
         let mut s = if state.view.single_track {
-            text.tooltips.get_tooltip(
+            text.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK",
                 &[
                     InputEvent::ViewUp,
@@ -171,10 +171,9 @@ impl PianoRollSubPanel for View {
                     InputEvent::ViewZoomDefault,
                 ],
                 input,
-                text,
             )
         } else {
-            text.tooltips.get_tooltip(
+            text.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK",
                 &[
                     InputEvent::ViewLeft,
@@ -183,7 +182,6 @@ impl PianoRollSubPanel for View {
                     InputEvent::ViewEnd,
                 ],
                 input,
-                text,
             )
         };
         s.append(&get_cycle_edit_mode_input_tts(

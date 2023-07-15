@@ -6,7 +6,7 @@ use common::{U64orF32, DEFAULT_BPM, MAX_VOLUME};
 const MAX_GAIN: usize = MAX_VOLUME as usize;
 
 /// Set global music values.
-pub(crate) struct MusicPanel { }
+pub(crate) struct MusicPanel {}
 
 impl MusicPanel {
     /// Increment the current gain. Returns a new undo state.
@@ -62,14 +62,13 @@ impl Panel for MusicPanel {
         }
         // Sub-panel TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let scroll = text.tooltips.get_tooltip(
+            let scroll = text.get_tooltip(
                 "MUSIC_PANEL_INPUT_TTS",
                 &[
                     InputEvent::PreviousMusicPanelField,
                     InputEvent::NextMusicPanelField,
                 ],
                 input,
-                text,
             );
             let tts_text = match state.music_panel_field.get_ref() {
                 MusicPanelField::BPM => {
@@ -79,18 +78,17 @@ impl Panel for MusicPanel {
                         "MUSIC_PANEL_INPUT_TTS_BPM_NO_ABC123"
                     };
                     let mut s =
-                    text.tooltips.get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input, text);
+                        text.get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input);
                     if !state.input.alphanumeric_input {
                         s.append(&scroll);
                     }
                     s
                 }
                 MusicPanelField::Gain => {
-                    let mut s = text.tooltips.get_tooltip(
+                    let mut s = text.get_tooltip(
                         "MUSIC_PANEL_INPUT_TTS_GAIN",
                         &[InputEvent::DecreaseMusicGain, InputEvent::IncreaseMusicGain],
                         input,
-                        text,
                     );
                     s.append(&scroll);
                     s
@@ -102,7 +100,7 @@ impl Panel for MusicPanel {
                         "MUSIC_PANEL_INPUT_TTS_NAME_NO_ABC123"
                     };
                     let mut s =
-                    text.tooltips.get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input, text);
+                        text.get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input);
                     if !state.input.alphanumeric_input {
                         s.append(&scroll);
                     }

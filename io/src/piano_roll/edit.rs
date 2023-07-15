@@ -144,7 +144,7 @@ impl PianoRollSubPanel for Edit {
 
     fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> TtsString {
         let mut s = match state.select_mode.get_note_indices() {
-            Some(_) => text.tooltips.get_tooltip(
+            Some(_) => text.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_EDIT",
                 &[
                     InputEvent::EditPitchUp,
@@ -157,7 +157,6 @@ impl PianoRollSubPanel for Edit {
                     InputEvent::EditVolumeDown,
                 ],
                 input,
-                text,
             ),
             None => get_no_selection_status_tts(text),
         };

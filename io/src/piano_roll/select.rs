@@ -4,8 +4,7 @@ use common::time::Time;
 use common::{MidiTrack, Note, SelectMode};
 
 /// Select notes.
-pub(super) struct Select {
-}
+pub(super) struct Select {}
 
 impl Select {
     /// Returns the index of the note closest (and before) the cursor.
@@ -62,7 +61,7 @@ impl Panel for Select {
         _: &mut Conn,
         input: &Input,
         _: &mut TTS,
-        _: &Text,
+        _: &mut Text,
         _: &mut PathsState,
         _: &mut Exporter,
     ) -> Option<Snapshot> {
@@ -316,7 +315,7 @@ impl Panel for Select {
 }
 
 impl PianoRollSubPanel for Select {
-    fn get_status_tts(&mut self, state: &State, text: &Text) -> TtsString {
+    fn get_status_tts(&self, state: &State, text: &mut Text) -> TtsString {
         match &state.select_mode {
             SelectMode::Single(index) => match index {
                 Some(index) => match state.select_mode.get_notes(&state.music) {
@@ -338,24 +337,27 @@ impl PianoRollSubPanel for Select {
                             "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_MANY",
                             &[&text.get_ppq_tts(&min), &text.get_ppq_tts(&max)],
                         )),
-                        None => TtsString::from(text.get_error("There is no end time to the selection.")),
+                        None => TtsString::from(
+                            text.get_error("There is no end time to the selection."),
+                        ),
                     },
-                    None => TtsString::from(text.get_error("There is no start time to the selection.")),
+                    None => {
+                        TtsString::from(text.get_error("There is no start time to the selection."))
+                    }
                 },
                 None => TtsString::from(text.get_error("The selected notes don't exist.")),
             },
         }
     }
 
-    fn get_input_tts(&mut self, state: &State, input: &Input, text: &Text) -> TtsString {
+    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> TtsString {
         let (mut s, selected) = match &state.select_mode {
             SelectMode::Single(index) => match index {
                 Some(_) => (
-                    self.tooltips.get_tooltip(
+                    text.get_tooltip(
                         "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_SINGLE",
                         &[InputEvent::SelectStartLeft, InputEvent::SelectStartRight],
                         input,
-                        text,
                     ),
                     true,
                 ),
@@ -363,7 +365,7 @@ impl PianoRollSubPanel for Select {
             },
             SelectMode::Many(indices) => match indices {
                 Some(_) => (
-                    get_tooltip(
+                    text.get_tooltip(
                         "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_MANY",
                         &[
                             InputEvent::SelectStartLeft,
@@ -375,7 +377,6 @@ impl PianoRollSubPanel for Select {
                             InputEvent::PianoRollCycleMode,
                         ],
                         input,
-                        text,
                     ),
                     true,
                 ),
@@ -383,34 +384,24 @@ impl PianoRollSubPanel for Select {
             },
         };
         if state.select_mode.get_note_indices().is_some() {
-            s.push(' ');
-            s.push_str(&get_tooltip(
+            s.append(&text.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_ALL",
                 &[InputEvent::SelectAll],
                 input,
-                text,
             ));
         }
         if selected {
-            s.push(' ');
-            s.push_str(&get_tooltip(
+            s.append(&text.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_DESELECT",
                 &[InputEvent::SelectNone],
                 input,
-                text,
             ));
         }
-        s.push(' ');
         let cycle_key = match state.select_mode {
             SelectMode::Single(_) => "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_MANY",
             SelectMode::Many(_) => "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_SINGLE",
         };
-        s.push_str(&get_tooltip(
-            cycle_key,
-            &[InputEvent::PianoRollCycleMode],
-            input,
-            text,
-        ));
+        s.append(&text.get_tooltip(cycle_key, &[InputEvent::PianoRollCycleMode], input));
         s
     }
 }

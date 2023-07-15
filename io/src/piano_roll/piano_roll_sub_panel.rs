@@ -25,12 +25,11 @@ pub(crate) fn get_cycle_edit_mode_input_tts(
 ) -> TtsString {
     let mut m1 = *mode;
     m1.index.increment(true);
-    text.tooltips.get_tooltip_with_values(
+    text.get_tooltip_with_values(
         "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_MODE",
         &[InputEvent::PianoRollCycleMode],
         &[&text.get_edit_mode(m1.get_ref())],
         input,
-        text,
     )
 }
 

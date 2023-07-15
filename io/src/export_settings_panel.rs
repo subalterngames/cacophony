@@ -24,12 +24,11 @@ impl ExportSettingsPanel {
         if state.input.alphanumeric_input {
             TtsString::from(text.get_with_values(if_true, &[value]))
         } else {
-            text.tooltips.get_tooltip_with_values(
+            text.get_tooltip_with_values(
                 if_false,
                 &[InputEvent::ToggleAlphanumericInput],
                 &[value],
                 input,
-                text,
             )
         }
     }
@@ -41,11 +40,10 @@ impl ExportSettingsPanel {
         input: &Input,
         text: &mut Text,
     ) -> TtsString {
-        text.tooltips.get_tooltip(
+        text.get_tooltip(
             if value { if_true } else { if_false },
             &[InputEvent::ToggleExportSettingBoolean],
             input,
-            text,
         )
     }
 
@@ -57,36 +55,29 @@ impl ExportSettingsPanel {
         text: &mut Text,
     ) -> TtsString {
         if state.input.alphanumeric_input {
-            text.tooltips.get_tooltip(if_true, &[InputEvent::ToggleAlphanumericInput], input, text)
+            text.get_tooltip(if_true, &[InputEvent::ToggleAlphanumericInput], input)
         } else {
-            let mut s = text.tooltips.get_tooltip(
-                if_false,
-                &[InputEvent::ToggleAlphanumericInput],
-                input,
-                text,
-            );
-            s.append(&text.tooltips.get_tooltip(
+            let mut s = text.get_tooltip(if_false, &[InputEvent::ToggleAlphanumericInput], input);
+            s.append(&text.get_tooltip(
                 "EXPORT_SETTINGS_PANEL_INPUT_TTS_SCROLL",
                 &[
                     InputEvent::PreviousExportSetting,
                     InputEvent::NextExportSetting,
                 ],
                 input,
-                text,
             ));
             s
         }
     }
 
     fn get_input_lr_tts(key: &str, input: &Input, text: &mut Text) -> TtsString {
-        text.tooltips.get_tooltip(
+        text.get_tooltip(
             key,
             &[
                 InputEvent::PreviousExportSettingValue,
                 InputEvent::NextExportSettingValue,
             ],
             input,
-            text,
         )
     }
 
@@ -167,7 +158,9 @@ impl ExportSettingsPanel {
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {
             let s = match &f(exporter).get() {
-                ExportSetting::Framerate => TtsString::from(text.get("EXPORT_SETTINGS_PANEL_STATUS_TTS_FRAMERATE")),
+                ExportSetting::Framerate => {
+                    TtsString::from(text.get("EXPORT_SETTINGS_PANEL_STATUS_TTS_FRAMERATE"))
+                }
                 ExportSetting::Title => Self::get_status_abc123_tts(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TITLE_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TITLE_NO_ABC123",
@@ -215,12 +208,14 @@ impl ExportSettingsPanel {
                     input,
                     text,
                 ),
-                ExportSetting::Mp3BitRate => TtsString::from(text.get_with_values(
-                    "EXPORT_SETTINGS_PANEL_STATUS_TTS_BIT_RATE",
-                    &[
-                        &((MP3_BIT_RATES[exporter.bit_rate.get()] as u16) as u32 * 1000)
-                            .to_string(),
-                    ]),
+                ExportSetting::Mp3BitRate => TtsString::from(
+                    text.get_with_values(
+                        "EXPORT_SETTINGS_PANEL_STATUS_TTS_BIT_RATE",
+                        &[
+                            &((MP3_BIT_RATES[exporter.bit_rate.get()] as u16) as u32 * 1000)
+                                .to_string(),
+                        ],
+                    ),
                 ),
                 ExportSetting::Mp3Quality => TtsString::from(text.get_with_values(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_QUALITY",
@@ -237,13 +232,13 @@ impl ExportSettingsPanel {
                         None => text.get("NONE"),
                     }],
                 )),
-                ExportSetting::MultiFile => TtsString::from(Self::get_status_bool_tts(
+                ExportSetting::MultiFile => Self::get_status_bool_tts(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_ENABLED",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_DISABLED",
                     exporter.multi_file,
                     input,
                     text,
-                )),
+                ),
                 ExportSetting::MultiFileSuffix => {
                     if exporter.multi_file {
                         let key = match &exporter.multi_file_suffix.get() {
@@ -286,11 +281,10 @@ impl ExportSettingsPanel {
                     input,
                     text,
                 ),
-                ExportSetting::Copyright => text.tooltips.get_tooltip(
+                ExportSetting::Copyright => text.get_tooltip(
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_COPYRIGHT",
                     &[InputEvent::ToggleExportSettingBoolean],
                     input,
-                    text,
                 ),
                 ExportSetting::Album => Self::get_input_abc123_tts(
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_ALBUM_ABC123",
@@ -326,11 +320,10 @@ impl ExportSettingsPanel {
                 ExportSetting::Mp3Quality | ExportSetting::OggQuality => {
                     Self::get_input_lr_tts("EXPORT_SETTINGS_PANEL_INPUT_TTS_QUALITY", input, text)
                 }
-                ExportSetting::MultiFile => text.tooltips.get_tooltip(
+                ExportSetting::MultiFile => text.get_tooltip(
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_MULTI_FILE",
                     &[InputEvent::ToggleExportSettingBoolean],
                     input,
-                    text,
                 ),
                 ExportSetting::MultiFileSuffix => Self::get_input_lr_tts(
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_MULTI_FILE_SUFFIX",

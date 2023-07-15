@@ -12,7 +12,6 @@ use common::{PPQ_F, PPQ_U};
 use std::path::Path;
 pub use text::Text;
 pub use value_map::*;
-pub mod tooltips;
 mod tts_string;
 pub use tts_string::TtsString;
 

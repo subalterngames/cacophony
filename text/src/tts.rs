@@ -1,7 +1,7 @@
+use crate::TtsString;
 use common::config::{parse, parse_bool};
 use common::ini::Ini;
 use tts::Tts;
-use crate::TtsString;
 
 /// Text-to-speech.
 pub struct TTS {
@@ -63,7 +63,10 @@ impl TTS {
 
     /// Say something and show subtitles, but we're assuming that the spoken-string and the seen-string are both `text`.
     pub fn say_str(&mut self, text: &str) {
-        self.say(TtsString { spoken: text.to_string(), seen: text.to_string() })
+        self.say(TtsString {
+            spoken: text.to_string(),
+            seen: text.to_string(),
+        })
     }
 
     /// Stop speaking.
@@ -86,10 +89,7 @@ impl TTS {
     /// Returns true if Casey is speaking.
     fn is_speaking(&self) -> bool {
         match &self.tts {
-            Some(tts) => match tts.is_speaking() {
-                Ok(speaking) => speaking,
-                Err(_) => false,
-            },
+            Some(tts) => tts.is_speaking().unwrap_or(false),
             None => false,
         }
     }
