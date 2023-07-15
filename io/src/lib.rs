@@ -121,12 +121,12 @@ impl IO {
             text,
         );
         tts.insert(InputEvent::FileTTS, file);
-        let music_panel = MusicPanel {};
-        let tracks_panel = TracksPanel {};
-        let open_file_panel = OpenFilePanel::default();
+        let music_panel = MusicPanel::new(text);
+        let tracks_panel = TracksPanel::new(text);
+        let open_file_panel = OpenFilePanel::new(text);
         let piano_roll_panel = PianoRollPanel::new(&input_state.beat.get_u(), config);
         let export_panel = ExportPanel::default();
-        let export_settings_panel = ExportSettingsPanel::default();
+        let export_settings_panel = ExportSettingsPanel::new(text);
         Self {
             tts,
             music_panel,

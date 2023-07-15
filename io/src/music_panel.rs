@@ -6,9 +6,15 @@ use common::{U64orF32, DEFAULT_BPM, MAX_VOLUME};
 const MAX_GAIN: usize = MAX_VOLUME as usize;
 
 /// Set global music values.
-pub(crate) struct MusicPanel {}
+pub(crate) struct MusicPanel {
+    tooltips: Tooltips
+}
 
 impl MusicPanel {
+    pub fn new(text: &Text) -> Self {
+        Self { tooltips: Tooltips::new(text)}
+    }
+
     /// Increment the current gain. Returns a new undo state.
     fn set_gain(conn: &mut Conn, up: bool) -> Option<Snapshot> {
         // Get undo commands.
@@ -50,7 +56,7 @@ impl Panel for MusicPanel {
         }
         // Panel TTS.
         else if input.happened(&InputEvent::StatusTTS) {
-            tts.say(&text.get_with_values(
+            tts.say_str(&text.get_with_values(
                 "MUSIC_PANEL_STATUS_TTS",
                 &[
                     &exporter.metadata.title,
@@ -62,7 +68,7 @@ impl Panel for MusicPanel {
         }
         // Sub-panel TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let scroll = get_tooltip(
+            let scroll = self.tooltips.get_tooltip(
                 "MUSIC_PANEL_INPUT_TTS",
                 &[
                     InputEvent::PreviousMusicPanelField,
@@ -79,22 +85,20 @@ impl Panel for MusicPanel {
                         "MUSIC_PANEL_INPUT_TTS_BPM_NO_ABC123"
                     };
                     let mut s =
-                        get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input, text);
+                        self.tooltips.get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input, text);
                     if !state.input.alphanumeric_input {
-                        s.push(' ');
-                        s.push_str(&scroll);
+                        s.append(&scroll);
                     }
                     s
                 }
                 MusicPanelField::Gain => {
-                    let mut s = get_tooltip(
+                    let mut s = self.tooltips.get_tooltip(
                         "MUSIC_PANEL_INPUT_TTS_GAIN",
                         &[InputEvent::DecreaseMusicGain, InputEvent::IncreaseMusicGain],
                         input,
                         text,
                     );
-                    s.push(' ');
-                    s.push_str(&scroll);
+                    s.append(&scroll);
                     s
                 }
                 MusicPanelField::Name => {
@@ -104,15 +108,14 @@ impl Panel for MusicPanel {
                         "MUSIC_PANEL_INPUT_TTS_NAME_NO_ABC123"
                     };
                     let mut s =
-                        get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input, text);
+                        self.tooltips.get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input, text);
                     if !state.input.alphanumeric_input {
-                        s.push(' ');
-                        s.push_str(&scroll);
+                        s.append(&scroll);
                     }
                     s
                 }
             };
-            tts.say(&tts_text);
+            tts.say(tts_text);
             None
         } else {
             // Field-specific actions.

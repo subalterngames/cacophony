@@ -4,9 +4,15 @@ use common::time::Time;
 use common::{MidiTrack, Note, SelectMode};
 
 /// Select notes.
-pub(super) struct Select {}
+pub(super) struct Select {
+    tooltips: Tooltips
+}
 
 impl Select {
+    pub fn new(text: &Text) -> Self {
+        Self { tooltips: Tooltips::new(text) }
+    }
+    
     /// Returns the index of the note closest (and before) the cursor.
     fn get_note_index_closest_to_before_cursor(notes: &[Note], time: &Time) -> Option<usize> {
         notes
@@ -315,42 +321,42 @@ impl Panel for Select {
 }
 
 impl PianoRollSubPanel for Select {
-    fn get_status_tts(&self, state: &State, text: &Text) -> String {
+    fn get_status_tts(&mut self, state: &State, text: &Text) -> TtsString {
         match &state.select_mode {
             SelectMode::Single(index) => match index {
                 Some(index) => match state.select_mode.get_notes(&state.music) {
                     Some(notes) => {
                         let note = notes[*index];
-                        text.get_with_values(
+                        TtsString::from(text.get_with_values(
                             "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE",
                             &[&note.note.to_string(), &text.get_ppq_tts(&note.start)],
-                        )
+                        ))
                     }
-                    None => text.get_error("The selected note doesn't exist."),
+                    None => TtsString::from(text.get_error("The selected note doesn't exist.")),
                 },
                 None => get_no_selection_status_tts(text),
             },
             SelectMode::Many(_) => match state.select_mode.get_notes(&state.music) {
                 Some(notes) => match notes.iter().map(|n| n.start).min() {
                     Some(min) => match notes.iter().map(|n| n.end).max() {
-                        Some(max) => text.get_with_values(
+                        Some(max) => TtsString::from(text.get_with_values(
                             "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_MANY",
                             &[&text.get_ppq_tts(&min), &text.get_ppq_tts(&max)],
-                        ),
-                        None => text.get_error("There is no end time to the selection."),
+                        )),
+                        None => TtsString::from(text.get_error("There is no end time to the selection.")),
                     },
-                    None => text.get_error("There is no start time to the selection."),
+                    None => TtsString::from(text.get_error("There is no start time to the selection.")),
                 },
-                None => text.get_error("The selected notes don't exist."),
+                None => TtsString::from(text.get_error("The selected notes don't exist.")),
             },
         }
     }
 
-    fn get_input_tts(&self, state: &State, input: &Input, text: &Text) -> String {
+    fn get_input_tts(&mut self, state: &State, input: &Input, text: &Text) -> TtsString {
         let (mut s, selected) = match &state.select_mode {
             SelectMode::Single(index) => match index {
                 Some(_) => (
-                    get_tooltip(
+                    self.tooltips.get_tooltip(
                         "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_SINGLE",
                         &[InputEvent::SelectStartLeft, InputEvent::SelectStartRight],
                         input,

@@ -10,12 +10,15 @@ use common::{MAX_NOTE, MAX_VOLUME, MIN_NOTE};
 pub(super) struct Edit {
     /// The edit mode deltas.
     deltas: EditModeDeltas,
+    /// The tooltip manager.
+    tooltips: Tooltips
 }
 
 impl Edit {
-    pub fn new(config: &Ini) -> Self {
+    pub fn new(config: &Ini, text: &Text) -> Self {
         Self {
             deltas: EditModeDeltas::new(config),
+            tooltips: Tooltips::new(text)
         }
     }
 }
@@ -138,13 +141,13 @@ impl Panel for Edit {
 }
 
 impl PianoRollSubPanel for Edit {
-    fn get_status_tts(&self, state: &State, text: &Text) -> String {
+    fn get_status_tts(&mut self, state: &State, text: &Text) -> TtsString {
         get_edit_mode_status_tts(state.edit_mode.get_ref(), text)
     }
 
-    fn get_input_tts(&self, state: &State, input: &Input, text: &Text) -> String {
+    fn get_input_tts(&mut self, state: &State, input: &Input, text: &Text) -> TtsString {
         let mut s = match state.select_mode.get_note_indices() {
-            Some(_) => get_tooltip(
+            Some(_) => self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_EDIT",
                 &[
                     InputEvent::EditPitchUp,
@@ -161,11 +164,11 @@ impl PianoRollSubPanel for Edit {
             ),
             None => get_no_selection_status_tts(text),
         };
-        s.push(' ');
-        s.push_str(&get_cycle_edit_mode_input_tts(
+        s.append(&get_cycle_edit_mode_input_tts(
             &state.edit_mode,
             input,
             text,
+            &mut self.tooltips
         ));
         s
     }

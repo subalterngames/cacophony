@@ -4,9 +4,15 @@ use common::open_file::OpenFileType;
 use common::{MidiTrack, SelectMode};
 use text::get_file_name_no_ex;
 
-pub(crate) struct TracksPanel {}
+pub(crate) struct TracksPanel {
+    tooltips: Tooltips
+}
 
 impl TracksPanel {
+    pub fn new(text: &Text) -> Self {
+        Self { tooltips: Tooltips::new(text)}
+    }
+
     /// Increment or decrement the preset index. Returns a new undo-redo state.
     fn set_preset(channel: u8, conn: &mut Conn, up: bool) -> Option<Snapshot> {
         let program = conn.state.programs.get(&channel).unwrap();
@@ -119,7 +125,7 @@ impl Panel for TracksPanel {
         }
         // Input TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let mut s = get_tooltip(
+            let mut s = self.tooltips.get_tooltip(
                 "TRACKS_PANEL_INPUT_TTS_ADD",
                 &[InputEvent::AddTrack],
                 input,
@@ -127,8 +133,7 @@ impl Panel for TracksPanel {
             );
             // There is a selected track.
             if let Some(track) = state.music.get_selected_track() {
-                s.push(' ');
-                s.push_str(&get_tooltip_with_values(
+                s.append(&self.tooltips.get_tooltip_with_values(
                     "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX",
                     &[
                         InputEvent::RemoveTrack,
@@ -140,13 +145,12 @@ impl Panel for TracksPanel {
                     input,
                     text,
                 ));
-                s.push(' ');
                 // Is there a program?
                 match conn.state.programs.get(&track.channel) {
                     // Program.
                     Some(_) => {
                         // Preset, bank, gain.
-                        s.push_str(&get_tooltip(
+                        s.append(&self.tooltips.get_tooltip(
                             "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX",
                             &[
                                 InputEvent::PreviousPreset,
@@ -160,51 +164,32 @@ impl Panel for TracksPanel {
                             text,
                         ));
                         // Mute.
-                        s.push(' ');
                         let mute_key = if track.mute {
                             "TRACKS_PANEL_INPUT_TTS_UNMUTE"
                         } else {
                             "TRACKS_PANEL_INPUT_TTS_MUTE"
                         };
-                        s.push_str(&get_tooltip(mute_key, &[InputEvent::Mute], input, text));
+                        s.append(&self.tooltips.get_tooltip(mute_key, &[InputEvent::Mute], input, text));
                         // Solo.
-                        s.push(' ');
                         let solo_key = if track.solo {
                             "TRACKS_PANEL_INPUT_TTS_UNSOLO"
                         } else {
                             "TRACKS_PANEL_INPUT_TTS_SOLO"
                         };
-                        s.push_str(&get_tooltip(solo_key, &[InputEvent::Solo], input, text));
-
-                        // Mute.
-                        s.push(' ');
-                        let mute_key = if track.mute {
-                            "TRACKS_PANEL_INPUT_TTS_UNMUTE"
-                        } else {
-                            "TRACKS_PANEL_INPUT_TTS_MUTE"
-                        };
-                        s.push_str(&get_tooltip(mute_key, &[InputEvent::Mute], input, text));
-                        // Solo.
-                        s.push(' ');
-                        let solo_key = if track.solo {
-                            "TRACKS_PANEL_INPUT_TTS_UNSOLO"
-                        } else {
-                            "TRACKS_PANEL_INPUT_TTS_SOLO"
-                        };
-                        s.push_str(&get_tooltip(solo_key, &[InputEvent::Solo], input, text));
+                        s.append(&self.tooltips.get_tooltip(solo_key, &[InputEvent::Solo], input, text));
                         // Say it.
-                        tts.say(&s);
+                        tts.say(s);
                     }
                     // No program.
                     None => {
-                        let tts_text = get_tooltip_with_values(
+                        let tts_text = self.tooltips.get_tooltip_with_values(
                             "TRACKS_PANEL_INPUT_TTS_NO_SOUNDFONT",
                             &[InputEvent::EnableSoundFontPanel],
                             &[&track.channel.to_string()],
                             input,
                             text,
                         );
-                        tts.say(&tts_text);
+                        tts.say(tts_text);
                     }
                 }
                 None

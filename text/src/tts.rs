@@ -47,7 +47,7 @@ impl TTS {
         }
     }
 
-    /// Say something. Optionally sets subtitles.
+    /// Say something and show subtitles.
     pub fn say(&mut self, text: TtsString) {
         self.speech = None;
         if let Some(tts) = &mut self.tts {
@@ -61,6 +61,7 @@ impl TTS {
         }
     }
 
+    /// Say something and show subtitles, but we're assuming that the spoken-string and the seen-string are both `text`.
     pub fn say_str(&mut self, text: &str) {
         self.say(TtsString { spoken: text.to_string(), seen: text.to_string() })
     }

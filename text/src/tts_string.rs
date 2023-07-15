@@ -6,3 +6,22 @@ pub struct TtsString {
     /// This string will be displayed on the screen.
     pub seen: String,
 }
+
+impl From<String> for TtsString {
+    fn from(value: String) -> Self {
+        Self { spoken: value.clone(), seen: value.clone() }
+    }
+}
+
+impl TtsString {
+    pub fn append(&mut self, other: &TtsString) {
+        if !self.spoken.is_empty() {
+            self.spoken.push(' ');
+        }
+        self.spoken.push_str(&other.spoken);
+        if !self.seen.is_empty() {
+            self.seen.push(' ');
+        }
+        self.seen.push_str(&other.seen);
+    }
+}

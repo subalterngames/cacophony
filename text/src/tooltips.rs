@@ -1,6 +1,7 @@
 use crate::tts_string::TtsString;
 use crate::Text;
 use common::hashbrown::HashMap;
+use common::hashbrown::hash_map::Entry;
 use input::{Input, InputEvent, QwertyBinding};
 use regex::Regex;
 
@@ -17,7 +18,10 @@ pub struct Tooltips {
     re_bindings: RegexMap,
     /// The regex used to find wildcard values.
     re_values: RegexMap,
+    /// A cached "or" string.
     or_str: String,
+    /// A hashmap of cached tooltips. Key = the lookup key.
+    strings: HashMap<String, TtsString>
 }
 
 impl Tooltips {
@@ -25,7 +29,8 @@ impl Tooltips {
         let or_str = text.get("OR").trim().to_string();
         Self { re_bindings: RegexMap::new(), 
             re_values: RegexMap::new(),
-            or_str
+            or_str,
+            strings: HashMap::new()
         }
     }
 
@@ -44,7 +49,14 @@ impl Tooltips {
         input: &Input,
         text: &Text,
     ) -> TtsString {
-        self.get_tooltip_with_values(key, events, &vec![], input, text)
+        if let Entry::Occupied(o) = self.strings.entry(key.to_string()) {
+            o.get().clone()
+        }
+        else {
+            let t = self.get_tooltip_with_values(key, events, &vec![], input, text);
+            self.strings.insert(key.to_string(), t);
+            self.strings[key].clone()
+        }
     }
 
     /// Build a tooltip from a text lookup key and a list of events and another list of values.
