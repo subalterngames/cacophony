@@ -3,6 +3,7 @@ pub(crate) use crate::field_params::*;
 pub(crate) use crate::{ColorKey, Ini};
 pub(crate) use common::sizes::*;
 pub(crate) use common::PanelType;
+use common::VERSION;
 
 /// A panel has a rectangular backaground and a title label.
 #[derive(Clone)]
@@ -18,16 +19,15 @@ pub(crate) struct Panel {
 impl Panel {
     pub fn new(panel_type: PanelType, position: [u32; 2], size: [u32; 2], text: &Text) -> Self {
         // Get the title from the panel type.
-        let title_key = match panel_type {
-            PanelType::MainMenu => "TITLE_MAIN_MENU",
-            PanelType::Music => "TITLE_MUSIC",
-            PanelType::OpenFile => "TITLE_OPEN_FILE",
-            PanelType::PianoRoll => "TITLE_PIANO_ROLL",
-            PanelType::Tracks => "TITLE_TRACKS",
-            PanelType::ExportState => "TITLE_EXPORT_STATE",
-            PanelType::ExportSettings => "TITLE_EXPORT_SETTINGS",
+        let title = match panel_type {
+            PanelType::MainMenu => format!("{} v{}", text.get("TITLE_MAIN_MENU"), VERSION),
+            PanelType::Music => text.get("TITLE_MUSIC"),
+            PanelType::OpenFile => text.get("TITLE_OPEN_FILE"),
+            PanelType::PianoRoll => text.get("TITLE_PIANO_ROLL"),
+            PanelType::Tracks => text.get("TITLE_TRACKS"),
+            PanelType::ExportState => text.get("TITLE_EXPORT_STATE"),
+            PanelType::ExportSettings => text.get("TITLE_EXPORT_SETTINGS"),
         };
-        let title = text.get(title_key);
         let title_position = [position[0] + 2, position[1]];
         let title = LabelRectangle::new(title_position, title);
         Self {

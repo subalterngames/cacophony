@@ -1,5 +1,4 @@
 use crate::panel::*;
-use common::VERSION;
 use input::InputEvent;
 
 /// The color of the panel and the text.
@@ -12,7 +11,7 @@ pub(crate) struct MainMenu {
     /// The title if there are unsaved changes.
     title_changes: LabelRectangle,
     /// The field labels and the version label.
-    labels: [Label; 7],
+    labels: [Label; 6],
 }
 
 impl MainMenu {
@@ -35,7 +34,7 @@ impl MainMenu {
         );
 
         // Get the fields.
-        let mut x = panel.rect.position[0] + 1;
+        let mut x = panel.rect.position[0] + 2;
         let y = panel.rect.position[1] + 1;
         let help = Self::label_from_key("MAIN_MENU_HELP", &mut x, y, text);
         x += 4;
@@ -72,14 +71,7 @@ impl MainMenu {
             input,
             text,
         );
-        let version = Label {
-            position: [
-                panel.rect.position[0] + panel.rect.size[0] - VERSION.chars().count() as u32 - 1,
-                y,
-            ],
-            text: VERSION.to_string(),
-        };
-        let fields = [help, status, input_field, app, file, stop, version];
+        let fields = [help, status, input_field, app, file, stop];
 
         Self {
             panel,
