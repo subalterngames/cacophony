@@ -432,7 +432,7 @@ impl Renderer {
                     self.colors[&ColorKey::SubtitleBackground],
                 );
                 draw_text_ex(row, xy[0], y, text_params);
-                y += dim.offset_y * 1.25;
+                y += dim.offset_y * 1.5;
             }
         }
     }

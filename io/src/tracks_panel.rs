@@ -123,7 +123,7 @@ impl Panel for TracksPanel {
                 text.get_tooltip("TRACKS_PANEL_INPUT_TTS_ADD", &[InputEvent::AddTrack], input);
             // There is a selected track.
             if let Some(track) = state.music.get_selected_track() {
-                s.append(&text.get_tooltip_with_values(
+                s.append(&text.get_tooltip(
                     "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX",
                     &[
                         InputEvent::RemoveTrack,
@@ -131,7 +131,6 @@ impl Panel for TracksPanel {
                         InputEvent::NextTrack,
                         InputEvent::EnableSoundFontPanel,
                     ],
-                    &[&track.channel.to_string()],
                     input,
                 ));
                 // Is there a program?

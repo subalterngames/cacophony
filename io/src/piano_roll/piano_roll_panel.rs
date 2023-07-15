@@ -202,6 +202,7 @@ impl Panel for PianoRollPanel {
                             // Not armed.
                             false => s.push_str(&text.get("PIANO_ROLL_PANEL_STATUS_TTS_NOT_ARMED")),
                         }
+                        s.push(' ');
                         // How many tracks?
                         let tracks_key = if state.view.single_track {
                             "PIANO_ROLL_PANEL_STATUS_TTS_SINGLE_TRACK"
@@ -213,12 +214,6 @@ impl Panel for PianoRollPanel {
                             &[&state.music.selected.unwrap().to_string()],
                         ));
                         s.push(' ');
-                        // Piano role mode.
-                        s.push(' ');
-                        s.push_str(&text.get_with_values(
-                            "PIANO_ROLL_PANEL_STATUS_TTS_PIANO_ROLL_MODE",
-                            &[&text.get_piano_roll_mode(&state.piano_roll_mode)],
-                        ));
                         // Panel-specific status.
                         let mut tts_string = TtsString::from(s);
                         tts_string.append(&self.get_sub_panel(state).get_status_tts(state, text));
