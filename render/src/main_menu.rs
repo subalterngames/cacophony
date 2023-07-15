@@ -1,7 +1,7 @@
 use crate::panel::*;
 use common::VERSION;
 use input::InputEvent;
-use text::Tooltips;
+use text::tooltips::Tooltips;
 
 /// The color of the panel and the text.
 const COLOR: ColorKey = ColorKey::Key;
@@ -35,7 +35,7 @@ impl MainMenu {
             format!("*{}", panel.title.label.text),
         );
 
-        let mut tooltips = Tooltips::new(text);
+        let mut tooltips = Tooltips::default();
 
         // Get the fields.
         let mut x = panel.rect.position[0] + 1;

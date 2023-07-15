@@ -18,18 +18,14 @@ pub struct Tooltips {
     re_bindings: RegexMap,
     /// The regex used to find wildcard values.
     re_values: RegexMap,
-    /// A cached "or" string.
-    or_str: String,
     /// A hashmap of cached tooltips. Key = the lookup key.
     strings: HashMap<String, TtsString>
 }
 
 impl Tooltips {
-    pub fn new(text: &Text) -> Self {
-        let or_str = text.get("OR").trim().to_string();
+    pub(crate) fn new() -> Self {
         Self { re_bindings: RegexMap::new(), 
             re_values: RegexMap::new(),
-            or_str,
             strings: HashMap::new()
         }
     }
@@ -115,8 +111,9 @@ impl Tooltips {
             if let Some(midi) = bindings.1 {
                 if has_qwerty {
                     // Or...
-                    spoken_replacement.push(self.or_str.clone());
-                    seen_replacement.push(self.or_str.clone());
+                    let or_str = text.get("OR").trim().to_string();
+                    spoken_replacement.push(or_str.clone());
+                    seen_replacement.push(or_str.clone());
                     // Get the MIDI binding.
                     let midi = match &midi.alias {
                         Some(alias) => alias.clone(),

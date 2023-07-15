@@ -74,8 +74,8 @@ impl PianoRollPanel {
     }
 
     /// Returns the text-to-speech string that will be said if there is no valid track.
-    fn tts_no_track(text: &Text) -> String {
-        text.get("PIANO_ROLL_PANEL_TTS_NO_TRACK")
+    fn tts_no_track(text: &Text) -> TtsString {
+        TtsString::from(text.get("PIANO_ROLL_PANEL_TTS_NO_TRACK"))
     }
 
     /// Returns the sub-panel corresponding to the current piano roll mode.
@@ -129,7 +129,7 @@ impl Panel for PianoRollPanel {
         conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &Text,
+        text: &mut Text,
         paths_state: &mut PathsState,
         exporter: &mut Exporter,
     ) -> Option<Snapshot> {
@@ -220,15 +220,15 @@ impl Panel for PianoRollPanel {
                             &[&text.get_piano_roll_mode(&state.piano_roll_mode)],
                         ));
                         // Panel-specific status.
-                        s.push(' ');
-                        s.push_str(&self.get_sub_panel(state).get_status_tts(state, text));
-                        s
+                        let mut tts_string = TtsString::from(s);
+                        tts_string.append(&self.get_sub_panel(state).get_status_tts(state, text));
+                        tts_string
                     }
                     None => PianoRollPanel::tts_no_track(text),
                 },
                 None => PianoRollPanel::tts_no_track(text),
             };
-            tts.say(&s);
+            tts.say(s);
             None
         }
         // Input TTS.
@@ -237,7 +237,7 @@ impl Panel for PianoRollPanel {
                 Some(track) => match conn.state.programs.get(&track.channel) {
                     // Here we go...
                     Some(_) => {
-                        let mut s = vec![get_tooltip(
+                        let mut s = vec![text.tooltips.get_tooltip(
                             "PIANO_ROLL_PANEL_INPUT_TTS_PLAY",
                             &[InputEvent::PlayStop],
                             input,
@@ -246,7 +246,7 @@ impl Panel for PianoRollPanel {
                         // Armed state, beat, volume.
                         match state.input.armed {
                             true => {
-                                s.push(get_tooltip(
+                                s.push(text.tooltips.get_tooltip(
                                     "PIANO_ROLL_PANEL_INPUT_TTS_ARMED",
                                     &[
                                         InputEvent::Arm,
@@ -257,7 +257,7 @@ impl Panel for PianoRollPanel {
                                     text,
                                 ));
                                 match state.input.use_volume {
-                                    true => s.push(get_tooltip(
+                                    true => s.push(text.tooltips.get_tooltip(
                                         "PIANO_ROLL_PANEL_INPUT_TTS_DO_NOT_USE_VOLUME",
                                         &[
                                             InputEvent::DecreaseInputVolume,
@@ -267,7 +267,7 @@ impl Panel for PianoRollPanel {
                                         input,
                                         text,
                                     )),
-                                    false => s.push(get_tooltip(
+                                    false => s.push(text.tooltips.get_tooltip(
                                         "PIANO_ROLL_PANEL_INPUT_TTS_USE_VOLUME",
                                         &[InputEvent::ToggleInputVolume],
                                         input,

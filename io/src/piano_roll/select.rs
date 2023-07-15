@@ -5,14 +5,9 @@ use common::{MidiTrack, Note, SelectMode};
 
 /// Select notes.
 pub(super) struct Select {
-    tooltips: Tooltips
 }
 
 impl Select {
-    pub fn new(text: &Text) -> Self {
-        Self { tooltips: Tooltips::new(text) }
-    }
-    
     /// Returns the index of the note closest (and before) the cursor.
     fn get_note_index_closest_to_before_cursor(notes: &[Note], time: &Time) -> Option<usize> {
         notes

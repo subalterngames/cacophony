@@ -4,7 +4,7 @@ pub(crate) use audio::exporter::Exporter;
 pub(crate) use audio::{Command, Conn};
 pub(crate) use common::{Index, PathsState, State};
 pub(crate) use input::{Input, InputEvent};
-pub(crate) use text::{Text, TTS, Tooltips};
+pub(crate) use text::{Text, TTS};
 pub(crate) use text::TtsString;
 
 /// I guess this is how we do function aliases in Rust.
@@ -27,7 +27,7 @@ pub(crate) trait Panel {
         conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &Text,
+        text: &mut Text,
         paths_state: &mut PathsState,
         exporter: &mut Exporter,
     ) -> Option<Snapshot>;

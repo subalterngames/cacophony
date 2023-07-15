@@ -4,15 +4,9 @@ use common::open_file::OpenFileType;
 use common::{MidiTrack, SelectMode};
 use text::get_file_name_no_ex;
 
-pub(crate) struct TracksPanel {
-    tooltips: Tooltips
-}
+pub(crate) struct TracksPanel { }
 
 impl TracksPanel {
-    pub fn new(text: &Text) -> Self {
-        Self { tooltips: Tooltips::new(text)}
-    }
-
     /// Increment or decrement the preset index. Returns a new undo-redo state.
     fn set_preset(channel: u8, conn: &mut Conn, up: bool) -> Option<Snapshot> {
         let program = conn.state.programs.get(&channel).unwrap();
@@ -76,7 +70,7 @@ impl Panel for TracksPanel {
         conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &Text,
+        text: &mut Text,
         _: &mut PathsState,
         _: &mut Exporter,
     ) -> Option<Snapshot> {
@@ -125,7 +119,7 @@ impl Panel for TracksPanel {
         }
         // Input TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let mut s = self.tooltips.get_tooltip(
+            let mut s = text.tooltips.get_tooltip(
                 "TRACKS_PANEL_INPUT_TTS_ADD",
                 &[InputEvent::AddTrack],
                 input,
@@ -133,7 +127,7 @@ impl Panel for TracksPanel {
             );
             // There is a selected track.
             if let Some(track) = state.music.get_selected_track() {
-                s.append(&self.tooltips.get_tooltip_with_values(
+                s.append(&text.tooltips.get_tooltip_with_values(
                     "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX",
                     &[
                         InputEvent::RemoveTrack,
@@ -150,7 +144,7 @@ impl Panel for TracksPanel {
                     // Program.
                     Some(_) => {
                         // Preset, bank, gain.
-                        s.append(&self.tooltips.get_tooltip(
+                        s.append(&text.tooltips.get_tooltip(
                             "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX",
                             &[
                                 InputEvent::PreviousPreset,
@@ -169,20 +163,20 @@ impl Panel for TracksPanel {
                         } else {
                             "TRACKS_PANEL_INPUT_TTS_MUTE"
                         };
-                        s.append(&self.tooltips.get_tooltip(mute_key, &[InputEvent::Mute], input, text));
+                        s.append(&text.tooltips.get_tooltip(mute_key, &[InputEvent::Mute], input, text));
                         // Solo.
                         let solo_key = if track.solo {
                             "TRACKS_PANEL_INPUT_TTS_UNSOLO"
                         } else {
                             "TRACKS_PANEL_INPUT_TTS_SOLO"
                         };
-                        s.append(&self.tooltips.get_tooltip(solo_key, &[InputEvent::Solo], input, text));
+                        s.append(&text.tooltips.get_tooltip(solo_key, &[InputEvent::Solo], input, text));
                         // Say it.
                         tts.say(s);
                     }
                     // No program.
                     None => {
-                        let tts_text = self.tooltips.get_tooltip_with_values(
+                        let tts_text = text.tooltips.get_tooltip_with_values(
                             "TRACKS_PANEL_INPUT_TTS_NO_SOUNDFONT",
                             &[InputEvent::EnableSoundFontPanel],
                             &[&track.channel.to_string()],

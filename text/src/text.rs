@@ -5,6 +5,7 @@ use common::ini::Ini;
 use common::macroquad::input::KeyCode;
 use common::{EditMode, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U};
 use input::KEYS;
+use crate::tooltips::Tooltips;
 
 const LANGUAGES: [&str; 1] = ["en"];
 const KEYCODE_LOOKUPS: [&str; 121] = [
@@ -149,6 +150,8 @@ pub struct Text {
     note_names: Vec<String>,
     /// Boolean dislay
     booleans: HashMap<bool, String>,
+    /// The tooltips manager.
+    pub tooltips: Tooltips
 }
 
 impl Text {
@@ -187,6 +190,7 @@ impl Text {
             piano_roll_modes,
             note_names,
             booleans,
+            tooltips: Tooltips::default()
         }
     }
 

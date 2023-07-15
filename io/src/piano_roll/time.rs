@@ -65,7 +65,7 @@ impl Panel for Time {
         _: &mut Conn,
         input: &Input,
         _: &mut TTS,
-        _: &Text,
+        _: &mut Text,
         _: &mut PathsState,
         _: &mut Exporter,
     ) -> Option<Snapshot> {
@@ -142,21 +142,20 @@ impl Panel for Time {
 }
 
 impl PianoRollSubPanel for Time {
-    fn get_status_tts(&self, state: &State, text: &Text) -> String {
+    fn get_status_tts(&self, state: &State, text: &mut Text) -> TtsString {
         let mut s = get_edit_mode_status_tts(state.time.mode.get_ref(), text);
-        s.push(' ');
-        s.push_str(&text.get_with_values(
+        s.append(&TtsString::from(text.get_with_values(
             "PIANO_ROLL_PANEL_STATUS_TTS_TIME",
             &[
                 &text.get_ppq_tts(&state.time.cursor),
                 &text.get_ppq_tts(&state.time.playback),
             ],
-        ));
+        )));
         s
     }
 
-    fn get_input_tts(&self, _: &State, input: &Input, text: &Text) -> String {
-        get_tooltip(
+    fn get_input_tts(&self, _: &State, input: &Input, text: &mut Text) -> TtsString {
+        text.tooltips.get_tooltip(
             "PIANO_ROLL_PANEL_INPUT_TTS_TIME",
             &[
                 InputEvent::TimeCursorLeft,
