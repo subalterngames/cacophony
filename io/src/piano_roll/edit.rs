@@ -144,20 +144,28 @@ impl PianoRollSubPanel for Edit {
 
     fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
         let mut tts_strings = match state.select_mode.get_note_indices() {
-            Some(_) => vec![text.get_tooltip(
-                "PIANO_ROLL_PANEL_INPUT_TTS_EDIT",
-                &[
-                    InputEvent::EditPitchUp,
-                    InputEvent::EditPitchDown,
-                    InputEvent::EditStartLeft,
-                    InputEvent::EditStartRight,
-                    InputEvent::EditDurationLeft,
-                    InputEvent::EditDurationRight,
-                    InputEvent::EditVolumeUp,
-                    InputEvent::EditVolumeDown,
-                ],
-                input,
-            )],
+            Some(_) => vec![
+                text.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_0",
+                    &[InputEvent::EditPitchUp, InputEvent::EditPitchDown],
+                    input,
+                ),
+                text.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_1",
+                    &[InputEvent::EditStartLeft, InputEvent::EditStartRight],
+                    input,
+                ),
+                text.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_2",
+                    &[InputEvent::EditDurationLeft, InputEvent::EditDurationRight],
+                    input,
+                ),
+                text.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_3",
+                    &[InputEvent::EditVolumeUp, InputEvent::EditVolumeDown],
+                    input,
+                ),
+            ],
             None => vec![get_no_selection_status_tts(text)],
         };
         tts_strings.push(get_cycle_edit_mode_input_tts(&state.edit_mode, input, text));

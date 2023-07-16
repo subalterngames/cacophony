@@ -127,13 +127,18 @@ impl Panel for TracksPanel {
             // There is a selected track.
             if let Some(track) = state.music.get_selected_track() {
                 s.push(text.get_tooltip(
-                    "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX",
-                    &[
-                        InputEvent::RemoveTrack,
-                        InputEvent::PreviousTrack,
-                        InputEvent::NextTrack,
-                        InputEvent::EnableSoundFontPanel,
-                    ],
+                    "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX_0",
+                    &[InputEvent::RemoveTrack],
+                    input,
+                ));
+                s.push(text.get_tooltip(
+                    "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX_1",
+                    &[InputEvent::PreviousTrack, InputEvent::NextTrack],
+                    input,
+                ));
+                s.push(text.get_tooltip(
+                    "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX_2",
+                    &[InputEvent::EnableSoundFontPanel],
                     input,
                 ));
                 // Is there a program?
@@ -142,15 +147,18 @@ impl Panel for TracksPanel {
                     Some(_) => {
                         // Preset, bank, gain.
                         s.push(text.get_tooltip(
-                            "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX",
-                            &[
-                                InputEvent::PreviousPreset,
-                                InputEvent::NextPreset,
-                                InputEvent::PreviousBank,
-                                InputEvent::NextBank,
-                                InputEvent::DecreaseTrackGain,
-                                InputEvent::IncreaseTrackGain,
-                            ],
+                            "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_0",
+                            &[InputEvent::PreviousPreset, InputEvent::NextPreset],
+                            input,
+                        ));
+                        s.push(text.get_tooltip(
+                            "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_1",
+                            &[InputEvent::PreviousBank, InputEvent::NextBank],
+                            input,
+                        ));
+                        s.push(text.get_tooltip(
+                            "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_2",
+                            &[InputEvent::DecreaseTrackGain, InputEvent::IncreaseTrackGain],
                             input,
                         ));
                         // Mute.
