@@ -40,7 +40,7 @@ impl MidiBinding {
                 self.counter += 1;
             }
             // Did this trigger the event?
-            if (self.dt > 0 && b[2] != 127) || (!self.dt < 0 && b[2] == 127) {
+            if (self.dt > 0 && b[2] != 127) || (self.dt < 0 && b[2] == 127) {
                 self.counter % self.dt.abs() == 0
             } else {
                 false

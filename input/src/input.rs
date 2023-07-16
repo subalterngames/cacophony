@@ -184,53 +184,51 @@ impl Input {
         self.events = events;
 
         // MIDI INPUT.
-        if !state.input.alphanumeric_input {
-            if let Some(midi_conn) = &mut self.midi_conn {
-                // Poll for MIDI events.
-                let midi = midi_conn.poll();
-                // Append MIDI events.
-                for mde in self.midi_events.iter_mut() {
-                    if mde.1.update(midi) {
-                        self.events.push(*mde.0);
-                    }
+        if let Some(midi_conn) = &mut self.midi_conn {
+            // Poll for MIDI events.
+            let midi = midi_conn.poll();
+            // Append MIDI events.
+            for mde in self.midi_events.iter_mut() {
+                if mde.1.update(midi) {
+                    self.events.push(*mde.0);
                 }
+            }
 
-                // Get note-on and note-off events.
-                let volume = state.input.volume.get() as u8;
-                for midi in midi.iter() {
-                    // Note-on.
-                    if midi[0] >= 144 && midi[0] <= 159 {
-                        // Set the volume.
-                        let midi = if state.input.use_volume {
-                            [midi[0], midi[1], volume]
-                        } else {
-                            *midi
-                        };
-                        // Remember the note-on for piano roll input.
-                        if state.input.armed {
-                            self.note_on_events.push(NoteOn::new(&midi));
-                        }
-                        // Copy this note to the immediate note-on array.
-                        self.play_now.push(midi);
+            // Get note-on and note-off events.
+            let volume = state.input.volume.get() as u8;
+            for midi in midi.iter() {
+                // Note-on.
+                if midi[0] >= 144 && midi[0] <= 159 {
+                    // Set the volume.
+                    let midi = if state.input.use_volume {
+                        [midi[0], midi[1], volume]
+                    } else {
+                        *midi
+                    };
+                    // Remember the note-on for piano roll input.
+                    if state.input.armed {
+                        self.note_on_events.push(NoteOn::new(&midi));
                     }
-                    // Note-off.
-                    if state.input.armed && midi[0] >= 128 && midi[0] <= 143 {
-                        // Find the corresponding note.
-                        for note_on in self.note_on_events.iter_mut() {
-                            // Same key. Note-off.
-                            if note_on.note[1] == midi[1] {
-                                note_on.off = true;
-                            }
+                    // Copy this note to the immediate note-on array.
+                    self.play_now.push(midi);
+                }
+                // Note-off.
+                if state.input.armed && midi[0] >= 128 && midi[0] <= 143 {
+                    // Find the corresponding note.
+                    for note_on in self.note_on_events.iter_mut() {
+                        // Same key. Note-off.
+                        if note_on.note[1] == midi[1] {
+                            note_on.off = true;
                         }
                     }
                 }
-                // If all note-ons are off, add them to the `notes` buffer as notes.
-                if !self.note_on_events.is_empty() && self.note_on_events.iter().all(|n| n.off) {
-                    for note_on in self.note_on_events.iter() {
-                        self.new_notes.push(note_on.note);
-                    }
-                    self.note_on_events.clear();
+            }
+            // If all note-ons are off, add them to the `notes` buffer as notes.
+            if !self.note_on_events.is_empty() && self.note_on_events.iter().all(|n| n.off) {
+                for note_on in self.note_on_events.iter() {
+                    self.new_notes.push(note_on.note);
                 }
+                self.note_on_events.clear();
             }
         }
     }
