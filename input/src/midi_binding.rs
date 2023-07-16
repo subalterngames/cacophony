@@ -32,7 +32,7 @@ impl MidiBinding {
             .find(|b| b[0] == self.bytes[0] && b[1] == self.bytes[1])
         {
             // Did this trigger the event?
-            if (self.dt > 0 && b[2] != 127) || (self.dt < 0 && b[2] == 127) {
+            if (self.dt > 0 && b[2] == 1) || (self.dt < 0 && b[2] == 127) {
                 counter % self.dt.abs() == 0
             } else {
                 false
