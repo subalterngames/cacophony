@@ -57,11 +57,6 @@ impl TTS {
         }
     }
 
-    /// Clear the queue.
-    pub fn clear(&mut self) {
-        self.speech.clear()
-    }
-
     /// Update the subtitle state.
     pub fn update(&mut self) {
         // We're done speaking but we have more to say.

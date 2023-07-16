@@ -306,17 +306,16 @@ impl IO {
         // App-level TTS.
         for tts_e in self.tts.iter() {
             if input.happened(tts_e.0) {
-                tts.clear();
+                tts.stop();
                 tts.enqueue(tts_e.1.clone());
             }
         }
-        // Stop talking.
-        if input.happened(&InputEvent::StopTTS) {
+        // Stop talking or clear the queue for new speech.
+        if input.happened(&InputEvent::StopTTS)
+            || input.happened(&InputEvent::StatusTTS)
+            || input.happened(&InputEvent::InputTTS)
+        {
             tts.stop();
-        }
-        // Clear the queue.
-        else if input.happened(&InputEvent::StatusTTS) || input.happened(&InputEvent::InputTTS) {
-            tts.clear();
         }
 
         // Listen to the focused panel.
