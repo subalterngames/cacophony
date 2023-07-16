@@ -138,13 +138,13 @@ impl Panel for Edit {
 }
 
 impl PianoRollSubPanel for Edit {
-    fn get_status_tts(&self, state: &State, text: &mut Text) -> TtsString {
-        get_edit_mode_status_tts(state.edit_mode.get_ref(), text)
+    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString> {
+        vec![get_edit_mode_status_tts(state.edit_mode.get_ref(), text)]
     }
 
-    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> TtsString {
-        let mut s = match state.select_mode.get_note_indices() {
-            Some(_) => text.get_tooltip(
+    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
+        let mut tts_strings = match state.select_mode.get_note_indices() {
+            Some(_) => vec![text.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_EDIT",
                 &[
                     InputEvent::EditPitchUp,
@@ -157,14 +157,10 @@ impl PianoRollSubPanel for Edit {
                     InputEvent::EditVolumeDown,
                 ],
                 input,
-            ),
-            None => get_no_selection_status_tts(text),
+            )],
+            None => vec![get_no_selection_status_tts(text)],
         };
-        s.append(&get_cycle_edit_mode_input_tts(
-            &state.edit_mode,
-            input,
-            text,
-        ));
-        s
+        tts_strings.push(get_cycle_edit_mode_input_tts(&state.edit_mode, input, text));
+        tts_strings
     }
 }

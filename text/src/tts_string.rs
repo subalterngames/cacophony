@@ -16,8 +16,18 @@ impl From<String> for TtsString {
     }
 }
 
+impl From<&str> for TtsString {
+    fn from(value: &str) -> Self {
+        Self {
+            spoken: value.to_string(),
+            seen: value.to_string(),
+        }
+    }
+}
+
 impl TtsString {
-    pub fn append(&mut self, other: &TtsString) {
+    // Append the strings of `other` to my strings.
+    pub fn push(&mut self, other: &TtsString) {
         if !self.spoken.is_empty() {
             self.spoken.push(' ');
         }

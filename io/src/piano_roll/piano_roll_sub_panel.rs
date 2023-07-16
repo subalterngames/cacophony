@@ -4,10 +4,10 @@ use common::{EditMode, IndexedEditModes};
 /// A sub-panel (a mode) of the piano roll panel.
 pub(crate) trait PianoRollSubPanel {
     /// Returns the status text-to-speech text.
-    fn get_status_tts(&self, state: &State, text: &mut Text) -> TtsString;
+    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString>;
 
     /// Returns the input text-to-speech text.
-    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> TtsString;
+    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> Vec<TtsString>;
 }
 
 /// Returns the edit mode text-to-speech string.

@@ -315,8 +315,8 @@ impl Panel for Select {
 }
 
 impl PianoRollSubPanel for Select {
-    fn get_status_tts(&self, state: &State, text: &mut Text) -> TtsString {
-        match &state.select_mode {
+    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString> {
+        let tts_string = match &state.select_mode {
             SelectMode::Single(index) => match index {
                 Some(index) => match state.select_mode.get_notes(&state.music) {
                     Some(notes) => {
@@ -347,25 +347,26 @@ impl PianoRollSubPanel for Select {
                 },
                 None => TtsString::from(text.get_error("The selected notes don't exist.")),
             },
-        }
+        };
+        vec![tts_string]
     }
 
-    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> TtsString {
-        let (mut s, selected) = match &state.select_mode {
+    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
+        let (mut tts_strings, selected) = match &state.select_mode {
             SelectMode::Single(index) => match index {
                 Some(_) => (
-                    text.get_tooltip(
+                    vec![text.get_tooltip(
                         "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_SINGLE",
                         &[InputEvent::SelectStartLeft, InputEvent::SelectStartRight],
                         input,
-                    ),
+                    )],
                     true,
                 ),
-                None => (get_no_selection_status_tts(text), false),
+                None => (vec![get_no_selection_status_tts(text)], false),
             },
             SelectMode::Many(indices) => match indices {
                 Some(_) => (
-                    text.get_tooltip(
+                    vec![text.get_tooltip(
                         "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_MANY",
                         &[
                             InputEvent::SelectStartLeft,
@@ -377,21 +378,21 @@ impl PianoRollSubPanel for Select {
                             InputEvent::PianoRollCycleMode,
                         ],
                         input,
-                    ),
+                    )],
                     true,
                 ),
-                None => (get_no_selection_status_tts(text), false),
+                None => (vec![get_no_selection_status_tts(text)], false),
             },
         };
         if state.select_mode.get_note_indices().is_some() {
-            s.append(&text.get_tooltip(
+            tts_strings.push(text.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_ALL",
                 &[InputEvent::SelectAll],
                 input,
             ));
         }
         if selected {
-            s.append(&text.get_tooltip(
+            tts_strings.push(text.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_DESELECT",
                 &[InputEvent::SelectNone],
                 input,
@@ -401,7 +402,7 @@ impl PianoRollSubPanel for Select {
             SelectMode::Single(_) => "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_MANY",
             SelectMode::Many(_) => "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_SINGLE",
         };
-        s.append(&text.get_tooltip(cycle_key, &[InputEvent::PianoRollCycleMode], input));
-        s
+        tts_strings.push(text.get_tooltip(cycle_key, &[InputEvent::PianoRollCycleMode], input));
+        tts_strings
     }
 }

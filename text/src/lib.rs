@@ -7,7 +7,7 @@
 mod text;
 mod tts;
 mod value_map;
-pub use self::tts::TTS;
+pub use self::tts::{Enqueable, TTS};
 use common::{PPQ_F, PPQ_U};
 use std::path::Path;
 pub use text::Text;

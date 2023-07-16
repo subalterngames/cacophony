@@ -111,19 +111,22 @@ impl Panel for TracksPanel {
                         // No SoundFont.
                         None => s.push_str(&text.get("TRACKS_PANEL_STATUS_TTS_NO_SOUNDFONT")),
                     }
-                    tts.say_str(&s)
+                    tts.enqueue(s)
                 }
-                None => tts.say_str(&text.get("TRACKS_PANEL_STATUS_TTS_NO_SELECTION")),
+                None => tts.enqueue(text.get("TRACKS_PANEL_STATUS_TTS_NO_SELECTION")),
             }
             None
         }
         // Input TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let mut s =
-                text.get_tooltip("TRACKS_PANEL_INPUT_TTS_ADD", &[InputEvent::AddTrack], input);
+            let mut s = vec![text.get_tooltip(
+                "TRACKS_PANEL_INPUT_TTS_ADD",
+                &[InputEvent::AddTrack],
+                input,
+            )];
             // There is a selected track.
             if let Some(track) = state.music.get_selected_track() {
-                s.append(&text.get_tooltip(
+                s.push(text.get_tooltip(
                     "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX",
                     &[
                         InputEvent::RemoveTrack,
@@ -138,7 +141,7 @@ impl Panel for TracksPanel {
                     // Program.
                     Some(_) => {
                         // Preset, bank, gain.
-                        s.append(&text.get_tooltip(
+                        s.push(text.get_tooltip(
                             "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX",
                             &[
                                 InputEvent::PreviousPreset,
@@ -156,16 +159,16 @@ impl Panel for TracksPanel {
                         } else {
                             "TRACKS_PANEL_INPUT_TTS_MUTE"
                         };
-                        s.append(&text.get_tooltip(mute_key, &[InputEvent::Mute], input));
+                        s.push(text.get_tooltip(mute_key, &[InputEvent::Mute], input));
                         // Solo.
                         let solo_key = if track.solo {
                             "TRACKS_PANEL_INPUT_TTS_UNSOLO"
                         } else {
                             "TRACKS_PANEL_INPUT_TTS_SOLO"
                         };
-                        s.append(&text.get_tooltip(solo_key, &[InputEvent::Solo], input));
+                        s.push(text.get_tooltip(solo_key, &[InputEvent::Solo], input));
                         // Say it.
-                        tts.say(s);
+                        tts.enqueue(s);
                     }
                     // No program.
                     None => {
@@ -175,7 +178,7 @@ impl Panel for TracksPanel {
                             &[&track.channel.to_string()],
                             input,
                         );
-                        tts.say(tts_text);
+                        tts.enqueue(tts_text);
                     }
                 }
                 None

@@ -178,14 +178,14 @@ impl Panel for OpenFilePanel {
                 }
                 _ => s.push_str(&text.get("OPEN_FILE_PANEL_STATUS_TTS_NO_SELECTION")),
             }
-            tts.say_str(&s);
+            tts.enqueue(s);
         }
         // Input TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let mut tts_string = TtsString::default();
+            let mut tts_strings = vec![];
             // Up directory.
             if let Some(parent) = paths_state.get_directory().parent() {
-                tts_string.append(&text.get_tooltip_with_values(
+                tts_strings.push(text.get_tooltip_with_values(
                     "OPEN_FILE_PANEL_INPUT_TTS_UP_DIRECTORY",
                     &[InputEvent::UpDirectory],
                     &[&get_folder_name(parent)],
@@ -194,7 +194,7 @@ impl Panel for OpenFilePanel {
             }
             // Scroll.
             if paths_state.children.children.len() > 1 {
-                tts_string.append(&text.get_tooltip(
+                tts_strings.push(text.get_tooltip(
                     "OPEN_FILE_PANEL_INPUT_TTS_SCROLL",
                     &[InputEvent::PreviousPath, InputEvent::NextPath],
                     input,
@@ -206,7 +206,7 @@ impl Panel for OpenFilePanel {
                 index.index.increment(true);
                 let e = index.get();
                 let next_export_type = e.get_extension(false);
-                tts_string.append(&text.get_tooltip_with_values(
+                tts_strings.push(text.get_tooltip_with_values(
                     "OPEN_FILE_PANEL_INPUT_TTS_CYCLE_EXPORT",
                     &[InputEvent::CycleExportType],
                     &[next_export_type],
@@ -226,7 +226,7 @@ impl Panel for OpenFilePanel {
                             OpenFileType::SoundFont => "OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT",
                             OpenFileType::WriteSave => "OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE",
                         };
-                        tts_string.append(&text.get_tooltip_with_values(
+                        tts_strings.push(text.get_tooltip_with_values(
                             open_file_key,
                             &events,
                             &[&get_file_name_no_ex(&path.path)],
@@ -234,7 +234,7 @@ impl Panel for OpenFilePanel {
                         ));
                     }
                     // Down directory.
-                    false => tts_string.append(&text.get_tooltip_with_values(
+                    false => tts_strings.push(text.get_tooltip_with_values(
                         "OPEN_FILE_PANEL_INPUT_TTS_DOWN_DIRECTORY",
                         &[InputEvent::DownDirectory],
                         &[&get_folder_name(&path.path)],
@@ -243,12 +243,12 @@ impl Panel for OpenFilePanel {
                 }
             }
             // Close.
-            tts_string.append(&text.get_tooltip(
+            tts_strings.push(text.get_tooltip(
                 "OPEN_FILE_PANEL_INPUT_TTS_CLOSE",
                 &[InputEvent::CloseOpenFile],
                 input,
             ));
-            tts.say(tts_string);
+            tts.enqueue(tts_strings);
         }
         // Go up a directory.
         else if input.happened(&InputEvent::UpDirectory) {

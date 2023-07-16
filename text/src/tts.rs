@@ -7,10 +7,10 @@ use tts::Tts;
 pub struct TTS {
     /// The text-to-speech engine.
     tts: Option<Tts>,
-    /// What text, if any, Casey is saying.
-    pub speech: Option<TtsString>,
+    /// A queue of text-to-speech strings. Casey is saying the first element, if any.
+    speech: Vec<TtsString>,
     /// If true, return subtitle text.
-    show_subtitles: bool,
+    pub show_subtitles: bool,
 }
 
 impl TTS {
@@ -43,30 +43,8 @@ impl TTS {
         Self {
             show_subtitles,
             tts,
-            speech: None,
+            speech: vec![],
         }
-    }
-
-    /// Say something and show subtitles.
-    pub fn say(&mut self, text: TtsString) {
-        self.speech = None;
-        if let Some(tts) = &mut self.tts {
-            // Speak!
-            if tts.speak(&text.spoken, true).is_ok() {
-                // Remember what we're saying for subtitles.
-                if self.show_subtitles {
-                    self.speech = Some(text);
-                }
-            }
-        }
-    }
-
-    /// Say something and show subtitles, but we're assuming that the spoken-string and the seen-string are both `text`.
-    pub fn say_str(&mut self, text: &str) {
-        self.say(TtsString {
-            spoken: text.to_string(),
-            seen: text.to_string(),
-        })
     }
 
     /// Stop speaking.
@@ -75,14 +53,34 @@ impl TTS {
             if let Some(tts) = &mut self.tts {
                 if tts.stop().is_ok() {}
             }
-            self.speech = None;
+            self.speech.clear();
         }
+    }
+
+    /// Clear the queue.
+    pub fn clear(&mut self) {
+        self.speech.clear()
     }
 
     /// Update the subtitle state.
     pub fn update(&mut self) {
-        if self.speech.is_some() && !self.is_speaking() {
-            self.speech = None;
+        // We're done speaking but we have more to say.
+        if !self.speech.is_empty() && !self.is_speaking() {
+            // Remove the first element.
+            self.speech.remove(0);
+            // Start speaking the next element.
+            if !self.speech.is_empty() {
+                self.say(&self.speech[0].spoken.clone());
+            }
+        }
+    }
+
+    /// Returns the subtitles string of the current TTS string.
+    pub fn get_subtitles(&self) -> Option<&str> {
+        if self.speech.is_empty() {
+            None
+        } else {
+            Some(&self.speech[0].seen)
         }
     }
 
@@ -93,4 +91,52 @@ impl TTS {
             None => false,
         }
     }
+
+    /// Say something and show subtitles.
+    fn say(&mut self, text: &str) {
+        if let Some(tts) = &mut self.tts {
+            if tts.speak(text, true).is_ok() {}
+        }
+    }
+}
+
+impl Enqueable<TtsString> for TTS {
+    fn enqueue(&mut self, text: TtsString) {
+        // Start speaking the first element.
+        if !self.is_speaking() {
+            self.say(&text.spoken)
+        }
+        // Push this element. We need it for subtitles.
+        self.speech.push(text);
+    }
+}
+
+impl Enqueable<String> for TTS {
+    fn enqueue(&mut self, text: String) {
+        self.enqueue(TtsString::from(text));
+    }
+}
+
+impl Enqueable<&str> for TTS {
+    fn enqueue(&mut self, text: &str) {
+        self.enqueue(TtsString::from(text));
+    }
+}
+
+impl Enqueable<Vec<TtsString>> for TTS {
+    fn enqueue(&mut self, text: Vec<TtsString>) {
+        if text.is_empty() {
+            return;
+        }
+        // Start speaking the first element.
+        if !self.is_speaking() {
+            self.say(&text[0].spoken.clone())
+        }
+        self.speech.extend(text);
+    }
+}
+
+pub trait Enqueable<T> {
+    /// Enqueue something to the text-to-speech strings.
+    fn enqueue(&mut self, text: T);
 }

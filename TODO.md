@@ -17,6 +17,15 @@
 - [x] Export chunks
 - [ ] More MIDI bindings
 - [ ] Test all TTS
+  - [ ] Main
+  - [ ] Music
+  - [ ] Tracks
+  - [ ] Open file - SF
+  - [ ] Open file - Save
+  - [ ] Open file - Load
+  - [ ] Export Settings
+  - [ ] Exporting
+  - [ ] Piano Roll
 - [x] Metadata: name, artist, album, year, genre, track number, comments
 - [x] Export settings
   - [x] MIDI: Copyright

@@ -246,8 +246,17 @@ TIME_TTS,\0 minutes and \1 seconds
 TIME_TTS_HOURS,"\0 hours, \1 minutes, and \2 seconds"
 OR, or 
 MIDI_CONTROL,MIDI control \0 channel \1
-APP_TTS,"Hello world. I am Casey the Cacodemon. \0 to get the status of the current panel. \1 to ask me what the input controls are. \3 to ask me about files. \4 to quit. \5 and \6 to cycle panels. \7 or \8 to undo or redo. \9 to ask me to stop talking."
-FILE_TTS,\0 for new music. \1 to open a file. \2 to save. \3 to save as. \4 to export. \5 to edit the config file.
+APP_TTS_0,Hello world. I am Casey the Cacodemon.
+APP_TTS_1,\0 to ask me about the panel status. \1 to ask me about the input keys. \2 to ask me about files.
+APP_TTS_2,\0 to quit. 
+APP_TTS_3,\0 and \1 to cycle panels. 
+APP_TTS_4,\0 or \1 to undo or redo. 
+APP_TTS_5,\0 to ask me to stop talking.
+FILE_TTS_0,\0 for new music.
+FILE_TTS_1,\0 to open a file.
+FILE_TTS_2,\0 to save. \1 to save as.
+FILE_TTS_3,\0 to export.
+FILE_TTS_4,\0 to edit the config file.
 MUSIC_PANEL_STATUS_TTS,This music is named \0. The BPM is \1. The gain is \2.
 MUSIC_PANEL_INPUT_TTS,\0 and \1 to scroll.
 NAME,name

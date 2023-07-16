@@ -142,9 +142,9 @@ impl Panel for Time {
 }
 
 impl PianoRollSubPanel for Time {
-    fn get_status_tts(&self, state: &State, text: &mut Text) -> TtsString {
-        let mut s = get_edit_mode_status_tts(state.time.mode.get_ref(), text);
-        s.append(&TtsString::from(text.get_with_values(
+    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString> {
+        let mut s = vec![get_edit_mode_status_tts(state.time.mode.get_ref(), text)];
+        s.push(TtsString::from(text.get_with_values(
             "PIANO_ROLL_PANEL_STATUS_TTS_TIME",
             &[
                 &text.get_ppq_tts(&state.time.cursor),
@@ -154,8 +154,8 @@ impl PianoRollSubPanel for Time {
         s
     }
 
-    fn get_input_tts(&self, _: &State, input: &Input, text: &mut Text) -> TtsString {
-        text.get_tooltip(
+    fn get_input_tts(&self, _: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
+        vec![text.get_tooltip(
             "PIANO_ROLL_PANEL_INPUT_TTS_TIME",
             &[
                 InputEvent::TimeCursorLeft,
@@ -172,6 +172,6 @@ impl PianoRollSubPanel for Time {
                 InputEvent::TimePlaybackCursor,
             ],
             input,
-        )
+        )]
     }
 }

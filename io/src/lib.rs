@@ -25,7 +25,7 @@ use common::{
 use edit::edit_file;
 use input::{Input, InputEvent};
 use std::path::Path;
-use text::{Text, TTS};
+use text::{Enqueable, Text, TTS};
 mod export_panel;
 mod io_command;
 mod music_panel;
@@ -62,7 +62,7 @@ pub struct IO {
     /// A stack of snapshots that can be popped to redo an action.
     redo: Vec<Snapshot>,
     /// Top-level text-to-speech lookups.
-    tts: HashMap<InputEvent, TtsString>,
+    tts: HashMap<InputEvent, Vec<TtsString>>,
     /// The music panel.
     music_panel: MusicPanel,
     /// The tracks panel.
@@ -87,37 +87,40 @@ impl IO {
     pub fn new(config: &Ini, input: &Input, input_state: &InputState, text: &mut Text) -> Self {
         let mut tts = HashMap::new();
         // App TTS.
-        let app = text.get_tooltip(
-            "APP_TTS",
-            &[
-                InputEvent::StatusTTS,
-                InputEvent::InputTTS,
-                InputEvent::AppTTS,
-                InputEvent::FileTTS,
-                InputEvent::Quit,
-                InputEvent::NextPanel,
-                InputEvent::PreviousPanel,
-                InputEvent::Undo,
-                InputEvent::Redo,
-                InputEvent::StopTTS,
-            ],
-            input,
-        );
-        tts.insert(InputEvent::AppTTS, app);
+        let app_tts = vec![
+            TtsString::from(text.get("APP_TTS_0")),
+            text.get_tooltip(
+                "APP_TTS_1",
+                &[
+                    InputEvent::StatusTTS,
+                    InputEvent::InputTTS,
+                    InputEvent::FileTTS,
+                ],
+                input,
+            ),
+            text.get_tooltip("APP_TTS_2", &[InputEvent::Quit], input),
+            text.get_tooltip(
+                "APP_TTS_3",
+                &[InputEvent::PreviousPanel, InputEvent::NextPanel],
+                input,
+            ),
+            text.get_tooltip("APP_TTS_4", &[InputEvent::Undo, InputEvent::Redo], input),
+            text.get_tooltip("APP_TTS_5", &[InputEvent::StopTTS], input),
+        ];
+        tts.insert(InputEvent::AppTTS, app_tts);
         // File TTS.
-        let file = text.get_tooltip(
-            "FILE_TTS",
-            &[
-                InputEvent::NewFile,
-                InputEvent::OpenFile,
-                InputEvent::SaveFile,
-                InputEvent::SaveFileAs,
-                InputEvent::ExportFile,
-                InputEvent::EditConfig,
-            ],
-            input,
-        );
-        tts.insert(InputEvent::FileTTS, file);
+        let file_tts = vec![
+            text.get_tooltip("FILE_TTS_0", &[InputEvent::NewFile], input),
+            text.get_tooltip("FILE_TTS_1", &[InputEvent::OpenFile], input),
+            text.get_tooltip(
+                "FILE_TTS_2",
+                &[InputEvent::SaveFile, InputEvent::SaveFileAs],
+                input,
+            ),
+            text.get_tooltip("FILE_TTS_3", &[InputEvent::ExportFile], input),
+            text.get_tooltip("FILE_TTS_4", &[InputEvent::EditConfig], input),
+        ];
+        tts.insert(InputEvent::FileTTS, file_tts);
         let music_panel = MusicPanel {};
         let tracks_panel = TracksPanel {};
         let open_file_panel = OpenFilePanel::default();
@@ -303,12 +306,17 @@ impl IO {
         // App-level TTS.
         for tts_e in self.tts.iter() {
             if input.happened(tts_e.0) {
-                tts.say(tts_e.1.clone())
+                tts.clear();
+                tts.enqueue(tts_e.1.clone());
             }
         }
         // Stop talking.
         if input.happened(&InputEvent::StopTTS) {
             tts.stop();
+        }
+        // Clear the queue.
+        else if input.happened(&InputEvent::StatusTTS) || input.happened(&InputEvent::InputTTS) {
+            tts.clear();
         }
 
         // Listen to the focused panel.

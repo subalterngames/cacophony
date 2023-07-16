@@ -141,8 +141,8 @@ impl Panel for View {
 }
 
 impl PianoRollSubPanel for View {
-    fn get_status_tts(&self, state: &State, text: &mut Text) -> TtsString {
-        let mut s = TtsString::from(text.get_with_values(
+    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString> {
+        let mut s = vec![TtsString::from(text.get_with_values(
             "PIANO_ROLL_PANEL_STATUS_TTS_VIEW",
             &[
                 &text.get_ppq_tts(&state.view.dt[0]),
@@ -150,13 +150,13 @@ impl PianoRollSubPanel for View {
                 &text.get_note_name(state.view.dn[0]),
                 &text.get_note_name(state.view.dn[1]),
             ],
-        ));
-        s.append(&get_edit_mode_status_tts(state.view.mode.get_ref(), text));
+        ))];
+        s.push(get_edit_mode_status_tts(state.view.mode.get_ref(), text));
         s
     }
 
-    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> TtsString {
-        let mut s = if state.view.single_track {
+    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
+        let mut s = vec![if state.view.single_track {
             text.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK",
                 &[
@@ -183,12 +183,8 @@ impl PianoRollSubPanel for View {
                 ],
                 input,
             )
-        };
-        s.append(&get_cycle_edit_mode_input_tts(
-            &state.view.mode,
-            input,
-            text,
-        ));
+        }];
+        s.push(get_cycle_edit_mode_input_tts(&state.view.mode, input, text));
         s
     }
 }
