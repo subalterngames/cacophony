@@ -336,9 +336,6 @@ impl Text {
     ///
     /// Returns a tooltip `TtsString`.
     pub fn get_tooltip(&mut self, key: &str, events: &[InputEvent], input: &Input) -> TtsString {
-        if events.len() > 4 {
-            println!("Warning! Very long list of events: {} {:?}", key, events);
-        }
         if let Entry::Occupied(o) = self.tts_strings.entry(key.to_string()) {
             o.get().clone()
         } else {
