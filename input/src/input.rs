@@ -51,6 +51,8 @@ pub struct Input {
     pub pressed_chars: Vec<char>,
     /// Debug input events.
     debug_inputs: Vec<InputEvent>,
+    /// The MIDI time counter.
+    midi_counter: i16,
 }
 
 impl Input {
@@ -189,11 +191,15 @@ impl Input {
             let midi = midi_conn.poll();
             // Append MIDI events.
             for mde in self.midi_events.iter_mut() {
-                if mde.1.update(midi) {
+                if mde.1.update(midi, self.midi_counter) {
                     self.events.push(*mde.0);
                 }
             }
-
+            // Increment the MIDI counter.
+            self.midi_counter += 1;
+            if self.midi_counter >= 255 {
+                self.midi_counter = 0;
+            }
             // Get note-on and note-off events.
             let volume = state.input.volume.get() as u8;
             for midi in midi.iter() {

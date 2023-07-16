@@ -11,9 +11,6 @@ pub struct MidiBinding {
     pub alias: Option<String>,
     /// A value that controls the sensitivity of the events. Check for events every `nth` consecutive inputs. The sign defines positive or negative input.
     dt: i16,
-    /// A counter for tracking sensitivity.
-    #[serde(default)]
-    counter: i16,
 }
 
 impl MidiBinding {
@@ -29,19 +26,14 @@ impl MidiBinding {
     }
 
     /// Update the event state. Returns true if the event happened.
-    pub(crate) fn update(&mut self, buffer: &[[u8; 3]]) -> bool {
+    pub(crate) fn update(&mut self, buffer: &[[u8; 3]], counter: i16) -> bool {
         if let Some(b) = buffer
             .iter()
             .find(|b| b[0] == self.bytes[0] && b[1] == self.bytes[1])
         {
-            if self.counter == 255 {
-                self.counter = 0;
-            } else {
-                self.counter += 1;
-            }
             // Did this trigger the event?
             if (self.dt > 0 && b[2] != 127) || (self.dt < 0 && b[2] == 127) {
-                self.counter % self.dt.abs() == 0
+                counter % self.dt.abs() == 0
             } else {
                 false
             }
