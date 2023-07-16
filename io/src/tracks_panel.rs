@@ -142,55 +142,43 @@ impl Panel for TracksPanel {
                     input,
                 ));
                 // Is there a program?
-                match conn.state.programs.get(&track.channel) {
-                    // Program.
-                    Some(_) => {
-                        // Preset, bank, gain.
-                        s.push(text.get_tooltip(
-                            "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_0",
-                            &[InputEvent::PreviousPreset, InputEvent::NextPreset],
-                            input,
-                        ));
-                        s.push(text.get_tooltip(
-                            "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_1",
-                            &[InputEvent::PreviousBank, InputEvent::NextBank],
-                            input,
-                        ));
-                        s.push(text.get_tooltip(
-                            "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_2",
-                            &[InputEvent::DecreaseTrackGain, InputEvent::IncreaseTrackGain],
-                            input,
-                        ));
-                        // Mute.
-                        let mute_key = if track.mute {
-                            "TRACKS_PANEL_INPUT_TTS_UNMUTE"
-                        } else {
-                            "TRACKS_PANEL_INPUT_TTS_MUTE"
-                        };
-                        s.push(text.get_tooltip(mute_key, &[InputEvent::Mute], input));
-                        // Solo.
-                        let solo_key = if track.solo {
-                            "TRACKS_PANEL_INPUT_TTS_UNSOLO"
-                        } else {
-                            "TRACKS_PANEL_INPUT_TTS_SOLO"
-                        };
-                        s.push(text.get_tooltip(solo_key, &[InputEvent::Solo], input));
-                        // Say it.
-                        tts.enqueue(s);
-                    }
-                    // No program.
-                    None => {
-                        let tts_text = text.get_tooltip_with_values(
-                            "TRACKS_PANEL_INPUT_TTS_NO_SOUNDFONT",
-                            &[InputEvent::EnableSoundFontPanel],
-                            &[&track.channel.to_string()],
-                            input,
-                        );
-                        tts.enqueue(tts_text);
-                    }
+                if let Some(_) = conn.state.programs.get(&track.channel) {
+                    // Preset, bank, gain.
+                    s.push(text.get_tooltip(
+                        "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_0",
+                        &[InputEvent::PreviousPreset, InputEvent::NextPreset],
+                        input,
+                    ));
+                    s.push(text.get_tooltip(
+                        "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_1",
+                        &[InputEvent::PreviousBank, InputEvent::NextBank],
+                        input,
+                    ));
+                    s.push(text.get_tooltip(
+                        "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_2",
+                        &[InputEvent::DecreaseTrackGain, InputEvent::IncreaseTrackGain],
+                        input,
+                    ));
+                    // Mute.
+                    let mute_key = if track.mute {
+                        "TRACKS_PANEL_INPUT_TTS_UNMUTE"
+                    } else {
+                        "TRACKS_PANEL_INPUT_TTS_MUTE"
+                    };
+                    s.push(text.get_tooltip(mute_key, &[InputEvent::Mute], input));
+                    // Solo.
+                    let solo_key = if track.solo {
+                        "TRACKS_PANEL_INPUT_TTS_UNSOLO"
+                    } else {
+                        "TRACKS_PANEL_INPUT_TTS_SOLO"
+                    };
+                    s.push(text.get_tooltip(solo_key, &[InputEvent::Solo], input));
                 }
+                // Say it.
+                tts.enqueue(s);
                 None
             } else {
+                tts.enqueue(s);
                 None
             }
         }

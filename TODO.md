@@ -15,17 +15,16 @@
 - [x] Export mp3
 - [x] ~~Export flac~~
 - [x] Export chunks
-- [ ] More MIDI bindings
-- [ ] Test all TTS
-  - [ ] Main
-  - [ ] Music
-  - [ ] Tracks
-  - [ ] Open file - SF
-  - [ ] Open file - Save
-  - [ ] Open file - Load
-  - [ ] Export Settings
-  - [ ] Exporting
-  - [ ] Piano Roll
+- [x] More MIDI bindings
+- [x] Test all TTS
+  - [x] Main
+  - [x] Music
+  - [x] Tracks
+  - [x] Open file - SF
+  - [x] Open file - Save
+  - [x] Open file - Load
+  - [x] Export Settings
+  - [x] Piano Roll
 - [x] Metadata: name, artist, album, year, genre, track number, comments
 - [x] Export settings
   - [x] MIDI: Copyright
@@ -39,7 +38,7 @@
 - [ ] Quit unsaved prompt
 - [x] Note times should be measured in PPQ
 - [x] Export buffer
-- [ ] TTS is not helpful!!
+- [x] TTS is not helpful!!
 
 ## Major Bugs
 
@@ -81,7 +80,7 @@
 - [x] Crash when setting artist
 - [x] Export settings don't save
 - [x] Export seems to only include some notes sometimes
-- [ ] Exporter can crash due to not enough samples
+- [x] ~~Exporter can crash due to not enough samples~~
 - [x] Multi track wav doesn't append silence
 - [x] Incorrect sound font if you load them while we have notes
 - [ ] View range can get messed up by multitrack?
