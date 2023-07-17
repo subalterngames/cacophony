@@ -1,8 +1,7 @@
 [workspace]
-members = ["audio", "cacophony", "common", "input", "io", "render", "text"]
+members = ["audio", "common", "input", "io", "render", "text"]
 
 [workspace.package]
-name = "cacophony"
 version = "0.1.0"
 authors = ["Esther Alter <subalterngames@gmail.com>"]
 description = "ASCII-esque pseudo-MIDI sequencer"
@@ -59,3 +58,32 @@ branch = "master"
 version = "0.25.5"
 default-features = false
 features = ["speech_dispatcher_0_9"]
+
+[package]
+name = "cacophony"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
+
+[dependencies]
+macroquad = { workspace = true }
+
+[dependencies.audio]
+path = "audio"
+
+[dependencies.common]
+path = "common"
+
+[dependencies.input]
+path = "input"
+
+[dependencies.io]
+path = "io"
+
+[dependencies.render]
+path = "render"
+
+[dependencies.text]
+path = "text"
