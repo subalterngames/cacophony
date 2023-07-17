@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use audio::connect;
 use audio::exporter::Exporter;
 use common::config::{load, parse_bool};
