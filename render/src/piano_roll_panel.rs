@@ -199,7 +199,7 @@ impl Drawable for PianoRollPanel {
 
         if state.view.single_track {
             // Note names.
-            let texture = self.note_names.get(focus);
+            let texture = &self.note_names.get(focus);
             let rect = [
                 0,
                 (MAX_NOTE - state.view.dn[0]) as u32,
@@ -209,7 +209,7 @@ impl Drawable for PianoRollPanel {
             renderer.texture(texture, self.note_names_position, Some(rect));
 
             // Piano roll rows.
-            let texture = self.piano_roll_rows.get(focus);
+            let texture = &self.piano_roll_rows.get(focus);
             renderer.texture(texture, self.piano_roll_rows_position, None);
         }
 

@@ -13,11 +13,11 @@ impl FocusableTexture {
         Self { focus, no_focus }
     }
 
-    pub fn get(&self, focus: bool) -> Texture2D {
+    pub fn get(&self, focus: bool) -> &Texture2D {
         if focus {
-            self.focus
+            &self.focus
         } else {
-            self.no_focus
+            &self.no_focus
         }
     }
 }

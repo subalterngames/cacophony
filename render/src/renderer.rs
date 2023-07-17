@@ -153,7 +153,7 @@ impl Renderer {
     /// - `label` Parameters for drawing text.
     /// - `color` A `ColorKey` for the rectangle.
     pub(crate) fn text(&self, label: &Label, text_color: &ColorKey) {
-        self.text_ex(label, text_color, self.font, self.font_size);
+        self.text_ex(label, text_color, &self.font, self.font_size);
     }
 
     /// Draw corner borders around a rectangle.
@@ -249,7 +249,7 @@ impl Renderer {
     /// - `texture` The texture.
     /// - `position` The top-left position in grid coordinates.
     /// - `rect` An array of grid coordinates (left, top, width, height) that defines the area of the texture to draw.
-    pub fn texture(&self, texture: Texture2D, position: [u32; 2], rect: Option<[u32; 4]>) {
+    pub fn texture(&self, texture: &Texture2D, position: [u32; 2], rect: Option<[u32; 4]>) {
         let xy = self.grid_to_pixel(position);
         match rect {
             Some(r) => {
@@ -274,7 +274,7 @@ impl Renderer {
     /// - `texture` The texture.
     /// - `position` The top-left position in grid coordinates.
     /// - `params` Draw texture parameters.
-    pub fn texture_ex(&self, texture: Texture2D, position: [u32; 2], params: DrawTextureParams) {
+    pub fn texture_ex(&self, texture: &Texture2D, position: [u32; 2], params: DrawTextureParams) {
         let xy = self.grid_to_pixel(position);
         draw_texture_ex(texture, xy[0], xy[1], TEXTURE_COLOR, params);
     }
@@ -612,7 +612,7 @@ impl Renderer {
         self.text_ex(
             label,
             &ColorKey::Subtitle,
-            self.subtitle_font,
+            &self.subtitle_font,
             self.subtitle_font_size,
         );
     }
@@ -623,9 +623,10 @@ impl Renderer {
     /// - `color` A `ColorKey` for the rectangle.
     /// - `font` The font.
     /// - `font_size` The font size.
-    fn text_ex(&self, label: &Label, text_color: &ColorKey, font: Font, font_size: u16) {
+    fn text_ex(&self, label: &Label, text_color: &ColorKey, font: &Font, font_size: u16) {
+        let font = Some(font);
         let mut xy = self.grid_to_pixel(label.position);
-        let dim = measure_text(&label.text, Some(font), font_size, 1.0);
+        let dim = measure_text(&label.text, font, font_size, 1.0);
         xy[1] += self.cell_size[1] - dim.offset_y / 3.0;
         let color = self.colors[text_color];
         let text_params = TextParams {

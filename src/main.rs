@@ -18,7 +18,7 @@ async fn main() {
     let splash = load_texture(paths.splash_path.as_os_str().to_str().unwrap())
         .await
         .unwrap();
-    draw_texture(splash, 0.0, 0.0, WHITE);
+    draw_texture(&splash, 0.0, 0.0, WHITE);
     next_frame().await;
 
     // Load the config file.

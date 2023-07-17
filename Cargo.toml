@@ -42,11 +42,9 @@ default-features = false
 features = ["derive"]
 
 [workspace.dependencies.macroquad]
-version = "0.3"
+version = "0.4"
 default-features = false
 features = []
-git = "https://github.com/not-fl3/macroquad.git"
-rev = "5b5bb10"
 
 [workspace.dependencies.oxisynth]
 version = "0.0.3"

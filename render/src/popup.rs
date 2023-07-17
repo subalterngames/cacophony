@@ -21,7 +21,7 @@ impl Popup {
     /// Update and draw.
     pub(crate) fn update(&self, renderer: &Renderer) {
         if let Some(background) = &self.background {
-            renderer.texture_ex(background.0, [0, 0], background.1.clone());
+            renderer.texture_ex(&background.0, [0, 0], background.1.clone());
         }
     }
 

@@ -32,7 +32,7 @@ pub fn get_subtitle_font_size(config: &Ini) -> u16 {
 pub fn get_cell_size(config: &Ini) -> [f32; 2] {
     let font_size: u16 = get_font_size(config);
     let font = get_font(config);
-    let size = measure_text("█", Some(font), font_size, 1.0);
+    let size = measure_text("█", Some(&font), font_size, 1.0);
     [size.width, size.height]
 }
 
