@@ -1,29 +1,24 @@
 [package]
 name = "audio"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
 
 [dependencies]
-cpal = "0.13.1"
-crossbeam-channel = "0.5.8"
-hound = "3.5.0"
-id3 = "1.7.0"
-mp3lame-encoder = "0.1.2"
-chrono = "0.4.26"
-ghakuf = "0.5.6"
-vorbis-encoder = "0.1.4"
-oggvorbismeta = "0.1.0"
-
-[dependencies.oxisynth]
-version = "0.0.3"
-features = ["sf3"]
-git = "https://github.com/PolyMeilex/OxiSynth.git"
-branch = "master"
-
-[dependencies.serde]
-version = "1.0.153"
-default-features = false
-features = ["derive"]
+cpal = { workspace = true }
+crossbeam-channel = { workspace = true }
+hound = { workspace = true }
+id3 = { workspace = true }
+mp3lame-encoder = { workspace = true }
+chrono = { workspace = true }
+ghakuf = { workspace = true }
+vorbis-encoder = { workspace = true }
+oggvorbismeta = { workspace = true }
+oxisynth = { workspace = true }
+serde = { workspace = true }
+hashbrown = { workspace = true }
 
 [dependencies.common]
 path = "../common"

@@ -2,8 +2,8 @@ use super::{
     get_cycle_edit_mode_input_tts, get_edit_mode_status_tts, EditModeDeltas, PianoRollSubPanel,
 };
 use crate::panel::*;
-use common::ini::Ini;
 use common::sizes::get_viewport_size;
+use ini::Ini;
 
 /// The piano roll view sub-panel.
 pub(super) struct View {

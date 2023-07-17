@@ -2,8 +2,8 @@ use super::*;
 use crate::panel::*;
 use crate::{combine_tracks_to_commands, select_track};
 use common::config::parse_fractions;
-use common::ini::Ini;
 use common::{Index, Note, PianoRollMode, SelectMode, U64orF32, PPQ_F};
+use ini::Ini;
 
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.

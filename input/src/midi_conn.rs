@@ -1,7 +1,7 @@
 use common::config::parse;
-use common::crossbeam_channel::{unbounded, Receiver, Sender};
-use common::ini::Ini;
-use common::midir::{MidiInput, MidiInputConnection, MidiInputPort};
+use crossbeam_channel::{unbounded, Receiver, Sender};
+use ini::Ini;
+use midir::{MidiInput, MidiInputConnection, MidiInputPort};
 
 // The MIDI connection error message.
 const MIDI_ERROR_MESSAGE: &str = "Couldn't connect to a MIDI input device";

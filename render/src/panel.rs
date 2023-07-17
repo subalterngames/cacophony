@@ -1,9 +1,10 @@
 pub(crate) use crate::drawable::*;
 pub(crate) use crate::field_params::*;
-pub(crate) use crate::{ColorKey, Ini};
+pub(crate) use crate::ColorKey;
 pub(crate) use common::sizes::*;
 pub(crate) use common::PanelType;
 use common::VERSION;
+pub(crate) use ini::Ini;
 
 /// A panel has a rectangular backaground and a title label.
 #[derive(Clone)]

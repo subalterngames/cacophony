@@ -24,7 +24,6 @@ mod panels;
 mod renderer;
 mod tracks_panel;
 use color_key::ColorKey;
-use common::ini::Ini;
 pub use panels::Panels;
 pub use renderer::Renderer;
 mod open_file_panel;

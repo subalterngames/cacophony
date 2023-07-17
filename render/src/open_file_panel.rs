@@ -1,8 +1,8 @@
 use crate::get_page;
 use crate::panel::*;
 use crate::Popup;
-use common::hashbrown::HashMap;
 use common::open_file::*;
+use hashbrown::HashMap;
 use text::truncate;
 
 const EXTENSION_WIDTH: u32 = 4;

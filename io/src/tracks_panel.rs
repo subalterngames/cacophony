@@ -142,7 +142,7 @@ impl Panel for TracksPanel {
                     input,
                 ));
                 // Is there a program?
-                if let Some(_) = conn.state.programs.get(&track.channel) {
+                if conn.state.programs.get(&track.channel).is_some() {
                     // Preset, bank, gain.
                     s.push(text.get_tooltip(
                         "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_0",

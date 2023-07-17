@@ -3,10 +3,10 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::{InputEvent, MidiBinding, MidiConn, NoteOn, QwertyBinding, KEYS};
-use common::hashbrown::HashMap;
-use common::ini::Ini;
-use common::macroquad::input::*;
 use common::State;
+use hashbrown::HashMap;
+use ini::Ini;
+use macroquad::input::*;
 use std::str::FromStr;
 
 const MAX_OCTAVE: u8 = 9;

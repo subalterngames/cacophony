@@ -1,6 +1,6 @@
 use crate::TtsString;
 use common::config::{parse, parse_bool};
-use common::ini::Ini;
+use ini::Ini;
 use tts::Tts;
 
 /// Text-to-speech.

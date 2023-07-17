@@ -1,12 +1,12 @@
 use crate::TtsString;
 use common::config::parse;
-use common::csv::Reader;
-use common::hashbrown::hash_map::Entry;
-use common::hashbrown::HashMap;
-use common::ini::Ini;
-use common::macroquad::input::KeyCode;
 use common::{EditMode, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U};
+use csv::Reader;
+use hashbrown::hash_map::Entry;
+use hashbrown::HashMap;
+use ini::Ini;
 use input::{Input, InputEvent, QwertyBinding, KEYS};
+use macroquad::input::KeyCode;
 use regex::Regex;
 
 type RegexMap = HashMap<usize, Regex>;

@@ -39,6 +39,8 @@
 - [x] Note times should be measured in PPQ
 - [x] Export buffer
 - [x] TTS is not helpful!!
+- [ ] Internal documentation
+- [ ] More tests
 
 ## Major Bugs
 

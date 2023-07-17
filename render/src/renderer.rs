@@ -2,14 +2,13 @@ use crate::field_params::*;
 use crate::{ColorKey, Focus};
 use common::config::parse_bool;
 use common::font::*;
-use common::hashbrown::HashMap;
-use common::ini::Ini;
-use common::macroquad::prelude::*;
-use common::serde_json;
 use common::sizes::*;
+use hashbrown::HashMap;
+use ini::Ini;
+use macroquad::prelude::*;
 use text::Text;
 
-const TEXTURE_COLOR: Color = common::macroquad::color::colors::WHITE;
+const TEXTURE_COLOR: Color = macroquad::color::colors::WHITE;
 
 /// Draw shapes and text. This also stores colors, fonts, etc.
 pub struct Renderer {

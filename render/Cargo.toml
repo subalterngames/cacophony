@@ -1,14 +1,22 @@
 [package]
 name = "render"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
 
 [dependencies]
-strum = "0.24"
-strum_macros = "0.24"
-imageproc = "0.23.0"
-image = "0.24.6"
-rusttype = "0.9.3"
+serde = { workspace = true }
+serde_json = { workspace = true }
+strum = { workspace = true }
+strum_macros = { workspace = true }
+imageproc = { workspace = true }
+image = { workspace = true }
+rusttype = { workspace = true }
+rust-ini = { workspace = true }
+macroquad = { workspace = true }
+hashbrown = { workspace = true }
 
 [dependencies.audio]
 path = "../audio"
@@ -21,8 +29,3 @@ path = "../input"
 
 [dependencies.text]
 path = "../text"
-
-[dependencies.serde]
-version = "1.0.153"
-default-features = false
-features = ["derive"]

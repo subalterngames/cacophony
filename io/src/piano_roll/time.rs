@@ -1,6 +1,6 @@
 use super::{get_edit_mode_status_tts, EditModeDeltas, PianoRollSubPanel};
 use crate::panel::*;
-use common::ini::Ini;
+use ini::Ini;
 
 /// The piano roll time sub-panel.
 pub(super) struct Time {

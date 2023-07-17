@@ -17,12 +17,12 @@
 
 use audio::exporter::*;
 use audio::{Command, CommandsMessage, Conn, ExportState};
-use common::hashbrown::HashMap;
-use common::ini::Ini;
 use common::{
     InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, SelectMode, State, MAX_VOLUME,
 };
 use edit::edit_file;
+use hashbrown::HashMap;
+use ini::Ini;
 use input::{Input, InputEvent};
 use std::path::Path;
 use text::{Enqueable, Text, TTS};

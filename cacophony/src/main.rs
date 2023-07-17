@@ -1,12 +1,11 @@
 use audio::connect;
 use audio::exporter::Exporter;
 use common::config::{load, parse_bool};
-use common::macroquad;
-use common::macroquad::prelude::*;
 use common::sizes::get_window_pixel_size;
 use common::{get_bytes, Paths, PathsState, State};
 use input::Input;
 use io::IO;
+use macroquad::prelude::*;
 use render::{draw_subtitles, Panels, Renderer};
 use text::{Text, TTS};
 

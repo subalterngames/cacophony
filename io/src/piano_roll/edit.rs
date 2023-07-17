@@ -3,8 +3,8 @@ use super::{
     EditModeDeltas, PianoRollSubPanel,
 };
 use crate::panel::*;
-use common::ini::Ini;
 use common::{MAX_NOTE, MAX_VOLUME, MIN_NOTE};
+use ini::Ini;
 
 /// Edit selected notes.
 pub(super) struct Edit {

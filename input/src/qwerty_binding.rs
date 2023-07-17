@@ -1,7 +1,7 @@
 use crate::{ALPHANUMERIC_INPUT_MODS, MODS};
-use common::macroquad::input::KeyCode;
-use common::serde_json::{from_str, Error};
+use macroquad::input::KeyCode;
 use serde::Deserialize;
+use serde_json::{from_str, Error};
 
 /// A list of qwerty keys plus mods that define a qwerty key binding.
 #[derive(Clone)]

@@ -1,6 +1,6 @@
 use crate::panel::*;
-use common::hashbrown::HashMap;
 use common::{EditMode, IndexedEditModes, PianoRollMode, SelectMode};
+use hashbrown::HashMap;
 use text::ppq_to_string;
 
 const PADDING: u32 = 4;
