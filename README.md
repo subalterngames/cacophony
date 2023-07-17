@@ -103,7 +103,7 @@ Cacophony's mascot is Casey the Transgender Cacodemon. No official artwork of Ca
 
 *Tested on Ubuntu 20.04 with an x64 processor.*
 
-1. `apt install clang libclang1 libspeechd-dev`
+1. `apt install clang libspeechd-dev`
 2. `cargo build --release`
 
 ## MacOS
