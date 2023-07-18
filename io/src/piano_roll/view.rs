@@ -23,6 +23,7 @@ impl View {
         }
     }
 
+    /// Increment or decrement the top note of the view.
     fn set_top_note_by(&self, state: &mut State, add: bool) -> Option<Snapshot> {
         let mode = state.view.mode.get();
         Some(Snapshot::from_state(
@@ -31,6 +32,7 @@ impl View {
         ))
     }
 
+    /// Increment or decrement the start time.
     fn set_start_time_by(&self, state: &mut State, add: bool) -> Option<Snapshot> {
         let s0 = state.clone();
         state.view.set_start_time_by(

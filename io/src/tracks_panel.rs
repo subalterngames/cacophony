@@ -4,6 +4,7 @@ use common::open_file::OpenFileType;
 use common::{MidiTrack, SelectMode};
 use text::get_file_name_no_ex;
 
+/// A list of tracks and their parameters.
 pub(crate) struct TracksPanel {}
 
 impl TracksPanel {

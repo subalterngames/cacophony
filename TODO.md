@@ -39,16 +39,19 @@
 - [x] Note times should be measured in PPQ
 - [x] Export buffer
 - [x] TTS is not helpful!!
-- [ ] Internal documentation
-  - [x] audio
-  - [x] common
-  - [x] input
-  - [ ] io
-  - [ ] render
-  - [ ] text
-  - [ ] main
-- [ ] More tests
+- [ ] Internal documentation (see below)
+- [ ] More tests (see below)
 - [ ] Merge and clobber
+
+## Internal documentation
+
+- [x] audio
+- [x] common
+- [x] input
+- [x] io
+- [ ] render
+- [ ] text
+- [ ] main
 
 ## Tests
 
@@ -65,6 +68,7 @@
 - [ ] sizes
 - [ ] midi_binding
 - [ ] qwerty_binding
+- [ ] abc123
 
 ## Major Bugs
 

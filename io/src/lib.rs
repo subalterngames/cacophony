@@ -56,6 +56,13 @@ const MAX_UNDOS: usize = 100;
 /// Commands that are queued for export.
 type QueuedExportCommands = (CommandsMessage, Option<ExportState>);
 
+/// Parse user input and apply it to the application's various states as needed:
+/// 
+/// - Play ad-hoc notes.
+/// - Modify the `State` and push the old version to the undo stack.
+/// - Modify the `PathsState`.
+/// - Modify the `SynthState` and send commands through the `Conn`.
+/// - Modify the `Exporter` and send a copy via a command to the `Conn`.
 pub struct IO {
     /// A stack of snapshots that can be popped to undo an action.
     undo: Vec<Snapshot>,
@@ -143,6 +150,17 @@ impl IO {
         }
     }
 
+    /// Update the state of the app. Returns true if we're done.
+    ///
+    /// - `state` The state of the app.
+    /// - `conn` The synthesizer-player connection.
+    /// - `input` Input events, key presses, etc.
+    /// - `tts` Text-to-speech.
+    /// - `text` The text.
+    /// - `paths_state` Dynamic path data.
+    /// - `exporter` Export settings.
+    ///
+    /// Returns: An `Snapshot`.
     #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
@@ -563,6 +581,7 @@ fn get_playback_notes(track: &MidiTrack) -> Vec<Note> {
     notes.sort();
     notes
 }
+
 /// Converts all playable tracks to note-on commands.
 fn combine_tracks_to_commands(
     state: &State,
@@ -606,6 +625,9 @@ fn combine_tracks_to_commands(
     (commands, t1)
 }
 
+/// Try to select a track, given user input.
+/// 
+/// This is here an not in a more obvious location because both `TracksPanel` and `PianoRollPanel` need it.
 pub(crate) fn select_track(state: &mut State, input: &Input) -> Option<Snapshot> {
     if let Some(selected) = state.music.selected {
         if input.happened(&InputEvent::NextTrack) && selected < state.music.midi_tracks.len() - 1 {

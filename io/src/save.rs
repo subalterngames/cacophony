@@ -13,9 +13,13 @@ const WRITE_ERROR: &str = "Error writing file: ";
 /// Serializable save data.
 #[derive(Deserialize, Serialize)]
 pub(crate) struct Save {
+    /// The app state.
     state: State,
+    /// The synthesizer state.
     synth_state: SynthState,
+    /// The paths state.
     paths_state: PathsState,
+    /// The exporter state.
     exporter: Exporter,
 }
 
@@ -23,7 +27,7 @@ impl Save {
     /// Write this state to a file.
     ///
     /// - `path` The path we will write to.
-    /// - `state` The app state. This will be converted to a `SerializableState`.
+    /// - `state` The app state.
     /// - `conn` The audio connection. Its `SynthState` will be serialized.
     /// - `paths_state` The paths state.
     /// - `exporter` The exporter.
@@ -63,6 +67,12 @@ impl Save {
     }
 
     /// Load a file and deserialize.
+    ///
+    /// - `path` The path we read from.
+    /// - `state` The app state, which will be set to a deserialized version.
+    /// - `conn` The audio connection. Its `SynthState` will be set via commands derived from a deserialized version.
+    /// - `paths_state` The paths state, which will be set to a deserialized version.
+    /// - `exporter` The exporter.
     pub fn read(
         path: &PathBuf,
         state: &mut State,

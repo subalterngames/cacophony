@@ -7,7 +7,7 @@ pub(crate) use input::{Input, InputEvent};
 pub(crate) use text::TtsString;
 pub(crate) use text::{Enqueable, Text, TTS};
 
-/// I guess this is how we do function aliases in Rust.
+/// A panel can be updated, and can update the rest of the app state.
 pub(crate) trait Panel {
     /// Apply panel-specific updates to the state.
     ///
