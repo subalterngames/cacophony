@@ -122,6 +122,7 @@ impl Div<Fraction> for U64orF32 {
 impl Div<U64orF32> for Fraction {
     type Output = Fraction;
 
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: U64orF32) -> Self::Output {
         Self::new(rhs.get_u() * self.denominator, self.numerator)
     }

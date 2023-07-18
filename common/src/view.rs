@@ -1,10 +1,10 @@
+use crate::config::{parse, parse_fraction};
 use crate::note::MIDDLE_C;
 use crate::sizes::*;
-use crate::{EditMode, IndexedEditModes, MAX_NOTE, MIN_NOTE, PPQ_U, U64orF32, Index};
-use crate::config::{parse_fraction, parse};
+use crate::{EditMode, Index, IndexedEditModes, U64orF32, MAX_NOTE, MIN_NOTE, PPQ_U};
+use hashbrown::HashMap;
 use ini::Ini;
 use serde::{Deserialize, Serialize};
-use hashbrown::HashMap;
 
 /// The minimum zoom time delta in PPQ.
 const MIN_ZOOM: u64 = PPQ_U * 2;
@@ -28,7 +28,10 @@ pub struct View {
     zoom_index: Index,
     /// Zoom increments per edit mode.
     #[serde(skip_serializing, skip_deserializing)]
-    zoom_increments: HashMap<EditMode, usize>
+    zoom_increments: HashMap<EditMode, usize>,
+    /// The default zoom index.
+    #[serde(skip_serializing, skip_deserializing)]
+    initial_zoom_index: usize,
 }
 
 impl View {
@@ -76,9 +79,8 @@ impl View {
             }
             zoom_levels.push(zoom_dt);
         }
-        let ppqs: Vec<u64> = zoom_levels.iter().map(|z| z.get_u() / PPQ_U).collect();
-        println!("{:?}", ppqs);
         let zoom_levels: Vec<u64> = zoom_levels.iter().map(|z| z.get_u()).collect();
+        let initial_zoom_index = zoom_index;
         let zoom_index = Index::new(zoom_index, zoom_levels.len());
         let normal_zoom = parse(section, "normal_zoom");
         let quick_zoom = parse(section, "quick_zoom");
@@ -94,7 +96,8 @@ impl View {
             single_track: true,
             zoom_levels,
             zoom_index,
-            zoom_increments
+            zoom_increments,
+            initial_zoom_index,
         }
     }
 
@@ -151,9 +154,24 @@ impl View {
     pub fn zoom(&mut self, up: bool) {
         // Get the number of increment steps.
         let increments = self.zoom_increments[&self.mode.get()];
+        // Use modulus division to get to the next valid index.
+        // For example, if `increments == 2` then we need to get to an index relative to `self.initial_zoom_index` that is a multiple of 2.
+        let zi = self.zoom_index.get();
+        let m = (if zi > self.initial_zoom_index {
+            zi - self.initial_zoom_index
+        } else {
+            self.initial_zoom_index - zi
+        }) % increments;
+        for _ in 0..m {
+            if !self.zoom_index.increment_no_loop(!up) {
+                break;
+            }
+        }
         // Increment the zoom index.
         for _ in 0..increments {
-            self.zoom_index.increment_no_loop(up);
+            if !self.zoom_index.increment_no_loop(up) {
+                break;
+            }
         }
         // Get the time delta.
         let dt = self.zoom_levels[self.zoom_index.get()];

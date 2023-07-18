@@ -1,6 +1,6 @@
 use common::config::{parse, parse_float};
-use ini::Ini;
 use common::{EditMode, InputState, PPQ_F};
+use ini::Ini;
 
 /// Delta factors and values for edit modes.
 pub(super) struct EditModeDeltas {
@@ -77,8 +77,8 @@ impl EditModeDeltas {
 #[cfg(test)]
 mod tests {
     use super::EditModeDeltas;
-    use ini::Ini;
     use common::PPQ_U;
+    use ini::Ini;
 
     #[test]
     fn edit_mode_deltas() {
