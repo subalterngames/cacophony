@@ -44,7 +44,7 @@ async fn main() {
     // Create the paths state.
     let mut paths_state = PathsState::new(&paths);
 
-    let mut exporter = Exporter::new();
+    let mut exporter = Exporter::default();
 
     // Get the IO state.
     let mut io = IO::new(&config, &input, &state.input, &mut text);

@@ -220,7 +220,7 @@ impl ExportSettingsPanel {
                     text.get_with_values(
                         "EXPORT_SETTINGS_PANEL_STATUS_TTS_BIT_RATE",
                         &[
-                            &((MP3_BIT_RATES[exporter.bit_rate.get()] as u16) as u32 * 1000)
+                            &((MP3_BIT_RATES[exporter.mp3_bit_rate.get()] as u16) as u32 * 1000)
                                 .to_string(),
                         ],
                     ),
@@ -249,8 +249,12 @@ impl ExportSettingsPanel {
                 ),
                 ExportSetting::MultiFileSuffix => {
                     let key = match &exporter.multi_file_suffix.get() {
-                        MultiFileSuffix::Preset => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET",
-                        MultiFileSuffix::Channel => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL",
+                        MultiFileSuffix::Preset => {
+                            "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET"
+                        }
+                        MultiFileSuffix::Channel => {
+                            "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL"
+                        }
                         MultiFileSuffix::ChannelAndPreset => {
                             "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL_AND_PRESET"
                         }

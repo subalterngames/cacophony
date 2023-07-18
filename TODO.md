@@ -41,6 +41,7 @@
 - [x] TTS is not helpful!!
 - [ ] Internal documentation
 - [ ] More tests
+  - [ ] exporter
 - [ ] Merge and clobber
 
 ## Major Bugs

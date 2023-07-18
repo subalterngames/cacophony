@@ -66,7 +66,7 @@ pub const MP3_QUALITIES: [Quality; 10] = [
 ];
 
 /// This struct contains all export settings, as well as exporter functions.
-#[derive(Default, Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
+#[derive(Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
 pub struct Exporter {
     /// The framerate.
     pub framerate: U64orF32,
@@ -78,8 +78,6 @@ pub struct Exporter {
     pub mp3_bit_rate: Index,
     /// The mp3 quality index.
     pub mp3_quality: Index,
-    /// The bit rate index.
-    pub bit_rate: Index,
     /// If true, export to multiple files.
     pub multi_file: bool,
     /// Multi-file suffix setting.
@@ -98,8 +96,8 @@ pub struct Exporter {
     pub ogg_settings: IndexedValues<ExportSetting, 11>,
 }
 
-impl Exporter {
-    pub fn new() -> Self {
+impl Default for Exporter {
+    fn default() -> Self {
         let export_type = IndexedValues::new(
             0,
             [
@@ -177,10 +175,14 @@ impl Exporter {
             mp3_settings,
             ogg_settings,
             multi_file_suffix,
-            ..Default::default()
+            metadata: Metadata::default(),
+            copyright: false,
+            multi_file: false,
         }
     }
+}
 
+impl Exporter {
     /// Export to a .mid file.
     /// - `path` Output to this path.
     /// - `music` This is what we're saving.
@@ -322,7 +324,9 @@ impl Exporter {
     {
         // Create the encoder.
         let mut mp3_encoder = Builder::new().expect("Create LAME builder");
-        mp3_encoder.set_num_channels(NUM_CHANNELS as u8).expect("Set channels");
+        mp3_encoder
+            .set_num_channels(NUM_CHANNELS as u8)
+            .expect("Set channels");
         mp3_encoder
             .set_sample_rate(self.framerate.get_u() as u32)
             .expect("Set sample rate");

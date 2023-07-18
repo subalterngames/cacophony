@@ -98,7 +98,7 @@ impl Synthesizer {
             state: SynthState::default(),
             export_path: None,
             export_state: None,
-            exporter: Exporter::new(),
+            exporter: Exporter::default(),
             send_export_state: false,
             export_buffer: [vec![], vec![]],
         };
