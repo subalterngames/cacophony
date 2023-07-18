@@ -84,6 +84,7 @@ impl Player {
             for frame in output.chunks_mut(channels) {
                 // Try to receive a new sample.
                 if let Ok((l, r)) = next_sample() {
+                    // This is almost certainly more performant than the code in the `else` block.
                     if two_channels {
                         frame[0] = Sample::from::<f32>(&l);
                         frame[1] = Sample::from::<f32>(&r);

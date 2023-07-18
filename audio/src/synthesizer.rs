@@ -533,6 +533,7 @@ impl Synthesizer {
         self.events_queue.sort_by(|a, b| a.time.cmp(&b.time))
     }
 
+    /// Push one sample to the export buffer.
     fn export_sample(&mut self) {
         let sample = self.synth.read_next();
         // Write the sample.

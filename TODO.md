@@ -40,6 +40,13 @@
 - [x] Export buffer
 - [x] TTS is not helpful!!
 - [ ] Internal documentation
+  - [x] audio
+  - [ ] common
+  - [ ] input
+  - [ ] io
+  - [ ] render
+  - [ ] text
+  - [ ] main
 - [ ] More tests
   - [ ] exporter
 - [ ] Merge and clobber

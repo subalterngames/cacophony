@@ -32,7 +32,7 @@ const NUM_CHANNELS: usize = 2;
 const PULSE: u64 = 1;
 /// Conversion factor for f32 to i16.
 const F32_TO_I16: f32 = 32767.5;
-/// An ordered list of MP3 bit rates.
+/// An ordered list of MP3 bit rates. We can't use `IndexedValues` because this enum isn't serializable.
 pub const MP3_BIT_RATES: [Bitrate; 16] = [
     Bitrate::Kbps8,
     Bitrate::Kbps16,
@@ -51,7 +51,7 @@ pub const MP3_BIT_RATES: [Bitrate; 16] = [
     Bitrate::Kbps256,
     Bitrate::Kbps320,
 ];
-/// An ordererd list of mp3 qualities.
+/// An ordererd list of mp3 qualities. We can't use `IndexedValues` because this enum isn't serializable.
 pub const MP3_QUALITIES: [Quality; 10] = [
     Quality::Worst,
     Quality::SecondWorst,
@@ -66,6 +66,11 @@ pub const MP3_QUALITIES: [Quality; 10] = [
 ];
 
 /// This struct contains all export settings, as well as exporter functions.
+/// This struct does *not* write samples to a buffer; that's handled in the `Synthesizer`'s export functions.
+/// Rather, this receives a buffer of f32 data, and then decides what to do with it based on the user-defined export settings.
+/// 
+/// There are always two copies of the same `Exporter`: One lives in the Synthesizer thread, and one lives on the main thread.
+/// The user can edit the main thread `Exporter`, which is then sent to the Synthesizer thread.
 #[derive(Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
 pub struct Exporter {
     /// The framerate.

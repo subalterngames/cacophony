@@ -2,6 +2,7 @@ use crate::Program;
 use crate::TimeState;
 use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
+use common::MAX_VOLUME;
 
 /// The state of the synthesizer.
 #[derive(Serialize, Deserialize)]
@@ -26,7 +27,7 @@ impl Default for SynthState {
         Self {
             programs: HashMap::new(),
             time: TimeState::default(),
-            gain: 127,
+            gain: MAX_VOLUME,
         }
     }
 }
