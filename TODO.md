@@ -8,7 +8,7 @@
 - [x] Multi-track view
 - [x] ~~Effects~~
 - [x] ~~Text ref~~
-- [ ] Rewrite README
+- [x] Rewrite README
 - [x] Export MIDI
 - [x] Export separate tracks
 - [x] Export ogg
@@ -41,6 +41,7 @@
 - [x] TTS is not helpful!!
 - [ ] Internal documentation
 - [ ] More tests
+- [ ] Merge and clobber
 
 ## Major Bugs
 
