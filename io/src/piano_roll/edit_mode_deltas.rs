@@ -77,7 +77,7 @@ impl EditModeDeltas {
 #[cfg(test)]
 mod tests {
     use super::EditModeDeltas;
-    use common::ini::Ini;
+    use ini::Ini;
     use common::PPQ_U;
 
     #[test]

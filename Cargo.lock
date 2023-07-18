@@ -345,6 +345,7 @@ name = "common"
 version = "0.1.0"
 dependencies = [
  "directories",
+ "hashbrown 0.13.2",
  "macroquad",
  "rust-ini",
  "serde",

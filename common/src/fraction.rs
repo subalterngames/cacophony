@@ -57,22 +57,6 @@ impl Mul<Fraction> for u64 {
     }
 }
 
-impl Mul<U64orF32> for Fraction {
-    type Output = U64orF32;
-
-    fn mul(self, rhs: U64orF32) -> Self::Output {
-        U64orF32::from(rhs.get_u() * self)
-    }
-}
-
-impl Mul<Fraction> for U64orF32 {
-    type Output = Fraction;
-
-    fn mul(self, rhs: Fraction) -> Self::Output {
-        Fraction::new(self.get_u() * rhs.numerator, rhs.denominator)
-    }
-}
-
 impl Mul<Fraction> for Fraction {
     type Output = Fraction;
 
@@ -113,22 +97,6 @@ impl Div<Fraction> for u64 {
 
     fn div(self, rhs: Fraction) -> Self::Output {
         (self * rhs.denominator) / rhs.numerator
-    }
-}
-
-impl Div<U64orF32> for Fraction {
-    type Output = U64orF32;
-
-    fn div(self, rhs: U64orF32) -> Self::Output {
-        U64orF32::from(rhs.get_u() / self)
-    }
-}
-
-impl Div<Fraction> for U64orF32 {
-    type Output = Fraction;
-
-    fn div(self, rhs: Fraction) -> Self::Output {
-        Fraction::new(self.get_u(), 1) / rhs
     }
 }
 
