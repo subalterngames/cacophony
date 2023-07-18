@@ -185,6 +185,7 @@ impl View {
 mod tests {
     use crate::time::PPQ_U;
     use crate::view::View;
+    use crate::EditMode;
     use ini::Ini;
 
     const VIEW_T1: u64 = PPQ_U * 133;
@@ -211,6 +212,25 @@ mod tests {
         view.set_top_note_by(4, false);
         assert_eq!(view.dn, [75, 45], "{:?}", view.dn);
         view.dt = [0, VIEW_T1];
+    }
+
+    #[test]
+    fn view_dz() {
+        let mut view = get_new_view();
+        // Test modes.
+        view.mode.index.set(0);
+        assert_eq!(view.mode.get(), EditMode::Normal);
+        view.mode.index.set(1);
+        assert_eq!(view.mode.get(), EditMode::Quick);
+        view.mode.index.set(2);
+        assert_eq!(view.mode.get(), EditMode::Precise);
+        // Zoom in precisely.
+        view.zoom(true);
+        // Reset to the default zoom.
+        view.mode.index.increment(true);
+        assert_eq!(view.mode.get(), EditMode::Normal);
+        view.zoom(false);
+        assert_eq!(view.get_dt(), VIEW_T1);
     }
 
     fn get_new_view() -> View {
