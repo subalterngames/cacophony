@@ -69,6 +69,7 @@
 - [ ] midi_binding
 - [ ] qwerty_binding
 - [ ] abc123
+- [ ] Field params
 
 ## Major Bugs
 
