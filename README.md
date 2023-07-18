@@ -1,5 +1,27 @@
 # Cacophony
 
+**A minimalist and ergonomic MIDI sequencer**
+
+## How to compile
+
+1. Clone this repo
+2. Install rust if you haven't done so already
+3. *Linux only\** `apt install clang libclang1 libspeechd-dev`
+4. `cargo build --release`
+
+\* *Tested on Ubuntu 20.04 x64 and Ubuntu 18.04 x64*
+
+## 1. What is Cacophony
+
+**Cacophony is a proof-of-concept of an unusual way to create digital music. By design, it lacks many features common to audio software. If you want those features, I encourage you to use Cacophony in combination with other software.** 
+
+Cacophony is more or less a MIDI sequencer, though it doesn't have a lot of functionality MIDI sequencers have. 
+
+## 1. Purpose
+
+I made Cacophony because I want to make music but I don't aspire to be a professional music maker and I don't want to use a DAW. Hi, I'm a programmer. I routinely use complicated IDEs such as Unity3D and PyCharm. Every DAW I've tried to use is uglier and more complicated than any software I've ever tried to use. I just want to make music, in a very particular way, that I couldn't find anywhere.
+
+
 **The programmer's DAW.**
 
 ## 1. Purpose
@@ -74,3 +96,22 @@ Why Cacophony? Doesn't that literally mean *bad sound*? Well, guess what:
 ## 6. Mascot
 
 Cacophony's mascot is Casey the Transgender Cacodemon. No official artwork of Casey exists because I don't want to be cursed.
+
+## How to compile
+
+### Linux
+
+*Tested on Ubuntu 20.04 with an x64 processor.*
+
+1. `apt install clang libspeechd-dev`
+2. `cargo build --release`
+
+## MacOS
+
+*Tested on MacOS Catalina 10.15.7 Intel CPU and MacOS Ventura 13.2.1 M2 Apple Silicon CPU*
+
+1. `cargo build --release`
+
+### Windows
+
+1. `cargo build --release`

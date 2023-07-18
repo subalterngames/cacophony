@@ -37,6 +37,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "aho-corasick"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43f6cb1bf222025340178f382c426f13757b2960e89779dfcb319c32542a5a41"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "alsa"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -103,6 +112,7 @@ dependencies = [
  "cpal",
  "crossbeam-channel",
  "ghakuf",
+ "hashbrown 0.13.2",
  "hound",
  "id3",
  "mp3lame-encoder",
@@ -232,6 +242,7 @@ dependencies = [
  "common",
  "input",
  "io",
+ "macroquad",
  "render",
  "text",
 ]
@@ -333,17 +344,12 @@ dependencies = [
 name = "common"
 version = "0.1.0"
 dependencies = [
- "crossbeam-channel",
- "csv",
  "directories",
- "hashbrown 0.13.2",
  "macroquad",
- "midir",
  "rust-ini",
  "serde",
  "serde_json",
- "time 0.3.21",
- "tts",
+ "time 0.3.23",
 ]
 
 [[package]]
@@ -507,9 +513,9 @@ checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
 
 [[package]]
 name = "csv"
-version = "1.2.1"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b015497079b9a9d69c02ad25de6c0a6edef051ea6360a327d0bd05802ef64ad"
+checksum = "626ae34994d3d8d668f4269922248239db4ae42d538b14c398b74a52208e8086"
 dependencies = [
  "csv-core",
  "itoa",
@@ -976,7 +982,13 @@ name = "input"
 version = "0.1.0"
 dependencies = [
  "common",
+ "crossbeam-channel",
+ "hashbrown 0.13.2",
+ "macroquad",
+ "midir",
+ "rust-ini",
  "serde",
+ "serde_json",
  "strum",
  "strum_macros",
 ]
@@ -997,10 +1009,12 @@ dependencies = [
  "audio",
  "common",
  "edit",
+ "hashbrown 0.13.2",
  "input",
+ "rust-ini",
  "serde",
+ "serde_json",
  "text",
- "tooltip",
 ]
 
 [[package]]
@@ -1025,9 +1039,9 @@ dependencies = [
 
 [[package]]
 name = "itoa"
-version = "1.0.6"
+version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
+checksum = "af150ab688ff2122fcef229be89cb50dd66af9e01a4ff320cc137eecc9bacc38"
 
 [[package]]
 name = "jni"
@@ -1184,8 +1198,9 @@ dependencies = [
 
 [[package]]
 name = "macroquad"
-version = "0.3.25"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=5b5bb10#5b5bb10adcdc23a037d83fa227593601da50d0dc"
+version = "0.3.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b92608a005ca1f16fe4e78c85a1cb18481898ac1347c71ae3398a6795c493c15"
 dependencies = [
  "bumpalo",
  "fontdue",
@@ -1199,7 +1214,8 @@ dependencies = [
 [[package]]
 name = "macroquad_macro"
 version = "0.1.7"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=5b5bb10#5b5bb10adcdc23a037d83fa227593601da50d0dc"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f5cecfede1e530599c8686f7f2d609489101d3d63741a6dc423afc997ce3fcc8"
 
 [[package]]
 name = "malloc_buf"
@@ -2011,18 +2027,32 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.8.1"
+version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af83e617f331cc6ae2da5443c602dfa5af81e517212d9d611a5b3ba1777b5370"
+checksum = "b2eae68fc220f7cf2532e4494aded17545fce192d59cd996e0fe7887f4ceb575"
 dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-automata",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-automata"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39354c10dd07468c2e73926b23bb9c2caca74c5501e38a35da70406f1d923310"
+dependencies = [
+ "aho-corasick",
+ "memchr",
  "regex-syntax",
 ]
 
 [[package]]
 name = "regex-syntax"
-version = "0.7.1"
+version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5996294f19bd3aae0453a862ad728f60e6600695733dd5df01da90c54363a3c"
+checksum = "e5ea92a5b6195c6ef2a0295ea818b312502c6fc94dde986c5553242e18fd4ce2"
 
 [[package]]
 name = "render"
@@ -2030,15 +2060,18 @@ version = "0.1.0"
 dependencies = [
  "audio",
  "common",
+ "hashbrown 0.13.2",
  "image",
  "imageproc",
  "input",
+ "macroquad",
+ "rust-ini",
  "rusttype",
  "serde",
+ "serde_json",
  "strum",
  "strum_macros",
  "text",
- "tooltip",
 ]
 
 [[package]]
@@ -2095,9 +2128,9 @@ checksum = "4f3208ce4d8448b3f3e7d168a73f5e0c43a61e32930de3bceeccedb388b6bf06"
 
 [[package]]
 name = "ryu"
-version = "1.0.13"
+version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f91339c0467de62360649f8d3e185ca8de4224ff281f66000de5eb2a77a79041"
+checksum = "1ad4cc8da4ef723ed60bced201181d83791ad433213d8c24efffda1eec85d741"
 
 [[package]]
 name = "safe_arch"
@@ -2145,9 +2178,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.96"
+version = "1.0.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "057d394a50403bcac12672b2b18fb387ab6d289d957dab67dd201875391e52f1"
+checksum = "46266871c240a00b8f503b877622fe33430b3c7d963bdc0f2adc511e54a1eae3"
 dependencies = [
  "itoa",
  "ryu",
@@ -2302,6 +2335,13 @@ name = "text"
 version = "0.1.0"
 dependencies = [
  "common",
+ "csv",
+ "hashbrown 0.13.2",
+ "input",
+ "macroquad",
+ "regex",
+ "rust-ini",
+ "tts",
 ]
 
 [[package]]
@@ -2348,9 +2388,9 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.3.21"
+version = "0.3.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f3403384eaacbca9923fa06940178ac13e4edb725486d70e8e15881d0c836cc"
+checksum = "59e399c068f43a5d116fedaf73b203fa4f9c519f17e2b34f63221d3792f81446"
 dependencies = [
  "serde",
  "time-core",
@@ -2392,14 +2432,6 @@ dependencies = [
  "indexmap",
  "toml_datetime",
  "winnow",
-]
-
-[[package]]
-name = "tooltip"
-version = "0.1.0"
-dependencies = [
- "input",
- "text",
 ]
 
 [[package]]

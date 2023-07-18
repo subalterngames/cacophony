@@ -2,8 +2,8 @@ use super::{
     get_cycle_edit_mode_input_tts, get_edit_mode_status_tts, EditModeDeltas, PianoRollSubPanel,
 };
 use crate::panel::*;
-use common::ini::Ini;
 use common::sizes::get_viewport_size;
+use ini::Ini;
 
 /// The piano roll view sub-panel.
 pub(super) struct View {
@@ -55,7 +55,7 @@ impl Panel for View {
         _: &mut Conn,
         input: &Input,
         _: &mut TTS,
-        _: &Text,
+        _: &mut Text,
         _: &mut PathsState,
         _: &mut Exporter,
     ) -> Option<Snapshot> {
@@ -135,8 +135,8 @@ impl Panel for View {
 }
 
 impl PianoRollSubPanel for View {
-    fn get_status_tts(&self, state: &State, text: &Text) -> String {
-        let mut s = text.get_with_values(
+    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString> {
+        let mut s = vec![TtsString::from(text.get_with_values(
             "PIANO_ROLL_PANEL_STATUS_TTS_VIEW",
             &[
                 &text.get_ppq_tts(&state.view.dt[0]),
@@ -144,49 +144,55 @@ impl PianoRollSubPanel for View {
                 &text.get_note_name(state.view.dn[0]),
                 &text.get_note_name(state.view.dn[1]),
             ],
-        );
-        s.push(' ');
-        s.push_str(&get_edit_mode_status_tts(state.view.mode.get_ref(), text));
+        ))];
+        s.push(get_edit_mode_status_tts(state.view.mode.get_ref(), text));
         s
     }
 
-    fn get_input_tts(&self, state: &State, input: &Input, text: &Text) -> String {
+    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
         let mut s = if state.view.single_track {
-            get_tooltip(
-                "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK",
-                &[
-                    InputEvent::ViewUp,
-                    InputEvent::ViewDown,
-                    InputEvent::ViewLeft,
-                    InputEvent::ViewRight,
-                    InputEvent::ViewStart,
-                    InputEvent::ViewEnd,
-                    InputEvent::ViewZoomIn,
-                    InputEvent::ViewZoomOut,
-                    InputEvent::ViewZoomDefault,
-                ],
-                input,
-                text,
-            )
+            vec![
+                text.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_0",
+                    &[
+                        InputEvent::ViewUp,
+                        InputEvent::ViewDown,
+                        InputEvent::ViewLeft,
+                        InputEvent::ViewRight,
+                    ],
+                    input,
+                ),
+                text.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_1",
+                    &[InputEvent::ViewStart, InputEvent::ViewEnd],
+                    input,
+                ),
+                text.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_2",
+                    &[InputEvent::ViewZoomIn, InputEvent::ViewZoomOut],
+                    input,
+                ),
+                text.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_3",
+                    &[InputEvent::ViewZoomDefault],
+                    input,
+                ),
+            ]
         } else {
-            get_tooltip(
-                "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK",
-                &[
-                    InputEvent::ViewLeft,
-                    InputEvent::ViewRight,
-                    InputEvent::ViewStart,
-                    InputEvent::ViewEnd,
-                ],
-                input,
-                text,
-            )
+            vec![
+                text.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK_0",
+                    &[InputEvent::ViewLeft, InputEvent::ViewRight],
+                    input,
+                ),
+                text.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK_1",
+                    &[InputEvent::ViewStart, InputEvent::ViewEnd],
+                    input,
+                ),
+            ]
         };
-        s.push(' ');
-        s.push_str(&get_cycle_edit_mode_input_tts(
-            &state.view.mode,
-            input,
-            text,
-        ));
+        s.push(get_cycle_edit_mode_input_tts(&state.view.mode, input, text));
         s
     }
 }

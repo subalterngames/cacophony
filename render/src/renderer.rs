@@ -2,15 +2,13 @@ use crate::field_params::*;
 use crate::{ColorKey, Focus};
 use common::config::parse_bool;
 use common::font::*;
-use common::get_bytes;
-use common::hashbrown::HashMap;
-use common::ini::Ini;
-use common::macroquad::prelude::*;
-use common::serde_json;
 use common::sizes::*;
+use hashbrown::HashMap;
+use ini::Ini;
+use macroquad::prelude::*;
 use text::Text;
 
-const TEXTURE_COLOR: Color = common::macroquad::color::colors::WHITE;
+const TEXTURE_COLOR: Color = macroquad::color::colors::WHITE;
 
 /// Draw shapes and text. This also stores colors, fonts, etc.
 pub struct Renderer {
@@ -20,14 +18,16 @@ pub struct Renderer {
     font: Font,
     /// The font used for subtitles.
     subtitle_font: Font,
+    /// The font size used for subtitles.
+    subtitle_font_size: u16,
     /// The size of a single cell.
     cell_size: [f32; 2],
     /// The font size.
     font_size: u16,
-    /// The size of the window in pixels.
-    pixel_size: [f32; 2],
-    /// The top-left pixel position of the subtitle text.
-    subtitle_position: [f32; 2],
+    /// The top-left position of the subtitle text.
+    subtitle_position: [u32; 2],
+    /// The maximum width of a line of subtitles.
+    max_subtitle_width: u32,
     /// The width of all lines.
     line_width: f32,
     /// Half-width line.
@@ -66,17 +66,14 @@ impl Renderer {
 
         // Fonts.
         let font = get_font(config);
-        let subtitle_font = load_ttf_font_from_bytes(&get_bytes(
-            get_font_section(config).get("subtitle_font").unwrap(),
-        ))
-        .unwrap();
+        let subtitle_font = get_subtitle_font(config);
+        let subtitle_font_size = get_subtitle_font_size(config);
 
         // Sizes.
         let font_size = get_font_size(config);
         let cell_size = get_cell_size(config);
-        let grid_size = get_window_grid_size(config);
-        let pixel_size = get_window_pixel_size(config);
-        let subtitle_position = [cell_size[0], cell_size[1] * (grid_size[1] - 2) as f32];
+        let main_menu_position = get_main_menu_position(config);
+        let subtitle_position = [(main_menu_position[0] + 1), (main_menu_position[1] + 1)];
         let border_offsets: [f32; 4] = [
             cell_size[0] / 2.0,
             cell_size[1] / 3.0,
@@ -84,6 +81,7 @@ impl Renderer {
             -cell_size[1] * (2.0 / 3.0),
         ];
         let corner_line_length = cell_size[0] / 2.0;
+        let max_subtitle_width = get_main_menu_width(config) - 2;
 
         // Render settings.
         let render_section = config.section(Some("RENDER")).unwrap();
@@ -96,7 +94,6 @@ impl Renderer {
             font,
             subtitle_font,
             font_size,
-            pixel_size,
             cell_size,
             line_width,
             half_line_width,
@@ -104,6 +101,8 @@ impl Renderer {
             border_offsets,
             flip_y,
             subtitle_position,
+            subtitle_font_size,
+            max_subtitle_width,
         }
     }
 
@@ -154,19 +153,7 @@ impl Renderer {
     /// - `label` Parameters for drawing text.
     /// - `color` A `ColorKey` for the rectangle.
     pub(crate) fn text(&self, label: &Label, text_color: &ColorKey) {
-        let mut xy = self.grid_to_pixel(label.position);
-        let dim = measure_text(&label.text, Some(self.font), self.font_size, 1.0);
-        xy[1] += self.cell_size[1] - dim.offset_y / 3.0;
-        let color = self.colors[text_color];
-        let text_params = TextParams {
-            font: self.font,
-            font_size: self.font_size,
-            font_scale: 1.0,
-            font_scale_aspect: 1.0,
-            rotation: 0.0,
-            color,
-        };
-        draw_text_ex(&label.text, xy[0], xy[1], text_params);
+        self.text_ex(label, text_color, self.font, self.font_size);
     }
 
     /// Draw corner borders around a rectangle.
@@ -362,22 +349,17 @@ impl Renderer {
     ///
     /// - `text` The text.
     pub fn subtitle(&self, text: &str) {
-        let mut xy = self.subtitle_position;
-        let dim = measure_text(text, Some(self.subtitle_font), self.font_size, 1.0);
-        let color = self.colors[&ColorKey::Subtitle];
-        let text_params = TextParams {
-            font: self.subtitle_font,
-            font_size: self.font_size,
-            font_scale: 1.0,
-            font_scale_aspect: 1.0,
-            rotation: 0.0,
-            color,
-        };
-        xy[1] += self.cell_size[1] - dim.offset_y / 3.0;
-        let width = self.pixel_size[0] - xy[0];
+        let width = text.chars().count() as u32;
         // One row.
-        if dim.width < width {
-            draw_text_ex(text, xy[0], xy[1], text_params);
+        if width <= self.max_subtitle_width {
+            self.rectangle(
+                &Rectangle::new(self.subtitle_position, [width, 1]),
+                &ColorKey::SubtitleBackground,
+            );
+            self.text_sub(&Label {
+                position: self.subtitle_position,
+                text: text.to_string(),
+            });
         }
         // Multi-row.
         else {
@@ -388,9 +370,9 @@ impl Renderer {
                 let mut row1 = row.clone();
                 row1.push(' ');
                 row1.push_str(words[0]);
-                let dim = measure_text(&row1, Some(self.subtitle_font), self.font_size, 1.0);
+                let width = row1.chars().count() as u32;
                 // The row doesn't fit.
-                if dim.width >= width {
+                if width > self.max_subtitle_width {
                     // Add the row.
                     rows.push(row.trim().to_string());
                     row = words[0].to_string();
@@ -407,11 +389,20 @@ impl Renderer {
             if row.chars().count() > 0 {
                 rows.push(row.trim().to_string());
             }
-            for (i, row) in rows.iter().enumerate() {
-                let dim = measure_text(row, Some(self.subtitle_font), self.font_size, 1.0);
-                let y =
-                    xy[1] - (self.cell_size[1] - dim.offset_y / 3.0) * (rows.len() - i - 1) as f32;
-                draw_text_ex(row, xy[0], y, text_params);
+            let mut y = self.subtitle_position[1];
+            for row in rows {
+                self.rectangle(
+                    &Rectangle::new(
+                        [self.subtitle_position[0], y],
+                        [row.chars().count() as u32, 1],
+                    ),
+                    &ColorKey::SubtitleBackground,
+                );
+                self.text_sub(&Label {
+                    position: [self.subtitle_position[0], y],
+                    text: row,
+                });
+                y += 1;
             }
         }
     }
@@ -612,5 +603,39 @@ impl Renderer {
             Ok(c) => color_u8!(c[0], c[1], c[2], 255),
             Err(error) => panic!("Invalid color alias: {} {}", value, error),
         }
+    }
+
+    /// Draw subtitle text.
+    ///
+    /// - `label` Parameters for drawing text.
+    pub(crate) fn text_sub(&self, label: &Label) {
+        self.text_ex(
+            label,
+            &ColorKey::Subtitle,
+            self.subtitle_font,
+            self.subtitle_font_size,
+        );
+    }
+
+    /// Draw text.
+    ///
+    /// - `label` Parameters for drawing text.
+    /// - `color` A `ColorKey` for the rectangle.
+    /// - `font` The font.
+    /// - `font_size` The font size.
+    fn text_ex(&self, label: &Label, text_color: &ColorKey, font: Font, font_size: u16) {
+        let mut xy = self.grid_to_pixel(label.position);
+        let dim = measure_text(&label.text, Some(font), font_size, 1.0);
+        xy[1] += self.cell_size[1] - dim.offset_y / 3.0;
+        let color = self.colors[text_color];
+        let text_params = TextParams {
+            font,
+            font_size,
+            font_scale: 1.0,
+            font_scale_aspect: 1.0,
+            rotation: 0.0,
+            color,
+        };
+        draw_text_ex(&label.text, xy[0], xy[1], text_params);
     }
 }

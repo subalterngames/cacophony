@@ -1,11 +1,11 @@
 use super::image::*;
 use crate::{ColorKey, FocusableTexture, Renderer};
-use common::ini::Ini;
-use common::macroquad::texture::Texture2D;
 use common::sizes::*;
 use image::imageops::overlay;
 use image::{Rgba, RgbaImage};
 use imageproc::drawing::draw_line_segment_mut;
+use ini::Ini;
+use macroquad::texture::Texture2D;
 
 pub(crate) fn get_piano_roll_rows(config: &Ini, renderer: &Renderer) -> FocusableTexture {
     // Get the cell size.

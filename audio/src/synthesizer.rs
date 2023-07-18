@@ -3,8 +3,8 @@ use crate::{
     AudioBuffer, AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState,
     TimeState,
 };
-use common::hashbrown::HashMap;
 use crossbeam_channel::{Receiver, Sender};
+use hashbrown::HashMap;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use std::fs::File;
 use std::path::PathBuf;

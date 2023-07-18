@@ -32,7 +32,7 @@ impl Panel for MusicPanel {
         conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &Text,
+        text: &mut Text,
         _: &mut PathsState,
         exporter: &mut Exporter,
     ) -> Option<Snapshot> {
@@ -50,7 +50,7 @@ impl Panel for MusicPanel {
         }
         // Panel TTS.
         else if input.happened(&InputEvent::StatusTTS) {
-            tts.say(&text.get_with_values(
+            tts.enqueue(text.get_with_values(
                 "MUSIC_PANEL_STATUS_TTS",
                 &[
                     &exporter.metadata.title,
@@ -62,40 +62,41 @@ impl Panel for MusicPanel {
         }
         // Sub-panel TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let scroll = get_tooltip(
+            let scroll = text.get_tooltip(
                 "MUSIC_PANEL_INPUT_TTS",
                 &[
                     InputEvent::PreviousMusicPanelField,
                     InputEvent::NextMusicPanelField,
                 ],
                 input,
-                text,
             );
-            let tts_text = match state.music_panel_field.get_ref() {
+            let tts_strings = match state.music_panel_field.get_ref() {
                 MusicPanelField::BPM => {
                     let key = if state.input.alphanumeric_input {
                         "MUSIC_PANEL_INPUT_TTS_BPM_ABC123"
                     } else {
                         "MUSIC_PANEL_INPUT_TTS_BPM_NO_ABC123"
                     };
-                    let mut s =
-                        get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input, text);
+                    let mut tts_strings = vec![];
+                    tts_strings.push(text.get_tooltip(
+                        key,
+                        &[InputEvent::ToggleAlphanumericInput],
+                        input,
+                    ));
                     if !state.input.alphanumeric_input {
-                        s.push(' ');
-                        s.push_str(&scroll);
+                        tts_strings.push(scroll);
                     }
-                    s
+                    tts_strings
                 }
                 MusicPanelField::Gain => {
-                    let mut s = get_tooltip(
-                        "MUSIC_PANEL_INPUT_TTS_GAIN",
-                        &[InputEvent::DecreaseMusicGain, InputEvent::IncreaseMusicGain],
-                        input,
-                        text,
-                    );
-                    s.push(' ');
-                    s.push_str(&scroll);
-                    s
+                    vec![
+                        text.get_tooltip(
+                            "MUSIC_PANEL_INPUT_TTS_GAIN",
+                            &[InputEvent::DecreaseMusicGain, InputEvent::IncreaseMusicGain],
+                            input,
+                        ),
+                        scroll,
+                    ]
                 }
                 MusicPanelField::Name => {
                     let key = if state.input.alphanumeric_input {
@@ -103,16 +104,15 @@ impl Panel for MusicPanel {
                     } else {
                         "MUSIC_PANEL_INPUT_TTS_NAME_NO_ABC123"
                     };
-                    let mut s =
-                        get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input, text);
+                    let mut tts_strings =
+                        vec![text.get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input)];
                     if !state.input.alphanumeric_input {
-                        s.push(' ');
-                        s.push_str(&scroll);
+                        tts_strings.push(scroll);
                     }
-                    s
+                    tts_strings
                 }
             };
-            tts.say(&tts_text);
+            tts.enqueue(tts_strings);
             None
         } else {
             // Field-specific actions.

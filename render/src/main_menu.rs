@@ -1,7 +1,5 @@
 use crate::panel::*;
-use common::VERSION;
 use input::InputEvent;
-use tooltip::get_tooltip;
 
 /// The color of the panel and the text.
 const COLOR: ColorKey = ColorKey::Key;
@@ -13,20 +11,15 @@ pub(crate) struct MainMenu {
     /// The title if there are unsaved changes.
     title_changes: LabelRectangle,
     /// The field labels and the version label.
-    labels: [Label; 7],
+    labels: [Label; 6],
 }
 
 impl MainMenu {
-    pub fn new(config: &Ini, input: &Input, text: &Text) -> Self {
+    pub fn new(config: &Ini, input: &Input, text: &mut Text) -> Self {
         // Get the width of the panel.
-        let tracks_panel_width = get_tracks_panel_width(config);
-        let window_grid_size = get_window_grid_size(config);
-        let width = window_grid_size[0] - tracks_panel_width;
+        let width = get_main_menu_width(config);
 
-        let position = [
-            MUSIC_PANEL_POSITION[0] + tracks_panel_width,
-            MUSIC_PANEL_POSITION[1],
-        ];
+        let position = get_main_menu_position(config);
 
         // Get the panel.
         let panel = Panel::new(
@@ -41,7 +34,7 @@ impl MainMenu {
         );
 
         // Get the fields.
-        let mut x = panel.rect.position[0] + 1;
+        let mut x = panel.rect.position[0] + 2;
         let y = panel.rect.position[1] + 1;
         let help = Self::label_from_key("MAIN_MENU_HELP", &mut x, y, text);
         x += 4;
@@ -78,14 +71,7 @@ impl MainMenu {
             input,
             text,
         );
-        let version = Label {
-            position: [
-                panel.rect.position[0] + panel.rect.size[0] - VERSION.chars().count() as u32 - 1,
-                y,
-            ],
-            text: VERSION.to_string(),
-        };
-        let fields = [help, status, input_field, app, file, stop, version];
+        let fields = [help, status, input_field, app, file, stop];
 
         Self {
             panel,
@@ -114,13 +100,16 @@ impl MainMenu {
         x: &mut u32,
         y: u32,
         input: &Input,
-        text: &Text,
+        text: &mut Text,
     ) -> Label {
-        let text = get_tooltip(key, &[event], input, text);
+        let tooltip = text.get_tooltip(key, &[event], input).seen;
         let width = key.chars().count() as u32;
         let position = [*x, y];
         *x += width;
-        Label { text, position }
+        Label {
+            text: tooltip,
+            position,
+        }
     }
 }
 

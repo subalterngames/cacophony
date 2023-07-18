@@ -1,5 +1,5 @@
 use crate::Text;
-use common::hashbrown::HashMap;
+use hashbrown::HashMap;
 use std::hash::Hash;
 
 /// A map of keys of type T to value strings, and a map of the same keys to the lengths of the strings.

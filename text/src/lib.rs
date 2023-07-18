@@ -7,11 +7,13 @@
 mod text;
 mod tts;
 mod value_map;
-pub use self::tts::TTS;
+pub use self::tts::{Enqueable, TTS};
 use common::{PPQ_F, PPQ_U};
 use std::path::Path;
 pub use text::Text;
 pub use value_map::*;
+mod tts_string;
+pub use tts_string::TtsString;
 
 pub fn ppq_to_string(ppq: u64) -> String {
     // This is a whole note.
@@ -66,7 +68,7 @@ pub fn get_file_name(path: &Path) -> String {
 /// Returns the file name of a path without the extension.
 pub fn get_file_name_no_ex(path: &Path) -> String {
     match path.file_stem() {
-        Some(filename) => match path.to_str() {
+        Some(filename) => match filename.to_str() {
             Some(s) => s.to_string(),
             None => panic!("Invalid filename: {:?}", filename),
         },

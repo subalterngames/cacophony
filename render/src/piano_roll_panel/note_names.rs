@@ -1,11 +1,11 @@
 use super::image::*;
 use crate::{ColorKey, FocusableTexture, Renderer};
-use common::ini::Ini;
-use common::macroquad::texture::Texture2D;
 use common::sizes::*;
 use common::{MAX_NOTE, MIN_NOTE};
 use image::{Rgba, RgbaImage};
 use imageproc::drawing::draw_text_mut;
+use ini::Ini;
+use macroquad::texture::Texture2D;
 use rusttype::{Font, Scale};
 
 const OCTAVES: i8 = 9;

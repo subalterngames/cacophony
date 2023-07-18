@@ -1,4 +1,4 @@
-use common::macroquad::texture::Texture2D;
+use macroquad::texture::Texture2D;
 
 /// Two textures. One for when there is focus, and one for when there isn't.
 pub(crate) struct FocusableTexture {

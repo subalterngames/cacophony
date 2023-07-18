@@ -1,6 +1,6 @@
 use crate::Renderer;
-use common::macroquad::prelude::*;
 use common::{PanelType, State};
+use macroquad::prelude::*;
 
 /// A popup tries to capture the backround texture when its panel is first enabled.
 pub(crate) struct Popup {

@@ -1,6 +1,6 @@
 use super::{get_edit_mode_status_tts, EditModeDeltas, PianoRollSubPanel};
 use crate::panel::*;
-use common::ini::Ini;
+use ini::Ini;
 
 /// The piano roll time sub-panel.
 pub(super) struct Time {
@@ -65,7 +65,7 @@ impl Panel for Time {
         _: &mut Conn,
         input: &Input,
         _: &mut TTS,
-        _: &Text,
+        _: &mut Text,
         _: &mut PathsState,
         _: &mut Exporter,
     ) -> Option<Snapshot> {
@@ -142,38 +142,60 @@ impl Panel for Time {
 }
 
 impl PianoRollSubPanel for Time {
-    fn get_status_tts(&self, state: &State, text: &Text) -> String {
-        let mut s = get_edit_mode_status_tts(state.time.mode.get_ref(), text);
-        s.push(' ');
-        s.push_str(&text.get_with_values(
+    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString> {
+        let mut s = vec![get_edit_mode_status_tts(state.time.mode.get_ref(), text)];
+        s.push(TtsString::from(text.get_with_values(
             "PIANO_ROLL_PANEL_STATUS_TTS_TIME",
             &[
                 &text.get_ppq_tts(&state.time.cursor),
                 &text.get_ppq_tts(&state.time.playback),
             ],
-        ));
+        )));
         s
     }
 
-    fn get_input_tts(&self, _: &State, input: &Input, text: &Text) -> String {
-        get_tooltip(
-            "PIANO_ROLL_PANEL_INPUT_TTS_TIME",
-            &[
-                InputEvent::TimeCursorLeft,
-                InputEvent::TimeCursorRight,
-                InputEvent::TimeCursorStart,
-                InputEvent::TimeCursorEnd,
-                InputEvent::TimeCursorBeat,
-                InputEvent::TimeCursorPlayback,
-                InputEvent::TimePlaybackLeft,
-                InputEvent::TimePlaybackRight,
-                InputEvent::TimePlaybackStart,
-                InputEvent::TimePlaybackEnd,
-                InputEvent::TimePlaybackBeat,
-                InputEvent::TimePlaybackCursor,
-            ],
-            input,
-            text,
-        )
+    fn get_input_tts(&self, _: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
+        vec![
+            text.get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_TIME_0",
+                &[InputEvent::TimeCursorLeft, InputEvent::TimeCursorRight],
+                input,
+            ),
+            text.get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_TIME_1",
+                &[InputEvent::TimeCursorStart, InputEvent::TimeCursorEnd],
+                input,
+            ),
+            text.get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_TIME_2",
+                &[InputEvent::TimeCursorBeat],
+                input,
+            ),
+            text.get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_TIME_3",
+                &[InputEvent::TimeCursorPlayback],
+                input,
+            ),
+            text.get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_TIME_4",
+                &[InputEvent::TimePlaybackLeft, InputEvent::TimePlaybackRight],
+                input,
+            ),
+            text.get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_TIME_5",
+                &[InputEvent::TimePlaybackStart, InputEvent::TimePlaybackEnd],
+                input,
+            ),
+            text.get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_TIME_6",
+                &[InputEvent::TimePlaybackBeat],
+                input,
+            ),
+            text.get_tooltip(
+                "PIANO_ROLL_PANEL_INPUT_TTS_TIME_7",
+                &[InputEvent::TimePlaybackCursor],
+                input,
+            ),
+        ]
     }
 }

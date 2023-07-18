@@ -31,7 +31,7 @@ impl Panels {
         config: &Ini,
         state: &State,
         input: &Input,
-        text: &Text,
+        text: &mut Text,
         renderer: &Renderer,
     ) -> Self {
         let music_panel = MusicPanel::new(config, text);

@@ -1,12 +1,10 @@
 {
     "rust-analyzer.linkedProjects": [
         ".\\audio\\Cargo.toml",
-        ".\\cacophony\\Cargo.toml",
         ".\\common\\Cargo.toml",
         ".\\input\\Cargo.toml",
         ".\\io\\Cargo.toml",
         ".\\render\\Cargo.toml",
         ".\\text\\Cargo.toml",
-        ".\\tooltip\\Cargo.toml",
     ],
 }

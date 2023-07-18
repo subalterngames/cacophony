@@ -1,9 +1,9 @@
 use crate::{ColorKey, Renderer};
 use common::font::get_font_bytes;
-use common::ini::Ini;
 use common::sizes::*;
 use image::Rgba;
 use imageproc::drawing::text_size;
+use ini::Ini;
 use rusttype::{Font, Scale};
 
 /// Returns a `rusttype` font, the scale, and a font size.

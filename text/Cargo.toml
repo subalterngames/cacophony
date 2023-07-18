@@ -1,7 +1,21 @@
 [package]
 name = "text"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
+
+[dependencies]
+rust-ini = { workspace = true }
+macroquad = { workspace = true }
+csv = { workspace = true }
+hashbrown = { workspace = true }
+regex = { workspace = true }
+tts = { workspace = true }
 
 [dependencies.common]
 path = "../common"
+
+[dependencies.input]
+path = "../input"

@@ -23,6 +23,11 @@ pub fn get_font_size(config: &Ini) -> u16 {
     parse(get_font_section(config), "font_height")
 }
 
+/// Returns the subtitle font height.
+pub fn get_subtitle_font_size(config: &Ini) -> u16 {
+    parse(get_font_section(config), "subtitle_font_height")
+}
+
 /// Returns the size of a cell in pixels (width, height).
 pub fn get_cell_size(config: &Ini) -> [f32; 2] {
     let font_size: u16 = get_font_size(config);
@@ -93,4 +98,25 @@ pub fn get_open_file_rect(config: &Ini) -> ([u32; 2], [u32; 2]) {
     let size = [window_grid_size[0] / 2, window_grid_size[1] / 2];
     let position = [window_grid_size[0] / 2 - size[0] / 2, MAIN_MENU_HEIGHT];
     (position, size)
+}
+
+/// Returns the position of the main menu.
+pub fn get_main_menu_position(config: &Ini) -> [u32; 2] {
+    let tracks_panel_width = get_tracks_panel_width(config);
+    [
+        MUSIC_PANEL_POSITION[0] + tracks_panel_width,
+        MUSIC_PANEL_POSITION[1],
+    ]
+}
+
+/// Returns the pixel width of the subtitles.
+pub fn get_subtitle_width(config: &Ini) -> f32 {
+    (get_main_menu_width(config) - 2) as f32 * get_cell_size(config)[0]
+}
+
+/// Returns the width of main menu.
+pub fn get_main_menu_width(config: &Ini) -> u32 {
+    let tracks_panel_width = get_tracks_panel_width(config);
+    let window_grid_size = get_window_grid_size(config);
+    window_grid_size[0] - tracks_panel_width
 }

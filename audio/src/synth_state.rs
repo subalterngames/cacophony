@@ -1,6 +1,6 @@
 use crate::Program;
 use crate::TimeState;
-use common::hashbrown::HashMap;
+use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
 
 /// The state of the synthesizer.

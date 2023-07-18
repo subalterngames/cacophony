@@ -1,5 +1,5 @@
 use common::config::{parse, parse_float};
-use common::ini::Ini;
+use ini::Ini;
 use common::{EditMode, InputState, PPQ_F};
 
 /// Delta factors and values for edit modes.

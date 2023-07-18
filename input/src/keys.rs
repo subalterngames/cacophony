@@ -1,6 +1,6 @@
-use common::macroquad::input::KeyCode;
+use macroquad::input::KeyCode;
 
-pub(crate) const KEYS: [KeyCode; 121] = [
+pub const KEYS: [KeyCode; 121] = [
     KeyCode::Space,
     KeyCode::Apostrophe,
     KeyCode::Comma,
@@ -123,3 +123,16 @@ pub(crate) const KEYS: [KeyCode; 121] = [
     KeyCode::Menu,
     KeyCode::Unknown,
 ];
+
+/// The keycodes for the mods.
+pub(crate) const MODS: [KeyCode; 7] = [
+    KeyCode::LeftControl,
+    KeyCode::RightControl,
+    KeyCode::LeftAlt,
+    KeyCode::RightAlt,
+    KeyCode::LeftShift,
+    KeyCode::RightShift,
+    KeyCode::CapsLock,
+];
+
+pub(crate) const ALPHANUMERIC_INPUT_MODS: [KeyCode; 2] = [KeyCode::Backspace, KeyCode::CapsLock];
