@@ -22,15 +22,12 @@ pub struct View {
     /// If true, we're viewing a single track. If false, we're viewing multiple tracks.
     pub single_track: bool,
     /// The zoom time deltas.
-    #[serde(skip_serializing, skip_deserializing)]
     zoom_levels: Vec<u64>,
     /// The index of the current zoom level.
     zoom_index: Index,
     /// Zoom increments per edit mode.
-    #[serde(skip_serializing, skip_deserializing)]
     zoom_increments: HashMap<EditMode, usize>,
     /// The default zoom index.
-    #[serde(skip_serializing, skip_deserializing)]
     initial_zoom_index: usize,
 }
 
