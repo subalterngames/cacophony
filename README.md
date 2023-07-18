@@ -115,3 +115,18 @@ Cacophony's mascot is Casey the Transgender Cacodemon. No official artwork of Ca
 ### Windows
 
 1. `cargo build --release`
+
+## Automatically send events (debug mode)
+
+If run a debug build, you can pass input events in like this: `cargo build -- --events events.txt`
+
+...where the contents of `events.txt` is:
+
+```
+NextPanel
+AddTrack
+EnableSoundFontPanel
+SelectFile
+```
+
+This can be useful if you're debugging and you need to input some initial events.
