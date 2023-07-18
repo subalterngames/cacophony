@@ -1,13 +1,14 @@
 //! This crate contains a variety of types that are shared throughout Cacophony.
 //!
-//! The most important struct by far is `State`, which stores the entire app state.
-//! `State` can be serialized and written to disk.
+//! There are two app-state-level structs defined in this crate:
 //!
-//! Most of the external crates, e.g. macroquad and fraction, can be referenced elsewhere from this crate.
-//! There are a few notable exceptions:
+//! 1. `State` is *most* of the app state. It contains any data that can be placed on the undo/redo stacks. Because the undo/redo stacks contain entire `State` structs, the struct needs to be as small as possible.
+//! 2. `PathsState` The state of directories, files, etc. defined by the user navigating through open-file dialogues. This isn't part of `State` because nothing here should go on the undo/redo stacks.
 //!
-//! - `strum` and `serde` (and their respective derived crates) apparently need to be in a given crate's Cargo.toml to allow the macros to work.
-//! - There are a few crates that are referenced by only 1 Cacophony crate and the dependency is therefore over in that Cacophony crate.
+//! There are two other state objects that aren't defined in this crate:
+//!
+//! - `SynthState` (defined in `audio`).
+//! - `Exporter` (defined in `audio`).
 //!
 //! `common` is designed such that any Cacophony crate can use it, but itself does not depend on any Cacophony crates.
 

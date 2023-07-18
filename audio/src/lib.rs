@@ -19,7 +19,7 @@
 //! - `ExportState` can be used to monitor how many bytes have been exported to a .wav file.
 //!
 //! As far as external crates are concerned, it's only necessary to do the following:
-//! 
+//!
 //! 1. Create an `Exporter` on the main thread.
 //! 2. Call `connect()` on the main thread, which sets up everything else and returns a `Conn`.
 

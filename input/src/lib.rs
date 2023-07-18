@@ -125,6 +125,20 @@ impl Input {
         }
     }
 
+    /// Update the input state:
+    ///
+    /// 1. Clear all note and event frame data.
+    /// 2. Check for pressed characters and add them to `self.pressed_characters.
+    /// 3. Check all pressed keys and all qwerty bindings and register new events accordingly.
+    /// 4. Remove some events during alphanumeric input.
+    /// 5. Poll the MIDI connection, if any.
+    ///
+    /// If a MIDI connection polled:
+    ///
+    /// 1. Compare all polled MIDI events to MIDI bindings and register new events accordingly.
+    /// 2. Add note messages to the list for playing notes.
+    /// 3. Store new note-on events.
+    /// 4. If all note-ons have had a corresponding note-off, add them to the new notes lists.
     pub fn update(&mut self, state: &State) {
         // Clear the old new notes.
         self.new_notes.clear();

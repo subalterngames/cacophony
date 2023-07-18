@@ -1,8 +1,8 @@
 use crate::Program;
 use crate::TimeState;
+use common::MAX_VOLUME;
 use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
-use common::MAX_VOLUME;
 
 /// The state of the synthesizer.
 #[derive(Serialize, Deserialize)]

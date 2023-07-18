@@ -6,6 +6,8 @@ use crate::{
 use ini::Ini;
 use serde::{Deserialize, Serialize};
 
+/// `State` contains all app data that can go on the undo/redo stacks.
+/// Because the entire `State` goes on the stacks, it needs to be as small as possible.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct State {
     /// The music.

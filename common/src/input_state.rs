@@ -1,4 +1,4 @@
-use crate::{Index, Note, U64orF32, MAX_VOLUME, PPQ_U};
+use crate::{Index, U64orF32, MAX_VOLUME, PPQ_U};
 use serde::{Deserialize, Serialize};
 
 /// Booleans and numerical values describing the input state.
@@ -14,8 +14,6 @@ pub struct InputState {
     pub use_volume: bool,
     /// The input beat in PPQ.
     pub beat: U64orF32,
-    /// A buffer of cut/copied notes.
-    pub copied: Vec<Note>,
 }
 
 impl Default for InputState {
@@ -26,7 +24,6 @@ impl Default for InputState {
             volume: Index::new(MAX_VOLUME as usize, MAX_VOLUME as usize + 1),
             use_volume: true,
             beat: U64orF32::from(PPQ_U),
-            copied: vec![],
         }
     }
 }

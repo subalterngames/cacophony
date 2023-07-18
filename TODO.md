@@ -41,15 +41,30 @@
 - [x] TTS is not helpful!!
 - [ ] Internal documentation
   - [x] audio
-  - [ ] common
-  - [ ] input
+  - [x] common
+  - [x] input
   - [ ] io
   - [ ] render
   - [ ] text
   - [ ] main
 - [ ] More tests
-  - [ ] exporter
 - [ ] Merge and clobber
+
+## Tests
+
+- [ ] exporter
+- [ ] fraction
+- [ ] input_state
+- [ ] file_or_directory
+- [ ] file_and_directory
+- [ ] child_paths
+- [ ] font
+- [ ] index
+- [ ] paths_state
+- [ ] select_mode
+- [ ] sizes
+- [ ] midi_binding
+- [ ] qwerty_binding
 
 ## Major Bugs
 

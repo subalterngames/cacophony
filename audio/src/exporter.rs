@@ -68,7 +68,7 @@ pub const MP3_QUALITIES: [Quality; 10] = [
 /// This struct contains all export settings, as well as exporter functions.
 /// This struct does *not* write samples to a buffer; that's handled in the `Synthesizer`'s export functions.
 /// Rather, this receives a buffer of f32 data, and then decides what to do with it based on the user-defined export settings.
-/// 
+///
 /// There are always two copies of the same `Exporter`: One lives in the Synthesizer thread, and one lives on the main thread.
 /// The user can edit the main thread `Exporter`, which is then sent to the Synthesizer thread.
 #[derive(Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
