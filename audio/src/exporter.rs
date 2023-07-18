@@ -2,7 +2,7 @@ mod export_type;
 use common::IndexedValues;
 use serde::{Deserialize, Serialize};
 mod metadata;
-mod multi_file;
+mod multi_file_suffix;
 use crate::{AudioBuffer, SynthState};
 mod midi_note;
 use chrono::Datelike;
@@ -16,7 +16,7 @@ use id3::*;
 pub use metadata::*;
 use midi_note::*;
 use mp3lame_encoder::*;
-pub use multi_file::*;
+pub use multi_file_suffix::*;
 use oggvorbismeta::*;
 use std::fs::OpenOptions;
 use std::io::Read;
@@ -26,6 +26,8 @@ use vorbis_encoder::Encoder;
 mod export_setting;
 pub use export_setting::ExportSetting;
 
+/// The number of channels.
+const NUM_CHANNELS: usize = 2;
 /// A MIDI pulse. This just reminds us what we're trying to accomplish.
 const PULSE: u64 = 1;
 /// Conversion factor for f32 to i16.
@@ -81,7 +83,7 @@ pub struct Exporter {
     /// If true, export to multiple files.
     pub multi_file: bool,
     /// Multi-file suffix setting.
-    pub multi_file_suffix: IndexedValues<MultiFile, 3>,
+    pub multi_file_suffix: IndexedValues<MultiFileSuffix, 3>,
     /// The .ogg file quality index.
     pub ogg_quality: Index,
     /// The export type.
@@ -159,9 +161,9 @@ impl Exporter {
         let multi_file_suffix = IndexedValues::new(
             0,
             [
-                MultiFile::ChannelAndPreset,
-                MultiFile::Preset,
-                MultiFile::Channel,
+                MultiFileSuffix::ChannelAndPreset,
+                MultiFileSuffix::Preset,
+                MultiFileSuffix::Channel,
             ],
         );
         Self {
@@ -294,14 +296,14 @@ impl Exporter {
     pub(crate) fn wav(&self, path: &Path, buffer: &AudioBuffer) {
         // Get the spec.
         let spec = WavSpec {
-            channels: 2,
+            channels: NUM_CHANNELS as u16,
             sample_rate: self.framerate.get_u() as u32,
             bits_per_sample: 16,
             sample_format: SampleFormat::Int,
         };
         // Write.
         let mut writer = WavWriter::create(path, spec).unwrap();
-        let mut i16_writer = writer.get_i16_writer(buffer[0].len() as u32 * 2);
+        let mut i16_writer = writer.get_i16_writer(buffer[0].len() as u32 * (NUM_CHANNELS as u32));
         for (l, r) in buffer[0].iter().zip(buffer[1].iter()) {
             i16_writer.write_sample(Self::to_i16(l));
             i16_writer.write_sample(Self::to_i16(r));
@@ -314,22 +316,22 @@ impl Exporter {
     ///
     /// - `path` The output path.
     /// - `buffer` A buffer of wav data.
-    pub(crate) fn mp3<'a, T: 'a>(&self, path: &Path, buffer: &'a [Vec<T>; 2])
+    pub(crate) fn mp3<'a, T: 'a>(&self, path: &Path, buffer: &'a [Vec<T>; NUM_CHANNELS])
     where
         mp3lame_encoder::DualPcm<'a, T>: mp3lame_encoder::EncoderInput,
     {
         // Create the encoder.
         let mut mp3_encoder = Builder::new().expect("Create LAME builder");
-        mp3_encoder.set_num_channels(2).expect("set channels");
+        mp3_encoder.set_num_channels(NUM_CHANNELS as u8).expect("Set channels");
         mp3_encoder
             .set_sample_rate(self.framerate.get_u() as u32)
-            .expect("set sample rate");
+            .expect("Set sample rate");
         mp3_encoder
             .set_brate(MP3_BIT_RATES[self.mp3_bit_rate.get()])
-            .expect("set bitrate");
+            .expect("Set bitrate");
         mp3_encoder
             .set_quality(MP3_QUALITIES[self.mp3_quality.get()])
-            .expect("set quality");
+            .expect("Set quality");
         // Build the encoder.
         let mut mp3_encoder = mp3_encoder.build().expect("To initialize LAME encoder");
         // Get the input.
@@ -349,7 +351,7 @@ impl Exporter {
         }
         let encoded_size = mp3_encoder
             .flush::<FlushNoGap>(mp3_out_buffer.spare_capacity_mut())
-            .expect("to flush");
+            .expect("To flush");
         unsafe {
             mp3_out_buffer.set_len(mp3_out_buffer.len().wrapping_add(encoded_size));
         }
@@ -405,7 +407,7 @@ impl Exporter {
     /// Export an i16 samples buffer to an .ogg file.
     fn ogg_i16(&self, path: &Path, samples: &Vec<i16>) {
         let mut encoder = Encoder::new(
-            2,
+            NUM_CHANNELS as u32,
             self.framerate.get_u(),
             (self.ogg_quality.get() as f32 / 9.0) * 1.2 - 0.2,
         )
@@ -475,7 +477,7 @@ impl Exporter {
                 ExportType::Wav => {
                     // Write silence.
                     let mut writer = WavWriter::append(path).unwrap();
-                    let mut i16_writer = writer.get_i16_writer(silence * 2);
+                    let mut i16_writer = writer.get_i16_writer(silence * NUM_CHANNELS as u32);
                     for _ in 0..silence {
                         i16_writer.write_sample(0);
                         i16_writer.write_sample(0);
@@ -502,10 +504,10 @@ impl Exporter {
     }
 
     /// Read a .wav file into a samples buffer. Append some silence.
-    fn samples_and_silence_to_i16_buffer(path: &Path, silence: u32) -> [Vec<i16>; 2] {
+    fn samples_and_silence_to_i16_buffer(path: &Path, silence: u32) -> [Vec<i16>; NUM_CHANNELS] {
         let reader = WavReader::open(path).unwrap();
         let samples = reader.into_samples::<i16>();
-        let mut buffer: [Vec<i16>; 2] = [vec![], vec![]];
+        let mut buffer: [Vec<i16>; NUM_CHANNELS] = [vec![], vec![]];
         for sample in samples.filter_map(|s| s.ok()).enumerate() {
             buffer[usize::from(sample.0 % 2 != 0)].push(sample.1);
         }

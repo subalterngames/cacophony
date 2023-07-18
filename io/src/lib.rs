@@ -497,15 +497,15 @@ impl IO {
             }
             // Get the path for this track.
             let suffix = match exporter.multi_file_suffix.get() {
-                MultiFile::Channel => track.channel.to_string(),
-                MultiFile::Preset => conn
+                MultiFileSuffix::Channel => track.channel.to_string(),
+                MultiFileSuffix::Preset => conn
                     .state
                     .programs
                     .get(&track.channel)
                     .unwrap()
                     .preset_name
                     .clone(),
-                MultiFile::ChannelAndPreset => format!(
+                MultiFileSuffix::ChannelAndPreset => format!(
                     "{}_{}",
                     track.channel,
                     conn.state.programs.get(&track.channel).unwrap().preset_name

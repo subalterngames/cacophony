@@ -249,9 +249,9 @@ impl ExportSettingsPanel {
                 ),
                 ExportSetting::MultiFileSuffix => {
                     let key = match &exporter.multi_file_suffix.get() {
-                        MultiFile::Preset => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET",
-                        MultiFile::Channel => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL",
-                        MultiFile::ChannelAndPreset => {
+                        MultiFileSuffix::Preset => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET",
+                        MultiFileSuffix::Channel => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL",
+                        MultiFileSuffix::ChannelAndPreset => {
                             "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL_AND_PRESET"
                         }
                     };
