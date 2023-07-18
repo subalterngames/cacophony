@@ -494,7 +494,7 @@ impl Text {
         }
     }
 
-    // Get or insert a regex in a HashMap.
+    /// Get or insert a regex in a HashMap.
     fn get_or_insert_regex<'a>(i: &usize, map: &'a mut RegexMap, prefix: &str) -> &'a Regex {
         map.entry(*i)
             .or_insert(Self::get_regex_from_index(i, prefix))
