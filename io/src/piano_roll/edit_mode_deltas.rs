@@ -83,13 +83,13 @@ mod tests {
     #[test]
     fn edit_mode_deltas() {
         let e = EditModeDeltas::new(&Ini::load_from_file("../data/config.ini").unwrap());
-        assert_eq!(e.quick_time_factor, 2, "{}", e.quick_time_factor);
+        assert_eq!(e.quick_time_factor, 4, "{}", e.quick_time_factor);
         assert_eq!(e.precise_time, PPQ_U / 32, "{}", e.precise_time);
         assert_eq!(e.normal_note, 1, "{}", e.normal_note);
-        assert_eq!(e.quick_note, 11, "{}", e.quick_note);
+        assert_eq!(e.quick_note, 12, "{}", e.quick_note);
         assert_eq!(e.precise_note, 1, "{}", e.precise_note);
         assert_eq!(e.normal_volume, 1, "{}", e.normal_volume);
-        assert_eq!(e.quick_volume, 2, "{}", e.quick_volume);
+        assert_eq!(e.quick_volume, 10, "{}", e.quick_volume);
         assert_eq!(e.precise_volume, 1, "{}", e.precise_volume);
     }
 }
