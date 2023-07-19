@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+/// The default title of the music.
+pub const DEFAULT_TITLE: &str = "My Music";
+
 /// Export metadata.
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Metadata {
@@ -20,7 +23,7 @@ pub struct Metadata {
 impl Default for Metadata {
     fn default() -> Self {
         Self {
-            title: "My Music".to_string(),
+            title: DEFAULT_TITLE.to_string(),
             artist: None,
             album: None,
             track_number: None,

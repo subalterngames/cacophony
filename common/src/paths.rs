@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 const CONFIG_FILENAME: &str = "config.ini";
 
-/// Cached file paths.
+/// Cached file paths. Unlike `PathsState`, this is meant to only include static data.
 pub struct Paths {
     /// The path to the default .ini file.
     pub default_ini_path: PathBuf,

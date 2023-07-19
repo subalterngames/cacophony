@@ -13,3 +13,4 @@ rust-ini = { workspace = true }
 directories = { workspace = true }
 time = { workspace = true }
 macroquad = { workspace = true }
+hashbrown = { workspace = true }

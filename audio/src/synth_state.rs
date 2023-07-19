@@ -1,5 +1,6 @@
 use crate::Program;
 use crate::TimeState;
+use common::MAX_VOLUME;
 use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
 
@@ -26,7 +27,7 @@ impl Default for SynthState {
         Self {
             programs: HashMap::new(),
             time: TimeState::default(),
-            gain: 127,
+            gain: MAX_VOLUME,
         }
     }
 }

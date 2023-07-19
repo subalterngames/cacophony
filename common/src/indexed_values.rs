@@ -2,14 +2,16 @@ use crate::Index;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-/// An `Index` with an array of values of type T.
+/// An `Index` with an array of values of type T and length N.
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct IndexedValues<T, const N: usize>
 where
     [T; N]: Serialize + DeserializeOwned,
     T: Copy + Default,
 {
+    /// The values as an array of type `N`. These will be accessed via `index`.
     values: [T; N],
+    /// The index. The length is always `N`.
     pub index: Index,
 }
 

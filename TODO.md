@@ -8,7 +8,7 @@
 - [x] Multi-track view
 - [x] ~~Effects~~
 - [x] ~~Text ref~~
-- [ ] Rewrite README
+- [x] Rewrite README
 - [x] Export MIDI
 - [x] Export separate tracks
 - [x] Export ogg
@@ -39,8 +39,37 @@
 - [x] Note times should be measured in PPQ
 - [x] Export buffer
 - [x] TTS is not helpful!!
-- [ ] Internal documentation
-- [ ] More tests
+- [ ] Internal documentation (see below)
+- [ ] More tests (see below)
+- [ ] Merge and clobber
+
+## Internal documentation
+
+- [x] audio
+- [x] common
+- [x] input
+- [x] io
+- [ ] render
+- [ ] text
+- [ ] main
+
+## Tests
+
+- [ ] exporter
+- [ ] fraction
+- [ ] input_state
+- [ ] file_or_directory
+- [ ] file_and_directory
+- [ ] child_paths
+- [ ] font
+- [ ] index
+- [ ] paths_state
+- [ ] select_mode
+- [ ] sizes
+- [ ] midi_binding
+- [ ] qwerty_binding
+- [ ] abc123
+- [ ] Field params
 
 ## Major Bugs
 
@@ -85,7 +114,7 @@
 - [x] ~~Exporter can crash due to not enough samples~~
 - [x] Multi track wav doesn't append silence
 - [x] Incorrect sound font if you load them while we have notes
-- [ ] View range can get messed up by multitrack?
+- [x] View range can get messed up by multitrack?
 - [x] Playing line after exporting
 
 ## Misc.

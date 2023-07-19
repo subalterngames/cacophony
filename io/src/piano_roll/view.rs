@@ -23,6 +23,7 @@ impl View {
         }
     }
 
+    /// Increment or decrement the top note of the view.
     fn set_top_note_by(&self, state: &mut State, add: bool) -> Option<Snapshot> {
         let mode = state.view.mode.get();
         Some(Snapshot::from_state(
@@ -31,6 +32,7 @@ impl View {
         ))
     }
 
+    /// Increment or decrement the start time.
     fn set_start_time_by(&self, state: &mut State, add: bool) -> Option<Snapshot> {
         let s0 = state.clone();
         state.view.set_start_time_by(
@@ -42,14 +44,8 @@ impl View {
 
     /// Zoom in or out.
     fn zoom(&self, state: &mut State, zoom_in: bool) -> Option<Snapshot> {
-        // Get the zoom factor.
-        let mut zoom = self.deltas.get_dz(state.view.mode.get_ref());
-        if zoom_in {
-            zoom.invert();
-        }
-        // Set the viewport.
         let s0 = state.clone();
-        state.view.zoom(zoom);
+        state.view.zoom(zoom_in);
         Some(Snapshot::from_states(s0, state))
     }
 }

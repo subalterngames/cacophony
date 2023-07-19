@@ -6,11 +6,21 @@ use common::{IndexedValues, U64orF32};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
+/// All possible audio framerates.
 const FRAMERATES: [u64; 3] = [22050, 44100, 48000];
 
+/// Set the values of export settings.
 pub(crate) struct ExportSettingsPanel {}
 
 impl ExportSettingsPanel {
+    /// Returns the text-to-speech status string for an alphanumeric field.
+    /// 
+    /// - `if_true` The text key to use if alphanumeric input is enabled.
+    /// - `if_false` The text key to use if alphanumeric input isn't enabled.
+    /// - `value` The value string, if any. If none, a default string will be used.
+    /// - `state` The app state.
+    /// - `input` The input state.
+    /// - `text` The text state.
     fn get_status_abc123_tts(
         if_true: &str,
         if_false: &str,
@@ -33,6 +43,13 @@ impl ExportSettingsPanel {
         }
     }
 
+    /// Returns the text-to-speech status string for an boolean field.
+    /// 
+    /// - `if_true` The text key to use if the boolean is true.
+    /// - `if_false` The text key to use if the boolean is false.
+    /// - `value` The value.
+    /// - `input` The input state.
+    /// - `text` The text state.
     fn get_status_bool_tts(
         if_true: &str,
         if_false: &str,
@@ -47,6 +64,10 @@ impl ExportSettingsPanel {
         )
     }
 
+    /// Returns the text-to-speech input string for scrolling.
+    /// 
+    /// - `input` The input state.
+    /// - `text` The text state.
     fn get_input_scroll_tts(input: &Input, text: &mut Text) -> TtsString {
         text.get_tooltip(
             "EXPORT_SETTINGS_PANEL_INPUT_TTS_SCROLL",
@@ -58,6 +79,13 @@ impl ExportSettingsPanel {
         )
     }
 
+    /// Returns the text-to-speech input string for an alphanumeric field.
+    /// 
+    /// - `if_true` The text key to use if alphanumeric input is enabled.
+    /// - `if_false` The text key to use if alphanumeric input isn't enabled.
+    /// - `state` The app state.
+    /// - `input` The input state.
+    /// - `text` The text state.
     fn get_input_abc123_tts(
         if_true: &str,
         if_false: &str,
@@ -75,6 +103,11 @@ impl ExportSettingsPanel {
         }
     }
 
+    /// Returns the text-to-speech input string cycling a field's value up or down.
+    /// 
+    /// - `key` The text key.
+    /// - `input` The input state.
+    /// - `text` The text state.
     fn get_input_lr_tts(key: &str, input: &Input, text: &mut Text) -> Vec<TtsString> {
         vec![
             text.get_tooltip(
@@ -89,6 +122,11 @@ impl ExportSettingsPanel {
         ]
     }
 
+    /// Set the export framerate and return a screenshot.
+    /// 
+    /// - `conn` This will send a copy of the exporter.
+    /// - `exporter` The exporter. This will have its framerate set.
+    /// - `up` Increment or decrement along the `FRAMERATES` array.
     fn set_framerate(conn: &mut Conn, exporter: &mut Exporter, up: bool) -> Option<Snapshot> {
         let i = FRAMERATES
             .iter()
@@ -104,6 +142,11 @@ impl ExportSettingsPanel {
         ))
     }
 
+    /// Set the track number and return a screenshot.
+    /// 
+    /// - `conn` This will send a copy of the exporter.
+    /// - `exporter` The exporter. This will have its framerate set.
+    /// - `up` Add or subtract the frame number.
     fn set_track_number(conn: &mut Conn, exporter: &mut Exporter, up: bool) -> Option<Snapshot> {
         let track_number = if up {
             match &exporter.metadata.track_number {
@@ -124,6 +167,12 @@ impl ExportSettingsPanel {
         ))
     }
 
+    /// Set an `Index` field within an `Exporter`.
+    /// 
+    /// - `f` A closure that returns a mutable reference to an `Index`.
+    /// - `conn` This will send a copy of the exporter.
+    /// - `input` The input state.
+    /// - `exporter` The exporter. This will have its framerate set.
     fn set_index<F>(
         mut f: F,
         conn: &mut Conn,
@@ -150,6 +199,14 @@ impl ExportSettingsPanel {
         }
     }
 
+    /// Update settings for a given export type.
+    /// 
+    /// - `f` A closure that returns a mutable reference to an `IndexValues` of export settings (corresponding to the export type).
+    /// - `state` The app state.
+    /// - `conn` This will send a copy of the exporter.
+    /// - `input` The input state.
+    /// - `text` The text state.
+    /// - `exporter` The exporter. This will have its framerate set.
     fn update_settings<F, const N: usize>(
         mut f: F,
         state: &mut State,
@@ -220,7 +277,7 @@ impl ExportSettingsPanel {
                     text.get_with_values(
                         "EXPORT_SETTINGS_PANEL_STATUS_TTS_BIT_RATE",
                         &[
-                            &((MP3_BIT_RATES[exporter.bit_rate.get()] as u16) as u32 * 1000)
+                            &((MP3_BIT_RATES[exporter.mp3_bit_rate.get()] as u16) as u32 * 1000)
                                 .to_string(),
                         ],
                     ),
@@ -249,9 +306,13 @@ impl ExportSettingsPanel {
                 ),
                 ExportSetting::MultiFileSuffix => {
                     let key = match &exporter.multi_file_suffix.get() {
-                        MultiFile::Preset => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET",
-                        MultiFile::Channel => "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL",
-                        MultiFile::ChannelAndPreset => {
+                        MultiFileSuffix::Preset => {
+                            "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET"
+                        }
+                        MultiFileSuffix::Channel => {
+                            "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL"
+                        }
+                        MultiFileSuffix::ChannelAndPreset => {
                             "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL_AND_PRESET"
                         }
                     };

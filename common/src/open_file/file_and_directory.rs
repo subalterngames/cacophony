@@ -1,16 +1,17 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-/// A current working directory and, optionally, a filename.
+/// A directory and, optionally, a filename.
 #[derive(Clone, Default, Deserialize, Serialize)]
 pub struct FileAndDirectory {
-    /// The current working directory.
+    /// The file's directory.
     pub directory: PathBuf,
-    /// The filename.
+    /// The filename, if any.
     pub filename: Option<String>,
 }
 
 impl FileAndDirectory {
+    /// Create from a `PathBuf` directory; we assume here that this isn't a file.
     pub fn new_directory(directory: PathBuf) -> Self {
         Self {
             directory,
@@ -18,6 +19,7 @@ impl FileAndDirectory {
         }
     }
 
+    /// Create from a `PathBuf` that may or may not be a file.
     pub fn new_path(path: PathBuf) -> Self {
         let directory = path.parent().unwrap().to_path_buf();
         let filename = Some(path.file_name().unwrap().to_str().unwrap().to_string());
@@ -42,6 +44,7 @@ impl FileAndDirectory {
             .map(|filename| self.directory.join(filename))
     }
 
+    /// Returns the filename if there is one or an empty string if there isn't.
     pub fn get_filename(&self) -> String {
         match &self.filename {
             Some(string) => string.clone(),

@@ -18,6 +18,7 @@ pub(crate) fn get_edit_mode_status_tts(mode: &EditMode, text: &Text) -> TtsStrin
     ))
 }
 
+/// Returns text-to-speech to cycle from one mode to another.
 pub(crate) fn get_cycle_edit_mode_input_tts(
     mode: &IndexedEditModes,
     input: &Input,

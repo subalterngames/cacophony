@@ -8,8 +8,11 @@ const ERROR_MESSAGE: &str = "Failed to create an audio output stream: ";
 /// Try to start an audio stream and play audio.
 /// Source: https://github.com/PolyMeilex/OxiSynth/blob/master/examples/real-time/src/main.rs
 pub(crate) struct Player {
+    /// The audio host. We don't want to drop it.
     _host: Host,
+    /// The audio stream. We don't want to drop it.
     _stream: Option<Stream>,
+    /// The machine's audio framerate.
     pub framerate: u32,
 }
 
@@ -74,14 +77,22 @@ impl Player {
         // Move `recv` into a closure.
         let next_sample = move || recv.recv();
 
+        let two_channels = channels == 2;
+
         // Define the data callback used by cpal. Move `stream_send` into the closure.
         let data_callback = move |output: &mut [T], _: &OutputCallbackInfo| {
             for frame in output.chunks_mut(channels) {
                 // Try to receive a new sample.
                 if let Ok((l, r)) = next_sample() {
-                    let channels = [Sample::from::<f32>(&l), Sample::from::<f32>(&r)];
-                    for (id, sample) in frame.iter_mut().enumerate() {
-                        *sample = channels[id % 2];
+                    // This is almost certainly more performant than the code in the `else` block.
+                    if two_channels {
+                        frame[0] = Sample::from::<f32>(&l);
+                        frame[1] = Sample::from::<f32>(&r);
+                    } else {
+                        let channels = [Sample::from::<f32>(&l), Sample::from::<f32>(&r)];
+                        for (id, sample) in frame.iter_mut().enumerate() {
+                            *sample = channels[id % 2];
+                        }
                     }
                 }
             }

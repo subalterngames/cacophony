@@ -2,14 +2,21 @@ use super::FileOrDirectory;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
+/// A collection of child paths and a selected child path.
 #[derive(Default, Clone, Deserialize, Serialize)]
 pub struct ChildPaths {
+    /// The child paths from the parent directory.
     pub children: Vec<FileOrDirectory>,
+    /// The index of the selected child in `children`, if any.
     pub selected: Option<usize>,
 }
 
 impl ChildPaths {
     /// Set the child paths and selection.
+    ///
+    /// - `directory` The current parent directory.
+    /// - `extensions` The extensions of valid files.
+    /// - `previous_directory` This is used to set the selection to the directory we just moved up from.
     pub fn set(
         &mut self,
         directory: &Path,
@@ -47,6 +54,9 @@ impl ChildPaths {
     }
 
     /// Get the child paths of a directory.
+    ///
+    /// - `directory` The current parent directory.
+    /// - `extensions` The extensions of valid files.
     fn get_paths_in_directory(
         &self,
         directory: &Path,

@@ -24,7 +24,7 @@ pub(crate) struct ExportSettingsPanel {
     /// The MP3/ogg quality field.
     quality: KeyListCorners,
     /// String values of multi-file suffixes.
-    multi_file_suffixes: ValueMap<MultiFile>,
+    multi_file_suffixes: ValueMap<MultiFileSuffix>,
 }
 
 impl ExportSettingsPanel {
@@ -59,9 +59,9 @@ impl ExportSettingsPanel {
 
         let multi_file_suffixes = ValueMap::new(
             [
-                MultiFile::Channel,
-                MultiFile::Preset,
-                MultiFile::ChannelAndPreset,
+                MultiFileSuffix::Channel,
+                MultiFileSuffix::Preset,
+                MultiFileSuffix::ChannelAndPreset,
             ],
             [
                 "EXPORT_SETTINGS_PANEL_FILE_SUFFIX_CHANNEL",

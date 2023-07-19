@@ -4,7 +4,7 @@ members = ["audio", "common", "input", "io", "render", "text"]
 [workspace.package]
 version = "0.1.0"
 authors = ["Esther Alter <subalterngames@gmail.com>"]
-description = "ASCII-esque pseudo-MIDI sequencer"
+description = "A minimalist and ergonomic MIDI sequencer"
 documentation = "https://github.com/subalterngames/cacophony"
 edition = "2021"
 

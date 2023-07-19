@@ -1,5 +1,4 @@
-use common::config::{parse, parse_float, parse_fraction};
-use common::fraction::*;
+use common::config::{parse, parse_float};
 use common::{EditMode, InputState, PPQ_F};
 use ini::Ini;
 
@@ -21,12 +20,6 @@ pub(super) struct EditModeDeltas {
     quick_volume: u8,
     /// In precise mode, edit volume by this delta.
     precise_volume: u8,
-    /// In normal mode, zoom in by this factor.
-    normal_zoom: Fraction,
-    /// In quick mode, zoom in by this factor.
-    quick_zoom: Fraction,
-    /// In precise mode, zoom in by this factor.
-    precise_zoom: Fraction,
 }
 
 impl EditModeDeltas {
@@ -40,9 +33,7 @@ impl EditModeDeltas {
         let normal_volume: u8 = parse(section, "normal_volume");
         let quick_volume: u8 = parse(section, "quick_volume");
         let precise_volume: u8 = parse(section, "precise_volume");
-        let normal_zoom = parse_fraction(section, "normal_zoom");
-        let quick_zoom = normal_zoom * parse_fraction(section, "quick_zoom");
-        let precise_zoom = normal_zoom / parse_fraction(section, "precise_zoom");
+
         Self {
             quick_time_factor,
             precise_time,
@@ -52,9 +43,6 @@ impl EditModeDeltas {
             normal_volume,
             quick_volume,
             precise_volume,
-            normal_zoom,
-            quick_zoom,
-            precise_zoom,
         }
     }
 
@@ -84,15 +72,6 @@ impl EditModeDeltas {
             EditMode::Precise => self.precise_volume,
         }
     }
-
-    /// Returns the zoom delta.
-    pub(super) fn get_dz(&self, mode: &EditMode) -> Fraction {
-        match mode {
-            EditMode::Normal => self.normal_zoom,
-            EditMode::Quick => self.quick_zoom,
-            EditMode::Precise => self.precise_zoom,
-        }
-    }
 }
 
 #[cfg(test)]
@@ -104,13 +83,13 @@ mod tests {
     #[test]
     fn edit_mode_deltas() {
         let e = EditModeDeltas::new(&Ini::load_from_file("../data/config.ini").unwrap());
-        assert_eq!(e.quick_time_factor, 2, "{}", e.quick_time_factor);
+        assert_eq!(e.quick_time_factor, 4, "{}", e.quick_time_factor);
         assert_eq!(e.precise_time, PPQ_U / 32, "{}", e.precise_time);
         assert_eq!(e.normal_note, 1, "{}", e.normal_note);
-        assert_eq!(e.quick_note, 11, "{}", e.quick_note);
+        assert_eq!(e.quick_note, 12, "{}", e.quick_note);
         assert_eq!(e.precise_note, 1, "{}", e.precise_note);
         assert_eq!(e.normal_volume, 1, "{}", e.normal_volume);
-        assert_eq!(e.quick_volume, 2, "{}", e.quick_volume);
+        assert_eq!(e.quick_volume, 10, "{}", e.quick_volume);
         assert_eq!(e.precise_volume, 1, "{}", e.precise_volume);
     }
 }
