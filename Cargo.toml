@@ -59,11 +59,11 @@ features = ["speech_dispatcher_0_9"]
 
 [package]
 name = "cacophony"
-version.workspace = true
-authors.workspace = true
-description.workspace = true
-documentation.workspace = true
-edition.workspace = true
+version = "0.1.0"
+authors = ["Esther Alter <subalterngames@gmail.com>"]
+description = "A minimalist and ergonomic MIDI sequencer"
+documentation = "https://github.com/subalterngames/cacophony"
+edition = "2021"
 
 [dependencies]
 macroquad = { workspace = true }
@@ -85,3 +85,23 @@ path = "render"
 
 [dependencies.text]
 path = "text"
+
+[package.metadata.bundle]
+name = "Cacophony"
+identifier = "com.subalterngames.cacophony"
+# icon = ["32x32.png", "128x128.png", "128x128@2x.png"]
+version = "0.1.0"
+resources = ["data/*"]
+copyright = "Copyright (c) Subaltern Games LLC 2023. All rights reserved."
+short_description = "A minimalist and ergonomic MIDI sequencer."
+long_description = """
+Cacophony is a minimalist and ergonomic MIDI sequencer. It's minimalist in that it doesn't have a lot of functionality MIDI sequencers have. It's ergonomic in that there is no mouse input and a very clean interface, allowing you to juggle less inputs and avoid awkward mouse motions.
+
+Cacophony is a proof-of-concept of an unusual way to create digital music.
+
+I made Cacophony because I want to make music in a very particular way that I couldn't find anywhere.
+
+Cacophony's mascot is Casey the Transgender Cacodemon. No official artwork of Casey exists because I don't want to be cursed.
+"""
+deb_depends = []
+osx_frameworks = []

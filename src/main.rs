@@ -123,11 +123,16 @@ async fn main() {
 
 /// Configure the window.
 fn window_conf() -> Conf {
-    let icon_bytes = get_bytes("./data/icon");
-    let big: [u8; 16384] = icon_bytes[0..16384].try_into().unwrap();
-    let medium: [u8; 4096] = icon_bytes[16384..20480].try_into().unwrap();
-    let small: [u8; 1024] = icon_bytes[20480..21504].try_into().unwrap();
-    let icon = Some(miniquad::conf::Icon { big, medium, small });
+    let icon = if cfg!(windows) {
+        let icon_bytes = get_bytes("./data/icon");
+        let big: [u8; 16384] = icon_bytes[0..16384].try_into().unwrap();
+        let medium: [u8; 4096] = icon_bytes[16384..20480].try_into().unwrap();
+        let small: [u8; 1024] = icon_bytes[20480..21504].try_into().unwrap();
+        Some(miniquad::conf::Icon { big, medium, small })
+    }
+    else {
+        None
+    };
     Conf {
         window_title: "Cacophony".to_string(),
         window_width: 624,

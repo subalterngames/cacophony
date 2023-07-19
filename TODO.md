@@ -73,7 +73,9 @@
 
 ## Major Bugs
 
-- [ ] Can't resize window in Linux.
+- [ ] Can't resize window in Linux
+- [ ] Can't double-click Linux executable
+- [ ] Can't connect to MIDI input on Linux
 
 ## Bugs
 
@@ -114,7 +116,7 @@
 - [x] ~~Exporter can crash due to not enough samples~~
 - [x] Multi track wav doesn't append silence
 - [x] Incorrect sound font if you load them while we have notes
-- [x] View range can get messed up by multitrack?
+- [x] View range can get messed up bqy multitrack?
 - [x] Playing line after exporting
 
 ## Misc.

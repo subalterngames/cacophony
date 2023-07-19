@@ -21,7 +21,8 @@ Cacophony's mascot is Casey the Transgender Cacodemon. No official artwork of Ca
 
 *Tested on MacOS Catalina 10.15.7 Intel CPU and MacOS Ventura 13.2.1 M2 Apple Silicon CPU*
 
-1. `cargo build --release`
+1. `cargo install cargo-bundle`
+2. `cargo bundle`
 
 ### Windows
 

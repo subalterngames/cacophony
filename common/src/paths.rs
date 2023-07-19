@@ -1,5 +1,5 @@
 use directories::UserDirs;
-use std::env::current_dir;
+use std::env::current_exe;
 use std::fs::{copy, create_dir_all};
 use std::path::{Path, PathBuf};
 
@@ -52,7 +52,7 @@ impl Default for Paths {
                 }
             }
         };
-        let data_directory = current_dir().unwrap().join("data");
+        let data_directory = get_data_directory();
         let user_ini_path = user_directory.join(CONFIG_FILENAME);
         let default_ini_path = data_directory.join(CONFIG_FILENAME);
         let text_path = data_directory.join("text.csv");
@@ -71,6 +71,22 @@ impl Default for Paths {
             export_directory,
             splash_path,
         }
+    }
+}
+
+/// Returns the path to the data directory.
+pub fn get_data_directory() -> PathBuf {
+    let cwd = current_exe().unwrap().parent().unwrap().to_path_buf();
+    let mut data_directory = cwd.join("data");
+    // Maybe we're in a .app bundle.
+    if !data_directory.exists() && cfg!(target_os="macos") {
+            data_directory = cwd.join("../Resources/data");
+    }
+    if data_directory.exists() {
+        data_directory
+    }
+    else {
+        panic!("Failed to get data directory: {:?}", data_directory)
     }
 }
 
