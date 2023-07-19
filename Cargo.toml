@@ -89,7 +89,7 @@ path = "text"
 [package.metadata.bundle]
 name = "Cacophony"
 identifier = "com.subalterngames.cacophony"
-# icon = ["32x32.png", "128x128.png", "128x128@2x.png"]
+icon = ["icon/32.png", "icon/64.png", "icon/128.png", "icon/256.png"]
 version = "0.1.0"
 resources = ["data/*"]
 copyright = "Copyright (c) Subaltern Games LLC 2023. All rights reserved."
