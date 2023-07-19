@@ -1,5 +1,5 @@
 use directories::UserDirs;
-use std::env::current_exe;
+use std::env::{current_dir, current_exe};
 use std::fs::{copy, create_dir_all};
 use std::path::{Path, PathBuf};
 
@@ -76,16 +76,24 @@ impl Default for Paths {
 
 /// Returns the path to the data directory.
 pub fn get_data_directory() -> PathBuf {
-    let cwd = current_exe().unwrap().parent().unwrap().to_path_buf();
-    let mut data_directory = cwd.join("data");
-    // Maybe we're in a .app bundle.
-    if !data_directory.exists() && cfg!(target_os="macos") {
-            data_directory = cwd.join("../Resources/data");
-    }
+    let mut data_directory = current_dir().unwrap().join("data");
     if data_directory.exists() {
         data_directory
     }
-    else {
+    // Maybe we're in a .app bundle.
+    else if cfg!(target_os = "macos") {
+        data_directory = current_exe()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .to_path_buf()
+            .join("../Resources/data");
+        if data_directory.exists() {
+            data_directory
+        } else {
+            panic!("Failed to get data directory: {:?}", data_directory)
+        }
+    } else {
         panic!("Failed to get data directory: {:?}", data_directory)
     }
 }

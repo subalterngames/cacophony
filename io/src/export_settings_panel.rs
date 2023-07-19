@@ -14,7 +14,7 @@ pub(crate) struct ExportSettingsPanel {}
 
 impl ExportSettingsPanel {
     /// Returns the text-to-speech status string for an alphanumeric field.
-    /// 
+    ///
     /// - `if_true` The text key to use if alphanumeric input is enabled.
     /// - `if_false` The text key to use if alphanumeric input isn't enabled.
     /// - `value` The value string, if any. If none, a default string will be used.
@@ -44,7 +44,7 @@ impl ExportSettingsPanel {
     }
 
     /// Returns the text-to-speech status string for an boolean field.
-    /// 
+    ///
     /// - `if_true` The text key to use if the boolean is true.
     /// - `if_false` The text key to use if the boolean is false.
     /// - `value` The value.
@@ -65,7 +65,7 @@ impl ExportSettingsPanel {
     }
 
     /// Returns the text-to-speech input string for scrolling.
-    /// 
+    ///
     /// - `input` The input state.
     /// - `text` The text state.
     fn get_input_scroll_tts(input: &Input, text: &mut Text) -> TtsString {
@@ -80,7 +80,7 @@ impl ExportSettingsPanel {
     }
 
     /// Returns the text-to-speech input string for an alphanumeric field.
-    /// 
+    ///
     /// - `if_true` The text key to use if alphanumeric input is enabled.
     /// - `if_false` The text key to use if alphanumeric input isn't enabled.
     /// - `state` The app state.
@@ -104,7 +104,7 @@ impl ExportSettingsPanel {
     }
 
     /// Returns the text-to-speech input string cycling a field's value up or down.
-    /// 
+    ///
     /// - `key` The text key.
     /// - `input` The input state.
     /// - `text` The text state.
@@ -123,7 +123,7 @@ impl ExportSettingsPanel {
     }
 
     /// Set the export framerate and return a screenshot.
-    /// 
+    ///
     /// - `conn` This will send a copy of the exporter.
     /// - `exporter` The exporter. This will have its framerate set.
     /// - `up` Increment or decrement along the `FRAMERATES` array.
@@ -143,7 +143,7 @@ impl ExportSettingsPanel {
     }
 
     /// Set the track number and return a screenshot.
-    /// 
+    ///
     /// - `conn` This will send a copy of the exporter.
     /// - `exporter` The exporter. This will have its framerate set.
     /// - `up` Add or subtract the frame number.
@@ -168,7 +168,7 @@ impl ExportSettingsPanel {
     }
 
     /// Set an `Index` field within an `Exporter`.
-    /// 
+    ///
     /// - `f` A closure that returns a mutable reference to an `Index`.
     /// - `conn` This will send a copy of the exporter.
     /// - `input` The input state.
@@ -200,7 +200,7 @@ impl ExportSettingsPanel {
     }
 
     /// Update settings for a given export type.
-    /// 
+    ///
     /// - `f` A closure that returns a mutable reference to an `IndexValues` of export settings (corresponding to the export type).
     /// - `state` The app state.
     /// - `conn` This will send a copy of the exporter.

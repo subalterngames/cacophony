@@ -57,7 +57,7 @@ const MAX_UNDOS: usize = 100;
 type QueuedExportCommands = (CommandsMessage, Option<ExportState>);
 
 /// Parse user input and apply it to the application's various states as needed:
-/// 
+///
 /// - Play ad-hoc notes.
 /// - Modify the `State` and push the old version to the undo stack.
 /// - Modify the `PathsState`.
@@ -626,7 +626,7 @@ fn combine_tracks_to_commands(
 }
 
 /// Try to select a track, given user input.
-/// 
+///
 /// This is here an not in a more obvious location because both `TracksPanel` and `PianoRollPanel` need it.
 pub(crate) fn select_track(state: &mut State, input: &Input) -> Option<Snapshot> {
     if let Some(selected) = state.music.selected {

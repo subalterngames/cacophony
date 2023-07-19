@@ -129,8 +129,7 @@ fn window_conf() -> Conf {
         let medium: [u8; 4096] = icon_bytes[16384..20480].try_into().unwrap();
         let small: [u8; 1024] = icon_bytes[20480..21504].try_into().unwrap();
         Some(miniquad::conf::Icon { big, medium, small })
-    }
-    else {
+    } else {
         None
     };
     Conf {
