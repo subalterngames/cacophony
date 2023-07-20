@@ -39,7 +39,7 @@
 - [x] Note times should be measured in PPQ
 - [x] Export buffer
 - [x] TTS is not helpful!!
-- [ ] Internal documentation (see below)
+- [x] Internal documentation (see below)
 - [ ] More tests (see below)
 - [ ] Merge and clobber
 
@@ -50,8 +50,8 @@
 - [x] input
 - [x] io
 - [x] render
-- [ ] text
-- [ ] main
+- [x] text
+- [x] main
 
 ## Tests
 
@@ -70,6 +70,9 @@
 - [ ] qwerty_binding
 - [ ] abc123
 - [ ] Field params
+- [ ] viewable_notes
+- [ ] tts_string
+- [ ] value_map
 
 ## Major Bugs
 

@@ -46,7 +46,7 @@ where
         }
     }
 
-    pub fn get(&self, key: &T) -> &String {
+    pub fn get(&self, key: &T) -> &str {
         &self.values[key]
     }
 }

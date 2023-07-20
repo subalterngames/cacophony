@@ -11,6 +11,8 @@ use macroquad::prelude::*;
 use render::{draw_subtitles, Panels, Renderer};
 use text::{Text, TTS};
 
+const CLEAR_COLOR: macroquad::color::Color = macroquad::color::BLACK;
+
 #[macroquad::main(window_conf)]
 async fn main() {
     // Get the paths.
@@ -44,6 +46,7 @@ async fn main() {
     // Create the paths state.
     let mut paths_state = PathsState::new(&paths);
 
+    // Create the exporter.
     let mut exporter = Exporter::default();
 
     // Get the IO state.
@@ -66,13 +69,11 @@ async fn main() {
         set_fullscreen(fullscreen);
     }
 
-    let clear_color = macroquad::color::BLACK;
-
     // Begin.
     let mut done: bool = false;
     while !done {
         // Clear.
-        clear_background(clear_color);
+        clear_background(CLEAR_COLOR);
 
         // Draw.
         panels.update(
