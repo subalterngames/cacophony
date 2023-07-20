@@ -176,7 +176,7 @@ impl ExportSettingsPanel {
                 ),
                 ExportSetting::Copyright => {
                     self.draw_boolean(
-                        &text.get("EXPORT_SETTINGS_PANEL_COPYRIGHT"),
+                        text.get("EXPORT_SETTINGS_PANEL_COPYRIGHT"),
                         exporter.copyright,
                         (x, &mut y),
                         renderer,
@@ -229,7 +229,7 @@ impl ExportSettingsPanel {
                     self.draw_separator((x, &mut y), renderer, &line_color);
                 }
                 ExportSetting::MultiFile => self.draw_boolean(
-                    &text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE"),
+                    text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE"),
                     exporter.multi_file,
                     (x, &mut y),
                     renderer,
@@ -293,7 +293,7 @@ impl ExportSettingsPanel {
 
     fn draw_boolean(
         &self,
-        key: &str,
+        key: String,
         value: bool,
         position: (u32, &mut u32),
         renderer: &Renderer,
@@ -301,7 +301,7 @@ impl ExportSettingsPanel {
         focus: Focus,
     ) {
         let boolean = BooleanCorners::new(key, [position.0, *position.1], self.width - 2, text);
-        renderer.boolean_corners(value, &boolean, focus, text);
+        renderer.boolean_corners(value, &boolean, focus);
         *position.1 += 1;
     }
 }

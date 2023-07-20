@@ -10,7 +10,11 @@ pub(crate) struct BooleanCorners {
 }
 
 impl BooleanCorners {
-    pub fn new(key: &str, position: [u32; 2], width: u32, text: &Text) -> Self {
+    /// - `key` The key label text. It's at at `[position.x + 1, position.y]`.
+    /// - `position` The position of the key label in grid units.
+    /// - `width` The value label is at `position.x + 1 + (width - 2) - max_boolean_width`.  The corners size is `[width, 1]`.
+    /// - `text` The text lookup.
+    pub fn new(key: String, position: [u32; 2], width: u32, text: &Text) -> Self {
         let boolean = Boolean::new_from_width(key, [position[0] + 1, position[1]], width - 2, text);
         let corners_rect = Rectangle::new(position, [width, 1]);
         Self {

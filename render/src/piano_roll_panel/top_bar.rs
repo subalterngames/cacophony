@@ -43,13 +43,13 @@ impl TopBar {
         x += 1;
 
         // Get the fields.
-        let armed = Boolean::new(&text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"), [x, y], text);
+        let armed = Boolean::new(text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"), [x, y], text);
         x += armed.width + PADDING;
         let beat = KeyWidth::new(&text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"), [x, y], 4);
         // Only increment by 1 because beat has a long value space.
         x += beat.width + 1;
         let use_volume = Boolean::new(
-            &text.get("PIANO_ROLL_PANEL_TOP_BAR_USE_VOLUME"),
+            text.get("PIANO_ROLL_PANEL_TOP_BAR_USE_VOLUME"),
             [x, y],
             text,
         );
@@ -123,12 +123,12 @@ impl TopBar {
 
     pub fn update(&self, state: &State, renderer: &Renderer, text: &Text, focus: bool) {
         // Draw the fields.
-        renderer.boolean(state.input.armed, &self.armed, focus, text);
+        renderer.boolean(state.input.armed, &self.armed, focus);
         let value_color = Renderer::get_value_color([focus, true]);
         let key_color = Renderer::get_key_color(focus);
         let colors = [&key_color, &value_color];
         renderer.key_value(&ppq_to_string(state.input.beat.get_u()), &self.beat, colors);
-        renderer.boolean(state.input.use_volume, &self.use_volume, focus, text);
+        renderer.boolean(state.input.use_volume, &self.use_volume, focus);
         renderer.key_value(&state.input.volume.get().to_string(), &self.volume, colors);
 
         // Separator.
