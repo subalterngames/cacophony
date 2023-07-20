@@ -3,6 +3,7 @@ use common::{EditMode, IndexedEditModes, PianoRollMode, SelectMode};
 use hashbrown::HashMap;
 use text::ppq_to_string;
 
+/// The padding between input and mode labels.
 const PADDING: u32 = 4;
 type ModesMap = HashMap<PianoRollMode, (Label, Rectangle)>;
 
@@ -121,6 +122,7 @@ impl TopBar {
         }
     }
 
+    /// Update the top bar from the app state.
     pub fn update(&self, state: &State, renderer: &Renderer, text: &Text, focus: bool) {
         // Draw the fields.
         renderer.boolean(state.input.armed, &self.armed, focus);
@@ -192,6 +194,7 @@ impl TopBar {
         );
     }
 
+    /// Returns the string corresponding to the edit mode.
     fn get_edit_mode_text(edit_mode: &IndexedEditModes, text: &Text) -> String {
         let key = match edit_mode.get_ref() {
             EditMode::Normal => "PIANO_ROLL_PANEL_EDIT_MODE_NORMAL",
@@ -201,6 +204,7 @@ impl TopBar {
         text.get(key)
     }
 
+    /// Render a vertical line from `position`.
     fn vertical_line(position: [u32; 2], color: &ColorKey, renderer: &Renderer) {
         renderer.vertical_line(
             position[0],
@@ -212,6 +216,7 @@ impl TopBar {
         );
     }
 
+    /// Insert an edit mode label into a HashMap.
     fn insert_mode(
         key: &str,
         mode: PianoRollMode,

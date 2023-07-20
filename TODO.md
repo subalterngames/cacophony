@@ -49,7 +49,7 @@
 - [x] common
 - [x] input
 - [x] io
-- [ ] render
+- [x] render
 - [ ] text
 - [ ] main
 

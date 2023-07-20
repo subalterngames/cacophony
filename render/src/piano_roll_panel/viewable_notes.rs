@@ -1,5 +1,4 @@
 use crate::panel::*;
-use audio::exporter::Exporter;
 use common::*;
 
 /// A viewable note.
@@ -7,20 +6,20 @@ pub(crate) struct ViewableNote<'a> {
     /// The note.
     pub note: &'a Note,
     /// The x pixel coordinate of the note.
-    pub(crate) x: f32,
+    pub x: f32,
     /// If true, this note is being played.
-    pub(crate) playing: bool,
+    pub playing: bool,
     /// If true, this note is selected.
-    pub(crate) selected: bool,
+    pub selected: bool,
     /// The color of this note.
-    pub(crate) color: ColorKey,
+    pub color: ColorKey,
 }
 
 /// Render information for all notes that are in the viewport.
 /// This information is shared between the piano roll and volume sub-panels.
 pub(crate) struct ViewableNotes<'a> {
     /// The notes that are in view.
-    pub(crate) notes: Vec<ViewableNote<'a>>,
+    pub notes: Vec<ViewableNote<'a>>,
     /// Cached viewport dt in PPQ.
     dt: [U64orF32; 2],
     /// The x pixel coordinate of the viewport.
@@ -30,16 +29,14 @@ pub(crate) struct ViewableNotes<'a> {
 }
 
 impl<'a> ViewableNotes<'a> {
-    pub(crate) fn new(
-        xw: [f32; 2],
-        state: &'a State,
-        conn: &Conn,
-        focus: bool,
-        dn: [u8; 2],
-        exporter: &Exporter,
-    ) -> Self {
+    /// - `xw` The x and w pixel values of the rectangle where notes can be rendered.
+    /// - `state` The app state.
+    /// - `conn` The audio conn.
+    /// - `focus` If true, the piano roll panel has focus.
+    /// - `dn` The range of viewable note pitches.
+    pub fn new(xw: [f32; 2], state: &'a State, conn: &Conn, focus: bool, dn: [u8; 2]) -> Self {
         match state.music.get_selected_track() {
-            Some(track) => Self::new_from_track(xw, track, state, conn, exporter, focus, dn),
+            Some(track) => Self::new_from_track(xw, track, state, conn, focus, dn),
             None => Self {
                 x: xw[0],
                 w: xw[1],
@@ -49,12 +46,17 @@ impl<'a> ViewableNotes<'a> {
         }
     }
 
-    pub(crate) fn new_from_track(
+    /// - `xw` The x and w pixel values of the rectangle where notes can be rendered.
+    /// - `track` The track.
+    /// - `state` The app state.
+    /// - `conn` The audio conn.
+    /// - `focus` If true, the piano roll panel has focus.
+    /// - `dn` The range of viewable note pitches.
+    pub fn new_from_track(
         xw: [f32; 2],
         track: &'a MidiTrack,
         state: &'a State,
         conn: &Conn,
-        _: &Exporter,
         focus: bool,
         dn: [u8; 2],
     ) -> Self {
@@ -129,7 +131,7 @@ impl<'a> ViewableNotes<'a> {
     }
 
     /// Returns the width of a note.
-    pub(crate) fn get_note_w(&self, note: &ViewableNote) -> f32 {
+    pub fn get_note_w(&self, note: &ViewableNote) -> f32 {
         let t1 = if note.note.end > self.dt[1].get_u() {
             self.dt[1].get_u()
         } else {
@@ -139,11 +141,12 @@ impl<'a> ViewableNotes<'a> {
     }
 
     /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
-    pub(crate) fn get_note_x(&self, t: u64, x: f32, w: f32) -> f32 {
+    pub fn get_note_x(&self, t: u64, x: f32, w: f32) -> f32 {
         get_note_x(t, x, w, &self.dt)
     }
 
-    pub(crate) fn get_dt(dt: &[u64; 2]) -> [U64orF32; 2] {
+    /// Returns `dt` as `U64orF32`.
+    pub fn get_dt(dt: &[u64; 2]) -> [U64orF32; 2] {
         [U64orF32::from(dt[0]), U64orF32::from(dt[1])]
     }
 }

@@ -84,10 +84,7 @@ impl MainMenu {
         let width = key.chars().count() as u32;
         let position = [*x, y];
         *x += width;
-        Label {
-            text: key,
-            position,
-        }
+        Label::new(position, key)
     }
 
     fn label_from_key(key: &str, x: &mut u32, y: u32, text: &Text) -> Label {
@@ -106,10 +103,7 @@ impl MainMenu {
         let width = key.chars().count() as u32;
         let position = [*x, y];
         *x += width;
-        Label {
-            text: tooltip,
-            position,
-        }
+        Label::new(position, tooltip)
     }
 }
 

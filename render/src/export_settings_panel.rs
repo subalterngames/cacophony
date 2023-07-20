@@ -291,6 +291,7 @@ impl ExportSettingsPanel {
         *position.1 += 1;
     }
 
+    /// Draw a boolean field.
     fn draw_boolean(
         &self,
         key: String,

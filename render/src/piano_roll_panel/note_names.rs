@@ -8,6 +8,8 @@ use ini::Ini;
 use macroquad::texture::Texture2D;
 use rusttype::{Font, Scale};
 
+/// Returns a `FocusableTexture` of a column of note names.
+/// This is rendered on the left side of the piano roll panel.
 pub(crate) fn get_note_names(config: &Ini, renderer: &Renderer) -> FocusableTexture {
     let (font, font_scale, font_size) = get_font(config);
     // Get the background color.

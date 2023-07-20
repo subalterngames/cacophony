@@ -1,5 +1,8 @@
 use super::viewable_notes::*;
 use crate::panel::*;
+use common::MAX_VOLUME;
+
+const MAX_VOLUME_F: f32 = MAX_VOLUME as f32;
 
 /// The piano roll volume sub-panel.
 pub(crate) struct Volume {
@@ -51,6 +54,11 @@ impl Volume {
         }
     }
 
+    /// Render the volume.
+    ///
+    /// - `notes` All viewable notes.
+    /// - `renderer` The renderer.
+    /// - `state` The app state.
     pub fn update(&self, notes: &ViewableNotes, renderer: &Renderer, state: &State) {
         // Get focus.
         let focus = state.panels[state.focus.get()] == PanelType::PianoRoll;
@@ -78,7 +86,7 @@ impl Volume {
     }
 
     fn render_note(&self, note: &ViewableNote, renderer: &Renderer) {
-        let h = self.line_extents[2] * (note.note.velocity as f32 / 127.0);
+        let h = self.line_extents[2] * (note.note.velocity as f32 / MAX_VOLUME_F);
         let bottom = self.line_extents[0];
         let top = bottom - h;
         renderer.vertical_line_pixel(note.x, bottom, top, &note.color)

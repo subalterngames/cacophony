@@ -79,7 +79,7 @@ impl MultiTrack {
         state: &State,
         conn: &Conn,
         _: &PathsState,
-        exporter: &Exporter,
+        _: &Exporter,
     ) {
         let focus = state.panels[state.focus.get()] == PanelType::PianoRoll;
         // Get the page.
@@ -120,7 +120,6 @@ impl MultiTrack {
                 track,
                 state,
                 conn,
-                exporter,
                 focus,
                 DN,
             );

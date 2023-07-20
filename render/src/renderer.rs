@@ -562,6 +562,7 @@ impl Renderer {
         }
     }
 
+    /// Returns the color of a boolean value.
     pub fn get_boolean_color(focus: bool, value: bool) -> ColorKey {
         if !focus {
             ColorKey::NoFocus

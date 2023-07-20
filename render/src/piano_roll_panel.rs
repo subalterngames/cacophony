@@ -325,7 +325,6 @@ impl Drawable for PianoRollPanel {
                 conn,
                 focus,
                 state.view.dn,
-                exporter,
             );
 
             // Draw the selection background.
