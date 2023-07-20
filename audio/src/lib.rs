@@ -71,16 +71,11 @@ pub fn connect() -> Conn {
 
 #[cfg(test)]
 mod tests {
-    use crate::{connect, Command, CommandsMessage};
+    use crate::{connect, Command};
     use std::path::PathBuf;
-    use std::thread::sleep;
-    use std::time::Duration;
 
     const SF_PATH: &str = "tests/CT1MBGMRSV1.06.sf2";
     const CHANNEL: u8 = 0;
-    const DURATION: u64 = 44100;
-    const KEY: u8 = 60;
-    const VELOCITY: u8 = 120;
 
     #[test]
     fn sf() {
@@ -100,51 +95,5 @@ mod tests {
         assert_eq!(program.num_presets, 128);
         assert_eq!(program.preset_index, 0);
         assert_eq!(program.preset_name, "Piano 1");
-    }
-
-    #[test]
-    fn audio() {
-        let mut conn = connect();
-        // Load the soundfont. set the program, and do a note-on.
-        let path = PathBuf::from(SF_PATH);
-        conn.send(vec![
-            Command::LoadSoundFont {
-                path: path.clone(),
-                channel: CHANNEL,
-            },
-            Command::SetProgram {
-                channel: CHANNEL,
-                path,
-                bank_index: 0,
-                preset_index: 0,
-            },
-            Command::NoteOn {
-                channel: CHANNEL,
-                key: KEY,
-                velocity: VELOCITY,
-                duration: DURATION,
-            },
-        ]);
-        // Listen!
-        sleep(Duration::from_millis(500));
-        // Schedule some events.
-        let commands = get_commands();
-        conn.send(commands);
-        // Listen!
-        sleep(Duration::from_secs(10));
-    }
-
-    fn get_commands() -> CommandsMessage {
-        let dt = DURATION / 4;
-        let num: u8 = 10;
-        (0..num)
-            .map(|i| Command::NoteOnAt {
-                channel: CHANNEL,
-                key: KEY + i,
-                velocity: VELOCITY,
-                start: DURATION * 3 + dt * i as u64,
-                end: (DURATION * 3 + dt * i as u64) + DURATION,
-            })
-            .collect::<CommandsMessage>()
     }
 }

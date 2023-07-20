@@ -56,7 +56,7 @@
 ## Tests
 
 - [ ] exporter
-- [ ] fraction
+- [x] fraction
 - [ ] input_state
 - [ ] file_or_directory
 - [ ] file_and_directory
