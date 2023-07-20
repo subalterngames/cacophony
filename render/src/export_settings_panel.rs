@@ -47,11 +47,11 @@ impl ExportSettingsPanel {
         let y = position[1] + 1;
         let w = width - 2;
         let framerate =
-            KeyListCorners::new(&text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"), [x, y], w, 5);
+            KeyListCorners::new(text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"), [x, y], w, 5);
         let quality =
-            KeyListCorners::new(&text.get("EXPORT_SETTINGS_PANEL_QUALITY"), [x, y + 1], w, 1);
+            KeyListCorners::new(text.get("EXPORT_SETTINGS_PANEL_QUALITY"), [x, y + 1], w, 1);
         let mp3_bit_rate = KeyListCorners::new(
-            &text.get("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE"),
+            text.get("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE"),
             [x, y + 2],
             w,
             6,
@@ -200,7 +200,7 @@ impl ExportSettingsPanel {
                         None => n,
                     };
                     let key_list = KeyListCorners::new(
-                        &text.get("EXPORT_SETTINGS_PANEL_TRACK_NUMBER"),
+                        text.get("EXPORT_SETTINGS_PANEL_TRACK_NUMBER"),
                         [x, y],
                         self.width - 2,
                         value_width,
@@ -241,7 +241,7 @@ impl ExportSettingsPanel {
                         .multi_file_suffixes
                         .get(&exporter.multi_file_suffix.get());
                     let key_list = KeyListCorners::new(
-                        &text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE_SUFFIX"),
+                        text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE_SUFFIX"),
                         [x, y],
                         self.width - 2,
                         self.multi_file_suffixes.max_length,

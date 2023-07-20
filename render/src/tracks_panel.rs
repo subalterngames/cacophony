@@ -132,11 +132,11 @@ impl Drawable for TracksPanel {
                     renderer.list(&program.preset_name, &list, f);
                     y += 1;
                     // Draw the bank.
-                    let bank = KeyList::new(&self.bank_key, [x + 1, y], self.field_width, 3);
+                    let bank = KeyList::new(self.bank_key.clone(), [x + 1, y], self.field_width, 3);
                     renderer.key_list(&program.bank.to_string(), &bank, f);
                     y += 1;
                     // Draw the gain.
-                    let gain = KeyList::new(&self.gain_key, [x + 1, y], self.field_width, 3);
+                    let gain = KeyList::new(self.gain_key.clone(), [x + 1, y], self.field_width, 3);
                     renderer.key_list(&track.gain.to_string(), &gain, f);
                     // Mute.
                     if track.mute {

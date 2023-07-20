@@ -46,7 +46,7 @@ impl MusicPanel {
         let bpm = KeyInput::new_from_value_width(&text.get("TITLE_BPM"), [x, y], width, 4);
         // Move the position of the value to align it with the gain field.
         y += 1;
-        let gain = KeyList::new(&text.get("TITLE_GAIN"), [x + 1, y], width - 2, 3);
+        let gain = KeyList::new(text.get("TITLE_GAIN"), [x + 1, y], width - 2, 3);
         let gain_rect = Rectangle::new([x, y], [width, 1]);
 
         // Return.

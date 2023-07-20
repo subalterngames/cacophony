@@ -11,7 +11,11 @@ pub(crate) struct KeyInput {
 }
 
 impl KeyInput {
-    /// The `key` will be on the left and the `value` will be at a position that tries to fill `width`.
+    /// - The `key` is at `position[0] + 1`.
+    /// - The value is at a position that tries to fill `width - 2`.
+    /// - The `corners_rect` is at `position` and is size `[width, 1]`.
+    /// - The `input_rect` is at `position[0] + 1`.
+    ///
     /// The `key` will be truncated and the `value` will match `value_width`.
     pub fn new_from_value_width(
         key: &str,
@@ -31,8 +35,11 @@ impl KeyInput {
         }
     }
 
-    /// The `key` will be on the left and the `value` will be at a position with this x coordinate: `position[0] + 1 + key_width + padding`.
-    /// The `key` won't be truncated but the `value` will.
+    /// - The `key` is at `position[0] + 1`.
+    /// - The value is at `position[0] + 1 + key_width + padding`.
+    /// - The `corners_rect` is at `position` and is size `[width, 1]`.
+    ///
+    /// The `key` won't be truncated. The `value` will be trunacted.
     pub fn new_from_padding(
         key: &str,
         value: &str,

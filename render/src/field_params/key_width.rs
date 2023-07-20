@@ -13,13 +13,11 @@ pub(crate) struct KeyWidth {
 }
 
 impl KeyWidth {
-    pub fn new(key: &str, position: [u32; 2], value_width: u32) -> Self {
+    /// The `key` will be at `position`. The value will be at `position.x + key_width + KV_PADDING + value_width`.
+    pub fn new(key: String, position: [u32; 2], value_width: u32) -> Self {
         let width = key.chars().count() as u32 + KV_PADDING + value_width;
         // The key is on the left.
-        let key = Label {
-            position,
-            text: key.to_string(),
-        };
+        let key = Label::new(position, key);
 
         // The value is on the right.
         let value_position = [position[0] + width - value_width, position[1]];
@@ -34,10 +32,7 @@ impl KeyWidth {
         let half_width = get_half_width(width);
 
         // The key is on the left.
-        let key = Label {
-            position,
-            text: truncate(key, half_width, false),
-        };
+        let key = Label::new(position, truncate(key, half_width, false));
 
         // The value is on the right.
         let value_position = [position[0] + width - value_width, position[1]];
@@ -48,9 +43,6 @@ impl KeyWidth {
 
     /// Truncates a value string to `self.width` and converts it into a `Label`.
     pub fn get_value(&self, value: &str) -> Label {
-        Label {
-            position: self.value.position,
-            text: truncate(value, self.value.width, true),
-        }
+        Label::new(self.value.position, truncate(value, self.value.width, true))
     }
 }

@@ -45,7 +45,7 @@ impl TopBar {
         // Get the fields.
         let armed = Boolean::new(text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"), [x, y], text);
         x += armed.width + PADDING;
-        let beat = KeyWidth::new(&text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"), [x, y], 4);
+        let beat = KeyWidth::new(text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"), [x, y], 4);
         // Only increment by 1 because beat has a long value space.
         x += beat.width + 1;
         let use_volume = Boolean::new(
@@ -54,7 +54,7 @@ impl TopBar {
             text,
         );
         x += use_volume.width + PADDING;
-        let volume = KeyWidth::new(&text.get("PIANO_ROLL_PANEL_TOP_BAR_VOLUME"), [x, y], 3);
+        let volume = KeyWidth::new(text.get("PIANO_ROLL_PANEL_TOP_BAR_VOLUME"), [x, y], 3);
         x += volume.width + PADDING;
 
         // Get the separator position.

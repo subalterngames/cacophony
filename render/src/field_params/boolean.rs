@@ -14,7 +14,7 @@ pub(crate) struct Boolean {
 }
 
 impl Boolean {
-    /// The key label is at `position`. The value label is at `position.x + key.w + KV_PADDING`.
+    /// The key label is at `position`. The value label is at `position[0] + key.w + KV_PADDING`.
     ///
     /// - `key` The key label text.
     /// - `position` The position of the key label in grid units.
@@ -38,7 +38,7 @@ impl Boolean {
     ///
     /// - `key` The key label text.
     /// - `position` The position of the key label in grid units.
-    /// - `width` The value label is at `position.x + width - max_boolean_width`.
+    /// - `width` The value label is at `position[0] + width - max_boolean_width`.
     /// - `text` The text lookup.
     pub fn new_from_width(key: String, position: [u32; 2], width: u32, text: &Text) -> Self {
         // The key is on the left.
