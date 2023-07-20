@@ -62,7 +62,7 @@
 - [ ] file_and_directory
 - [ ] child_paths
 - [ ] font
-- [ ] index
+- [x] index
 - [ ] indexed_values
 - [ ] paths_state
 - [ ] select_mode
