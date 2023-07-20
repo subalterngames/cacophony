@@ -1,17 +1,12 @@
 use super::image::*;
 use crate::{ColorKey, FocusableTexture, Renderer};
 use common::sizes::*;
-use common::{MAX_NOTE, MIN_NOTE};
+use common::{MAX_NOTE, MIN_NOTE, NOTE_NAMES};
 use image::{Rgba, RgbaImage};
 use imageproc::drawing::draw_text_mut;
 use ini::Ini;
 use macroquad::texture::Texture2D;
 use rusttype::{Font, Scale};
-
-const OCTAVES: i8 = 9;
-const NOTES: [&str; 12] = [
-    "G", "F#", "F", "E", "D#", "D", "C#", "C", "B", "A#", "A", "G#",
-];
 
 pub(crate) fn get_note_names(config: &Ini, renderer: &Renderer) -> FocusableTexture {
     let (font, font_scale, font_size) = get_font(config);
@@ -61,19 +56,9 @@ fn get_texture(
     color: Rgba<u8>,
     bg_color: Rgba<u8>,
 ) -> Texture2D {
-    let mut note: usize = 0;
-    let mut octave: i8 = OCTAVES;
-    let num_notes = NOTES.len();
     // Create the image.
     let mut image = RgbaImage::from_pixel(pixel_size[0], pixel_size[1], bg_color);
-    for y in 0..dn as i32 {
-        // Get the text.
-        let text = if NOTES[note].len() == 1 {
-            format!("{} {}", NOTES[note], octave)
-        } else {
-            format!("{}{}", NOTES[note], octave)
-        };
-
+    for (y, note_name) in (0..dn as i32).zip(NOTE_NAMES) {
         draw_text_mut(
             &mut image,
             color,
@@ -81,14 +66,8 @@ fn get_texture(
             y * font_height,
             font_scale,
             font,
-            &text,
+            note_name,
         );
-        // Update.
-        note += 1;
-        if note >= num_notes {
-            note = 0;
-            octave -= 1;
-        }
     }
     Texture2D::from_rgba8(pixel_size[0] as u16, pixel_size[1] as u16, &image)
 }
