@@ -70,7 +70,11 @@
 - [ ] midi_binding
 - [ ] qwerty_binding
 - [x] ~~abc123~~
-- [ ] Field params
+- [ ] boolean_corners
+- [ ] boolean
+- [ ] key_input
+- [ ] key_list_corners
+- [ ] key_width
 - [ ] viewable_notes
 - [ ] tts_string
 - [ ] value_map
