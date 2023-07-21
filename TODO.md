@@ -63,7 +63,7 @@
 - [ ] child_paths
 - [ ] font
 - [x] index
-- [ ] indexed_values
+- [x] indexed_values
 - [ ] paths_state
 - [ ] select_mode
 - [ ] sizes
