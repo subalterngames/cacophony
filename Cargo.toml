@@ -31,6 +31,7 @@ regex = "1.9.1"
 imageproc = "0.23.0"
 image = "0.24.6"
 rusttype = "0.9.3"
+parking_lot = "0.12.1"
 
 [workspace.dependencies.hashbrown]
 version = "0.13.2"
@@ -67,6 +68,7 @@ edition = "2021"
 
 [dependencies]
 macroquad = { workspace = true }
+parking_lot = { workspace = true }
 
 [dependencies.audio]
 path = "audio"

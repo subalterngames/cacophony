@@ -131,7 +131,7 @@ impl Panel for PianoRollPanel {
         tts: &mut TTS,
         text: &mut Text,
         paths_state: &mut PathsState,
-        exporter: &mut Exporter,
+        exporter: &mut SharedExporter,
     ) -> Option<Snapshot> {
         // Select a track.
         if !state.view.single_track {

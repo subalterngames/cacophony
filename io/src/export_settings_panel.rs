@@ -122,33 +122,26 @@ impl ExportSettingsPanel {
         ]
     }
 
-    /// Set the export framerate and return a screenshot.
+    /// Set the export framerate.
     ///
-    /// - `conn` This will send a copy of the exporter.
     /// - `exporter` The exporter. This will have its framerate set.
     /// - `up` Increment or decrement along the `FRAMERATES` array.
-    fn set_framerate(conn: &mut Conn, exporter: &mut Exporter, up: bool) -> Option<Snapshot> {
+    fn set_framerate(exporter: &mut Exporter, up: bool) {
         let i = FRAMERATES
             .iter()
             .position(|f| *f == exporter.framerate.get_u())
             .unwrap();
         let mut index = Index::new(i, FRAMERATES.len());
         index.increment(up);
-        Some(Snapshot::from_exporter_value(
-            |e| &mut e.framerate,
-            U64orF32::from(FRAMERATES[index.get()]),
-            conn,
-            exporter,
-        ))
+        exporter.framerate = U64orF32::from(FRAMERATES[index.get()]);
     }
 
-    /// Set the track number and return a screenshot.
+    /// Set the track number.
     ///
-    /// - `conn` This will send a copy of the exporter.
     /// - `exporter` The exporter. This will have its framerate set.
     /// - `up` Add or subtract the frame number.
-    fn set_track_number(conn: &mut Conn, exporter: &mut Exporter, up: bool) -> Option<Snapshot> {
-        let track_number = if up {
+    fn set_track_number(exporter: &mut Exporter, up: bool) {
+        exporter.metadata.track_number = if up {
             match &exporter.metadata.track_number {
                 Some(n) => Some(n + 1),
                 None => Some(0),
@@ -159,43 +152,21 @@ impl ExportSettingsPanel {
                 None => None,
             }
         };
-        Some(Snapshot::from_exporter_value(
-            |e| &mut e.metadata.track_number,
-            track_number,
-            conn,
-            exporter,
-        ))
     }
 
     /// Set an `Index` field within an `Exporter`.
     ///
     /// - `f` A closure that returns a mutable reference to an `Index`.
-    /// - `conn` This will send a copy of the exporter.
     /// - `input` The input state.
-    /// - `exporter` The exporter. This will have its framerate set.
-    fn set_index<F>(
-        mut f: F,
-        conn: &mut Conn,
-        input: &Input,
-        exporter: &mut Exporter,
-    ) -> Option<Snapshot>
+    /// - `exporter` The exporter.
+    fn set_index<F>(mut f: F, input: &Input, exporter: &mut Exporter)
     where
         F: FnMut(&mut Exporter) -> &mut Index,
     {
         if input.happened(&InputEvent::PreviousExportSettingValue) {
-            Some(Snapshot::from_exporter(
-                |e| f(e).increment(false),
-                conn,
-                exporter,
-            ))
+            f(exporter).increment(false);
         } else if input.happened(&InputEvent::NextExportSettingValue) {
-            Some(Snapshot::from_exporter(
-                |e| f(e).increment(true),
-                conn,
-                exporter,
-            ))
-        } else {
-            None
+            f(exporter).increment(true);
         }
     }
 
@@ -203,18 +174,16 @@ impl ExportSettingsPanel {
     ///
     /// - `f` A closure that returns a mutable reference to an `IndexValues` of export settings (corresponding to the export type).
     /// - `state` The app state.
-    /// - `conn` This will send a copy of the exporter.
     /// - `input` The input state.
     /// - `text` The text state.
     /// - `exporter` The exporter. This will have its framerate set.
     fn update_settings<F, const N: usize>(
         mut f: F,
         state: &mut State,
-        conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
         text: &mut Text,
-        exporter: &mut Exporter,
+        exporter: &mut SharedExporter,
     ) -> Option<Snapshot>
     where
         F: FnMut(&mut Exporter) -> &mut IndexedValues<ExportSetting, N>,
@@ -222,14 +191,15 @@ impl ExportSettingsPanel {
     {
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {
-            let s = match &f(exporter).get() {
+            let mut ex = exporter.lock();
+            let s = match &f(&mut ex).get() {
                 ExportSetting::Framerate => {
                     TtsString::from(text.get("EXPORT_SETTINGS_PANEL_STATUS_TTS_FRAMERATE"))
                 }
                 ExportSetting::Title => Self::get_status_abc123_tts(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TITLE_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TITLE_NO_ABC123",
-                    &Some(exporter.metadata.title.clone()),
+                    &Some(ex.metadata.title.clone()),
                     state,
                     input,
                     text,
@@ -237,7 +207,7 @@ impl ExportSettingsPanel {
                 ExportSetting::Artist => Self::get_status_abc123_tts(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ARTIST",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ARTIST_NO_ABC123",
-                    &exporter.metadata.artist,
+                    &ex.metadata.artist,
                     state,
                     input,
                     text,
@@ -245,14 +215,14 @@ impl ExportSettingsPanel {
                 ExportSetting::Copyright => Self::get_status_bool_tts(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COPYRIGHT_ENABLED",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COPYRIGHT_DISABLED",
-                    exporter.copyright,
+                    ex.copyright,
                     input,
                     text,
                 ),
                 ExportSetting::Album => Self::get_status_abc123_tts(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ALBUM_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ALBUM_NO_ABC123",
-                    &exporter.metadata.album,
+                    &ex.metadata.album,
                     state,
                     input,
                     text,
@@ -260,7 +230,7 @@ impl ExportSettingsPanel {
                 ExportSetting::Genre => Self::get_status_abc123_tts(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_GENRE_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_GENRE_NO_ABC123",
-                    &exporter.metadata.genre,
+                    &ex.metadata.genre,
                     state,
                     input,
                     text,
@@ -268,31 +238,26 @@ impl ExportSettingsPanel {
                 ExportSetting::Comment => Self::get_status_abc123_tts(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COMMENT_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COMMENT_NO_ABC123",
-                    &exporter.metadata.comment,
+                    &ex.metadata.comment,
                     state,
                     input,
                     text,
                 ),
-                ExportSetting::Mp3BitRate => TtsString::from(
-                    text.get_with_values(
-                        "EXPORT_SETTINGS_PANEL_STATUS_TTS_BIT_RATE",
-                        &[
-                            &((MP3_BIT_RATES[exporter.mp3_bit_rate.get()] as u16) as u32 * 1000)
-                                .to_string(),
-                        ],
-                    ),
-                ),
+                ExportSetting::Mp3BitRate => TtsString::from(text.get_with_values(
+                    "EXPORT_SETTINGS_PANEL_STATUS_TTS_BIT_RATE",
+                    &[&((MP3_BIT_RATES[ex.mp3_bit_rate.get()] as u16) as u32 * 1000).to_string()],
+                )),
                 ExportSetting::Mp3Quality => TtsString::from(text.get_with_values(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_QUALITY",
-                    &[&exporter.mp3_quality.get().to_string()],
+                    &[&ex.mp3_quality.get().to_string()],
                 )),
                 ExportSetting::OggQuality => TtsString::from(text.get_with_values(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_QUALITY",
-                    &[&exporter.ogg_quality.get().to_string()],
+                    &[&exporter.lock().ogg_quality.get().to_string()],
                 )),
                 ExportSetting::TrackNumber => TtsString::from(text.get_with_values(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TRACK_NUMBER",
-                    &[&match exporter.metadata.track_number {
+                    &[&match ex.metadata.track_number {
                         Some(track_number) => track_number.to_string(),
                         None => text.get("NONE"),
                     }],
@@ -300,12 +265,12 @@ impl ExportSettingsPanel {
                 ExportSetting::MultiFile => Self::get_status_bool_tts(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_ENABLED",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_DISABLED",
-                    exporter.multi_file,
+                    ex.multi_file,
                     input,
                     text,
                 ),
                 ExportSetting::MultiFileSuffix => {
-                    let key = match &exporter.multi_file_suffix.get() {
+                    let key = match &ex.multi_file_suffix.get() {
                         MultiFileSuffix::Preset => {
                             "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET"
                         }
@@ -324,7 +289,8 @@ impl ExportSettingsPanel {
         }
         // Input TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let s = match &f(exporter).get() {
+            let mut ex = exporter.lock();
+            let s = match &f(&mut ex).get() {
                 ExportSetting::Framerate => {
                     Self::get_input_lr_tts("EXPORT_SETTINGS_PANEL_INPUT_TTS_FRAMERATE", input, text)
                 }
@@ -403,115 +369,88 @@ impl ExportSettingsPanel {
         }
         // Previous setting.
         else if input.happened(&InputEvent::PreviousExportSetting) {
-            let s = f(exporter);
+            let mut ex = exporter.lock();
+            let s = f(&mut ex);
             s.index.increment(false);
             None
         }
         // Next setting.
         else if input.happened(&InputEvent::NextExportSetting) {
-            let s = f(exporter);
+            let mut ex = exporter.lock();
+            let s = f(&mut ex);
             s.index.increment(true);
             None
         } else {
-            match &f(exporter).get() {
+            let mut ex = exporter.lock();
+            match &f(&mut ex).get() {
                 // Framerate.
                 ExportSetting::Framerate => {
                     if input.happened(&InputEvent::PreviousExportSettingValue) {
-                        Self::set_framerate(conn, exporter, false)
+                        Self::set_framerate(&mut ex, false);
                     } else if input.happened(&InputEvent::NextExportSettingValue) {
-                        Self::set_framerate(conn, exporter, true)
-                    } else {
-                        None
+                        Self::set_framerate(&mut ex, true);
                     }
+                    None
                 }
                 ExportSetting::Copyright => {
                     if input.happened(&InputEvent::ToggleExportSettingBoolean) {
-                        Some(Snapshot::from_exporter_value(
-                            |e| &mut e.copyright,
-                            !exporter.copyright,
-                            conn,
-                            exporter,
-                        ))
-                    } else {
-                        None
+                        ex.copyright = !ex.copyright;
                     }
+                    None
                 }
                 ExportSetting::Title => abc123_exporter(
                     |e| &mut e.metadata.title,
                     state,
-                    conn,
                     input,
-                    exporter,
+                    &mut ex,
                     "My Music".to_string(),
                 ),
-                ExportSetting::Artist => abc123_exporter(
-                    |e| &mut e.metadata.artist,
-                    state,
-                    conn,
-                    input,
-                    exporter,
-                    None,
-                ),
-                ExportSetting::Album => abc123_exporter(
-                    |e| &mut e.metadata.album,
-                    state,
-                    conn,
-                    input,
-                    exporter,
-                    None,
-                ),
-                ExportSetting::Genre => abc123_exporter(
-                    |e| &mut e.metadata.genre,
-                    state,
-                    conn,
-                    input,
-                    exporter,
-                    None,
-                ),
-                ExportSetting::Comment => abc123_exporter(
-                    |e| &mut e.metadata.comment,
-                    state,
-                    conn,
-                    input,
-                    exporter,
-                    None,
-                ),
+                ExportSetting::Artist => {
+                    abc123_exporter(|e| &mut e.metadata.artist, state, input, &mut ex, None)
+                }
+                ExportSetting::Album => {
+                    abc123_exporter(|e| &mut e.metadata.album, state, input, &mut ex, None)
+                }
+                ExportSetting::Genre => {
+                    abc123_exporter(|e| &mut e.metadata.genre, state, input, &mut ex, None)
+                }
+                ExportSetting::Comment => {
+                    abc123_exporter(|e| &mut e.metadata.comment, state, input, &mut ex, None)
+                }
                 ExportSetting::TrackNumber => {
                     if input.happened(&InputEvent::PreviousExportSettingValue) {
-                        Self::set_track_number(conn, exporter, false)
+                        Self::set_track_number(&mut ex, false);
                     } else if input.happened(&InputEvent::NextExportSettingValue) {
-                        Self::set_track_number(conn, exporter, true)
-                    } else {
-                        None
+                        Self::set_track_number(&mut ex, true);
                     }
+                    None
                 }
                 ExportSetting::Mp3BitRate => {
-                    Self::set_index(|e| &mut e.mp3_bit_rate, conn, input, exporter)
+                    Self::set_index(|e| &mut e.mp3_bit_rate, input, &mut ex);
+                    None
                 }
                 ExportSetting::Mp3Quality => {
-                    Self::set_index(|e| &mut e.mp3_quality, conn, input, exporter)
+                    Self::set_index(|e| &mut e.mp3_quality, input, &mut ex);
+                    None
                 }
                 ExportSetting::OggQuality => {
-                    Self::set_index(|e| &mut e.ogg_quality, conn, input, exporter)
+                    Self::set_index(|e| &mut e.ogg_quality, input, &mut ex);
+                    None
                 }
                 ExportSetting::MultiFile => {
                     if input.happened(&InputEvent::ToggleExportSettingBoolean) {
-                        Some(Snapshot::from_exporter_value(
-                            |e: &mut Exporter| &mut e.multi_file,
-                            !exporter.multi_file,
-                            conn,
-                            exporter,
-                        ))
-                    } else {
-                        None
+                        ex.multi_file = !ex.multi_file;
                     }
+                    None
                 }
-                ExportSetting::MultiFileSuffix => Self::set_index(
-                    |e: &mut Exporter| &mut e.multi_file_suffix.index,
-                    conn,
-                    input,
-                    exporter,
-                ),
+                ExportSetting::MultiFileSuffix => {
+                    Self::set_index(
+                        |e: &mut Exporter| &mut e.multi_file_suffix.index,
+                        input,
+                        &mut ex,
+                    );
+                    None
+                }
             }
         }
     }
@@ -521,54 +460,31 @@ impl Panel for ExportSettingsPanel {
     fn update(
         &mut self,
         state: &mut State,
-        conn: &mut Conn,
+        _: &mut Conn,
         input: &Input,
         tts: &mut TTS,
         text: &mut Text,
         _: &mut PathsState,
-        exporter: &mut Exporter,
+        exporter: &mut SharedExporter,
     ) -> Option<Snapshot> {
         // Close this.
         if input.happened(&InputEvent::CloseOpenFile) {
             return Some(Snapshot::from_io_commands(vec![IOCommand::CloseOpenFile]));
         }
-        match exporter.export_type.get() {
-            ExportType::Mid => Self::update_settings(
-                |e| &mut e.mid_settings,
-                state,
-                conn,
-                input,
-                tts,
-                text,
-                exporter,
-            ),
-            ExportType::MP3 => Self::update_settings(
-                |e: &mut Exporter| &mut e.mp3_settings,
-                state,
-                conn,
-                input,
-                tts,
-                text,
-                exporter,
-            ),
-            ExportType::Ogg => Self::update_settings(
-                |e| &mut e.ogg_settings,
-                state,
-                conn,
-                input,
-                tts,
-                text,
-                exporter,
-            ),
-            ExportType::Wav => Self::update_settings(
-                |e| &mut e.wav_settings,
-                state,
-                conn,
-                input,
-                tts,
-                text,
-                exporter,
-            ),
+        let export_type = exporter.lock().export_type.get();
+        match export_type {
+            ExportType::Mid => {
+                Self::update_settings(|e| &mut e.mid_settings, state, input, tts, text, exporter)
+            }
+            ExportType::MP3 => {
+                Self::update_settings(|e| &mut e.mp3_settings, state, input, tts, text, exporter)
+            }
+            ExportType::Ogg => {
+                Self::update_settings(|e| &mut e.ogg_settings, state, input, tts, text, exporter)
+            }
+            ExportType::Wav => {
+                Self::update_settings(|e| &mut e.wav_settings, state, input, tts, text, exporter)
+            }
         }
     }
 }

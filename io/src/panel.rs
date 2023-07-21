@@ -1,6 +1,6 @@
 pub(crate) use crate::io_command::IOCommand;
 pub(crate) use crate::Snapshot;
-pub(crate) use audio::exporter::Exporter;
+pub(crate) use audio::SharedExporter;
 pub(crate) use audio::{Command, Conn};
 pub(crate) use common::{Index, PathsState, State};
 pub(crate) use input::{Input, InputEvent};
@@ -29,6 +29,6 @@ pub(crate) trait Panel {
         tts: &mut TTS,
         text: &mut Text,
         paths_state: &mut PathsState,
-        exporter: &mut Exporter,
+        exporter: &mut SharedExporter,
     ) -> Option<Snapshot>;
 }

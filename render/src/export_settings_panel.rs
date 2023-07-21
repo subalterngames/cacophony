@@ -316,18 +316,18 @@ impl Drawable for ExportSettingsPanel {
         _: &Input,
         text: &Text,
         _: &PathsState,
-        exporter: &Exporter,
+        exporter: &SharedExporter,
     ) {
         // Get the focus.
         let focus = state.panels[state.focus.get()] == PanelType::ExportSettings;
-
+        let ex = exporter.lock();
         // Get the height of the panel.
-        let e = exporter.export_type.get();
+        let e = ex.export_type.get();
         let h = match &e {
-            ExportType::Wav => exporter.wav_settings.index.get_length() + 2,
-            ExportType::Mid => exporter.mid_settings.index.get_length() + 1,
-            ExportType::MP3 => exporter.mp3_settings.index.get_length() + 3,
-            ExportType::Ogg => exporter.ogg_settings.index.get_length() + 3,
+            ExportType::Wav => ex.wav_settings.index.get_length() + 2,
+            ExportType::Mid => ex.mid_settings.index.get_length() + 1,
+            ExportType::MP3 => ex.mp3_settings.index.get_length() + 3,
+            ExportType::Ogg => ex.ogg_settings.index.get_length() + 3,
         } as u32
             + 1;
 
@@ -344,18 +344,18 @@ impl Drawable for ExportSettingsPanel {
         renderer.text(&self.title, &color);
 
         // Draw the fields.
-        match &exporter.export_type.get() {
+        match &ex.export_type.get() {
             ExportType::Wav => {
-                self.update_settings(|e| &e.wav_settings, renderer, state, text, exporter, focus)
+                self.update_settings(|e| &e.wav_settings, renderer, state, text, &ex, focus)
             }
             ExportType::Mid => {
-                self.update_settings(|e| &e.mid_settings, renderer, state, text, exporter, focus)
+                self.update_settings(|e| &e.mid_settings, renderer, state, text, &ex, focus)
             }
             ExportType::MP3 => {
-                self.update_settings(|e| &e.mp3_settings, renderer, state, text, exporter, focus)
+                self.update_settings(|e| &e.mp3_settings, renderer, state, text, &ex, focus)
             }
             ExportType::Ogg => {
-                self.update_settings(|e| &e.ogg_settings, renderer, state, text, exporter, focus)
+                self.update_settings(|e| &e.ogg_settings, renderer, state, text, &ex, focus)
             }
         }
     }

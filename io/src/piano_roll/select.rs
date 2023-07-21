@@ -63,7 +63,7 @@ impl Panel for Select {
         _: &mut TTS,
         _: &mut Text,
         _: &mut PathsState,
-        _: &mut Exporter,
+        _: &mut SharedExporter,
     ) -> Option<Snapshot> {
         match state.music.get_selected_track() {
             None => None,

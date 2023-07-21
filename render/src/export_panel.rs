@@ -32,7 +32,7 @@ impl Drawable for ExportPanel {
         _: &Input,
         _: &Text,
         _: &PathsState,
-        _: &Exporter,
+        _: &SharedExporter,
     ) {
         if conn.export_state.is_none() {
             return;

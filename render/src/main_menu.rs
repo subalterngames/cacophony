@@ -116,7 +116,7 @@ impl Drawable for MainMenu {
         _: &Input,
         _: &Text,
         _: &PathsState,
-        _: &Exporter,
+        _: &SharedExporter,
     ) {
         self.panel.update_ex(&COLOR, renderer);
         if state.unsaved_changes {

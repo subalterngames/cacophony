@@ -26,7 +26,7 @@ impl Index {
     /// - `up` If true, increment. If false, decrement.
     pub fn increment(&mut self, up: bool) {
         if self.length == 0 {
-            return
+            return;
         }
         self.index = if up {
             if self.index == self.length - 1 {
@@ -49,8 +49,7 @@ impl Index {
     pub fn increment_no_loop(&mut self, up: bool) -> bool {
         if self.length == 0 {
             false
-        }
-        else if up {
+        } else if up {
             self.index += 1;
             true
         } else if self.index < self.length - 1 {

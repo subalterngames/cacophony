@@ -73,7 +73,7 @@ impl Panel for TracksPanel {
         tts: &mut TTS,
         text: &mut Text,
         _: &mut PathsState,
-        _: &mut Exporter,
+        _: &mut SharedExporter,
     ) -> Option<Snapshot> {
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {

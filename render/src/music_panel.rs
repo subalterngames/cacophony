@@ -71,7 +71,7 @@ impl Drawable for MusicPanel {
         _: &Input,
         _: &Text,
         _: &PathsState,
-        exporter: &Exporter,
+        exporter: &SharedExporter,
     ) {
         // Get the focus,
         let focus = self.panel.has_focus(state);
@@ -93,8 +93,9 @@ impl Drawable for MusicPanel {
             }
         }
         // Draw the name.
+        let ex = exporter.lock();
         renderer.text(
-            &self.name.to_label(&exporter.metadata.title),
+            &self.name.to_label(&ex.metadata.title),
             &Renderer::get_value_color([focus, name_focus]),
         );
 

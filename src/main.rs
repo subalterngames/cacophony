@@ -37,17 +37,17 @@ async fn main() {
     // Get the input object.
     let mut input = Input::new(&config);
 
+    // Create the exporter.
+    let mut exporter = Exporter::new_shared();
+
     // Create the audio connection.
-    let mut conn = connect();
+    let mut conn = connect(&exporter);
 
     // Create the state.
     let mut state = State::new(&config);
 
     // Create the paths state.
     let mut paths_state = PathsState::new(&paths);
-
-    // Create the exporter.
-    let mut exporter = Exporter::default();
 
     // Get the IO state.
     let mut io = IO::new(&config, &input, &state.input, &mut text);

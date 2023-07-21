@@ -118,6 +118,7 @@ dependencies = [
  "mp3lame-encoder",
  "oggvorbismeta",
  "oxisynth",
+ "parking_lot 0.12.1",
  "serde",
  "vorbis-encoder",
 ]
@@ -243,6 +244,7 @@ dependencies = [
  "input",
  "io",
  "macroquad",
+ "parking_lot 0.12.1",
  "render",
  "text",
 ]

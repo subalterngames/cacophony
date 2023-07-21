@@ -105,7 +105,7 @@ impl Drawable for OpenFilePanel {
         _: &Input,
         _: &Text,
         paths_state: &PathsState,
-        exporter: &Exporter,
+        exporter: &SharedExporter,
     ) {
         let focus = self.panel.has_focus(state);
         self.popup.update(renderer);
@@ -219,7 +219,8 @@ impl Drawable for OpenFilePanel {
 
             // Draw the extension.
             let mut extension = String::from(".");
-            let e = exporter.export_type.get();
+            let ex = exporter.lock();
+            let e = ex.export_type.get();
             let ext = match paths_state.open_file_type {
                 OpenFileType::ReadSave | OpenFileType::WriteSave => ".cac",
                 OpenFileType::SoundFont => ".sf2",

@@ -20,7 +20,7 @@
 //!
 //! As far as external crates are concerned, it's only necessary to do the following:
 //!
-//! 1. Create an `Exporter` on the main thread.
+//! 1. Create a shared exporter on the main thread: `Exporter::new_shared()`.
 //! 2. Call `connect()` on the main thread, which sets up everything else and returns a `Conn`.
 
 mod command;
@@ -39,20 +39,22 @@ use crate::program::Program;
 pub use crate::synth_state::SynthState;
 use crate::time_state::TimeState;
 pub(crate) use crate::types::AudioBuffer;
-pub use crate::types::{AudioMessage, CommandsMessage};
+pub use crate::types::{AudioMessage, CommandsMessage, SharedExporter};
 use crossbeam_channel::{bounded, unbounded};
 pub use export_state::ExportState;
 use player::Player;
+use std::sync::Arc;
 use std::thread::spawn;
 
 /// Start the synthesizer and the audio player. Returns a `conn`.
-pub fn connect() -> Conn {
+pub fn connect(exporter: &SharedExporter) -> Conn {
     let (send_commands, recv_commands) = unbounded();
     let (send_state, recv_state) = bounded(1);
     let (send_audio, recv_audio) = bounded(1);
     let (send_time, recv_time) = bounded(1);
     let (send_export, recv_export) = bounded(1);
 
+    let ex = Arc::clone(exporter);
     // Spawn the synthesizer thread.
     spawn(move || {
         synthesizer::Synthesizer::start(
@@ -61,6 +63,7 @@ pub fn connect() -> Conn {
             send_state,
             send_export,
             send_time,
+            ex,
         )
     });
     // Spawn the audio thread.
@@ -71,6 +74,7 @@ pub fn connect() -> Conn {
 
 #[cfg(test)]
 mod tests {
+    use crate::exporter::Exporter;
     use crate::{connect, Command};
     use std::path::PathBuf;
 
@@ -81,7 +85,8 @@ mod tests {
     fn sf() {
         // Make sure we can load the file.
         assert!(std::fs::File::open(SF_PATH).is_ok());
-        let mut conn = connect();
+        let exporter = Exporter::new_shared();
+        let mut conn = connect(&exporter);
         let commands = vec![Command::LoadSoundFont {
             path: PathBuf::from(SF_PATH),
             channel: CHANNEL,

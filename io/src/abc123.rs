@@ -1,4 +1,5 @@
 use crate::panel::*;
+use audio::exporter::Exporter;
 use common::U64orF32;
 
 /// A type that can be modified by user alphanumeric input.
@@ -65,6 +66,32 @@ impl AlphanumericModifiable for U64orF32 {
     }
 }
 
+/// Handle alphanumeric input for a shared exporter.
+///
+/// Toggle alphanumeric input. If alphanumeric input is disabled, check if the value is empty and set a default value if it is.
+/// Otherwise, allow the user to type.
+///
+/// - `f` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
+/// - `state` The app state.
+/// - `input` The input state. This is used to check if alphanumeric input is allowed.
+/// - `exporter` The exporter state.
+///
+/// Returns a snapshot.
+pub(crate) fn abc123_shared_exporter<F, T>(
+    f: F,
+    state: &mut State,
+    input: &Input,
+    exporter: &mut SharedExporter,
+    default_value: T,
+) -> Option<Snapshot>
+where
+    F: FnMut(&mut Exporter) -> &mut T,
+    T: Clone + AlphanumericModifiable,
+{
+    let mut ex = exporter.lock();
+    abc123_exporter(f, state, input, &mut ex, default_value)
+}
+
 /// Handle alphanumeric input for the exporter.
 ///
 /// Toggle alphanumeric input. If alphanumeric input is disabled, check if the value is empty and set a default value if it is.
@@ -73,14 +100,12 @@ impl AlphanumericModifiable for U64orF32 {
 /// - `f` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
 /// - `state` The app state.
 /// - `input` The input state. This is used to check if alphanumeric input is allowed.
-/// - `conn` The audio conn. This is used to set the exporter state.
 /// - `exporter` The exporter state.
 ///
 /// Returns a snapshot.
 pub(crate) fn abc123_exporter<F, T>(
     mut f: F,
     state: &mut State,
-    conn: &mut Conn,
     input: &Input,
     exporter: &mut Exporter,
     default_value: T,
@@ -95,19 +120,11 @@ where
         if state.input.alphanumeric_input {
             let s0 = state.clone();
             state.input.alphanumeric_input = false;
-            // Don't allow an empty value.
-            if f(exporter).is_valid() {
-                Some(Snapshot::from_states(s0, state))
-            } else {
-                let c0 = vec![Command::SetExporter {
-                    exporter: Box::new(exporter.clone()),
-                }];
+            // If the value is empty, set a default value.
+            if !f(exporter).is_valid() {
                 *f(exporter) = default_value;
-                let c1 = vec![Command::SetExporter {
-                    exporter: Box::new(exporter.clone()),
-                }];
-                Some(Snapshot::from_states_and_commands(s0, state, c0, c1, conn))
             }
+            Some(Snapshot::from_states(s0, state))
         }
         // Toggle on alphanumeric input.
         else {
@@ -117,11 +134,8 @@ where
     // Modify the value.
     else if state.input.alphanumeric_input {
         let mut value = f(exporter).clone();
-        if value.modify(input) {
-            Some(Snapshot::from_exporter_value(f, value, conn, exporter))
-        } else {
-            None
-        }
+        value.modify(input);
+        None
     } else {
         None
     }

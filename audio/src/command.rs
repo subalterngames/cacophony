@@ -1,5 +1,4 @@
 use crate::export_state::ExportState;
-use crate::exporter::Exporter;
 use std::path::PathBuf;
 
 /// A command for the synthesizer.
@@ -49,8 +48,6 @@ pub enum Command {
     Export { path: PathBuf, state: ExportState },
     /// Ask for the export state.
     SendExportState,
-    /// Set the exporter.
-    SetExporter { exporter: Box<Exporter> },
     /// Append silence to all but the longest audio.
     AppendSilences { paths: Vec<PathBuf> },
 }

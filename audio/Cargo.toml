@@ -19,6 +19,7 @@ oggvorbismeta = { workspace = true }
 oxisynth = { workspace = true }
 serde = { workspace = true }
 hashbrown = { workspace = true }
+parking_lot = { workspace = true }
 
 [dependencies.common]
 path = "../common"

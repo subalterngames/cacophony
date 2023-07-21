@@ -76,20 +76,27 @@ impl OpenFilePanel {
     }
 
     /// Enable a panel for setting the export path.
-    pub fn export(&mut self, state: &mut State, paths_state: &mut PathsState, exporter: &Exporter) {
+    pub fn export(
+        &mut self,
+        state: &mut State,
+        paths_state: &mut PathsState,
+        exporter: &SharedExporter,
+    ) {
+        let ex = exporter.lock();
+        let extension = ex.export_type.get().get_extension(false).to_string();
         let open_file_type = OpenFileType::Export;
-        paths_state.children.set(
-            &paths_state.exports.directory,
-            &[exporter.export_type.get().get_extension(false).to_string()],
-            None,
-        );
+        paths_state
+            .children
+            .set(&paths_state.exports.directory, &[extension], None);
         self.enable(open_file_type, state, paths_state);
     }
 
-    fn get_extensions(&self, paths_state: &PathsState, exporter: &Exporter) -> Vec<String> {
+    fn get_extensions(&self, paths_state: &PathsState, exporter: &SharedExporter) -> Vec<String> {
+        let ex = exporter.lock();
+        let extension = ex.export_type.get().get_extension(false).to_string();
         match paths_state.open_file_type {
             OpenFileType::Export => {
-                vec![exporter.export_type.get().get_extension(false).to_string()]
+                vec![extension]
             }
             OpenFileType::ReadSave | OpenFileType::WriteSave => self.save_file_extensions.clone(),
             OpenFileType::SoundFont => self.soundfont_extensions.clone(),
@@ -129,7 +136,7 @@ impl Panel for OpenFilePanel {
         tts: &mut TTS,
         text: &mut Text,
         paths_state: &mut PathsState,
-        exporter: &mut Exporter,
+        exporter: &mut SharedExporter,
     ) -> Option<Snapshot> {
         match &paths_state.open_file_type {
             OpenFileType::SoundFont | OpenFileType::ReadSave => (),
@@ -156,7 +163,8 @@ impl Panel for OpenFilePanel {
             s.push(' ');
             // Export file type.
             if paths_state.open_file_type == OpenFileType::Export {
-                let e = exporter.export_type.get();
+                let ex = exporter.lock();
+                let e = ex.export_type.get();
                 let export_type = e.get_extension(false);
                 s.push_str(
                     &text.get_with_values("OPEN_FILE_PANEL_STATUS_TTS_EXPORT", &[export_type]),
@@ -202,7 +210,8 @@ impl Panel for OpenFilePanel {
             }
             // Set export type.
             if paths_state.open_file_type == OpenFileType::Export {
-                let mut index = exporter.export_type;
+                let ex = exporter.lock();
+                let mut index = ex.export_type;
                 index.index.increment(true);
                 let e = index.get();
                 let next_export_type = e.get_extension(false);
@@ -270,14 +279,8 @@ impl Panel for OpenFilePanel {
         else if paths_state.open_file_type == OpenFileType::Export
             && input.happened(&InputEvent::CycleExportType)
         {
-            let c0 = vec![Command::SetExporter {
-                exporter: Box::new(exporter.clone()),
-            }];
-            exporter.export_type.index.increment(true);
-            let c1 = vec![Command::SetExporter {
-                exporter: Box::new(exporter.clone()),
-            }];
-            return Some(Snapshot::from_commands(c0, c1, conn));
+            let mut ex = exporter.lock();
+            ex.export_type.index.increment(true);
         }
         // We selected something.
         else if input.happened(&InputEvent::SelectFile) {
@@ -343,8 +346,9 @@ impl Panel for OpenFilePanel {
                         self.disable(state);
                         // Append the extension.
                         let mut filename = filename.clone();
-                        filename.push_str(exporter.export_type.get().get_extension(true));
-                        match &exporter.export_type.get() {
+                        let ex = exporter.lock();
+                        filename.push_str(ex.export_type.get().get_extension(true));
+                        match &ex.export_type.get() {
                             // Export to a .wav file.
                             ExportType::Wav => {
                                 return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
@@ -364,7 +368,7 @@ impl Panel for OpenFilePanel {
                             }
                             // Export to a .mid file.
                             ExportType::Mid => {
-                                exporter.mid(
+                                ex.mid(
                                     &paths_state.exports.directory.join(filename),
                                     &state.music,
                                     &state.time,
