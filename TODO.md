@@ -61,7 +61,7 @@
 - [ ] file_or_directory
 - [ ] file_and_directory
 - [ ] child_paths
-- [ ] font
+- [x] ~~font~~
 - [x] index
 - [x] indexed_values
 - [ ] paths_state
@@ -69,7 +69,7 @@
 - [ ] sizes
 - [ ] midi_binding
 - [ ] qwerty_binding
-- [ ] abc123
+- [x] ~~abc123~~
 - [ ] Field params
 - [ ] viewable_notes
 - [ ] tts_string

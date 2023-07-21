@@ -27,7 +27,7 @@ impl KeyInput {
             KeyWidth::new_from_width(key, [position[0] + 1, position[1]], width - 2, value_width);
         let corners_rect = Rectangle::new(position, [width, 1]);
         let input_rect =
-            Rectangle::new(key_width.value.position, [key_width.value.width as u32, 1]);
+            Rectangle::new(key_width.value.position, [key_width.value.width_u32, 1]);
         Self {
             key_width,
             corners_rect,
