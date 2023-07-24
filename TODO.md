@@ -55,6 +55,7 @@
 
 ## Tests
 
+- [ ] config
 - [ ] exporter
 - [x] fraction
 - [ ] input_state
@@ -70,7 +71,7 @@
 - [ ] midi_binding
 - [ ] qwerty_binding
 - [x] ~~abc123~~
-- [ ] boolean_corners
+- [x] ~~boolean_corners~~
 - [x] boolean
 - [ ] key_input
 - [ ] key_list_corners
