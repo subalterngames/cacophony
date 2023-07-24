@@ -100,7 +100,7 @@ impl MidiConn {
         self.buffer.as_slice()
     }
 
-    // The MIDI callback function. Send the message out of the thread.
+    /// The MIDI callback function. Send the message out of the thread.
     fn midi_callback(_: u64, message: &[u8], sender: &mut Sender<[u8; 3]>) {
         sender.send([message[0], message[1], message[2]]).unwrap();
     }

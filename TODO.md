@@ -75,6 +75,7 @@
 - [ ] key_input
 - [ ] key_list_corners
 - [ ] key_width
+- [ ] list
 - [ ] viewable_notes
 - [ ] tts_string
 - [ ] value_map
