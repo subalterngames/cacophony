@@ -44,7 +44,10 @@ impl List {
 
 #[cfg(test)]
 mod tests {
-    use crate::field_params::{List, list::{LEFT_ARROW, RIGHT_ARROW}};
+    use crate::field_params::{
+        list::{LEFT_ARROW, RIGHT_ARROW},
+        List,
+    };
 
     #[test]
     fn field_params_list() {

@@ -73,7 +73,7 @@ impl Paths {
 
 impl Default for Paths {
     fn default() -> Self {
-        Self::new(&get_data_directory())    
+        Self::new(&get_data_directory())
     }
 }
 

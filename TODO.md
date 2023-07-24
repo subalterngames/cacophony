@@ -62,7 +62,7 @@
 - [ ] file_or_directory
 - [ ] file_and_directory
 - [ ] child_paths
-- [ ] font
+- [x] ~~font~~
 - [x] index
 - [x] indexed_values
 - [ ] paths_state
@@ -78,7 +78,7 @@
 - [ ] key_width
 - [x] list
 - [ ] viewable_notes
-- [ ] tts_string
+- [x] ~~tts_string~~
 - [ ] value_map
 
 ## Major Bugs

@@ -76,11 +76,11 @@ impl Boolean {
 
 #[cfg(test)]
 mod tests {
-    use common::Paths;
     use crate::field_params::Boolean;
-    use text::Text;
-    use std::path::PathBuf;
+    use common::Paths;
     use ini::Ini;
+    use std::path::PathBuf;
+    use text::Text;
 
     #[test]
     fn boolean() {
@@ -106,7 +106,7 @@ mod tests {
         assert_eq!(&bv.text, "Y");
         let bv = b0.get_boolean_label(&false);
         assert_eq!(&bv.text, "N");
-        
+
         // New from width.
         let width = 21;
         let b1 = Boolean::new_from_width(b0_key.clone(), position, width, &text);
@@ -115,6 +115,6 @@ mod tests {
         assert_eq!(b1.width, width);
         for bo in b0.values.keys() {
             assert_eq!(b1.values[bo].position, [23, 5]);
-        } 
+        }
     }
 }
