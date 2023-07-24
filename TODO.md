@@ -75,7 +75,8 @@
 - [x] boolean
 - [ ] key_input
 - [ ] key_list_corners
-- [ ] key_width
+- [x] key_list
+- [x] key_width
 - [x] list
 - [ ] viewable_notes
 - [x] ~~tts_string~~

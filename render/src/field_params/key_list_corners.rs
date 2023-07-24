@@ -13,7 +13,12 @@ impl KeyListCorners {
     /// - The `value` is at a position that tries to fill `width - 2` truncated to `value_width`.
     /// - The `corners_rect` is at `position` and is size `[width, 1]`.
     pub fn new(key: String, position: [u32; 2], width: u32, value_width: u32) -> Self {
-        let key_list = KeyList::new(key, [position[0] + 1, position[1]], width - 2, value_width);
+        let key_list = KeyList::new(
+            key,
+            [position[0] + 1, position[1]],
+            width.checked_sub(2).unwrap_or(width),
+            value_width,
+        );
         let corners_rect = Rectangle::new(position, [width, 1]);
         Self {
             key_list,
