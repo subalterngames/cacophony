@@ -61,7 +61,7 @@
 - [ ] file_or_directory
 - [ ] file_and_directory
 - [ ] child_paths
-- [x] ~~font~~
+- [ ] font
 - [x] index
 - [x] indexed_values
 - [ ] paths_state
@@ -71,11 +71,11 @@
 - [ ] qwerty_binding
 - [x] ~~abc123~~
 - [ ] boolean_corners
-- [ ] boolean
+- [x] boolean
 - [ ] key_input
 - [ ] key_list_corners
 - [ ] key_width
-- [ ] list
+- [x] list
 - [ ] viewable_notes
 - [ ] tts_string
 - [ ] value_map

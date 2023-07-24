@@ -59,7 +59,7 @@ impl Boolean {
         &self.values[value]
     }
 
-    /// Converts a boolean `value` into a `LabelRef`.
+    /// Converts a boolean `value` into a `Label`.
     fn get_boolean_labels(value_position: [u32; 2], text: &Text) -> HashMap<bool, Label> {
         let mut values = HashMap::new();
         values.insert(
@@ -71,5 +71,50 @@ impl Boolean {
             Label::new(value_position, text.get_boolean(&false).to_string()),
         );
         values
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use common::Paths;
+    use crate::field_params::Boolean;
+    use text::Text;
+    use std::path::PathBuf;
+    use ini::Ini;
+
+    #[test]
+    fn boolean() {
+        let config = Ini::load_from_file("../data/config.ini").unwrap();
+        let paths = Paths::new(&PathBuf::from("../data"));
+        let text = Text::new(&config, &paths);
+        let b0_key = "Boolean value".to_string();
+        let position = [3, 5];
+
+        // New.
+        let b0 = Boolean::new(b0_key.clone(), position, &text);
+        assert_eq!(&b0.key.text, &b0_key);
+        assert_eq!(b0.key.position, position);
+        assert_eq!(b0.width, 16);
+        assert!(b0.values.contains_key(&true));
+        assert!(b0.values.contains_key(&false));
+        for (bo, bt) in b0.values.keys().zip(["Y", "N"]) {
+            let bv = &b0.values[bo];
+            assert_eq!(&bv.text, bt);
+            assert_eq!(bv.position, [18, 5]);
+        }
+        let bv = b0.get_boolean_label(&true);
+        assert_eq!(&bv.text, "Y");
+        let bv = b0.get_boolean_label(&false);
+        assert_eq!(&bv.text, "N");
+        
+        // New from width.
+        let width = 21;
+        let b1 = Boolean::new_from_width(b0_key.clone(), position, width, &text);
+        assert_eq!(&b1.key.text, &b0_key);
+        assert_eq!(b1.key.position, position);
+        assert_eq!(b1.width, width);
+        for bo in b0.values.keys() {
+            assert_eq!(b1.values[bo].position, [23, 5]);
+        } 
     }
 }
