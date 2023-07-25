@@ -47,11 +47,11 @@ impl ExportSettingsPanel {
         let y = position[1] + 1;
         let w = width - 2;
         let framerate =
-            KeyListCorners::new(&text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"), [x, y], w, 5);
+            KeyListCorners::new(text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"), [x, y], w, 5);
         let quality =
-            KeyListCorners::new(&text.get("EXPORT_SETTINGS_PANEL_QUALITY"), [x, y + 1], w, 1);
+            KeyListCorners::new(text.get("EXPORT_SETTINGS_PANEL_QUALITY"), [x, y + 1], w, 1);
         let mp3_bit_rate = KeyListCorners::new(
-            &text.get("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE"),
+            text.get("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE"),
             [x, y + 2],
             w,
             6,
@@ -176,7 +176,7 @@ impl ExportSettingsPanel {
                 ),
                 ExportSetting::Copyright => {
                     self.draw_boolean(
-                        &text.get("EXPORT_SETTINGS_PANEL_COPYRIGHT"),
+                        text.get("EXPORT_SETTINGS_PANEL_COPYRIGHT"),
                         exporter.copyright,
                         (x, &mut y),
                         renderer,
@@ -200,7 +200,7 @@ impl ExportSettingsPanel {
                         None => n,
                     };
                     let key_list = KeyListCorners::new(
-                        &text.get("EXPORT_SETTINGS_PANEL_TRACK_NUMBER"),
+                        text.get("EXPORT_SETTINGS_PANEL_TRACK_NUMBER"),
                         [x, y],
                         self.width - 2,
                         value_width,
@@ -229,7 +229,7 @@ impl ExportSettingsPanel {
                     self.draw_separator((x, &mut y), renderer, &line_color);
                 }
                 ExportSetting::MultiFile => self.draw_boolean(
-                    &text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE"),
+                    text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE"),
                     exporter.multi_file,
                     (x, &mut y),
                     renderer,
@@ -241,7 +241,7 @@ impl ExportSettingsPanel {
                         .multi_file_suffixes
                         .get(&exporter.multi_file_suffix.get());
                     let key_list = KeyListCorners::new(
-                        &text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE_SUFFIX"),
+                        text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE_SUFFIX"),
                         [x, y],
                         self.width - 2,
                         self.multi_file_suffixes.max_length,
@@ -291,9 +291,10 @@ impl ExportSettingsPanel {
         *position.1 += 1;
     }
 
+    /// Draw a boolean field.
     fn draw_boolean(
         &self,
-        key: &str,
+        key: String,
         value: bool,
         position: (u32, &mut u32),
         renderer: &Renderer,
@@ -301,7 +302,7 @@ impl ExportSettingsPanel {
         focus: Focus,
     ) {
         let boolean = BooleanCorners::new(key, [position.0, *position.1], self.width - 2, text);
-        renderer.boolean_corners(value, &boolean, focus, text);
+        renderer.boolean_corners(value, &boolean, focus);
         *position.1 += 1;
     }
 }
@@ -315,18 +316,18 @@ impl Drawable for ExportSettingsPanel {
         _: &Input,
         text: &Text,
         _: &PathsState,
-        exporter: &Exporter,
+        exporter: &SharedExporter,
     ) {
         // Get the focus.
         let focus = state.panels[state.focus.get()] == PanelType::ExportSettings;
-
+        let ex = exporter.lock();
         // Get the height of the panel.
-        let e = exporter.export_type.get();
+        let e = ex.export_type.get();
         let h = match &e {
-            ExportType::Wav => exporter.wav_settings.index.get_length() + 2,
-            ExportType::Mid => exporter.mid_settings.index.get_length() + 1,
-            ExportType::MP3 => exporter.mp3_settings.index.get_length() + 3,
-            ExportType::Ogg => exporter.ogg_settings.index.get_length() + 3,
+            ExportType::Wav => ex.wav_settings.index.get_length() + 2,
+            ExportType::Mid => ex.mid_settings.index.get_length() + 1,
+            ExportType::MP3 => ex.mp3_settings.index.get_length() + 3,
+            ExportType::Ogg => ex.ogg_settings.index.get_length() + 3,
         } as u32
             + 1;
 
@@ -343,18 +344,18 @@ impl Drawable for ExportSettingsPanel {
         renderer.text(&self.title, &color);
 
         // Draw the fields.
-        match &exporter.export_type.get() {
+        match &ex.export_type.get() {
             ExportType::Wav => {
-                self.update_settings(|e| &e.wav_settings, renderer, state, text, exporter, focus)
+                self.update_settings(|e| &e.wav_settings, renderer, state, text, &ex, focus)
             }
             ExportType::Mid => {
-                self.update_settings(|e| &e.mid_settings, renderer, state, text, exporter, focus)
+                self.update_settings(|e| &e.mid_settings, renderer, state, text, &ex, focus)
             }
             ExportType::MP3 => {
-                self.update_settings(|e| &e.mp3_settings, renderer, state, text, exporter, focus)
+                self.update_settings(|e| &e.mp3_settings, renderer, state, text, &ex, focus)
             }
             ExportType::Ogg => {
-                self.update_settings(|e| &e.ogg_settings, renderer, state, text, exporter, focus)
+                self.update_settings(|e| &e.ogg_settings, renderer, state, text, &ex, focus)
             }
         }
     }

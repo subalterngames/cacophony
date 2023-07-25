@@ -141,7 +141,7 @@ impl PathsState {
             false
         } else if let Some(selected) = &mut self.children.selected {
             let mut index = Index::new(*selected, self.children.children.len());
-            if index.increment_no_loop(up) {
+            if index.increment_no_loop(!up) {
                 *selected = index.get();
                 true
             } else {

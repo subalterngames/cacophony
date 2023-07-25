@@ -1,6 +1,5 @@
 pub(crate) use crate::Renderer;
-pub(crate) use audio::exporter::Exporter;
-pub(crate) use audio::Conn;
+pub(crate) use audio::{Conn, SharedExporter};
 pub(crate) use common::{PathsState, State};
 pub(crate) use input::Input;
 pub(crate) use text::Text;
@@ -25,6 +24,6 @@ pub(crate) trait Drawable {
         input: &Input,
         text: &Text,
         paths_state: &PathsState,
-        exporter: &Exporter,
+        exporter: &SharedExporter,
     );
 }

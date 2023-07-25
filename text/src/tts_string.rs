@@ -24,17 +24,3 @@ impl From<&str> for TtsString {
         }
     }
 }
-
-impl TtsString {
-    // Append the strings of `other` to my strings.
-    pub fn push(&mut self, other: &TtsString) {
-        if !self.spoken.is_empty() {
-            self.spoken.push(' ');
-        }
-        self.spoken.push_str(&other.spoken);
-        if !self.seen.is_empty() {
-            self.seen.push(' ');
-        }
-        self.seen.push_str(&other.seen);
-    }
-}

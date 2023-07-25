@@ -29,7 +29,7 @@ impl Panel for ExportPanel {
         _: &mut TTS,
         _: &mut Text,
         _: &mut PathsState,
-        _: &mut Exporter,
+        _: &mut SharedExporter,
     ) -> Option<Snapshot> {
         // We're done.
         if conn.export_state.is_none() {

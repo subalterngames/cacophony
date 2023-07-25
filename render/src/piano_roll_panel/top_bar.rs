@@ -3,6 +3,7 @@ use common::{EditMode, IndexedEditModes, PianoRollMode, SelectMode};
 use hashbrown::HashMap;
 use text::ppq_to_string;
 
+/// The padding between input and mode labels.
 const PADDING: u32 = 4;
 type ModesMap = HashMap<PianoRollMode, (Label, Rectangle)>;
 
@@ -43,18 +44,18 @@ impl TopBar {
         x += 1;
 
         // Get the fields.
-        let armed = Boolean::new(&text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"), [x, y], text);
+        let armed = Boolean::new(text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"), [x, y], text);
         x += armed.width + PADDING;
-        let beat = KeyWidth::new(&text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"), [x, y], 4);
+        let beat = KeyWidth::new(text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"), [x, y], 4);
         // Only increment by 1 because beat has a long value space.
         x += beat.width + 1;
         let use_volume = Boolean::new(
-            &text.get("PIANO_ROLL_PANEL_TOP_BAR_USE_VOLUME"),
+            text.get("PIANO_ROLL_PANEL_TOP_BAR_USE_VOLUME"),
             [x, y],
             text,
         );
         x += use_volume.width + PADDING;
-        let volume = KeyWidth::new(&text.get("PIANO_ROLL_PANEL_TOP_BAR_VOLUME"), [x, y], 3);
+        let volume = KeyWidth::new(text.get("PIANO_ROLL_PANEL_TOP_BAR_VOLUME"), [x, y], 3);
         x += volume.width + PADDING;
 
         // Get the separator position.
@@ -121,14 +122,15 @@ impl TopBar {
         }
     }
 
+    /// Update the top bar from the app state.
     pub fn update(&self, state: &State, renderer: &Renderer, text: &Text, focus: bool) {
         // Draw the fields.
-        renderer.boolean(state.input.armed, &self.armed, focus, text);
+        renderer.boolean(state.input.armed, &self.armed, focus);
         let value_color = Renderer::get_value_color([focus, true]);
         let key_color = Renderer::get_key_color(focus);
         let colors = [&key_color, &value_color];
         renderer.key_value(&ppq_to_string(state.input.beat.get_u()), &self.beat, colors);
-        renderer.boolean(state.input.use_volume, &self.use_volume, focus, text);
+        renderer.boolean(state.input.use_volume, &self.use_volume, focus);
         renderer.key_value(&state.input.volume.get().to_string(), &self.volume, colors);
 
         // Separator.
@@ -192,6 +194,7 @@ impl TopBar {
         );
     }
 
+    /// Returns the string corresponding to the edit mode.
     fn get_edit_mode_text(edit_mode: &IndexedEditModes, text: &Text) -> String {
         let key = match edit_mode.get_ref() {
             EditMode::Normal => "PIANO_ROLL_PANEL_EDIT_MODE_NORMAL",
@@ -201,6 +204,7 @@ impl TopBar {
         text.get(key)
     }
 
+    /// Render a vertical line from `position`.
     fn vertical_line(position: [u32; 2], color: &ColorKey, renderer: &Renderer) {
         renderer.vertical_line(
             position[0],
@@ -212,6 +216,7 @@ impl TopBar {
         );
     }
 
+    /// Insert an edit mode label into a HashMap.
     fn insert_mode(
         key: &str,
         mode: PianoRollMode,

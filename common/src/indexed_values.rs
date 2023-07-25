@@ -64,3 +64,22 @@ where
         (&self.values, values)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::IndexedValues;
+
+    #[test]
+    fn indexed_values() {
+        let mut i = IndexedValues::new(1, [0u8, 1u8, 2u8]);
+        assert_eq!(i.index.get(), 1);
+        assert_eq!(i.get(), 1);
+        i.index.increment(false);
+        assert_eq!(i.index.get(), 0);
+        assert_eq!(i.get(), 0);
+        i.index.increment(false);
+        assert_eq!(i.index.get(), 2);
+        assert_eq!(i.get(), 2);
+        assert_eq!(i.get_ref(), &2)
+    }
+}

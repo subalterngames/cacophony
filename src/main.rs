@@ -11,6 +11,8 @@ use macroquad::prelude::*;
 use render::{draw_subtitles, Panels, Renderer};
 use text::{Text, TTS};
 
+const CLEAR_COLOR: macroquad::color::Color = macroquad::color::BLACK;
+
 #[macroquad::main(window_conf)]
 async fn main() {
     // Get the paths.
@@ -35,16 +37,17 @@ async fn main() {
     // Get the input object.
     let mut input = Input::new(&config);
 
+    // Create the exporter.
+    let mut exporter = Exporter::new_shared();
+
     // Create the audio connection.
-    let mut conn = connect();
+    let mut conn = connect(&exporter);
 
     // Create the state.
     let mut state = State::new(&config);
 
     // Create the paths state.
     let mut paths_state = PathsState::new(&paths);
-
-    let mut exporter = Exporter::default();
 
     // Get the IO state.
     let mut io = IO::new(&config, &input, &state.input, &mut text);
@@ -66,13 +69,11 @@ async fn main() {
         set_fullscreen(fullscreen);
     }
 
-    let clear_color = macroquad::color::BLACK;
-
     // Begin.
     let mut done: bool = false;
     while !done {
         // Clear.
-        clear_background(clear_color);
+        clear_background(CLEAR_COLOR);
 
         // Draw.
         panels.update(
@@ -123,11 +124,15 @@ async fn main() {
 
 /// Configure the window.
 fn window_conf() -> Conf {
-    let icon_bytes = get_bytes("./data/icon");
-    let big: [u8; 16384] = icon_bytes[0..16384].try_into().unwrap();
-    let medium: [u8; 4096] = icon_bytes[16384..20480].try_into().unwrap();
-    let small: [u8; 1024] = icon_bytes[20480..21504].try_into().unwrap();
-    let icon = Some(miniquad::conf::Icon { big, medium, small });
+    let icon = if cfg!(windows) {
+        let icon_bytes = get_bytes("./data/icon");
+        let big: [u8; 16384] = icon_bytes[0..16384].try_into().unwrap();
+        let medium: [u8; 4096] = icon_bytes[16384..20480].try_into().unwrap();
+        let small: [u8; 1024] = icon_bytes[20480..21504].try_into().unwrap();
+        Some(miniquad::conf::Icon { big, medium, small })
+    } else {
+        None
+    };
     Conf {
         window_title: "Cacophony".to_string(),
         window_width: 624,

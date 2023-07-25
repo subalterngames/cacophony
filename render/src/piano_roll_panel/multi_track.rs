@@ -73,14 +73,7 @@ impl MultiTrack {
         }
     }
 
-    pub(crate) fn update(
-        &self,
-        renderer: &Renderer,
-        state: &State,
-        conn: &Conn,
-        _: &PathsState,
-        exporter: &Exporter,
-    ) {
+    pub(crate) fn update(&self, renderer: &Renderer, state: &State, conn: &Conn) {
         let focus = state.panels[state.focus.get()] == PanelType::PianoRoll;
         // Get the page.
         let track_heights = get_track_heights(state, conn);
@@ -120,7 +113,6 @@ impl MultiTrack {
                 track,
                 state,
                 conn,
-                exporter,
                 focus,
                 DN,
             );

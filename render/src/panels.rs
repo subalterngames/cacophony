@@ -70,7 +70,7 @@ impl Panels {
         input: &Input,
         text: &Text,
         paths_state: &PathsState,
-        exporter: &Exporter,
+        exporter: &SharedExporter,
     ) {
         // Draw the main panel.
         self.main_menu

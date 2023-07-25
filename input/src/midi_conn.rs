@@ -1,23 +1,22 @@
 use common::config::parse;
-use crossbeam_channel::{unbounded, Receiver, Sender};
 use ini::Ini;
 use midir::{MidiInput, MidiInputConnection, MidiInputPort};
+use parking_lot::Mutex;
+use std::sync::Arc;
 
-// The MIDI connection error message.
+/// The MIDI connection error message.
 const MIDI_ERROR_MESSAGE: &str = "Couldn't connect to a MIDI input device";
+/// Type alias for a growable MIDI buffer.
+type MidiBuffer = Arc<Mutex<Vec<[u8; 3]>>>;
 
 /// The MIDI connection tries to open a connection to an input device. See: `[MIDI_DEVICES]` -> `input` in config.ini
 ///
 /// If a connection is made, the MIDI context will listen for events. When `poll()` is called, the previous event buffer is cleared and a new one is assembled and returned.
 pub(crate) struct MidiConn {
-    /// The receiver end of the MIDI context channel. It receives 3-byte MIDI messages.
-    receiver: Receiver<[u8; 3]>,
     /// The buffer of received MIDI messages since the last frame.
-    pub(crate) buffer: Vec<[u8; 3]>,
-    /// The maximum number of events we'll poll for.
-    num_events: usize,
+    pub(crate) buffer: MidiBuffer,
     /// The MIDI connection. We need this in order to keep the connection alive.
-    _conn: Option<MidiInputConnection<Sender<[u8; 3]>>>,
+    _conn: Option<MidiInputConnection<MidiBuffer>>,
 }
 
 impl MidiConn {
@@ -29,10 +28,10 @@ impl MidiConn {
         let midi_device_section = config.section(Some("MIDI_DEVICES")).unwrap();
         // Get the port index and the max number of events.
         let port_index: usize = parse(midi_device_section, "input");
-        let num_events: usize = parse(midi_device_section, "num_events");
-
-        // Open a thread-safe sender and receiver for MIDI events.
-        let (sender, receiver) = unbounded();
+        // The buffer than can be accessed by the `Input` struct.
+        let buffer = Arc::new(Mutex::new(Vec::new()));
+        // The buffer that the MIDI input device is writing to.
+        let data = Arc::clone(&buffer);
 
         // Try to open a MIDI input connection.
         let conn = match MidiInput::new("midir input") {
@@ -56,7 +55,7 @@ impl MidiConn {
                             midi_port,
                             port_name.as_str(),
                             Self::midi_callback,
-                            sender,
+                            data,
                         ) {
                             Ok(c) => Some(c),
                             Err(error) => {
@@ -77,31 +76,16 @@ impl MidiConn {
             }
         };
         Some(Self {
-            receiver,
-            buffer: Vec::new(),
-            num_events,
+            buffer,
             _conn: conn,
         })
     }
 
-    /// Poll the MIDI device for events.
-    ///
-    /// The maximum number of events is defined in config.ini: `[MIDI_DEVICES]` -> `num_events`.
-    ///
-    /// Returns a slice of 3-element u8 arrays.
-    pub(crate) fn poll(&mut self) -> &[[u8; 3]] {
-        // Clear the buffer of events.
-        self.buffer.clear();
-        for _ in 0..self.num_events {
-            if let Ok(resp) = self.receiver.try_recv() {
-                self.buffer.push(resp);
-            }
-        }
-        self.buffer.as_slice()
-    }
-
-    // The MIDI callback function. Send the message out of the thread.
-    fn midi_callback(_: u64, message: &[u8], sender: &mut Sender<[u8; 3]>) {
-        sender.send([message[0], message[1], message[2]]).unwrap();
+    /// The MIDI callback function. Send the message out of the thread.
+    fn midi_callback(_: u64, message: &[u8], sender: &mut MidiBuffer) {
+        let mut m = [0u8; 3];
+        m.copy_from_slice(&message[0..3]);
+        let mut buffer = sender.lock();
+        buffer.push(m);
     }
 }

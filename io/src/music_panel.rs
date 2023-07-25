@@ -1,4 +1,4 @@
-use crate::abc123::{abc123_exporter, abc123_state};
+use crate::abc123::{abc123_shared_exporter, abc123_state};
 use crate::panel::*;
 use common::music_panel_field::*;
 use common::{U64orF32, DEFAULT_BPM, MAX_VOLUME};
@@ -34,7 +34,7 @@ impl Panel for MusicPanel {
         tts: &mut TTS,
         text: &mut Text,
         _: &mut PathsState,
-        exporter: &mut Exporter,
+        exporter: &mut SharedExporter,
     ) -> Option<Snapshot> {
         // Cycle fields.
         if input.happened(&InputEvent::NextMusicPanelField) {
@@ -50,10 +50,11 @@ impl Panel for MusicPanel {
         }
         // Panel TTS.
         else if input.happened(&InputEvent::StatusTTS) {
+            let ex = exporter.lock();
             tts.enqueue(text.get_with_values(
                 "MUSIC_PANEL_STATUS_TTS",
                 &[
-                    &exporter.metadata.title,
+                    &ex.metadata.title,
                     &state.time.bpm.to_string(),
                     &conn.state.gain.to_string(),
                 ],
@@ -136,10 +137,9 @@ impl Panel for MusicPanel {
                 }
                 // Modify the name.
                 MusicPanelField::Name => {
-                    return abc123_exporter(
+                    return abc123_shared_exporter(
                         |e| &mut e.metadata.title,
                         state,
-                        conn,
                         input,
                         exporter,
                         "My Music".to_string(),

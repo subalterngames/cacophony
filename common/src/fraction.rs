@@ -72,15 +72,15 @@ impl Mul<Fraction> for U64orF32 {
     type Output = U64orF32;
 
     fn mul(self, rhs: Fraction) -> Self::Output {
-        Self::from((self.get_u() * rhs.numerator) / rhs.denominator)
+        Self::from(self.get_u() * rhs)
     }
 }
 
 impl Mul<U64orF32> for Fraction {
-    type Output = Fraction;
+    type Output = U64orF32;
 
     fn mul(self, rhs: U64orF32) -> Self::Output {
-        Self::new(rhs.get_u() * self.numerator, self.denominator)
+        Self::Output::from(self * rhs.get_u())
     }
 }
 
@@ -88,7 +88,7 @@ impl Div<u64> for Fraction {
     type Output = u64;
 
     fn div(self, rhs: u64) -> Self::Output {
-        (rhs * self.denominator) / self.numerator
+        (rhs * self.numerator) / self.denominator
     }
 }
 
@@ -115,15 +115,64 @@ impl Div<Fraction> for U64orF32 {
     type Output = U64orF32;
 
     fn div(self, rhs: Fraction) -> Self::Output {
-        Self::from((self.get_u() * rhs.denominator) / rhs.numerator)
+        Self::from(self.get_u() / rhs)
     }
 }
 
 impl Div<U64orF32> for Fraction {
-    type Output = Fraction;
+    type Output = U64orF32;
 
-    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: U64orF32) -> Self::Output {
-        Self::new(rhs.get_u() * self.denominator, self.numerator)
+        Self::Output::from(self / rhs.get_u())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::fraction::Fraction;
+    use crate::U64orF32;
+
+    #[test]
+    fn fraction() {
+        // Instantiation.
+        let mut fr = Fraction::from(3);
+        assert_eq!(fr.numerator, 3);
+        assert_eq!(fr.denominator, 1);
+        fr = Fraction::new(1, 2);
+        assert_eq!(fr.numerator, 1);
+        assert_eq!(fr.denominator, 2);
+        // Inversion.
+        fr.invert();
+        assert_eq!(fr.numerator, 2);
+        assert_eq!(fr.denominator, 1);
+        // Equality.
+        fr.numerator = 3;
+        fr.denominator = 5;
+        // u64.
+        let u = 7;
+        assert_eq!(u * fr, 4);
+        assert_eq!(fr * u, 4);
+        assert_eq!(u / fr, 11);
+        assert_eq!(fr / u, 4);
+        // Fraction.
+        let fr1 = Fraction::new(1, 2);
+        let mut fr2 = fr * fr1;
+        assert_eq!(fr2.numerator, 3);
+        assert_eq!(fr2.denominator, 10);
+        fr2 = fr1 * fr;
+        assert_eq!(fr2.numerator, 3);
+        assert_eq!(fr2.denominator, 10);
+        fr2 = fr / fr1;
+        assert_eq!(fr2.numerator, 6);
+        assert_eq!(fr2.denominator, 5);
+        fr2 = fr1 / fr;
+        assert_eq!(fr2.numerator, 5);
+        assert_eq!(fr2.denominator, 6);
+        // U64orF32.
+        let uf = U64orF32::from(7);
+        assert_eq!((uf * fr).get_u(), 4);
+        assert_eq!((fr * uf).get_u(), 4);
+        assert_eq!((uf / fr).get_u(), 11);
+        assert_eq!((fr / uf).get_u(), 4);
     }
 }

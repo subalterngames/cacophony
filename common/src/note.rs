@@ -12,7 +12,7 @@ pub const MIDDLE_C: u8 = 60;
 /// The name of each note, in order.
 /// Question: Why not just calculate the name from the MIDI value?
 /// Answer: 1) Because I couldn't find an accurate formula. 2) This is probably slightly faster.
-const NOTE_NAMES: [&str; 115] = [
+pub const NOTE_NAMES: [&str; 115] = [
     "G9", "F#9", "F9", "E9", "D#9", "D9", "C#9", "C9", "B9", "A#9", "A9", "G#9", "G8", "F#8", "F8",
     "E8", "D#8", "D8", "C#8", "C8", "B8", "A#8", "A8", "G#8", "G7", "F#7", "F7", "E7", "D#7", "D7",
     "C#7", "C7", "B7", "A#7", "A7", "G#7", "G6", "F#6", "F6", "E6", "D#6", "D6", "C#6", "C6", "B6",

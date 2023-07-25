@@ -1,6 +1,5 @@
 use crate::{IOCommand, IOCommands, State};
-use audio::exporter::Exporter;
-use audio::{Command, CommandsMessage, Conn};
+use audio::{CommandsMessage, Conn};
 
 /// A snapshot of a state delta.
 #[derive(Default)]
@@ -55,54 +54,6 @@ impl Snapshot {
             to_state: Some(to_state.clone()),
             ..Default::default()
         }
-    }
-
-    /// Set the value of an `Exporter` parameter.
-    /// Send a copy of the exporter to the `Conn`'s `SynthState`.
-    /// Returns a snapshot of the delta.
-    ///
-    /// - `f` A function that accepts an `Exporter` and returns a value of type T.
-    /// - `value` The new value that will be assignd to `f(exporter)`.
-    /// - `conn` The audio connection.
-    /// - `exporter` The local exporter.
-    pub fn from_exporter_value<F, T>(
-        mut f: F,
-        value: T,
-        conn: &mut Conn,
-        exporter: &mut Exporter,
-    ) -> Self
-    where
-        F: FnMut(&mut Exporter) -> &mut T,
-    {
-        let c0 = vec![Command::SetExporter {
-            exporter: Box::new(exporter.clone()),
-        }];
-        *f(exporter) = value;
-        let c1 = vec![Command::SetExporter {
-            exporter: Box::new(exporter.clone()),
-        }];
-        Snapshot::from_commands(c0, c1, conn)
-    }
-
-    /// Call an exporter function.
-    /// Send a copy of the exporter to the `Conn`'s `SynthState`.
-    /// Returns a snapshot of the delta.
-    ///
-    /// - `f` A function that accepts an `Exporter` and returns a value of type T.
-    /// - `conn` The audio connection.
-    /// - `exporter` The local exporter.
-    pub fn from_exporter<F>(mut f: F, conn: &mut Conn, exporter: &mut Exporter) -> Self
-    where
-        F: FnMut(&mut Exporter),
-    {
-        let c0 = vec![Command::SetExporter {
-            exporter: Box::new(exporter.clone()),
-        }];
-        f(exporter);
-        let c1 = vec![Command::SetExporter {
-            exporter: Box::new(exporter.clone()),
-        }];
-        Snapshot::from_commands(c0, c1, conn)
     }
 
     /// Returns a snapshot of the delta between to synth states.

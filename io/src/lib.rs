@@ -15,8 +15,8 @@
 //! `IO` divides input listening into discrete panels, e.g. the music panel and the tracks panel.
 //! Each panel implements the `Panel` trait.
 
-use audio::exporter::*;
-use audio::{Command, CommandsMessage, Conn, ExportState};
+use audio::exporter::{Exporter, MultiFileSuffix};
+use audio::{Command, CommandsMessage, Conn, ExportState, SharedExporter};
 use common::{
     InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, SelectMode, State, MAX_VOLUME,
 };
@@ -57,7 +57,7 @@ const MAX_UNDOS: usize = 100;
 type QueuedExportCommands = (CommandsMessage, Option<ExportState>);
 
 /// Parse user input and apply it to the application's various states as needed:
-/// 
+///
 /// - Play ad-hoc notes.
 /// - Modify the `State` and push the old version to the undo stack.
 /// - Modify the `PathsState`.
@@ -170,7 +170,7 @@ impl IO {
         tts: &mut TTS,
         text: &mut Text,
         paths_state: &mut PathsState,
-        exporter: &mut Exporter,
+        exporter: &mut SharedExporter,
     ) -> bool {
         // Quit.
         if input.happened(&InputEvent::Quit) {
@@ -389,7 +389,9 @@ impl IO {
                             }
                         },
                         // Export.
-                        IOCommand::Export(path) => self.export(path, state, conn, exporter),
+                        IOCommand::Export(path) => {
+                            self.export(path, state, conn, &mut exporter.lock())
+                        }
                         // Close the open-file panel.
                         IOCommand::CloseOpenFile => self.open_file_panel.disable(state),
                     }
@@ -421,7 +423,7 @@ impl IO {
     /// - `state` The state.
     /// - `conn` The audio conn.
     /// - `exporter` The exporter.
-    fn export(&mut self, path: &Path, state: &mut State, conn: &mut Conn, exporter: &Exporter) {
+    fn export(&mut self, path: &Path, state: &mut State, conn: &mut Conn, exporter: &mut Exporter) {
         self.pre_export_panels = state.panels.clone();
         self.pre_export_focus = state.focus.get();
         // Enable the export panel.
@@ -463,7 +465,7 @@ impl IO {
         path: &Path,
         state: &State,
         conn: &Conn,
-        exporter: &Exporter,
+        exporter: &mut Exporter,
     ) {
         self.export_queue.clear();
         let e0 = exporter.clone();
@@ -481,13 +483,9 @@ impl IO {
         for track in get_playable_tracks(&state.music) {
             let mut t1 = t0;
             // Export to wav.
-            let mut e1 = exporter.clone();
-            e1.export_type.index.set(0);
+            exporter.export_type.index.set(0);
             // Start to play music.
             let mut commands = vec![
-                Command::SetExporter {
-                    exporter: Box::new(e1),
-                },
                 Command::SetFramerate {
                     framerate: framerate_u,
                 },
@@ -544,14 +542,9 @@ impl IO {
             ]);
             self.export_queue.push((commands, Some(export_state)));
         }
+        *exporter = e0;
         self.export_queue.push((
-            vec![
-                Command::StopMusic,
-                Command::SetExporter {
-                    exporter: Box::new(e0),
-                },
-                Command::AppendSilences { paths },
-            ],
+            vec![Command::StopMusic, Command::AppendSilences { paths }],
             None,
         ));
     }
@@ -626,7 +619,7 @@ fn combine_tracks_to_commands(
 }
 
 /// Try to select a track, given user input.
-/// 
+///
 /// This is here an not in a more obvious location because both `TracksPanel` and `PianoRollPanel` need it.
 pub(crate) fn select_track(state: &mut State, input: &Input) -> Option<Snapshot> {
     if let Some(selected) = state.music.selected {

@@ -30,7 +30,7 @@ pub use indexed_values::IndexedValues;
 pub use input_state::InputState;
 pub use midi_track::MidiTrack;
 pub use music::*;
-pub use note::{Note, MAX_NOTE, MIN_NOTE};
+pub use note::{Note, MAX_NOTE, MIN_NOTE, NOTE_NAMES};
 pub use panel_type::PanelType;
 pub use paths::Paths;
 pub use state::State;

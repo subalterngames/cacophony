@@ -29,7 +29,7 @@ impl Panel for Edit {
         _: &mut TTS,
         _: &mut Text,
         _: &mut PathsState,
-        _: &mut Exporter,
+        _: &mut SharedExporter,
     ) -> Option<Snapshot> {
         // Do nothing if there is no track.
         if state.music.selected.is_none() {

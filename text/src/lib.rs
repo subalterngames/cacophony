@@ -8,7 +8,7 @@ mod tts;
 mod value_map;
 pub use self::tts::{Enqueable, TTS};
 use std::path::Path;
-pub use value_map::*;
+pub use value_map::ValueMap;
 mod tts_string;
 use common::config::parse;
 use common::{EditMode, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U};
@@ -166,7 +166,7 @@ pub struct Text {
     /// The name of each MIDI note.
     note_names: Vec<String>,
     /// Boolean dislay
-    booleans: HashMap<bool, String>,
+    booleans: ValueMap<bool>,
     /// Cached text-to-speech strings.
     tts_strings: HashMap<String, TtsString>,
     /// The regex used to find bindings.
@@ -203,6 +203,10 @@ impl Text {
         let mut booleans = HashMap::new();
         booleans.insert(true, text["TRUE"].clone());
         booleans.insert(false, text["FALSE"].clone());
+        let booleans = ValueMap::new_from_strings(
+            [true, false],
+            [text["TRUE"].clone(), text["FALSE"].clone()],
+        );
         Self {
             text,
             keycodes_spoken,
@@ -276,16 +280,13 @@ impl Text {
     }
 
     /// Returns boolean text.
-    pub fn get_boolean(&self, value: bool) -> String {
-        self.booleans[&value].clone()
+    pub fn get_boolean(&self, value: &bool) -> &str {
+        self.booleans.get(value)
     }
 
-    pub fn get_max_boolean_length(&self) -> usize {
-        self.booleans
-            .iter()
-            .map(|kv| kv.1.chars().count())
-            .max()
-            .unwrap()
+    /// Returns the maximum character width of the boolean values.
+    pub fn get_max_boolean_length(&self) -> u32 {
+        self.booleans.max_length
     }
 
     /// Converts a beat PPQ value into a time string.

@@ -84,10 +84,7 @@ impl MainMenu {
         let width = key.chars().count() as u32;
         let position = [*x, y];
         *x += width;
-        Label {
-            text: key,
-            position,
-        }
+        Label::new(position, key)
     }
 
     fn label_from_key(key: &str, x: &mut u32, y: u32, text: &Text) -> Label {
@@ -106,10 +103,7 @@ impl MainMenu {
         let width = key.chars().count() as u32;
         let position = [*x, y];
         *x += width;
-        Label {
-            text: tooltip,
-            position,
-        }
+        Label::new(position, tooltip)
     }
 }
 
@@ -122,7 +116,7 @@ impl Drawable for MainMenu {
         _: &Input,
         _: &Text,
         _: &PathsState,
-        _: &Exporter,
+        _: &SharedExporter,
     ) {
         self.panel.update_ex(&COLOR, renderer);
         if state.unsaved_changes {

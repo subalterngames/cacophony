@@ -6,7 +6,6 @@ use common::sizes::*;
 use hashbrown::HashMap;
 use ini::Ini;
 use macroquad::prelude::*;
-use text::Text;
 
 const TEXTURE_COLOR: Color = macroquad::color::colors::WHITE;
 
@@ -519,11 +518,10 @@ impl Renderer {
     /// - `value` The value of the boolean.
     /// - `boolean` Parameters for drawing a key-value string-bool pair.
     /// - `focus` If true, the panel has focus.
-    /// - `text` This is used to get the boolean data.
-    pub(crate) fn boolean(&self, value: bool, boolean: &Boolean, focus: bool, text: &Text) {
+    pub(crate) fn boolean(&self, value: bool, boolean: &Boolean, focus: bool) {
         self.text(&boolean.key, &Renderer::get_key_color(focus));
         self.text(
-            &boolean.get_boolean_label(value, text),
+            boolean.get_boolean_label(&value),
             &Renderer::get_boolean_color(focus, value),
         );
     }
@@ -533,19 +531,12 @@ impl Renderer {
     /// - `value` The value of the boolean.
     /// - `boolean` Parameters for drawing a key-value string-bool pair.
     /// - `focus` If true, the panel has focus.
-    /// - `text` This is used to get the boolean data.
-    pub(crate) fn boolean_corners(
-        &self,
-        value: bool,
-        boolean: &BooleanCorners,
-        focus: Focus,
-        text: &Text,
-    ) {
+    pub(crate) fn boolean_corners(&self, value: bool, boolean: &BooleanCorners, focus: Focus) {
         if focus[1] {
             // Draw corners.
             self.corners(&boolean.corners_rect, focus[0]);
         }
-        self.boolean(value, &boolean.boolean, focus[0], text);
+        self.boolean(value, &boolean.boolean, focus[0]);
     }
 
     /// Returns the color of the value text.
@@ -571,6 +562,7 @@ impl Renderer {
         }
     }
 
+    /// Returns the color of a boolean value.
     pub fn get_boolean_color(focus: bool, value: bool) -> ColorKey {
         if !focus {
             ColorKey::NoFocus

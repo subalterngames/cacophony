@@ -39,7 +39,7 @@
 - [x] Note times should be measured in PPQ
 - [x] Export buffer
 - [x] TTS is not helpful!!
-- [ ] Internal documentation (see below)
+- [x] Internal documentation (see below)
 - [ ] More tests (see below)
 - [ ] Merge and clobber
 
@@ -49,31 +49,44 @@
 - [x] common
 - [x] input
 - [x] io
-- [ ] render
-- [ ] text
-- [ ] main
+- [x] render
+- [x] text
+- [x] main
 
 ## Tests
 
+- [ ] config
 - [ ] exporter
-- [ ] fraction
+- [x] fraction
 - [ ] input_state
 - [ ] file_or_directory
 - [ ] file_and_directory
 - [ ] child_paths
-- [ ] font
-- [ ] index
+- [x] ~~font~~
+- [x] index
+- [x] indexed_values
 - [ ] paths_state
 - [ ] select_mode
 - [ ] sizes
 - [ ] midi_binding
 - [ ] qwerty_binding
-- [ ] abc123
-- [ ] Field params
+- [x] ~~abc123~~
+- [x] ~~boolean_corners~~
+- [x] boolean
+- [ ] key_input
+- [ ] key_list_corners
+- [x] key_list
+- [x] key_width
+- [x] list
+- [ ] viewable_notes
+- [x] ~~tts_string~~
+- [ ] value_map
 
 ## Major Bugs
 
-- [ ] Can't resize window in Linux.
+- [ ] Can't resize window in Linux
+- [ ] Can't double-click Linux executable
+- [ ] Can't connect to MIDI input on Linux
 
 ## Bugs
 
@@ -114,7 +127,7 @@
 - [x] ~~Exporter can crash due to not enough samples~~
 - [x] Multi track wav doesn't append silence
 - [x] Incorrect sound font if you load them while we have notes
-- [x] View range can get messed up by multitrack?
+- [x] View range can get messed up bqy multitrack?
 - [x] Playing line after exporting
 
 ## Misc.

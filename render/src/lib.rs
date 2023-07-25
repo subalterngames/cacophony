@@ -7,9 +7,11 @@
 //! The sizes of the panels are derived from functions in `common::sizes`.
 //! It's in `common` because `State` needs some of that information (for example, to define the initial piano roll viewport).
 //!
-//! Unless otherwise specified, Positions and sizes are set in *grid units* rather than pixels.
+//! Unless otherwise specified, positions and sizes are set in *grid units* rather than pixels.
 //!
-//! `ColorKey` is used to define colors. To change the colors, change the config file.
+//! `ColorKey` is used to define colors. To change the colors, change the config file.]
+//!
+//! Everything in `field_params/` is used to draw parameters and values.
 
 mod color_key;
 mod drawable;
@@ -45,6 +47,7 @@ pub fn draw_subtitles(renderer: &Renderer, tts: &TTS) {
     }
 }
 
+/// Get the height of each track. This is shared by the tracks panel and the multi-track piano roll panel.
 pub(crate) fn get_track_heights(state: &common::State, conn: &audio::Conn) -> Vec<u32> {
     // Get a list of track element heights.
     let mut elements = vec![];

@@ -1,5 +1,5 @@
 use directories::UserDirs;
-use std::env::current_dir;
+use std::env::{current_dir, current_exe};
 use std::fs::{copy, create_dir_all};
 use std::path::{Path, PathBuf};
 
@@ -26,19 +26,7 @@ pub struct Paths {
 }
 
 impl Paths {
-    /// Create the user .ini file by copying the default .ini file.
-    pub fn create_user_config(&self) {
-        let path = PathBuf::from(&self.user_directory)
-            .join(CONFIG_FILENAME)
-            .to_str()
-            .unwrap()
-            .to_string();
-        copy(&self.default_ini_path, path).unwrap();
-    }
-}
-
-impl Default for Paths {
-    fn default() -> Self {
+    pub fn new(data_directory: &Path) -> Self {
         let user_directory = match UserDirs::new() {
             Some(user_dirs) => match user_dirs.document_dir() {
                 Some(documents) => documents.join("cacophony"),
@@ -52,7 +40,6 @@ impl Default for Paths {
                 }
             }
         };
-        let data_directory = current_dir().unwrap().join("data");
         let user_ini_path = user_directory.join(CONFIG_FILENAME);
         let default_ini_path = data_directory.join(CONFIG_FILENAME);
         let text_path = data_directory.join("text.csv");
@@ -71,6 +58,46 @@ impl Default for Paths {
             export_directory,
             splash_path,
         }
+    }
+
+    /// Create the user .ini file by copying the default .ini file.
+    pub fn create_user_config(&self) {
+        let path = PathBuf::from(&self.user_directory)
+            .join(CONFIG_FILENAME)
+            .to_str()
+            .unwrap()
+            .to_string();
+        copy(&self.default_ini_path, path).unwrap();
+    }
+}
+
+impl Default for Paths {
+    fn default() -> Self {
+        Self::new(&get_data_directory())
+    }
+}
+
+/// Returns the path to the data directory.
+pub fn get_data_directory() -> PathBuf {
+    let mut data_directory = current_dir().unwrap().join("data");
+    if data_directory.exists() {
+        data_directory
+    }
+    // Maybe we're in a .app bundle.
+    else if cfg!(target_os = "macos") {
+        data_directory = current_exe()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .to_path_buf()
+            .join("../Resources/data");
+        if data_directory.exists() {
+            data_directory
+        } else {
+            panic!("Failed to get data directory: {:?}", data_directory)
+        }
+    } else {
+        panic!("Failed to get data directory: {:?}", data_directory)
     }
 }
 

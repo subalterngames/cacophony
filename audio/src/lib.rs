@@ -20,7 +20,7 @@
 //!
 //! As far as external crates are concerned, it's only necessary to do the following:
 //!
-//! 1. Create an `Exporter` on the main thread.
+//! 1. Create a shared exporter on the main thread: `Exporter::new_shared()`.
 //! 2. Call `connect()` on the main thread, which sets up everything else and returns a `Conn`.
 
 mod command;
@@ -39,20 +39,22 @@ use crate::program::Program;
 pub use crate::synth_state::SynthState;
 use crate::time_state::TimeState;
 pub(crate) use crate::types::AudioBuffer;
-pub use crate::types::{AudioMessage, CommandsMessage};
+pub use crate::types::{AudioMessage, CommandsMessage, SharedExporter};
 use crossbeam_channel::{bounded, unbounded};
 pub use export_state::ExportState;
 use player::Player;
+use std::sync::Arc;
 use std::thread::spawn;
 
 /// Start the synthesizer and the audio player. Returns a `conn`.
-pub fn connect() -> Conn {
+pub fn connect(exporter: &SharedExporter) -> Conn {
     let (send_commands, recv_commands) = unbounded();
     let (send_state, recv_state) = bounded(1);
     let (send_audio, recv_audio) = bounded(1);
     let (send_time, recv_time) = bounded(1);
     let (send_export, recv_export) = bounded(1);
 
+    let ex = Arc::clone(exporter);
     // Spawn the synthesizer thread.
     spawn(move || {
         synthesizer::Synthesizer::start(
@@ -61,6 +63,7 @@ pub fn connect() -> Conn {
             send_state,
             send_export,
             send_time,
+            ex,
         )
     });
     // Spawn the audio thread.
@@ -71,22 +74,19 @@ pub fn connect() -> Conn {
 
 #[cfg(test)]
 mod tests {
-    use crate::{connect, Command, CommandsMessage};
+    use crate::exporter::Exporter;
+    use crate::{connect, Command};
     use std::path::PathBuf;
-    use std::thread::sleep;
-    use std::time::Duration;
 
     const SF_PATH: &str = "tests/CT1MBGMRSV1.06.sf2";
     const CHANNEL: u8 = 0;
-    const DURATION: u64 = 44100;
-    const KEY: u8 = 60;
-    const VELOCITY: u8 = 120;
 
     #[test]
     fn sf() {
         // Make sure we can load the file.
         assert!(std::fs::File::open(SF_PATH).is_ok());
-        let mut conn = connect();
+        let exporter = Exporter::new_shared();
+        let mut conn = connect(&exporter);
         let commands = vec![Command::LoadSoundFont {
             path: PathBuf::from(SF_PATH),
             channel: CHANNEL,
@@ -100,51 +100,5 @@ mod tests {
         assert_eq!(program.num_presets, 128);
         assert_eq!(program.preset_index, 0);
         assert_eq!(program.preset_name, "Piano 1");
-    }
-
-    #[test]
-    fn audio() {
-        let mut conn = connect();
-        // Load the soundfont. set the program, and do a note-on.
-        let path = PathBuf::from(SF_PATH);
-        conn.send(vec![
-            Command::LoadSoundFont {
-                path: path.clone(),
-                channel: CHANNEL,
-            },
-            Command::SetProgram {
-                channel: CHANNEL,
-                path,
-                bank_index: 0,
-                preset_index: 0,
-            },
-            Command::NoteOn {
-                channel: CHANNEL,
-                key: KEY,
-                velocity: VELOCITY,
-                duration: DURATION,
-            },
-        ]);
-        // Listen!
-        sleep(Duration::from_millis(500));
-        // Schedule some events.
-        let commands = get_commands();
-        conn.send(commands);
-        // Listen!
-        sleep(Duration::from_secs(10));
-    }
-
-    fn get_commands() -> CommandsMessage {
-        let dt = DURATION / 4;
-        let num: u8 = 10;
-        (0..num)
-            .map(|i| Command::NoteOnAt {
-                channel: CHANNEL,
-                key: KEY + i,
-                velocity: VELOCITY,
-                start: DURATION * 3 + dt * i as u64,
-                end: (DURATION * 3 + dt * i as u64) + DURATION,
-            })
-            .collect::<CommandsMessage>()
     }
 }

@@ -160,13 +160,13 @@ impl View {
             self.initial_zoom_index - zi
         }) % increments;
         for _ in 0..m {
-            if !self.zoom_index.increment_no_loop(!up) {
+            if !self.zoom_index.increment_no_loop(up) {
                 break;
             }
         }
         // Increment the zoom index.
         for _ in 0..increments {
-            if !self.zoom_index.increment_no_loop(up) {
+            if !self.zoom_index.increment_no_loop(!up) {
                 break;
             }
         }

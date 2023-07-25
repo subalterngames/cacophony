@@ -1,7 +1,7 @@
 use crate::exporter::*;
 use crate::{
-    AudioBuffer, AudioMessage, Command, CommandsMessage, ExportState, Program, SynthState,
-    TimeState,
+    AudioBuffer, AudioMessage, Command, CommandsMessage, ExportState, Program, SharedExporter,
+    SynthState, TimeState,
 };
 use crossbeam_channel::{Receiver, Sender};
 use hashbrown::HashMap;
@@ -67,7 +67,7 @@ pub(crate) struct Synthesizer {
     /// The export file path.
     export_path: Option<PathBuf>,
     /// The exporter.
-    exporter: Exporter,
+    exporter: SharedExporter,
     /// The buffer that the exporter writes to.
     export_buffer: AudioBuffer,
     /// If true, we need to send the export state.
@@ -82,12 +82,14 @@ impl Synthesizer {
     /// - `send_state` Send a state to the conn.
     /// - `send_export` Send audio samples to an exporter.
     /// - `send_time` Send the time to the conn.
+    /// - `exporter` The shared exporter.
     pub(crate) fn start(
         recv_commands: Receiver<CommandsMessage>,
         send_audio: Sender<AudioMessage>,
         send_state: Sender<SynthState>,
         send_export: Sender<Option<ExportState>>,
         send_time: Sender<TimeState>,
+        exporter: SharedExporter,
     ) {
         // Create the synthesizer.
         let mut s = Synthesizer {
@@ -98,7 +100,7 @@ impl Synthesizer {
             state: SynthState::default(),
             export_path: None,
             export_state: None,
-            exporter: Exporter::default(),
+            exporter,
             send_export_state: false,
             export_buffer: [vec![], vec![]],
         };
@@ -283,12 +285,10 @@ impl Synthesizer {
                                 }
                                 // Send the export state.
                                 Command::SendExportState => s.send_export_state = true,
-                                // Set the exporter.
-                                Command::SetExporter { exporter } => {
-                                    s.exporter = exporter.as_ref().clone()
-                                }
+                                // Append silence to the end of exported audio.
                                 Command::AppendSilences { paths } => {
-                                    s.exporter.append_silences(paths)
+                                    let exporter = s.exporter.lock();
+                                    exporter.append_silences(paths);
                                 }
                             }
                         }
@@ -344,22 +344,21 @@ impl Synthesizer {
                         }
                         // We're done!
                         if !decaying {
-                            match s.exporter.export_type.get() {
+                            let exporter = s.exporter.lock();
+                            match exporter.export_type.get() {
                                 ExportType::Mid => {
                                     panic!("Tried exporting a .mid from the synthesizer")
                                 }
                                 // Export to a .wav file.
                                 ExportType::Wav => {
-                                    s.exporter
-                                        .wav(s.export_path.as_ref().unwrap(), &s.export_buffer);
+                                    exporter.wav(s.export_path.as_ref().unwrap(), &s.export_buffer);
                                 }
                                 ExportType::MP3 => {
-                                    s.exporter
-                                        .mp3(s.export_path.as_ref().unwrap(), &s.export_buffer);
+                                    exporter.mp3(s.export_path.as_ref().unwrap(), &s.export_buffer);
                                 }
-                                ExportType::Ogg => s
-                                    .exporter
-                                    .ogg(s.export_path.as_ref().unwrap(), &s.export_buffer),
+                                ExportType::Ogg => {
+                                    exporter.ogg(s.export_path.as_ref().unwrap(), &s.export_buffer)
+                                }
                             }
                             // Stop exporting.
                             s.export_state = None;

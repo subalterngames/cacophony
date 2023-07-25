@@ -1,4 +1,5 @@
 use audio::exporter::Exporter;
+use audio::SharedExporter;
 use audio::*;
 use common::{PathsState, State};
 use serde::{Deserialize, Serialize};
@@ -36,14 +37,14 @@ impl Save {
         state: &State,
         conn: &Conn,
         paths_state: &PathsState,
-        exporter: &Exporter,
+        exporter: &SharedExporter,
     ) {
         // Convert the state to something that can be serialized.
         let save = Save {
             state: state.clone(),
             synth_state: conn.state.clone(),
             paths_state: paths_state.clone(),
-            exporter: exporter.clone(),
+            exporter: exporter.lock().clone(),
         };
         // Try to open the file.
         match OpenOptions::new()
@@ -78,7 +79,7 @@ impl Save {
         state: &mut State,
         conn: &mut Conn,
         paths_state: &mut PathsState,
-        exporter: &mut Exporter,
+        exporter: &mut SharedExporter,
     ) {
         match File::open(path) {
             Ok(mut file) => {
@@ -95,7 +96,8 @@ impl Save {
                                 *paths_state = s.paths_state;
 
                                 // Set the exporter.
-                                *exporter = s.exporter;
+                                let mut ex = exporter.lock();
+                                *ex = s.exporter;
 
                                 // Set the synthesizer.
                                 // Set the gain.

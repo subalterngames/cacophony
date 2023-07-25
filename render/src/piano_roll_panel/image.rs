@@ -7,7 +7,7 @@ use ini::Ini;
 use rusttype::{Font, Scale};
 
 /// Returns a `rusttype` font, the scale, and a font size.
-pub fn get_font(config: &Ini) -> (Font, Scale, (i32, i32)) {
+pub(super) fn get_font(config: &Ini) -> (Font, Scale, (i32, i32)) {
     let font = Font::try_from_vec(get_font_bytes(config)).unwrap();
     let cell_size = get_cell_size(config);
     // Get the scale.
@@ -20,7 +20,7 @@ pub fn get_font(config: &Ini) -> (Font, Scale, (i32, i32)) {
 }
 
 /// Converts a macroquad color to an image color.
-pub fn get_color(color: &ColorKey, renderer: &Renderer) -> Rgba<u8> {
+pub(super) fn get_color(color: &ColorKey, renderer: &Renderer) -> Rgba<u8> {
     let color: [u8; 4] = renderer.get_color(color).into();
     Rgba(color)
 }

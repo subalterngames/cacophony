@@ -131,6 +131,7 @@ impl Enqueable<Vec<TtsString>> for TTS {
     }
 }
 
+/// This is something that can be enqueued into a vec of TTS strings.
 pub trait Enqueable<T> {
     /// Enqueue something to the text-to-speech strings.
     fn enqueue(&mut self, text: T);

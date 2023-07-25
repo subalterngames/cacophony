@@ -46,7 +46,7 @@ impl MusicPanel {
         let bpm = KeyInput::new_from_value_width(&text.get("TITLE_BPM"), [x, y], width, 4);
         // Move the position of the value to align it with the gain field.
         y += 1;
-        let gain = KeyList::new(&text.get("TITLE_GAIN"), [x + 1, y], width - 2, 3);
+        let gain = KeyList::new(text.get("TITLE_GAIN"), [x + 1, y], width - 2, 3);
         let gain_rect = Rectangle::new([x, y], [width, 1]);
 
         // Return.
@@ -71,7 +71,7 @@ impl Drawable for MusicPanel {
         _: &Input,
         _: &Text,
         _: &PathsState,
-        exporter: &Exporter,
+        exporter: &SharedExporter,
     ) {
         // Get the focus,
         let focus = self.panel.has_focus(state);
@@ -93,8 +93,9 @@ impl Drawable for MusicPanel {
             }
         }
         // Draw the name.
+        let ex = exporter.lock();
         renderer.text(
-            &self.name.to_label(&exporter.metadata.title),
+            &self.name.to_label(&ex.metadata.title),
             &Renderer::get_value_color([focus, name_focus]),
         );
 

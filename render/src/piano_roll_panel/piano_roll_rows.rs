@@ -7,6 +7,7 @@ use imageproc::drawing::draw_line_segment_mut;
 use ini::Ini;
 use macroquad::texture::Texture2D;
 
+/// Returns a `FocusableTexture` of horizontal lines where the notes will be rendered.
 pub(crate) fn get_piano_roll_rows(config: &Ini, renderer: &Renderer) -> FocusableTexture {
     // Get the cell size.
     let cell_size = get_cell_size(config);
