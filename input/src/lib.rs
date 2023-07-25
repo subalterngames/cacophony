@@ -218,10 +218,10 @@ impl Input {
         // MIDI INPUT.
         if let Some(midi_conn) = &mut self.midi_conn {
             // Poll for MIDI events.
-            let midi = midi_conn.poll();
+            let mut midi = midi_conn.buffer.lock();
             // Append MIDI events.
             for mde in self.midi_events.iter_mut() {
-                if mde.1.update(midi, self.midi_counter) {
+                if mde.1.update(&midi, self.midi_counter) {
                     self.events.push(*mde.0);
                 }
             }
@@ -266,6 +266,8 @@ impl Input {
                 }
                 self.note_on_events.clear();
             }
+            // Clear the MIDI buffer.
+            midi.clear();
         }
     }
 

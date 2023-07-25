@@ -985,10 +985,10 @@ name = "input"
 version = "0.1.0"
 dependencies = [
  "common",
- "crossbeam-channel",
  "hashbrown 0.13.2",
  "macroquad",
  "midir",
+ "parking_lot 0.12.1",
  "rust-ini",
  "serde",
  "serde_json",
