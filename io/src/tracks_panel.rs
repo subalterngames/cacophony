@@ -40,8 +40,7 @@ impl TracksPanel {
         // The bank didn't change. Don't reset anything.
         if bank_index == bank_index_0 {
             None
-        }
-        else {
+        } else {
             let path = program.path.clone();
             let c0 = vec![Command::SetProgram {
                 channel,

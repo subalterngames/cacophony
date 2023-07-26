@@ -519,12 +519,12 @@ impl Synthesizer {
         banks.sort();
         let bank = banks[0];
         let preset = sf_banks[&bank][0];
-        self.set_program(channel, path, bank, preset);
         // Select the default program.
         let id = self.soundfonts[path].id;
         self.synth
             .program_select(channel, id, bank, preset)
             .unwrap();
+        self.set_program(channel, path, bank, preset);
     }
 
     /// Sort the events queue by time.

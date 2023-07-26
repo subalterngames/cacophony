@@ -129,7 +129,7 @@
 - [x] Incorrect sound font if you load them while we have notes
 - [x] View range can get messed up bqy multitrack?
 - [x] Playing line after exporting
-- [ ] Changing a soundfont doesn't change the preset name
+- [x] Changing a soundfont doesn't change the preset name
 - [x] Invalid bank change resets the soundfont
 - [ ] Opening a soundfont can crash
 - [ ] Illegal filename characters allowed?
