@@ -84,8 +84,8 @@
 
 ## Linux Bugs
 
-- [ ] Can't resize window in Linux
-- [ ] Can't double-click Linux executable
+- [x] Can't resize window in Linux
+- [x] ~~Can't double-click Linux executable~~
 - [ ] Can't connect to MIDI input on Linux
 - [ ] Note names aren't aligned correctly in high DPI Linux
 - [ ] Textures are too big in high DPI Linux
