@@ -572,4 +572,8 @@ impl Panel for ExportSettingsPanel {
             ExportType::Wav => Self::allow_abc123(|e: &Exporter| &e.wav_settings, exporter),
         }
     }
+
+    fn allow_play_music(&self) -> bool {
+        false
+    }
 }

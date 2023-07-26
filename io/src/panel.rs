@@ -57,4 +57,7 @@ pub(crate) trait Panel {
     /// - `state` The state.
     /// - `exporter` Export settings.
     fn allow_alphanumeric_input(&self, state: &State, exporter: &SharedExporter) -> bool;
+
+    /// Returns true if we can play music.
+    fn allow_play_music(&self) -> bool;
 }

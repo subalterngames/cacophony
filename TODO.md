@@ -102,7 +102,7 @@
 - [x] ~~Audio crackling with some soundfonts??~~
 - [x] Audio playing on music name input, save file input
 - [x] Open file name doesn't change if you're saving or exporting
-- [ ] Play only works in piano roll panel
+- [x] Play only works in piano roll panel
 - [x] Can't delete a track
 - [x] Bad zoom
 - [x] Play notes in open-file-panel file name

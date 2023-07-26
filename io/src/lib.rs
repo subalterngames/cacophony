@@ -237,37 +237,38 @@ impl IO {
                 ));
                 self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
                 return false;
-            }
-        }
-
-        // Play notes.
-        if !&input.play_now.is_empty() && !state.panels.contains(&PanelType::OpenFile) {
-            if let Some(track) = state.music.get_selected_track() {
-                if conn.state.programs.get(&track.channel).is_some() {
-                    let gain = track.gain as f64 / 127.0;
-                    // Set the framerate for playback.
-                    let mut commands = vec![Command::SetFramerate {
-                        framerate: conn.framerate as u32,
-                    }];
-                    // Get the beat duration.
-                    let duration = state
-                        .time
-                        .ppq_to_samples(state.input.beat.get_u(), conn.framerate);
-                    // Play the notes.
-                    for note in input.play_now.iter() {
-                        // Set the volume.
-                        let volume = (note[2] as f64 * gain) as u8;
-                        commands.push(Command::NoteOn {
-                            channel: track.channel,
-                            key: note[1],
-                            velocity: volume,
-                            duration,
-                        });
+            } else {
+                // Play notes.
+                if !&input.play_now.is_empty() && panel.allow_play_music() {
+                    if let Some(track) = state.music.get_selected_track() {
+                        if conn.state.programs.get(&track.channel).is_some() {
+                            let gain = track.gain as f64 / 127.0;
+                            // Set the framerate for playback.
+                            let mut commands = vec![Command::SetFramerate {
+                                framerate: conn.framerate as u32,
+                            }];
+                            // Get the beat duration.
+                            let duration = state
+                                .time
+                                .ppq_to_samples(state.input.beat.get_u(), conn.framerate);
+                            // Play the notes.
+                            for note in input.play_now.iter() {
+                                // Set the volume.
+                                let volume = (note[2] as f64 * gain) as u8;
+                                commands.push(Command::NoteOn {
+                                    channel: track.channel,
+                                    key: note[1],
+                                    velocity: volume,
+                                    duration,
+                                });
+                            }
+                            conn.send(commands);
+                        }
                     }
-                    conn.send(commands);
                 }
             }
         }
+
         // New file.
         if input.happened(&InputEvent::NewFile) {
             paths_state.saves.filename = None;
@@ -376,13 +377,30 @@ impl IO {
             || input.happened(&InputEvent::InputTTS)
         {
             tts.stop();
+        } else {
+            // Get the focused panel.
+            let panel = self.get_panel(&state.panels[state.focus.get()]);
+            // Update the focuses panel and potentially get a screenshot.
+            let snapshot = panel.update(state, conn, input, tts, text, paths_state, exporter);
+            if self.apply_snapshot(snapshot, state, conn, paths_state, exporter) {
+                return false;
+            }
         }
 
         // Get the focused panel.
         let panel = self.get_panel(&state.panels[state.focus.get()]);
-        // Update the focuses panel and potentially get a screenshot.
-        let snapshot = panel.update(state, conn, input, tts, text, paths_state, exporter);
-        self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
+        // Play music.
+        if panel.allow_play_music() && input.happened(&InputEvent::PlayStop) {
+            match conn.state.time.music {
+                // Stop playing.
+                true => conn.send(vec![Command::StopMusic]),
+                false => {
+                    conn.send(
+                        combine_tracks_to_commands(state, conn.framerate, state.time.playback).0,
+                    );
+                }
+            }
+        }
         // We're not done yet.
         false
     }

@@ -322,4 +322,8 @@ impl Panel for TracksPanel {
     fn allow_alphanumeric_input(&self, _: &State, _: &SharedExporter) -> bool {
         false
     }
+
+    fn allow_play_music(&self) -> bool {
+        true
+    }
 }

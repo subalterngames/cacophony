@@ -53,4 +53,8 @@ impl Panel for ExportPanel {
     fn allow_alphanumeric_input(&self, _: &State, _: &SharedExporter) -> bool {
         false
     }
+
+    fn allow_play_music(&self) -> bool {
+        false
+    }
 }

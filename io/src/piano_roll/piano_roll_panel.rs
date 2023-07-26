@@ -1,6 +1,6 @@
 use super::*;
 use crate::panel::*;
-use crate::{combine_tracks_to_commands, select_track};
+use crate::select_track;
 use common::config::parse_fractions;
 use common::{Index, Note, PianoRollMode, SelectMode, U64orF32, PPQ_F};
 use ini::Ini;
@@ -342,19 +342,6 @@ impl Panel for PianoRollPanel {
             tts.enqueue(s);
             None
         }
-        // Play and stop music.
-        else if input.happened(&InputEvent::PlayStop) {
-            match conn.state.time.music {
-                // Stop playing.
-                true => conn.send(vec![Command::StopMusic]),
-                false => {
-                    conn.send(
-                        combine_tracks_to_commands(state, conn.framerate, state.time.playback).0,
-                    );
-                }
-            }
-            None
-        }
         // Copy notes.
         else if input.happened(&InputEvent::CopyNotes) {
             self.copy_notes(state);
@@ -486,5 +473,9 @@ impl Panel for PianoRollPanel {
 
     fn allow_alphanumeric_input(&self, _: &State, _: &SharedExporter) -> bool {
         false
+    }
+
+    fn allow_play_music(&self) -> bool {
+        true
     }
 }

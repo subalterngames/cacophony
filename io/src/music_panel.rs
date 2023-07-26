@@ -179,4 +179,8 @@ impl Panel for MusicPanel {
             MusicPanelField::Name => true,
         }
     }
+
+    fn allow_play_music(&self) -> bool {
+        true
+    }
 }
