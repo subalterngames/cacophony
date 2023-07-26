@@ -377,14 +377,13 @@ impl IO {
             || input.happened(&InputEvent::InputTTS)
         {
             tts.stop();
-        } else {
-            // Get the focused panel.
-            let panel = self.get_panel(&state.panels[state.focus.get()]);
-            // Update the focuses panel and potentially get a screenshot.
-            let snapshot = panel.update(state, conn, input, tts, text, paths_state, exporter);
-            if self.apply_snapshot(snapshot, state, conn, paths_state, exporter) {
-                return false;
-            }
+        }
+        // Get the focused panel.
+        let panel = self.get_panel(&state.panels[state.focus.get()]);
+        // Update the focuses panel and potentially get a screenshot.
+        let snapshot = panel.update(state, conn, input, tts, text, paths_state, exporter);
+        if self.apply_snapshot(snapshot, state, conn, paths_state, exporter) {
+            return false;
         }
 
         // Get the focused panel.

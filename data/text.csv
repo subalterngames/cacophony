@@ -324,6 +324,7 @@ PIANO_ROLL_PANEL_INPUT_TTS_MULTI_TRACK,\0 to view multiple tracks.
 PIANO_ROLL_PANEL_INPUT_TTS_TRACK_SCROLL,\0 and \1 to select a track.
 PIANO_ROLL_PANEL_INPUT_TTS_NOT_ARMED,\0 to arm the track.
 PIANO_ROLL_PANEL_INPUT_TTS_ARMED,\0 to disarm the track. \1 and \2 to set the input beat.
+PIANO_ROLL_PANEL_INPUT_TTS_NOTES,"\0, \1, \2, \3, \4, \5, \6, \7, \8, \9, \10, and \11 to play notes. \12 and \13 to change octave."
 PIANO_ROLL_PANEL_INPUT_TTS_DO_NOT_USE_VOLUME,\0 and \1 to set the input volume. \2 to start using MIDI input volume instead. 
 PIANO_ROLL_PANEL_INPUT_TTS_USE_VOLUME,\0 to make all new notes have the input volume value.
 PIANO_ROLL_PANEL_INPUT_TTS_MODES,"\0, \1, \2, or \3 to set the mode to time, view, select, or edit."

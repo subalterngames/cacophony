@@ -154,7 +154,7 @@
 - [x] Cursor to Playback
 - [x] Playback to cursor
 - [x] Up/down tracks in multi-track
-- [ ] Qwerty note input TTS
+- [x] Qwerty note input TTS
 - [ ] Multi-track zoom
 - [ ] View should move while playing
 

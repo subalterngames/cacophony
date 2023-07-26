@@ -271,6 +271,27 @@ impl Panel for PianoRollPanel {
                                 input,
                             )),
                         }
+                        // Notes.
+                        tts_strings.push(text.get_tooltip(
+                            "PIANO_ROLL_PANEL_INPUT_TTS_NOTES",
+                            &[
+                                InputEvent::C,
+                                InputEvent::CSharp,
+                                InputEvent::D,
+                                InputEvent::DSharp,
+                                InputEvent::E,
+                                InputEvent::F,
+                                InputEvent::FSharp,
+                                InputEvent::G,
+                                InputEvent::GSharp,
+                                InputEvent::A,
+                                InputEvent::ASharp,
+                                InputEvent::B,
+                                InputEvent::OctaveUp,
+                                InputEvent::OctaveDown,
+                            ],
+                            input,
+                        ));
                         // Toggle tracks.
                         let tracks_key = if state.view.single_track {
                             "PIANO_ROLL_PANEL_INPUT_TTS_MULTI_TRACK"
