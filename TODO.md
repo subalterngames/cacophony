@@ -134,8 +134,9 @@
 - [x] Playing line after exporting
 - [x] Changing a soundfont doesn't change the preset name
 - [x] Invalid bank change resets the soundfont
-- [ ] Opening a soundfont can crash
+- [x] Opening a soundfont can crash
 - [x] Illegal filename characters allowed?
+- [ ] Can't access D:/
 
 ## Misc.
 
