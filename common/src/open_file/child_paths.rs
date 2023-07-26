@@ -45,7 +45,7 @@ impl ChildPaths {
                 match (folders.is_empty(), children.iter().any(|p| p.is_file)) {
                     (true, false) => None,
                     (false, false) => Some(folders.len() - 1),
-                    (_, _) => Some(0)
+                    (_, _) => Some(0),
                 }
             };
         }

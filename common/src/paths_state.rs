@@ -22,6 +22,9 @@ pub struct PathsState {
     /// The current open-file-type.
     #[serde(skip_serializing, skip_deserializing)]
     pub open_file_type: OpenFileType,
+    /// The Windows drives on this system.
+    #[serde(skip_serializing, skip_deserializing)]
+    windows_drives: Vec<PathBuf>
 }
 
 impl PathsState {
@@ -29,10 +32,12 @@ impl PathsState {
         let soundfonts = FileAndDirectory::new_directory(paths.soundfonts_directory.clone());
         let saves = FileAndDirectory::new_directory(paths.saves_directory.clone());
         let exports = FileAndDirectory::new_directory(paths.export_directory.clone());
+        let windows_drives = Self::get_windows_drives();
         Self {
             soundfonts,
             saves,
             exports,
+            windows_drives,
             ..Default::default()
         }
     }
@@ -172,6 +177,40 @@ impl PathsState {
             OpenFileType::Export => self.exports.get_path(),
             OpenFileType::ReadSave | OpenFileType::WriteSave => self.saves.get_path(),
             OpenFileType::SoundFont => self.soundfonts.get_path(),
+        }
+    }
+
+    fn set_children_to_windows_drives(&mut self, path: &mut PathBuf, extensions: &[String]) -> bool {
+        if cfg!(windows) {
+            if self.windows_drives.contains(path) {
+                path.set(
+                    parent,
+                    extensions,
+                    Some(self.exports.directory.to_path_buf()),
+                );
+                self.exports.directory = parent.to_path_buf();
+            }
+        }
+        else {
+            false
+        }
+    }
+
+    /// Returns the roots of all valid Windows drives.
+    fn get_windows_drives() -> Vec<PathBuf> {
+        if cfg!(windows) {
+            const LETTERS: [&str; 26] = ["A:", "B:", "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:", "N:", "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:"];
+            let mut drives = vec![];
+            for letter in LETTERS {
+                let drive = PathBuf::from(letter);
+                if drive.exists() {
+                    drives.push(drive);
+                }
+            }
+            drives
+        }
+        else {
+            vec![]
         }
     }
 }
