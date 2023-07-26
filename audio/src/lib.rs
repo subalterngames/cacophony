@@ -95,7 +95,7 @@ mod tests {
         conn.send(commands);
         assert!(conn.state.programs.contains_key(&CHANNEL));
         let program = &conn.state.programs[&CHANNEL];
-        assert_eq!(program.num_banks, 1);
+        assert_eq!(program.num_banks, 2);
         assert_eq!(program.bank_index, 0);
         assert_eq!(program.num_presets, 128);
         assert_eq!(program.preset_index, 0);
