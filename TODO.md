@@ -132,6 +132,9 @@
 - [ ] Changing a soundfont doesn't change the preset name
 - [ ] Opening a soundfont can crash
 - [ ] Illegal filename characters allowed?
+- [ ] Note names aren't aligned correctly in high DPI Linux
+- [ ] Textures are too big in high DPI Linux
+- [ ] Splash window is too small in high DPI Linux
 
 ## Misc.
 
