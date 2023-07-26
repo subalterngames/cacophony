@@ -55,7 +55,7 @@
 
 ## Tests
 
-- [ ] config
+- [x] ~~config~~
 - [ ] exporter
 - [x] fraction
 - [ ] input_state
@@ -65,7 +65,7 @@
 - [x] ~~font~~
 - [x] index
 - [x] indexed_values
-- [ ] paths_state
+- [x] ~~paths_state~~
 - [ ] select_mode
 - [ ] sizes
 - [ ] midi_binding
