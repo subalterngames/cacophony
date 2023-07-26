@@ -24,7 +24,7 @@ pub struct PathsState {
     pub open_file_type: OpenFileType,
     /// The Windows drives on this system.
     #[serde(skip_serializing, skip_deserializing)]
-    windows_drives: Vec<PathBuf>
+    windows_drives: Vec<FileOrDirectory>
 }
 
 impl PathsState {
@@ -73,7 +73,7 @@ impl PathsState {
                     self.exports.directory = parent.to_path_buf();
                     true
                 }
-                None => false,
+                None => self.set_children_to_windows_drives(|s| &mut self.exports.directory),
             },
             OpenFileType::ReadSave | OpenFileType::WriteSave => {
                 match &self.saves.directory.parent() {
@@ -180,15 +180,19 @@ impl PathsState {
         }
     }
 
-    fn set_children_to_windows_drives(&mut self, path: &mut PathBuf, extensions: &[String]) -> bool {
+    fn set_children_to_windows_drives<F>(&mut self, mut f: F) -> bool where F: FnMut(&mut Self) -> &mut PathBuf {
         if cfg!(windows) {
-            if self.windows_drives.contains(path) {
-                path.set(
-                    parent,
-                    extensions,
-                    Some(self.exports.directory.to_path_buf()),
-                );
-                self.exports.directory = parent.to_path_buf();
+            let windows_drives = self.windows_drives.clone();
+            let path = f(self);
+            if windows_drives.iter().any(|p| p.path == *path) {
+                // Manually set the children.
+                self.children.children = self.windows_drives.clone();
+                self.children.selected = Some(0);
+                *f(self) = self.windows_drives[0].path.to_path_buf();
+                true
+            }
+            else {
+                false
             }
         }
         else {
@@ -197,14 +201,14 @@ impl PathsState {
     }
 
     /// Returns the roots of all valid Windows drives.
-    fn get_windows_drives() -> Vec<PathBuf> {
+    fn get_windows_drives() -> Vec<FileOrDirectory> {
         if cfg!(windows) {
             const LETTERS: [&str; 26] = ["A:", "B:", "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:", "N:", "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:"];
             let mut drives = vec![];
             for letter in LETTERS {
                 let drive = PathBuf::from(letter);
                 if drive.exists() {
-                    drives.push(drive);
+                    drives.push(FileOrDirectory {path: drive, is_file: false});
                 }
             }
             drives
