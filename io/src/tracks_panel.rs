@@ -33,23 +33,30 @@ impl TracksPanel {
     /// Increment or decrement the bank index, setting the preset index to 0. Returns a new undo-redo state.
     fn set_bank(channel: u8, conn: &mut Conn, up: bool) -> Option<Snapshot> {
         let program = conn.state.programs.get(&channel).unwrap();
+        let bank_index_0 = program.bank_index;
         let mut index = Index::new(program.bank_index, program.num_banks);
         index.increment(up);
         let bank_index = index.get();
-        let path = program.path.clone();
-        let c0 = vec![Command::SetProgram {
-            channel,
-            path: path.clone(),
-            bank_index: program.bank_index,
-            preset_index: program.preset_index,
-        }];
-        let c1 = vec![Command::SetProgram {
-            channel,
-            path,
-            bank_index,
-            preset_index: 0,
-        }];
-        Some(Snapshot::from_commands(c0, c1, conn))
+        // The bank didn't change. Don't reset anything.
+        if bank_index == bank_index_0 {
+            None
+        }
+        else {
+            let path = program.path.clone();
+            let c0 = vec![Command::SetProgram {
+                channel,
+                path: path.clone(),
+                bank_index: program.bank_index,
+                preset_index: program.preset_index,
+            }];
+            let c1 = vec![Command::SetProgram {
+                channel,
+                path,
+                bank_index,
+                preset_index: 0,
+            }];
+            Some(Snapshot::from_commands(c0, c1, conn))
+        }
     }
 
     /// Increment or decrement the track gain. Returns a new undo-redo state.
