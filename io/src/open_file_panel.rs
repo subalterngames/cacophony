@@ -148,7 +148,7 @@ impl Panel for OpenFilePanel {
                     None => String::new(),
                 };
                 // Modify the path.
-                if input.modify_string_abc123(&mut filename) {
+                if input.modify_filename_abc123(&mut filename) {
                     paths_state.set_filename(&filename);
                     return None;
                 }

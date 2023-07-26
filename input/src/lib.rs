@@ -42,6 +42,11 @@ const ALLOWED_DURING_ALPHANUMERIC_INPUT: [InputEvent; 12] = [
     InputEvent::CloseOpenFile,
 ];
 
+const ILLEGAL_FILENAME_CHARACTERS: [char; 20] = [
+    '!', '@', '#', '$', '%', '^', '&', '*', '=', '+', '{', '}', '\\', '|', ':', '"', '\'', '<',
+    '>', '/',
+];
+
 /// Listens for user input from qwerty and MIDI devices and records the current input state.
 #[derive(Default)]
 pub struct Input {
@@ -292,6 +297,19 @@ impl Input {
                 .pressed_chars
                 .iter()
                 .filter(|c| !c.is_control())
+                .copied()
+                .collect(),
+        )
+    }
+
+    /// Modify a filename string with qwerty input from this frame. Allow alphanumeric input.
+    pub fn modify_filename_abc123(&self, string: &mut String) -> bool {
+        self.modify_string(
+            string,
+            &self
+                .pressed_chars
+                .iter()
+                .filter(|c| !c.is_control() && !ILLEGAL_FILENAME_CHARACTERS.contains(c))
                 .copied()
                 .collect(),
         )

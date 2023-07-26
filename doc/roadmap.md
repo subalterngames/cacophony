@@ -8,7 +8,7 @@ Cacophony is a wee baby alpha and I'm just one developer. There are probably lot
 
 ## Improve Linux support
 
-Make it a .deb package?
+I wish this worked better than it did. Most of the Linux problems are due to issues in the rendering crate (Macroquad).
 
 ## Export to FLAC
 
