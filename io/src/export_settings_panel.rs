@@ -1,4 +1,4 @@
-use crate::abc123::abc123_exporter;
+use crate::abc123::{on_disable_exporter, update_exporter};
 use crate::panel::*;
 use audio::exporter::*;
 use audio::Conn;
@@ -175,6 +175,7 @@ impl ExportSettingsPanel {
     /// - `f` A closure that returns a mutable reference to an `IndexValues` of export settings (corresponding to the export type).
     /// - `state` The app state.
     /// - `input` The input state.
+    /// - `tts` Text-to-speech.
     /// - `text` The text state.
     /// - `exporter` The exporter. This will have its framerate set.
     fn update_settings<F, const N: usize>(
@@ -285,7 +286,6 @@ impl ExportSettingsPanel {
                 }
             };
             tts.enqueue(s);
-            None
         }
         // Input TTS.
         else if input.happened(&InputEvent::InputTTS) {
@@ -365,21 +365,18 @@ impl ExportSettingsPanel {
                 ),
             };
             tts.enqueue(s);
-            None
         }
         // Previous setting.
         else if input.happened(&InputEvent::PreviousExportSetting) {
             let mut ex = exporter.lock();
             let s = f(&mut ex);
             s.index.increment(false);
-            None
         }
         // Next setting.
         else if input.happened(&InputEvent::NextExportSetting) {
             let mut ex = exporter.lock();
             let s = f(&mut ex);
             s.index.increment(true);
-            None
         } else {
             let mut ex = exporter.lock();
             match &f(&mut ex).get() {
@@ -390,32 +387,11 @@ impl ExportSettingsPanel {
                     } else if input.happened(&InputEvent::NextExportSettingValue) {
                         Self::set_framerate(&mut ex, true);
                     }
-                    None
                 }
                 ExportSetting::Copyright => {
                     if input.happened(&InputEvent::ToggleExportSettingBoolean) {
                         ex.copyright = !ex.copyright;
                     }
-                    None
-                }
-                ExportSetting::Title => abc123_exporter(
-                    |e| &mut e.metadata.title,
-                    state,
-                    input,
-                    &mut ex,
-                    "My Music".to_string(),
-                ),
-                ExportSetting::Artist => {
-                    abc123_exporter(|e| &mut e.metadata.artist, state, input, &mut ex, None)
-                }
-                ExportSetting::Album => {
-                    abc123_exporter(|e| &mut e.metadata.album, state, input, &mut ex, None)
-                }
-                ExportSetting::Genre => {
-                    abc123_exporter(|e| &mut e.metadata.genre, state, input, &mut ex, None)
-                }
-                ExportSetting::Comment => {
-                    abc123_exporter(|e| &mut e.metadata.comment, state, input, &mut ex, None)
                 }
                 ExportSetting::TrackNumber => {
                     if input.happened(&InputEvent::PreviousExportSettingValue) {
@@ -423,25 +399,20 @@ impl ExportSettingsPanel {
                     } else if input.happened(&InputEvent::NextExportSettingValue) {
                         Self::set_track_number(&mut ex, true);
                     }
-                    None
                 }
                 ExportSetting::Mp3BitRate => {
                     Self::set_index(|e| &mut e.mp3_bit_rate, input, &mut ex);
-                    None
                 }
                 ExportSetting::Mp3Quality => {
                     Self::set_index(|e| &mut e.mp3_quality, input, &mut ex);
-                    None
                 }
                 ExportSetting::OggQuality => {
                     Self::set_index(|e| &mut e.ogg_quality, input, &mut ex);
-                    None
                 }
                 ExportSetting::MultiFile => {
                     if input.happened(&InputEvent::ToggleExportSettingBoolean) {
                         ex.multi_file = !ex.multi_file;
                     }
-                    None
                 }
                 ExportSetting::MultiFileSuffix => {
                     Self::set_index(
@@ -449,10 +420,80 @@ impl ExportSettingsPanel {
                         input,
                         &mut ex,
                     );
-                    None
                 }
+                _ => (),
             }
         }
+        None
+    }
+
+    /// Update settings for a given export type during alphanumeric input.
+    ///
+    /// - `f` A closure that returns a mutable reference to an `IndexValues` of export settings (corresponding to the export type).
+    /// - `input` The input state.
+    /// - `exporter` The exporter. This will have its framerate set.
+    fn update_settings_abc123<F, const N: usize>(
+        mut f: F,
+        input: &Input,
+        exporter: &mut SharedExporter,
+    ) -> bool
+    where
+        F: FnMut(&mut Exporter) -> &mut IndexedValues<ExportSetting, N>,
+        [ExportSetting; N]: Serialize + DeserializeOwned,
+    {
+        let mut ex = exporter.lock();
+        match &f(&mut ex).get() {
+            ExportSetting::Title => update_exporter(|e| &mut e.metadata.title, input, &mut ex),
+            ExportSetting::Artist => update_exporter(|e| &mut e.metadata.artist, input, &mut ex),
+            ExportSetting::Album => update_exporter(|e| &mut e.metadata.album, input, &mut ex),
+            ExportSetting::Genre => update_exporter(|e| &mut e.metadata.genre, input, &mut ex),
+            ExportSetting::Comment => update_exporter(|e| &mut e.metadata.comment, input, &mut ex),
+            _ => false,
+        }
+    }
+
+    /// Do something when alphanumeric input is disabled.
+    ///
+    /// - `f` A closure that returns a mutable reference to an `IndexValues` of export settings (corresponding to the export type).
+    /// - `exporter` The exporter. This will have its framerate set.
+    fn disable_abc123<F, const N: usize>(mut f: F, exporter: &mut SharedExporter)
+    where
+        F: FnMut(&mut Exporter) -> &mut IndexedValues<ExportSetting, N>,
+        [ExportSetting; N]: Serialize + DeserializeOwned,
+    {
+        let mut ex = exporter.lock();
+        match &f(&mut ex).get() {
+            ExportSetting::Title => {
+                on_disable_exporter(|e| &mut e.metadata.title, &mut ex, "My Music".to_string())
+            }
+            ExportSetting::Artist => on_disable_exporter(|e| &mut e.metadata.artist, &mut ex, None),
+            ExportSetting::Album => on_disable_exporter(|e| &mut e.metadata.album, &mut ex, None),
+            ExportSetting::Genre => on_disable_exporter(|e| &mut e.metadata.genre, &mut ex, None),
+            ExportSetting::Comment => {
+                on_disable_exporter(|e| &mut e.metadata.comment, &mut ex, None)
+            }
+            _ => (),
+        }
+    }
+
+    /// Returns true if we can toggle alphanumeric input.
+    ///
+    /// - `f` A closure that returns a mutable reference to an `IndexValues` of export settings (corresponding to the export type).
+    /// - `exporter` The exporter. This will have its framerate set.
+    fn allow_abc123<F, const N: usize>(f: F, exporter: &SharedExporter) -> bool
+    where
+        F: Fn(&Exporter) -> &IndexedValues<ExportSetting, N>,
+        [ExportSetting; N]: Serialize + DeserializeOwned,
+    {
+        let ex = exporter.lock();
+        matches!(
+            &f(&ex).get(),
+            ExportSetting::Title
+                | ExportSetting::Artist
+                | ExportSetting::Album
+                | ExportSetting::Genre
+                | ExportSetting::Comment,
+        )
     }
 }
 
@@ -485,6 +526,50 @@ impl Panel for ExportSettingsPanel {
             ExportType::Wav => {
                 Self::update_settings(|e| &mut e.wav_settings, state, input, tts, text, exporter)
             }
+        }
+    }
+
+    fn update_abc123(
+        &mut self,
+        _: &mut State,
+        input: &Input,
+        exporter: &mut SharedExporter,
+    ) -> (Option<Snapshot>, bool) {
+        let export_type = exporter.lock().export_type.get();
+        let updated = match export_type {
+            ExportType::Mid => {
+                Self::update_settings_abc123(|e| &mut e.mid_settings, input, exporter)
+            }
+            ExportType::MP3 => {
+                Self::update_settings_abc123(|e| &mut e.mp3_settings, input, exporter)
+            }
+            ExportType::Ogg => {
+                Self::update_settings_abc123(|e| &mut e.ogg_settings, input, exporter)
+            }
+            ExportType::Wav => {
+                Self::update_settings_abc123(|e| &mut e.wav_settings, input, exporter)
+            }
+        };
+        (None, updated)
+    }
+
+    fn on_disable_abc123(&mut self, _: &mut State, exporter: &mut SharedExporter) {
+        let export_type = exporter.lock().export_type.get();
+        match export_type {
+            ExportType::Mid => Self::disable_abc123(|e| &mut e.mid_settings, exporter),
+            ExportType::MP3 => Self::disable_abc123(|e| &mut e.mp3_settings, exporter),
+            ExportType::Ogg => Self::disable_abc123(|e| &mut e.ogg_settings, exporter),
+            ExportType::Wav => Self::disable_abc123(|e| &mut e.wav_settings, exporter),
+        };
+    }
+
+    fn allow_alphanumeric_input(&self, _: &State, exporter: &SharedExporter) -> bool {
+        let export_type = exporter.lock().export_type.get();
+        match export_type {
+            ExportType::Mid => Self::allow_abc123(|e| &e.mid_settings, exporter),
+            ExportType::MP3 => Self::allow_abc123(|e| &e.mp3_settings, exporter),
+            ExportType::Ogg => Self::allow_abc123(|e| &e.ogg_settings, exporter),
+            ExportType::Wav => Self::allow_abc123(|e: &Exporter| &e.wav_settings, exporter),
         }
     }
 }

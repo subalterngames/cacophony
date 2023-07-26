@@ -1,4 +1,6 @@
-use crate::abc123::{abc123_shared_exporter, abc123_state};
+use crate::abc123::{
+    on_disable_shared_exporter, on_disable_state, update_shared_exporter, update_state,
+};
 use crate::panel::*;
 use common::music_panel_field::*;
 use common::{U64orF32, DEFAULT_BPM, MAX_VOLUME};
@@ -119,34 +121,62 @@ impl Panel for MusicPanel {
             // Field-specific actions.
             match state.music_panel_field.get_ref() {
                 // Modify the BPM.
-                MusicPanelField::BPM => {
-                    return abc123_state(
-                        |s| &mut s.time.bpm,
-                        state,
-                        input,
-                        U64orF32::from(DEFAULT_BPM),
-                    );
-                }
+                MusicPanelField::BPM => None,
                 // Set the gain.
                 MusicPanelField::Gain => {
                     if input.happened(&InputEvent::DecreaseMusicGain) {
-                        return MusicPanel::set_gain(conn, false);
+                        MusicPanel::set_gain(conn, false)
                     } else if input.happened(&InputEvent::IncreaseMusicGain) {
-                        return MusicPanel::set_gain(conn, true);
+                        MusicPanel::set_gain(conn, true)
+                    } else {
+                        None
                     }
                 }
                 // Modify the name.
-                MusicPanelField::Name => {
-                    return abc123_shared_exporter(
-                        |e| &mut e.metadata.title,
-                        state,
-                        input,
-                        exporter,
-                        "My Music".to_string(),
-                    );
-                }
+                MusicPanelField::Name => None,
             }
-            None
+        }
+    }
+
+    fn update_abc123(
+        &mut self,
+        state: &mut State,
+        input: &Input,
+        exporter: &mut SharedExporter,
+    ) -> (Option<Snapshot>, bool) {
+        match state.music_panel_field.get_ref() {
+            MusicPanelField::BPM => {
+                let snapshot = update_state(|s| &mut s.time.bpm, state, input);
+                let updated = snapshot.is_some();
+                (snapshot, updated)
+            }
+            MusicPanelField::Gain => (None, false),
+            MusicPanelField::Name => (
+                None,
+                update_shared_exporter(|e| &mut e.metadata.title, input, exporter),
+            ),
+        }
+    }
+
+    fn on_disable_abc123(&mut self, state: &mut State, exporter: &mut SharedExporter) {
+        match state.music_panel_field.get_ref() {
+            MusicPanelField::BPM => {
+                on_disable_state(|s| &mut s.time.bpm, state, U64orF32::from(DEFAULT_BPM))
+            }
+            MusicPanelField::Gain => (),
+            MusicPanelField::Name => on_disable_shared_exporter(
+                |e| &mut e.metadata.title,
+                exporter,
+                "My Music".to_string(),
+            ),
+        }
+    }
+
+    fn allow_alphanumeric_input(&self, state: &State, _: &SharedExporter) -> bool {
+        match state.music_panel_field.get_ref() {
+            MusicPanelField::BPM => true,
+            MusicPanelField::Gain => false,
+            MusicPanelField::Name => true,
         }
     }
 }

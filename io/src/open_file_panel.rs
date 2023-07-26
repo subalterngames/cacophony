@@ -36,6 +36,7 @@ impl OpenFilePanel {
         state: &mut State,
         paths_state: &mut PathsState,
     ) {
+        state.input.alphanumeric_input = true;
         // Remember the active panels.
         self.previous_panels = state.panels.clone();
         // Clear all active panels.
@@ -385,5 +386,21 @@ impl Panel for OpenFilePanel {
             self.disable(state);
         }
         None
+    }
+
+    fn on_disable_abc123(&mut self, _: &mut State, _: &mut SharedExporter) {}
+
+    fn update_abc123(
+        &mut self,
+        _: &mut State,
+        _: &Input,
+        _: &mut SharedExporter,
+    ) -> (Option<Snapshot>, bool) {
+        // There is alphanumeric input in this struct, obviously, but we won't handle it here because we don't need to toggle it on/off.
+        (None, false)
+    }
+
+    fn allow_alphanumeric_input(&self, _: &State, _: &SharedExporter) -> bool {
+        false
     }
 }

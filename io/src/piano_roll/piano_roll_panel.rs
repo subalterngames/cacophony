@@ -472,4 +472,19 @@ impl Panel for PianoRollPanel {
             }
         }
     }
+
+    fn on_disable_abc123(&mut self, _: &mut State, _: &mut SharedExporter) {}
+
+    fn update_abc123(
+        &mut self,
+        _: &mut State,
+        _: &Input,
+        _: &mut SharedExporter,
+    ) -> (Option<Snapshot>, bool) {
+        (None, false)
+    }
+
+    fn allow_alphanumeric_input(&self, _: &State, _: &SharedExporter) -> bool {
+        false
+    }
 }

@@ -195,11 +195,53 @@ impl IO {
             return false;
         }
 
+        // Alphanumeric input.
+        if state.input.alphanumeric_input {
+            // Get the focused panel.
+            let panel = self.get_panel(&state.panels[state.focus.get()]);
+
+            // Toggle off alphanumeric input.
+            if panel.allow_alphanumeric_input(state, exporter) {
+                if input.happened(&InputEvent::ToggleAlphanumericInput) {
+                    let s0 = state.clone();
+                    state.input.alphanumeric_input = false;
+                    // Do something on disable.
+                    panel.on_disable_abc123(state, exporter);
+                    // There is always a snapshot (because we toggled off alphanumeric input).
+                    let snapshot = Some(Snapshot::from_states(s0, state));
+                    // Apply the snapshot.
+                    self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
+                    return false;
+                }
+                // Try to do alphanumeric input.
+                else {
+                    let (snapshot, updated) = panel.update_abc123(state, input, exporter);
+                    // We applied alphanumeric input.
+                    if updated {
+                        self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
+                        return false;
+                    }
+                }
+            }
+        }
+        // Apply alphanumeric input.
+        else {
+            let panel = self.get_panel(&state.panels[state.focus.get()]);
+            if panel.allow_alphanumeric_input(state, exporter)
+                && input.happened(&InputEvent::ToggleAlphanumericInput)
+            {
+                let snapshot = Some(Snapshot::from_state_value(
+                    |s| &mut s.input.alphanumeric_input,
+                    true,
+                    state,
+                ));
+                self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
+                return false;
+            }
+        }
+
         // Play notes.
-        if !state.input.alphanumeric_input
-            && !&input.play_now.is_empty()
-            && !state.panels.contains(&PanelType::OpenFile)
-        {
+        if !&input.play_now.is_empty() && !state.panels.contains(&PanelType::OpenFile) {
             if let Some(track) = state.music.get_selected_track() {
                 if conn.state.programs.get(&track.channel).is_some() {
                     let gain = track.gain as f64 / 127.0;
@@ -336,41 +378,39 @@ impl IO {
             tts.stop();
         }
 
-        // Listen to the focused panel.
-        let resp = match state.panels[state.focus.get()] {
-            PanelType::Music => {
-                self.music_panel
-                    .update(state, conn, input, tts, text, paths_state, exporter)
-            }
-            PanelType::Tracks => {
-                self.tracks_panel
-                    .update(state, conn, input, tts, text, paths_state, exporter)
-            }
-            PanelType::OpenFile => {
-                self.open_file_panel
-                    .update(state, conn, input, tts, text, paths_state, exporter)
-            }
-            PanelType::PianoRoll => {
-                self.piano_roll_panel
-                    .update(state, conn, input, tts, text, paths_state, exporter)
-            }
-            PanelType::ExportState => {
-                self.export_panel
-                    .update(state, conn, input, tts, text, paths_state, exporter)
-            }
-            PanelType::ExportSettings => self.export_settings_panel.update(
-                state,
-                conn,
-                input,
-                tts,
-                text,
-                paths_state,
-                exporter,
+        // Get the focused panel.
+        let panel = self.get_panel(&state.panels[state.focus.get()]);
+        // Update the focuses panel and potentially get a screenshot.
+        let snapshot = panel.update(state, conn, input, tts, text, paths_state, exporter);
+        self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
+        // We're not done yet.
+        false
+    }
+
+    fn get_panel(&mut self, panel_type: &PanelType) -> &mut dyn Panel {
+        match panel_type {
+            PanelType::ExportSettings => &mut self.export_settings_panel,
+            PanelType::ExportState => &mut self.export_panel,
+            PanelType::MainMenu => panic!(
+                "Tried to get a mutable reference to the main menu. This should never happen!"
             ),
-            PanelType::MainMenu => panic!("This should never happen!"),
-        };
+            PanelType::Music => &mut self.music_panel,
+            PanelType::OpenFile => &mut self.open_file_panel,
+            PanelType::PianoRoll => &mut self.piano_roll_panel,
+            PanelType::Tracks => &mut self.tracks_panel,
+        }
+    }
+
+    fn apply_snapshot(
+        &mut self,
+        snapshot: Option<Snapshot>,
+        state: &mut State,
+        conn: &mut Conn,
+        paths_state: &mut PathsState,
+        exporter: &mut SharedExporter,
+    ) -> bool {
         // Push an undo state generated by the focused panel.
-        if let Some(snapshot) = resp {
+        if let Some(snapshot) = snapshot {
             // Execute IO commands.
             if let Some(io_commands) = &snapshot.io_commands {
                 for command in io_commands {
@@ -402,9 +442,10 @@ impl IO {
                 state.unsaved_changes = true;
                 self.push_undo(snapshot);
             }
+            true
+        } else {
+            false
         }
-        // We're not done yet.
-        false
     }
 
     /// Push this `UndoRedoState` to the undo stack and clear the redo stack.

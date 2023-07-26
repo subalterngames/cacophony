@@ -31,4 +31,30 @@ pub(crate) trait Panel {
         paths_state: &mut PathsState,
         exporter: &mut SharedExporter,
     ) -> Option<Snapshot>;
+
+    /// Apply panel-specific updates to the state if alphanumeric input is enabled.
+    ///
+    /// - `state` The state of the app.
+    /// - `input` Input events, key presses, etc.
+    /// - `exporter` Export settings.
+    ///
+    /// Returns: An `Snapshot` and true if something (potentially not included in the snaphot) updated.
+    fn update_abc123(
+        &mut self,
+        state: &mut State,
+        input: &Input,
+        exporter: &mut SharedExporter,
+    ) -> (Option<Snapshot>, bool);
+
+    /// Do something when alphanumeric input is disabled.
+    ///
+    /// - `state` The state of the app.
+    /// - `exporter` Export settings.
+    fn on_disable_abc123(&mut self, state: &mut State, exporter: &mut SharedExporter);
+
+    /// If true, allow the user to toggle alphanumeric input.
+    ///
+    /// - `state` The state.
+    /// - `exporter` Export settings.
+    fn allow_alphanumeric_input(&self, state: &State, exporter: &SharedExporter) -> bool;
 }

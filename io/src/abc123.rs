@@ -68,136 +68,103 @@ impl AlphanumericModifiable for U64orF32 {
 
 /// Handle alphanumeric input for a shared exporter.
 ///
-/// Toggle alphanumeric input. If alphanumeric input is disabled, check if the value is empty and set a default value if it is.
-/// Otherwise, allow the user to type.
-///
 /// - `f` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
-/// - `state` The app state.
 /// - `input` The input state. This is used to check if alphanumeric input is allowed.
 /// - `exporter` The exporter state.
-///
-/// Returns a snapshot.
-pub(crate) fn abc123_shared_exporter<F, T>(
+pub(crate) fn update_shared_exporter<F, T>(
     f: F,
-    state: &mut State,
     input: &Input,
     exporter: &mut SharedExporter,
-    default_value: T,
-) -> Option<Snapshot>
+) -> bool
 where
     F: FnMut(&mut Exporter) -> &mut T,
     T: Clone + AlphanumericModifiable,
 {
     let mut ex = exporter.lock();
-    abc123_exporter(f, state, input, &mut ex, default_value)
+    update_exporter(f, input, &mut ex)
+}
+
+/// Do something with a shared exporter when alphanumeric input is disabled.
+///
+/// - `f` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
+/// - `exporter` The exporter state.
+pub(crate) fn on_disable_shared_exporter<F, T>(
+    mut f: F,
+    exporter: &mut SharedExporter,
+    default_value: T,
+) where
+    F: FnMut(&mut Exporter) -> &mut T,
+    T: Clone + AlphanumericModifiable,
+{
+    let mut ex = exporter.lock();
+    let v = f(&mut ex);
+    // If the value is empty, set a default value.
+    if !v.is_valid() {
+        *v = default_value;
+    }
 }
 
 /// Handle alphanumeric input for the exporter.
 ///
-/// Toggle alphanumeric input. If alphanumeric input is disabled, check if the value is empty and set a default value if it is.
-/// Otherwise, allow the user to type.
-///
 /// - `f` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
-/// - `state` The app state.
 /// - `input` The input state. This is used to check if alphanumeric input is allowed.
 /// - `exporter` The exporter state.
-///
-/// Returns a snapshot.
-pub(crate) fn abc123_exporter<F, T>(
-    mut f: F,
-    state: &mut State,
-    input: &Input,
-    exporter: &mut Exporter,
-    default_value: T,
-) -> Option<Snapshot>
+pub(crate) fn update_exporter<F, T>(mut f: F, input: &Input, exporter: &mut Exporter) -> bool
 where
     F: FnMut(&mut Exporter) -> &mut T,
     T: Clone + AlphanumericModifiable,
 {
-    // Toggle alphanumeric input on or off.
-    if input.happened(&InputEvent::ToggleAlphanumericInput) {
-        // Toggle off alphanumeric input and possibly set the string.
-        if state.input.alphanumeric_input {
-            let s0 = state.clone();
-            state.input.alphanumeric_input = false;
-            // If the value is empty, set a default value.
-            if !f(exporter).is_valid() {
-                *f(exporter) = default_value;
-            }
-            Some(Snapshot::from_states(s0, state))
-        }
-        // Toggle on alphanumeric input.
-        else {
-            set_alphanumeric_input(state, true)
-        }
-    }
-    // Modify the value.
-    else if state.input.alphanumeric_input {
-        let mut value = f(exporter).clone();
-        value.modify(input);
-        None
-    } else {
-        None
+    let value = f(exporter);
+    value.modify(input)
+}
+
+/// Do something with an exporter when alphanumeric input is disabled.
+///
+/// - `f` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
+/// - `input` The input state. This is used to check if alphanumeric input is allowed.
+/// - `exporter` The exporter state.
+/// - `default_value` If the current value of `f` isn't valid, set it to this.
+pub(crate) fn on_disable_exporter<F, T>(mut f: F, exporter: &mut Exporter, default_value: T)
+where
+    F: FnMut(&mut Exporter) -> &mut T,
+    T: Clone + AlphanumericModifiable,
+{
+    let v = f(exporter);
+    // If the value is empty, set a default value.
+    if !v.is_valid() {
+        *v = default_value;
     }
 }
 
 /// Handle alphanumeric input for the app state.
 ///
-/// Toggle alphanumeric input. If alphanumeric input is disabled, check if the value is empty and set a default value if it is.
-/// Otherwise, allow the user to type.
 ///
 /// - `f` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
 /// - `state` The app state.
 /// - `input` The input state. This is used to check if alphanumeric input is allowed.
 ///
 /// Returns a snapshot.
-pub(crate) fn abc123_state<F, T>(
-    mut f: F,
-    state: &mut State,
-    input: &Input,
-    default_value: T,
-) -> Option<Snapshot>
+pub(crate) fn update_state<F, T>(mut f: F, state: &mut State, input: &Input) -> Option<Snapshot>
 where
     F: FnMut(&mut State) -> &mut T,
     T: Clone + AlphanumericModifiable,
 {
-    // Toggle alphanumeric input on or off.
-    if input.happened(&InputEvent::ToggleAlphanumericInput) {
-        // Toggle off alphanumeric input and possibly set the string.
-        if state.input.alphanumeric_input {
-            let s0 = state.clone();
-            state.input.alphanumeric_input = false;
-            // Don't allow an empty value.
-            if f(state).is_valid() {
-                Some(Snapshot::from_states(s0, state))
-            } else {
-                *f(state) = default_value;
-                Some(Snapshot::from_states(s0, state))
-            }
-        }
-        // Toggle on alphanumeric input.
-        else {
-            set_alphanumeric_input(state, true)
-        }
-    }
-    // Modify the value.
-    else if state.input.alphanumeric_input {
-        let mut value = f(state).clone();
-        if value.modify(input) {
-            Some(Snapshot::from_state_value(f, value, state))
-        } else {
-            None
-        }
+    let mut value = f(state).clone();
+    if value.modify(input) {
+        Some(Snapshot::from_state_value(f, value, state))
     } else {
         None
     }
 }
 
-/// Set whether alphanumeric input is allowed.
-fn set_alphanumeric_input(state: &mut State, value: bool) -> Option<Snapshot> {
-    Some(Snapshot::from_state_value(
-        |s| &mut s.input.alphanumeric_input,
-        value,
-        state,
-    ))
+pub(crate) fn on_disable_state<F, T>(mut f: F, state: &mut State, default_value: T)
+where
+    F: FnMut(&mut State) -> &mut T,
+    T: Clone + AlphanumericModifiable,
+{
+    let v = f(state);
+    // Don't allow an empty value.
+    if !v.is_valid() {
+        *v = default_value;
+    }
 }
