@@ -188,17 +188,21 @@ impl Drawable for OpenFilePanel {
                 renderer.rectangle(&Rectangle::new(position, [width, 1]), &bg_color);
             }
             // Draw the text.
-            let s = truncate(
-                path.path
-                    .components()
-                    .last()
-                    .unwrap()
-                    .as_os_str()
-                    .to_str()
-                    .unwrap(),
-                length,
-                true,
-            );
+            let s = if path.path.parent().is_some() {
+                truncate(
+                    path.path
+                        .components()
+                        .last()
+                        .unwrap()
+                        .as_os_str()
+                        .to_str()
+                        .unwrap(),
+                    length,
+                    true,
+                )
+            } else{
+                path.path.to_str().unwrap().to_string()
+            };
             let p = Label { position, text: s };
             renderer.text(&p, &text_color);
             y += 1;
