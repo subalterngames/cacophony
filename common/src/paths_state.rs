@@ -22,9 +22,6 @@ pub struct PathsState {
     /// The current open-file-type.
     #[serde(skip_serializing, skip_deserializing)]
     pub open_file_type: OpenFileType,
-    /// The Windows drives on this system.
-    #[serde(skip_serializing, skip_deserializing)]
-    windows_drives: Vec<FileOrDirectory>,
 }
 
 impl PathsState {
@@ -32,12 +29,10 @@ impl PathsState {
         let soundfonts = FileAndDirectory::new_directory(paths.soundfonts_directory.clone());
         let saves = FileAndDirectory::new_directory(paths.saves_directory.clone());
         let exports = FileAndDirectory::new_directory(paths.export_directory.clone());
-        let windows_drives = Self::get_windows_drives();
         Self {
             soundfonts,
             saves,
             exports,
-            windows_drives,
             ..Default::default()
         }
     }
@@ -73,11 +68,7 @@ impl PathsState {
                     self.exports.directory = parent.to_path_buf();
                     true
                 }
-                None => Self::set_children_to_windows_drives(
-                    &mut self.exports.directory,
-                    &mut self.children,
-                    &self.windows_drives,
-                ),
+                None => false,
             },
             OpenFileType::ReadSave | OpenFileType::WriteSave => {
                 match &self.saves.directory.parent() {
@@ -90,11 +81,7 @@ impl PathsState {
                         self.saves.directory = parent.to_path_buf();
                         true
                     }
-                    None => Self::set_children_to_windows_drives(
-                        &mut self.saves.directory,
-                        &mut self.children,
-                        &self.windows_drives,
-                    ),
+                    None => false,
                 }
             }
             OpenFileType::SoundFont => match &self.soundfonts.directory.parent() {
@@ -107,11 +94,7 @@ impl PathsState {
                     self.soundfonts.directory = parent.to_path_buf();
                     true
                 }
-                None => Self::set_children_to_windows_drives(
-                    &mut self.soundfonts.directory,
-                    &mut self.children,
-                    &self.windows_drives,
-                ),
+                None => false,
             },
         }
     }
@@ -189,50 +172,6 @@ impl PathsState {
             OpenFileType::Export => self.exports.get_path(),
             OpenFileType::ReadSave | OpenFileType::WriteSave => self.saves.get_path(),
             OpenFileType::SoundFont => self.soundfonts.get_path(),
-        }
-    }
-
-    fn set_children_to_windows_drives(
-        path: &mut PathBuf,
-        children: &mut ChildPaths,
-        windows_drives: &Vec<FileOrDirectory>,
-    ) -> bool {
-        if cfg!(windows) {
-            if windows_drives.iter().any(|p| p.path == *path) {
-                // Manually set the children.
-                children.children = windows_drives.clone();
-                children.selected = Some(0);
-                *path = windows_drives[0].path.to_path_buf();
-                true
-            } else {
-                false
-            }
-        } else {
-            false
-        }
-    }
-
-    /// Returns the roots of all valid Windows drives.
-    fn get_windows_drives() -> Vec<FileOrDirectory> {
-        if cfg!(windows) {
-            const LETTERS: [&str; 26] = [
-                "A:\\", "B:\\", "C:\\", "D:\\", "E:\\", "F:\\", "G:\\", "H:\\", "I:\\", "J:\\",
-                "K:\\", "L:\\", "M:\\", "N:\\", "O:\\", "P:\\", "Q:\\", "R:\\", "S:\\", "T:\\",
-                "U:\\", "V:\\", "W:\\", "X:\\", "Y:\\", "Z:\\",
-            ];
-            let mut drives = vec![];
-            for letter in LETTERS {
-                let drive = PathBuf::from(letter);
-                if drive.exists() {
-                    drives.push(FileOrDirectory {
-                        path: drive,
-                        is_file: false,
-                    });
-                }
-            }
-            drives
-        } else {
-            vec![]
         }
     }
 }
