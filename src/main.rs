@@ -22,7 +22,20 @@ async fn main() {
     let splash = load_texture(paths.splash_path.as_os_str().to_str().unwrap())
         .await
         .unwrap();
-    draw_texture(&splash, 0.0, 0.0, WHITE);
+    // Linux X11 can mess this up the initial window size.
+    let splash_width = splash.width();
+    let splash_height = splash.height();
+    let screen_width = screen_width();
+    let screen_height = screen_height();
+    // Oops something went wrong. 
+    let dest_size = if splash_width != screen_width || splash_height != screen_height {
+        Some(Vec2::new(screen_width, screen_height))
+    }
+    else {
+        None
+    };
+    let draw_texture_params = DrawTextureParams { dest_size, ..Default::default()};
+    draw_texture_ex(&splash, 0.0, 0.0, WHITE, draw_texture_params);
     next_frame().await;
 
     // Load the config file.
@@ -138,6 +151,7 @@ fn window_conf() -> Conf {
         window_title: "Cacophony".to_string(),
         window_width: 624,
         window_height: 240,
+        high_dpi: true,
         window_resizable,
         icon,
         ..Default::default()
