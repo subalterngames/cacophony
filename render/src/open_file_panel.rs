@@ -1,6 +1,5 @@
-use crate::get_page;
 use crate::panel::*;
-use crate::Popup;
+use crate::{Page, PagePosition, Popup};
 use common::open_file::*;
 use hashbrown::HashMap;
 use text::truncate;
@@ -23,6 +22,8 @@ pub(crate) struct OpenFilePanel {
     input_rect: Rectangle,
     /// The popup handler.
     pub popup: Popup,
+    /// Labels for scrolling through pages.
+    scroll_labels: HashMap<PagePosition, LabelRectangle>,
 }
 
 impl OpenFilePanel {
@@ -84,6 +85,24 @@ impl OpenFilePanel {
             ),
         );
 
+        // Get the scroll labels.
+        let mut scroll_labels = HashMap::new();
+        let panel_x = panel.rect.position[0];
+        let panel_w = panel.rect.size[0];
+        let label_y = panel.rect.position[1] + panel.rect.size[1] - 2;
+        scroll_labels.insert(
+            PagePosition::First,
+            Self::get_scroll_label("OPEN_FILE_PANEL_DOWN", text, panel_x, panel_w, label_y),
+        );
+        scroll_labels.insert(
+            PagePosition::Mid,
+            Self::get_scroll_label("OPEN_FILE_PANEL_UP_DOWN", text, panel_x, panel_w, label_y),
+        );
+        scroll_labels.insert(
+            PagePosition::Last,
+            Self::get_scroll_label("OPEN_FILE_PANEL_UP", text, panel_x, panel_w, label_y),
+        );
+
         Self {
             panel,
             prompt,
@@ -92,7 +111,27 @@ impl OpenFilePanel {
             input_rect,
             popup,
             titles,
+            scroll_labels,
         }
+    }
+
+    /// Returns a label for scrolling, e.g. "MORE v".
+    ///
+    /// - `key` The lookup key.
+    /// - `text` The text.
+    /// - `panel_x` The x coordinate of the panel.
+    /// - `panel_w` The width of the panel.
+    /// - `label_y` the y coordinate of the label (the x coordinate varies).
+    fn get_scroll_label(
+        key: &str,
+        text: &Text,
+        panel_x: u32,
+        panel_w: u32,
+        label_y: u32,
+    ) -> LabelRectangle {
+        let string = text.get(key);
+        let x = panel_x + panel_w - (string.chars().count() as u32 + 2);
+        LabelRectangle::new([x, label_y], string)
     }
 }
 
@@ -149,17 +188,17 @@ impl Drawable for OpenFilePanel {
 
         // Prepare to show the children.
         x += 1;
-        let height: u32 = self.panel.rect.size[1] - 3;
+        let height: u32 = self.panel.rect.size[1] - 4;
         y += 1;
         length -= 1;
         let width = length as u32;
 
         // Get a page of elements.
         let elements: Vec<u32> = vec![1; paths_state.children.children.len()];
-        let page = get_page(&paths_state.children.selected, &elements, height);
+        let page = Page::new(&paths_state.children.selected, &elements, height);
 
         // Show the elements.
-        for index in page {
+        for index in page.visible {
             let path = &paths_state.children.children[index];
             // Get the color of the text. Flip the fg/bg colors for the selected element.
             let c = if focus {
@@ -200,7 +239,7 @@ impl Drawable for OpenFilePanel {
                     length,
                     true,
                 )
-            } else{
+            } else {
                 path.path.to_str().unwrap().to_string()
             };
             let p = Label { position, text: s };
@@ -254,6 +293,12 @@ impl Drawable for OpenFilePanel {
                     ColorKey::NoFocus
                 },
             );
+        }
+        // Possible draw a scroll indicator.
+        if page.position != PagePosition::Only {
+            let scroll_label = &self.scroll_labels[&page.position];
+            renderer.rectangle(&scroll_label.rect, &ColorKey::FocusDefault);
+            renderer.text(&scroll_label.label, &ColorKey::Background);
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::panel::*;
-use crate::{get_page, get_track_heights, TRACK_HEIGHT_NO_SOUNDFONT, TRACK_HEIGHT_SOUNDFONT};
+use crate::{get_track_heights, Page, TRACK_HEIGHT_NO_SOUNDFONT, TRACK_HEIGHT_SOUNDFONT};
 use text::{get_file_name, truncate};
 
 const MUTE_OFFSET: u32 = 6;
@@ -77,11 +77,12 @@ impl Drawable for TracksPanel {
         self.panel.update(focus, renderer);
 
         // Get a list of track element heights.
-        let track_page = get_page(
+        let track_page = Page::new(
             &state.music.selected,
             &get_track_heights(state, conn),
             self.page_height,
-        );
+        )
+        .visible;
         // Get the color of the separator.
         let separator_color = if focus {
             ColorKey::Separator

@@ -176,3 +176,4 @@
 
 - [x] Don't show full path of files
 - [x] Show relative paths
+- [ ] Arrows

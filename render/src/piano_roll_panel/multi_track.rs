@@ -1,6 +1,6 @@
 use super::viewable_notes::*;
 use crate::panel::*;
-use crate::{get_page, get_track_heights};
+use crate::{get_track_heights, Page};
 use common::config::parse;
 use common::{MAX_NOTE, MIN_NOTE};
 
@@ -77,7 +77,7 @@ impl MultiTrack {
         let focus = state.panels[state.focus.get()] == PanelType::PianoRoll;
         // Get the page.
         let track_heights = get_track_heights(state, conn);
-        let page = get_page(&state.music.selected, &track_heights, self.rect.size[1]);
+        let page = Page::new(&state.music.selected, &track_heights, self.rect.size[1]).visible;
         let x = self.rect.position[0];
         let mut y = self.rect.position[1];
         let w = self.rect.size[0];
