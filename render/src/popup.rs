@@ -1,5 +1,7 @@
 use crate::Renderer;
 use common::{PanelType, State};
+use image::imageops::{resize, FilterType};
+use image::RgbaImage;
 use macroquad::prelude::*;
 
 /// A popup tries to capture the backround texture when its panel is first enabled.
@@ -34,7 +36,35 @@ impl Popup {
         if state.panels.contains(&self.panel_type) {
             // I don't have a background and I need one.
             if self.background.is_none() {
-                self.background = Some(renderer.screen_capture());
+                let (mut background, params) = renderer.screen_capture();
+                // This can happen on Linux. Resize the texture.
+                if background.width() > renderer.window_pixel_size[0]
+                    || background.height() > renderer.window_pixel_size[1]
+                {
+                    // Convert the texture to image data.
+                    let image_data = background.get_texture_data().bytes;
+                    // Convert the image data to an image buffer.
+                    let mut image = RgbaImage::from_vec(
+                        background.width() as u32,
+                        background.height() as u32,
+                        image_data,
+                    )
+                    .unwrap();
+                    // Resize the image.
+                    image = resize(
+                        &image,
+                        renderer.window_pixel_size[0] as u32,
+                        renderer.window_pixel_size[1] as u32,
+                        FilterType::Nearest,
+                    );
+                    // Convert to a texture again.
+                    background = Texture2D::from_rgba8(
+                        image.width() as u16,
+                        image.height() as u16,
+                        image.as_raw(),
+                    );
+                }
+                self.background = Some((background, params));
             }
         }
         // I don't need a background anymore.

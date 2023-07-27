@@ -1,7 +1,7 @@
 use crate::field_params::*;
 use crate::{ColorKey, Focus};
 use common::config::parse_bool;
-use common::font::*;
+use common::font::{get_font, get_subtitle_font};
 use common::sizes::*;
 use hashbrown::HashMap;
 use ini::Ini;
@@ -37,6 +37,8 @@ pub struct Renderer {
     corner_line_length: f32,
     /// This is used to flip captured textures.
     flip_y: bool,
+    /// This is used to resize captured textures.
+    pub(crate) window_pixel_size: [f32; 2],
 }
 
 impl Renderer {
@@ -88,6 +90,8 @@ impl Renderer {
         let half_line_width = line_width / 2.0;
         let flip_y = parse_bool(render_section, "flip_y");
 
+        let window_pixel_size = get_window_pixel_size(config);
+
         Self {
             colors,
             font,
@@ -102,6 +106,7 @@ impl Renderer {
             subtitle_position,
             subtitle_font_size,
             max_subtitle_width,
+            window_pixel_size,
         }
     }
 
