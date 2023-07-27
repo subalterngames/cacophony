@@ -88,7 +88,7 @@
 - [x] ~~Can't double-click Linux executable~~
 - [ ] Can't connect to MIDI input on Linux
 - [ ] Note names aren't aligned correctly in high DPI Linux
-- [ ] Textures are too big in high DPI Linux
+- [x] Textures are too big in high DPI Linux
 - [ ] Splash window is too small in high DPI Linux
 
 ## Bugs

@@ -414,8 +414,13 @@ impl Renderer {
     /// Capture the screen, flipping the image as needed.
     pub fn screen_capture(&self) -> (Texture2D, DrawTextureParams) {
         let texture = Texture2D::from_image(&get_screen_data());
+        let dest_size = Some(Vec2::new(
+            self.window_pixel_size[0],
+            self.window_pixel_size[1],
+        ));
         let params = DrawTextureParams {
             flip_y: self.flip_y,
+            dest_size,
             ..Default::default()
         };
         (texture, params)
