@@ -23,7 +23,7 @@ pub(crate) struct OpenFilePanel {
     /// The popup handler.
     pub popup: Popup,
     /// Labels for scrolling through pages.
-    scroll_labels: HashMap<PagePosition, LabelRectangle>,
+    scroll_labels: HashMap<PagePosition, Label>,
 }
 
 impl OpenFilePanel {
@@ -128,10 +128,10 @@ impl OpenFilePanel {
         panel_x: u32,
         panel_w: u32,
         label_y: u32,
-    ) -> LabelRectangle {
+    ) -> Label {
         let string = text.get(key);
         let x = panel_x + panel_w - (string.chars().count() as u32 + 2);
-        LabelRectangle::new([x, label_y], string)
+        Label::new([x, label_y], string)
     }
 }
 
@@ -296,9 +296,7 @@ impl Drawable for OpenFilePanel {
         }
         // Possible draw a scroll indicator.
         if page.position != PagePosition::Only {
-            let scroll_label = &self.scroll_labels[&page.position];
-            renderer.rectangle(&scroll_label.rect, &ColorKey::FocusDefault);
-            renderer.text(&scroll_label.label, &ColorKey::Background);
+            renderer.text(&self.scroll_labels[&page.position], &ColorKey::Value);
         }
     }
 }

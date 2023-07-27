@@ -50,8 +50,13 @@ impl Index {
         if self.length == 0 {
             false
         } else if up {
-            self.index += 1;
-            true
+            if self.index < self.length - 1 {
+                self.index += 1;
+                true
+            }
+            else {
+                false
+            }
         } else if self.index > 0 {
             self.index -= 1;
             true
