@@ -136,7 +136,7 @@
 - [x] Invalid bank change resets the soundfont
 - [x] Opening a soundfont can crash
 - [x] Illegal filename characters allowed?
-- [ ] Can't access D:/
+- [x] ~~Can't access D:/~~
 
 ## Misc.
 
@@ -176,4 +176,4 @@
 
 - [x] Don't show full path of files
 - [x] Show relative paths
-- [ ] Arrows
+- [x] Arrows
