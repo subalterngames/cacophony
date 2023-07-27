@@ -53,8 +53,7 @@ impl Index {
             if self.index < self.length - 1 {
                 self.index += 1;
                 true
-            }
-            else {
+            } else {
                 false
             }
         } else if self.index > 0 {

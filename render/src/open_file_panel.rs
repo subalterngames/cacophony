@@ -122,13 +122,7 @@ impl OpenFilePanel {
     /// - `panel_x` The x coordinate of the panel.
     /// - `panel_w` The width of the panel.
     /// - `label_y` the y coordinate of the label (the x coordinate varies).
-    fn get_scroll_label(
-        key: &str,
-        text: &Text,
-        panel_x: u32,
-        panel_w: u32,
-        label_y: u32,
-    ) -> Label {
+    fn get_scroll_label(key: &str, text: &Text, panel_x: u32, panel_w: u32, label_y: u32) -> Label {
         let string = text.get(key);
         let x = panel_x + panel_w - (string.chars().count() as u32 + 2);
         Label::new([x, label_y], string)

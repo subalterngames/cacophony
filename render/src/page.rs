@@ -47,13 +47,15 @@ impl Page {
         }
         // Are there more elements after the last one?
         let after = match visible.iter().max() {
-            Some(max) => *max < elements.len(),
+            Some(max) => *max < elements.len() - 1,
             None => false,
         };
+        // What about before?
         let before = match visible.iter().min() {
             Some(min) => *min > 0,
             None => false,
         };
+        // Infer the relative position.
         let position = match (after, before) {
             (true, true) => PagePosition::Mid,
             (true, false) => PagePosition::First,
