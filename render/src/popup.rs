@@ -55,7 +55,7 @@ impl Popup {
                         &image,
                         renderer.window_pixel_size[0] as u32,
                         renderer.window_pixel_size[1] as u32,
-                        FilterType::Nearest,
+                        FilterType::Lanczos3,
                     );
                     // Convert to a texture again.
                     background = Texture2D::from_rgba8(
