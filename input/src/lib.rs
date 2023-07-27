@@ -296,7 +296,7 @@ impl Input {
             &self
                 .pressed_chars
                 .iter()
-                .filter(|c| !c.is_control())
+                .filter(|c| Self::is_valid_char(c))
                 .copied()
                 .collect(),
         )
@@ -309,10 +309,15 @@ impl Input {
             &self
                 .pressed_chars
                 .iter()
-                .filter(|c| !c.is_control() && !ILLEGAL_FILENAME_CHARACTERS.contains(c))
+                .filter(|c| Self::is_valid_char(c) && !ILLEGAL_FILENAME_CHARACTERS.contains(c))
                 .copied()
                 .collect(),
         )
+    }
+
+    /// Returns true if the user can input this character.
+    fn is_valid_char(c: &char) -> bool {
+        c.is_alphanumeric() || c.is_ascii_punctuation() || c.is_whitespace()
     }
 
     /// Modify a u64 value.
