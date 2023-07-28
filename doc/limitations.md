@@ -12,6 +12,10 @@ Adding wav-data-importing functionality to Cacophony would be a *huge* undertaki
 
 Quantized input solves a *lot* of UX problems and data serialization.
 
+## Only SoundFonts
+
+Why? Because they're *easy*.
+
 ## VSTs
 
 As far as I know there's no way to support "VSTs" because the standard is incredibly flimsy. The big DAWs out there tend to have custom code *per VST*, which is well outside of what I can support.

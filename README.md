@@ -10,8 +10,10 @@ Cacophony's mascot is Casey the Transgender Cacodemon. No official artwork of Ca
 
 ## Documentation
 
-- [How to run](doc/run.md)
-- [How to compile](doc/compile.md)
+- [Supported platforms](doc/platforms.md)
+- [Setup](doc/setup.md)
+- [Run](doc/run.md)
+- [Compile](doc/compile.md)
 - [Design manifesto](doc/manifesto.md)
 - [Roadmap](doc/roadmap.md)
 - [Limitations](doc/limitations.md)
