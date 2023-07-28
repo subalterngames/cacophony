@@ -79,7 +79,7 @@ pub struct Input {
 impl Input {
     pub fn new(config: &Ini) -> Self {
         // Get the audio connections.
-        let midi_conn = MidiConn::new(config);
+        let midi_conn = MidiConn::new();
 
         // Get qwerty events.
         let mut qwerty_events: HashMap<InputEvent, QwertyBinding> = HashMap::new();

@@ -184,4 +184,4 @@
 
 ## MIDI
 
-- [ ] Automatically choose input devices
+- [x] Automatically choose input devices

@@ -21,7 +21,3 @@ I'm don't know any other language well enough to provide localization but I'd re
 ## Better .sf3 support
 
 ...maybe?? Does anyone actually want this??
-
-## Multiple MIDI controllers
-
-idk seems like a good idea

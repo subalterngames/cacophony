@@ -27,14 +27,16 @@ async fn main() {
     let splash_height = splash.height();
     let screen_width = screen_width();
     let screen_height = screen_height();
-    // Oops something went wrong. 
+    // Oops something went wrong.
     let dest_size = if splash_width != screen_width || splash_height != screen_height {
         Some(Vec2::new(screen_width, screen_height))
-    }
-    else {
+    } else {
         None
     };
-    let draw_texture_params = DrawTextureParams { dest_size, ..Default::default()};
+    let draw_texture_params = DrawTextureParams {
+        dest_size,
+        ..Default::default()
+    };
     draw_texture_ex(&splash, 0.0, 0.0, WHITE, draw_texture_params);
     next_frame().await;
 
