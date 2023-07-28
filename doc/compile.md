@@ -5,6 +5,7 @@
 *Tested on Ubuntu 20.04 with an x64 processor.*
 
 1. `apt install clang libspeechd-dev`
+2. For MIDI Input: `sudo usermod -a -G audio replacethiswithyourusername`
 2. `cargo build --release`
 
 ## MacOS

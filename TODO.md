@@ -85,8 +85,8 @@
 ## Linux Bugs
 
 - [x] Can't resize window in Linux
-- [x] ~~Can't double-click Linux executable~~
-- [ ] Can't connect to MIDI input on Linux
+- [ ] Can't double-click Linux executable
+- [x] Can't connect to MIDI input on Linux
 - [ ] Note names aren't aligned correctly in high DPI Linux
 - [x] Textures are too big in high DPI Linux
 - [x] Splash window is too small in high DPI Linux
@@ -177,3 +177,7 @@
 - [x] Don't show full path of files
 - [x] Show relative paths
 - [x] Arrows
+
+## MIDI
+
+- [ ] Automatically choose input devices
