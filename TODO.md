@@ -2,6 +2,9 @@
 
 ## Big picture
 
+- [ ] Discord
+- [ ] License
+- [ ] itch page
 - [ ] Test on Linux
 - [x] Test on OSX
 - [ ] Help links
