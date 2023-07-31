@@ -1,8 +1,8 @@
-# Cacophony
+![Cacophony!](doc/images/banner.png)
 
 **Cacophony is a minimalist and ergonomic MIDI sequencer.** It's minimalist in that it doesn't have a lot of functionality MIDI sequencers have. It's ergonomic in that there is no mouse input and a very clean interface, allowing you to juggle less inputs and avoid awkward mouse motions.
 
-Cacophony is a proof-of-concept of an unusual way to create digital music.
+![Screenshot of Cacophony](doc/images/screenshot.jpg)
 
 I made Cacophony because I want to make music in a very particular way that I couldn't find anywhere.
 

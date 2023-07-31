@@ -144,6 +144,7 @@
 - [x] Illegal filename characters allowed?
 - [x] ~~Can't access D:/~~
 - [x] Viewable notes volume cutoff
+- [ ] Render an extra row of notes at the bottom
 
 ## Misc.
 
