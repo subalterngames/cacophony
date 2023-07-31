@@ -326,12 +326,11 @@ impl Drawable for PianoRollPanel {
                 focus,
                 state.view.dn,
             );
-
             // Draw the selection background.
             let selected = notes
                 .notes
                 .iter()
-                .filter(|n| n.selected)
+                .filter(|n| n.selected && n.in_pitch_range)
                 .collect::<Vec<&ViewableNote>>();
             // Get the start and end of the selection.
             if let Some(select_0) = selected
@@ -358,7 +357,7 @@ impl Drawable for PianoRollPanel {
             }
 
             // Draw the notes.
-            for note in notes.notes.iter() {
+            for note in notes.notes.iter().filter(|n| n.in_pitch_range) {
                 let w = notes.get_note_w(note);
                 // Get the y value from the pitch.
                 let y = self.piano_roll_rows_rect[1]

@@ -11,6 +11,9 @@ pub(crate) struct ViewableNote<'a> {
     pub playing: bool,
     /// If true, this note is selected.
     pub selected: bool,
+    /// If true, the note is within the viewport's pitch range (`dn`).
+    /// We need this because we want to render note rectangles only for notes in the pitch range, but we also want to render volume lines for notes beyond the pitch range.
+    pub in_pitch_range: bool,
     /// The color of this note.
     pub color: ColorKey,
 }
@@ -79,11 +82,7 @@ impl<'a> ViewableNotes<'a> {
         let mut notes = vec![];
         for note in track.notes.iter() {
             // Is the note in view?
-            if !(note.end >= dt[0].get_u()
-                && note.start <= dt[1].get_u()
-                && note.note <= dn[0]
-                && note.note >= dn[1])
-            {
+            if !(note.end >= dt[0].get_u() && note.start <= dt[1].get_u()) {
                 continue;
             }
             // Get the start time of the note. This could be the start of the viewport.
@@ -113,6 +112,7 @@ impl<'a> ViewableNotes<'a> {
             } else {
                 ColorKey::NoFocus
             };
+            let in_pitch_range = note.note <= dn[0] && note.note >= dn[1];
             // Add the note.
             notes.push(ViewableNote {
                 note,
@@ -120,6 +120,7 @@ impl<'a> ViewableNotes<'a> {
                 color,
                 selected,
                 playing,
+                in_pitch_range,
             });
         }
         Self {

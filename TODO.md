@@ -141,6 +141,7 @@
 - [x] Opening a soundfont can crash
 - [x] Illegal filename characters allowed?
 - [x] ~~Can't access D:/~~
+- [x] Viewable notes volume cutoff
 
 ## Misc.
 
