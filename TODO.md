@@ -8,6 +8,7 @@
 - [ ] itch page
 - [ ] Test on Linux
 - [ ] github actions
+- [ ] User guide
 - [x] Test on OSX
 - [ ] Help links
 - [x] Multi-track view
