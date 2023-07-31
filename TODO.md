@@ -145,6 +145,7 @@
 - [x] ~~Can't access D:/~~
 - [x] Viewable notes volume cutoff
 - [x] Render an extra row of notes at the bottom
+- [x] Multi-track track scroll is also dt
 
 ## Misc.
 
@@ -164,7 +165,7 @@
 - [x] Playback to cursor
 - [x] Up/down tracks in multi-track
 - [x] Qwerty note input TTS
-- [ ] Multi-track zoom
+- [x] Multi-track zoom
 - [x] View should move while playing
 
 ## Tracks view

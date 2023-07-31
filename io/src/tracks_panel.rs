@@ -4,6 +4,7 @@ use common::open_file::OpenFileType;
 use common::{MidiTrack, SelectMode};
 use text::get_file_name_no_ex;
 
+const TRACK_SCROLL_EVENTS: [InputEvent; 2] = [InputEvent::PreviousTrack, InputEvent::NextTrack];
 /// A list of tracks and their parameters.
 pub(crate) struct TracksPanel {}
 
@@ -256,7 +257,7 @@ impl Panel for TracksPanel {
                 )]));
             }
             // Select a track.
-            else if let Some(snapshot) = select_track(state, input) {
+            else if let Some(snapshot) = select_track(state, input, TRACK_SCROLL_EVENTS) {
                 return Some(snapshot);
             }
             // Track-specific operations.

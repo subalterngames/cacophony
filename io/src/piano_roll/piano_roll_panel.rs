@@ -5,6 +5,11 @@ use common::config::parse_fractions;
 use common::{Index, Note, PianoRollMode, SelectMode, U64orF32, PPQ_F};
 use ini::Ini;
 
+const TRACK_SCROLL_EVENTS: [InputEvent; 2] = [
+    InputEvent::PianoRollPreviousTrack,
+    InputEvent::PianoRollNextTrack,
+];
+
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.
 pub struct PianoRollPanel {
@@ -135,7 +140,7 @@ impl Panel for PianoRollPanel {
     ) -> Option<Snapshot> {
         // Select a track.
         if !state.view.single_track {
-            if let Some(snapshot) = select_track(state, input) {
+            if let Some(snapshot) = select_track(state, input, TRACK_SCROLL_EVENTS) {
                 return Some(snapshot);
             }
         }

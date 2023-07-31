@@ -679,18 +679,20 @@ fn combine_tracks_to_commands(
 /// Try to select a track, given user input.
 ///
 /// This is here an not in a more obvious location because both `TracksPanel` and `PianoRollPanel` need it.
-pub(crate) fn select_track(state: &mut State, input: &Input) -> Option<Snapshot> {
+pub(crate) fn select_track(
+    state: &mut State,
+    input: &Input,
+    events: [InputEvent; 2],
+) -> Option<Snapshot> {
     if let Some(selected) = state.music.selected {
-        if input.happened(&InputEvent::NextTrack) && selected < state.music.midi_tracks.len() - 1 {
-            let s0 = state.clone();
-            state.music.selected = Some(selected + 1);
-            deselect(state);
-            Some(Snapshot::from_states(s0, state))
-        }
-        // Previous track.
-        else if input.happened(&InputEvent::PreviousTrack) && selected > 0 {
+        if input.happened(&events[0]) && selected > 0 {
             let s0 = state.clone();
             state.music.selected = Some(selected - 1);
+            deselect(state);
+            Some(Snapshot::from_states(s0, state))
+        } else if input.happened(&events[1]) && selected < state.music.midi_tracks.len() - 1 {
+            let s0 = state.clone();
+            state.music.selected = Some(selected + 1);
             deselect(state);
             Some(Snapshot::from_states(s0, state))
         } else {
