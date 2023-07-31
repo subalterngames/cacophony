@@ -162,7 +162,7 @@
 - [x] Up/down tracks in multi-track
 - [x] Qwerty note input TTS
 - [ ] Multi-track zoom
-- [ ] View should move while playing
+- [x] View should move while playing
 
 ## Tracks view
 

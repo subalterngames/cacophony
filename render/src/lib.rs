@@ -38,6 +38,8 @@ pub(crate) use popup::Popup;
 use types::*;
 mod page;
 mod page_position;
+use audio::Conn;
+use common::State;
 pub(crate) use page::Page;
 pub(crate) use page_position::PagePosition;
 
@@ -52,7 +54,7 @@ pub fn draw_subtitles(renderer: &Renderer, tts: &TTS) {
 }
 
 /// Get the height of each track. This is shared by the tracks panel and the multi-track piano roll panel.
-pub(crate) fn get_track_heights(state: &common::State, conn: &audio::Conn) -> Vec<u32> {
+pub(crate) fn get_track_heights(state: &State, conn: &Conn) -> Vec<u32> {
     // Get a list of track element heights.
     let mut elements = vec![];
     for track in state.music.midi_tracks.iter() {

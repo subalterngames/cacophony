@@ -120,18 +120,18 @@ impl PianoRollPanel {
         x: u32,
         time: u64,
         color: &ColorKey,
-        state: &State,
+        single_track: bool,
         renderer: &Renderer,
         dt: &[U64orF32; 2],
     ) {
         // Get the pixel position of the start coordinate.
         let x0 = x as f32 * self.cell_size[0];
         // The time is before the start time.
-        let (x1, vertical) = if time < state.view.dt[0] {
+        let (x1, vertical) = if time < dt[0].get_u() {
             (self.piano_roll_rows_rect[0], false)
         }
         // The time is after the end time.
-        else if time > state.view.dt[1] {
+        else if time > dt[1].get_u() {
             (
                 self.piano_roll_rows_rect[0] + self.piano_roll_rows_rect[2],
                 false,
@@ -156,13 +156,36 @@ impl PianoRollPanel {
             renderer.vertical_line_pixel(
                 x1,
                 self.piano_roll_rows_rect[1],
-                if state.view.single_track {
+                if single_track {
                     self.time_line_bottoms[0]
                 } else {
                     self.time_line_bottoms[1]
                 },
                 color,
             );
+        }
+    }
+
+    /// If music isn't playing, this returns `state.view.dt`.
+    /// Otherwise, this returns a view delta that has been moved to include the current playback time.
+    fn get_view_dt(state: &State, conn: &Conn) -> [u64; 2] {
+        let dt = [state.view.dt[0], state.view.dt[1]];
+        if conn.state.time.music {
+            match conn.state.time.time {
+                Some(time) => {
+                    let time_ppq = state.time.samples_to_ppq(time, conn.framerate);
+                    let delta = dt[1] - dt[0];
+                    // This is maybe not the best way to round, but it gets the job done!
+                    let t0 = (time_ppq / delta) * delta;
+                    let t1 = t0 + delta;
+                    [t0, t1]
+                }
+                None => dt,
+            }
+        }
+        // If there is no music playing, just use the "actual" view.
+        else {
+            dt
         }
     }
 }
@@ -301,13 +324,12 @@ impl Drawable for PianoRollPanel {
             },
         );
 
+        let dt = Self::get_view_dt(state, conn).map(U64orF32::from);
+
         // Time delta label.
         let dt_string = text.get_with_values(
             "PIANO_ROLL_PANEL_VIEW_DT",
-            &[
-                &ppq_to_string(state.view.dt[0]),
-                &ppq_to_string(state.view.dt[1]),
-            ],
+            &[&ppq_to_string(dt[0].get_u()), &ppq_to_string(dt[1].get_u())],
         );
         let dt_x =
             panel.rect.position[0] + panel.rect.size[0] - dt_string.chars().count() as u32 - 1;
@@ -320,11 +342,12 @@ impl Drawable for PianoRollPanel {
         if state.view.single_track {
             // Get the viewable notes.
             let notes = ViewableNotes::new(
-                [self.piano_roll_rows_rect[0], self.piano_roll_rows_rect[2]],
+                self.piano_roll_rows_rect[0],
+                self.piano_roll_rows_rect[2],
                 state,
                 conn,
                 focus,
-                state.view.dn,
+                dt,
             );
             // Draw the selection background.
             let selected = notes
@@ -369,16 +392,15 @@ impl Drawable for PianoRollPanel {
         }
         // Multi-track.
         else {
-            self.multi_track.update(renderer, state, conn);
+            self.multi_track.update(dt, renderer, state, conn);
         }
 
         // Draw time lines.
-        let dt = ViewableNotes::get_dt(&state.view.dt);
         self.draw_time_lines(
             cursor_line_x0,
             state.time.cursor,
             &cursor_color,
-            state,
+            state.view.single_track,
             renderer,
             &dt,
         );
@@ -386,7 +408,7 @@ impl Drawable for PianoRollPanel {
             playback_line_x0,
             state.time.playback,
             &playback_color,
-            state,
+            state.view.single_track,
             renderer,
             &dt,
         );
@@ -394,7 +416,7 @@ impl Drawable for PianoRollPanel {
         if conn.state.time.music {
             if let Some(music_time) = conn.state.time.time {
                 let music_time = state.time.samples_to_ppq(music_time, conn.framerate);
-                if music_time >= state.view.dt[0] && music_time <= state.view.dt[1] {
+                if music_time >= dt[0].get_u() && music_time <= dt[1].get_u() {
                     let x = get_note_x(
                         music_time,
                         self.piano_roll_rows_rect[0],

@@ -2,7 +2,7 @@ use super::viewable_notes::*;
 use crate::panel::*;
 use crate::{get_track_heights, Page};
 use common::config::parse;
-use common::{MAX_NOTE, MIN_NOTE};
+use common::{U64orF32, MAX_NOTE, MIN_NOTE};
 
 /// Track colors for when the panel has focus.
 const TRACK_COLORS_FOCUS: [ColorKey; 6] = [
@@ -73,7 +73,13 @@ impl MultiTrack {
         }
     }
 
-    pub(crate) fn update(&self, renderer: &Renderer, state: &State, conn: &Conn) {
+    pub(crate) fn update(
+        &self,
+        dt: [U64orF32; 2],
+        renderer: &Renderer,
+        state: &State,
+        conn: &Conn,
+    ) {
         let focus = state.panels[state.focus.get()] == PanelType::PianoRoll;
         // Get the page.
         let track_heights = get_track_heights(state, conn);
@@ -109,11 +115,13 @@ impl MultiTrack {
             let track = &state.music.midi_tracks[i];
             // Get the viewable notes.
             let notes = ViewableNotes::new_from_track(
-                [self.rect_f[0], self.rect_f[2]],
+                self.rect_f[0],
+                self.rect_f[2],
                 track,
                 state,
                 conn,
                 focus,
+                dt,
                 DN,
             );
             // Draw the selection background.

@@ -32,35 +32,49 @@ pub(crate) struct ViewableNotes<'a> {
 }
 
 impl<'a> ViewableNotes<'a> {
-    /// - `xw` The x and w pixel values of the rectangle where notes can be rendered.
+    /// - `x` The x pixel coordinate of the note's position.
+    /// - `w` The pixel width of the note.
     /// - `state` The app state.
     /// - `conn` The audio conn.
     /// - `focus` If true, the piano roll panel has focus.
-    /// - `dn` The range of viewable note pitches.
-    pub fn new(xw: [f32; 2], state: &'a State, conn: &Conn, focus: bool, dn: [u8; 2]) -> Self {
+    /// - `dt` The time delta.
+    pub fn new(
+        x: f32,
+        w: f32,
+        state: &'a State,
+        conn: &Conn,
+        focus: bool,
+        dt: [U64orF32; 2],
+    ) -> Self {
         match state.music.get_selected_track() {
-            Some(track) => Self::new_from_track(xw, track, state, conn, focus, dn),
+            Some(track) => Self::new_from_track(x, w, track, state, conn, focus, dt, state.view.dn),
             None => Self {
-                x: xw[0],
-                w: xw[1],
+                x,
+                w,
                 notes: vec![],
-                dt: Self::get_dt(&state.view.dt),
+                dt,
             },
         }
     }
 
+    /// - `x` The x pixel coordinate of the note's position.
+    /// - `w` The pixel width of the note.
     /// - `xw` The x and w pixel values of the rectangle where notes can be rendered.
     /// - `track` The track.
     /// - `state` The app state.
     /// - `conn` The audio conn.
     /// - `focus` If true, the piano roll panel has focus.
+    /// - `dt` The time delta.
     /// - `dn` The range of viewable note pitches.
+    #[allow(clippy::too_many_arguments)]
     pub fn new_from_track(
-        xw: [f32; 2],
+        x: f32,
+        w: f32,
         track: &'a MidiTrack,
         state: &'a State,
         conn: &Conn,
         focus: bool,
+        dt: [U64orF32; 2],
         dn: [u8; 2],
     ) -> Self {
         // Get any notes being played.
@@ -73,7 +87,6 @@ impl<'a> ViewableNotes<'a> {
             false => None,
         };
 
-        let dt = Self::get_dt(&state.view.dt);
         // Get the selected notes.
         let selected = match state.select_mode.get_notes(&state.music) {
             Some(selected) => selected,
@@ -92,7 +105,7 @@ impl<'a> ViewableNotes<'a> {
                 note.start
             };
             // Get the x coordinate of the note.
-            let x = get_note_x(t, xw[0], xw[1], &dt);
+            let x = get_note_x(t, x, w, &dt);
             // Is this note in the selection?
             let selected = selected.contains(&note);
             // Is this note being played?
@@ -123,12 +136,7 @@ impl<'a> ViewableNotes<'a> {
                 in_pitch_range,
             });
         }
-        Self {
-            notes,
-            x: xw[0],
-            w: xw[1],
-            dt,
-        }
+        Self { notes, x, w, dt }
     }
 
     /// Returns the width of a note.
@@ -144,11 +152,6 @@ impl<'a> ViewableNotes<'a> {
     /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
     pub fn get_note_x(&self, t: u64, x: f32, w: f32) -> f32 {
         get_note_x(t, x, w, &self.dt)
-    }
-
-    /// Returns `dt` as `U64orF32`.
-    pub fn get_dt(dt: &[u64; 2]) -> [U64orF32; 2] {
-        [U64orF32::from(dt[0]), U64orF32::from(dt[1])]
     }
 }
 
