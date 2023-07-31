@@ -125,7 +125,7 @@ impl<'a> ViewableNotes<'a> {
             } else {
                 ColorKey::NoFocus
             };
-            let in_pitch_range = note.note <= dn[0] && note.note >= dn[1];
+            let in_pitch_range = note.note <= dn[0] && note.note > dn[1];
             // Add the note.
             notes.push(ViewableNote {
                 note,
