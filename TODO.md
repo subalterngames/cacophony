@@ -7,6 +7,7 @@
 - [ ] License
 - [ ] itch page
 - [ ] Test on Linux
+- [ ] github actions
 - [x] Test on OSX
 - [ ] Help links
 - [x] Multi-track view
