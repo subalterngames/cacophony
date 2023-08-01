@@ -10,4 +10,5 @@ pub enum PanelType {
     OpenFile,
     ExportState,
     ExportSettings,
+    Quit,
 }

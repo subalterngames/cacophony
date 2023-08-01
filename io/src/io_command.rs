@@ -10,6 +10,8 @@ pub(crate) enum IOCommand {
     Export(PathBuf),
     /// Close the open-file panel.
     CloseOpenFile,
+    /// Quit the application.
+    Quit,
 }
 
 pub(crate) type IOCommands = Option<Vec<IOCommand>>;

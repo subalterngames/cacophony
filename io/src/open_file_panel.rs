@@ -7,10 +7,8 @@ use text::{get_file_name_no_ex, get_folder_name};
 
 /// Data for an open-file panel.
 pub struct OpenFilePanel {
-    /// The index of the previously-focused panel.
-    previous_focus: Index,
-    /// The previously-active panels.
-    previous_panels: Vec<PanelType>,
+    /// Popup handler.
+    popup: Popup,
     /// Valid SoundFont file extensions.
     soundfont_extensions: Vec<String>,
     /// Valid save file extensions.
@@ -20,8 +18,7 @@ pub struct OpenFilePanel {
 impl Default for OpenFilePanel {
     fn default() -> Self {
         Self {
-            previous_focus: Index::default(),
-            previous_panels: vec![],
+            popup: Default::default(),
             soundfont_extensions: vec!["sf2".to_string(), "sf3".to_string()],
             save_file_extensions: vec!["cac".to_string()],
         }
@@ -36,21 +33,12 @@ impl OpenFilePanel {
         state: &mut State,
         paths_state: &mut PathsState,
     ) {
-        state.input.alphanumeric_input = true;
-        // Remember the active panels.
-        self.previous_panels = state.panels.clone();
-        // Clear all active panels.
-        state.panels.clear();
-        // Make this the only active panel.
-        state.panels.push(PanelType::OpenFile);
+        let mut panels = vec![PanelType::OpenFile];
         // Show export settings.
         if open_file_type == OpenFileType::Export {
-            state.panels.push(PanelType::ExportSettings);
+            panels.push(PanelType::ExportSettings);
         }
-        // Remember the focus.
-        self.previous_focus = state.focus;
-        // Set a new index.
-        state.focus = Index::new(0, state.panels.len());
+        self.popup.enable(state, panels);
         // Set the file type.
         paths_state.open_file_type = open_file_type;
     }
@@ -120,11 +108,7 @@ impl OpenFilePanel {
 
     /// Disable this panel.
     pub fn disable(&self, state: &mut State) {
-        state.input.alphanumeric_input = false;
-        // Restore the panels.
-        state.panels = self.previous_panels.clone();
-        // Restore the focus.
-        state.focus = self.previous_focus;
+        self.popup.disable(state);
     }
 }
 

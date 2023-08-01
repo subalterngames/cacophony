@@ -119,6 +119,9 @@ pub enum InputEvent {
     CutNotes,
     PasteNotes,
     DeleteNotes,
+    // Quit Panel.
+    QuitPanelYes,
+    QuitPanelNo,
     // Qwerty note input.
     C,
     CSharp,

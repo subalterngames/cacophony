@@ -50,6 +50,9 @@ use text::TtsString;
 use tracks_panel::TracksPanel;
 mod abc123;
 mod export_settings_panel;
+mod quit_panel;
+use quit_panel::QuitPanel;
+mod popup;
 
 /// The maximum size of the undo stack.
 const MAX_UNDOS: usize = 100;
@@ -82,6 +85,8 @@ pub struct IO {
     export_panel: ExportPanel,
     /// The export settings panel.
     export_settings_panel: ExportSettingsPanel,
+    /// The quit panel.
+    quit_panel: QuitPanel,
     /// Queued commands that will be used to export audio to multiple files.
     export_queue: Vec<QueuedExportCommands>,
     /// The active panels prior to exporting audio.
@@ -134,6 +139,7 @@ impl IO {
         let piano_roll_panel = PianoRollPanel::new(&input_state.beat.get_u(), config);
         let export_panel = ExportPanel::default();
         let export_settings_panel = ExportSettingsPanel {};
+        let quit_panel = QuitPanel::default();
         Self {
             tts,
             music_panel,
@@ -142,6 +148,7 @@ impl IO {
             piano_roll_panel,
             export_panel,
             export_settings_panel,
+            quit_panel,
             redo: vec![],
             undo: vec![],
             export_queue: vec![],
@@ -172,9 +179,15 @@ impl IO {
         paths_state: &mut PathsState,
         exporter: &mut SharedExporter,
     ) -> bool {
-        // Quit.
         if input.happened(&InputEvent::Quit) {
-            return true;
+            // Enable the quit panel.
+            if state.unsaved_changes {
+                self.quit_panel.enable(state);
+            }
+            // Quit.
+            else {
+                return true;
+            }
         }
 
         // Export multiple files.
@@ -268,7 +281,6 @@ impl IO {
                 }
             }
         }
-
         // New file.
         if input.happened(&InputEvent::NewFile) {
             paths_state.saves.filename = None;
@@ -415,6 +427,7 @@ impl IO {
             PanelType::OpenFile => &mut self.open_file_panel,
             PanelType::PianoRoll => &mut self.piano_roll_panel,
             PanelType::Tracks => &mut self.tracks_panel,
+            PanelType::Quit => &mut self.quit_panel,
         }
     }
 
@@ -451,6 +464,8 @@ impl IO {
                         }
                         // Close the open-file panel.
                         IOCommand::CloseOpenFile => self.open_file_panel.disable(state),
+                        // Quit the application.
+                        IOCommand::Quit => return true
                     }
                 }
             }
