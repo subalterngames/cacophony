@@ -5,6 +5,7 @@ use crate::music_panel::MusicPanel;
 use crate::open_file_panel::OpenFilePanel;
 use crate::panel::*;
 use crate::piano_roll_panel::PianoRollPanel;
+use crate::quit_panel::QuitPanel;
 use crate::tracks_panel::TracksPanel;
 use common::State;
 
@@ -24,6 +25,8 @@ pub struct Panels {
     export_panel: ExportPanel,
     /// The export settings panel.
     export_settings_panel: ExportSettingsPanel,
+    /// The quit panel.
+    quit_panel: QuitPanel,
 }
 
 impl Panels {
@@ -41,6 +44,7 @@ impl Panels {
         let piano_roll_panel = PianoRollPanel::new(config, state, text, renderer);
         let export_panel = ExportPanel::new(config, text);
         let export_settings_panel = ExportSettingsPanel::new(config, text);
+        let quit_panel = QuitPanel::new(config, text, input);
         Self {
             music_panel,
             main_menu,
@@ -49,6 +53,7 @@ impl Panels {
             piano_roll_panel,
             export_panel,
             export_settings_panel,
+            quit_panel,
         }
     }
 
@@ -85,6 +90,7 @@ impl Panels {
                 PanelType::PianoRoll => &self.piano_roll_panel,
                 PanelType::ExportState => &self.export_panel,
                 PanelType::ExportSettings => &self.export_settings_panel,
+                PanelType::Quit => &self.quit_panel,
             };
             // Draw the panel.
             panel.update(renderer, state, conn, input, text, paths_state, exporter);
@@ -95,5 +101,6 @@ impl Panels {
     pub fn late_update(&mut self, state: &State, renderer: &Renderer) {
         self.open_file_panel.popup.late_update(state, renderer);
         self.export_panel.popup.late_update(state, renderer);
+        self.quit_panel.popup.late_update(state, renderer);
     }
 }

@@ -29,6 +29,7 @@ impl Panel {
             PanelType::Tracks => text.get("TITLE_TRACKS"),
             PanelType::ExportState => text.get("TITLE_EXPORT_STATE"),
             PanelType::ExportSettings => text.get("TITLE_EXPORT_SETTINGS"),
+            PanelType::Quit => text.get("TITLE_QUIT"),
         };
         let title_position = [position[0] + 2, position[1]];
         let title = LabelRectangle::new(title_position, title);

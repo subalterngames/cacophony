@@ -41,7 +41,7 @@
   - [x] MIDI: copyright
   - [x] Separate tracks: auto-name
 - [x] Asterisk for changes
-- [ ] Quit unsaved prompt
+- [x] Quit unsaved prompt
 - [x] Note times should be measured in PPQ
 - [x] Export buffer
 - [x] TTS is not helpful!!
