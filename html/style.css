@@ -1,0 +1,66 @@
+@font-face {
+    font-family: 'NotoSansMono';
+    src:
+        url('fonts/noto/NotoSansMono-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'NotoSansMonoBold';
+    src:
+        url('fonts/noto/NotoSansMono-ExtraBold.ttf');
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'NotoSansMono', monospace;
+    font-size: 24px;
+    color: #c8c8c8;
+    background-color: #272932;
+    margin: 0;
+    line-height: 36px;
+    margin-bottom: 48px;
+}
+
+h1 {
+    font-family: 'NotoSansMonoBold', monospace;
+}
+
+h2 {
+    font-family: 'NotoSansMonoBold', monospace;
+}
+
+a {
+    color: #f5a9b8;
+}
+
+code {
+    font-family: 'NotoSansMono', monospace;
+}
+
+.sidenav {
+    height: 100%;
+    width: 12%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #272932;
+    overflow-x: hidden;
+    padding-top: 1vh;
+    border-color: #f5a9b8;
+    border-radius: 5px;
+    border-style: solid; 
+}
+
+.sidenav p {
+    padding-left: 1vw;
+}
+
+.main {
+    margin-left: 14%;
+    margin-right: 18%;
+    padding: 0px 10px;
+}
