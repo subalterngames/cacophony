@@ -30,7 +30,7 @@ impl Panel for QuitPanel {
             if input.happened(&InputEvent::InputTTS) {
                 tts.enqueue(text.get_tooltip(
                     "QUIT_PANEL_INPUT_TTS",
-                    &[InputEvent::QuitPanelNo, InputEvent::QuitPanelYes],
+                    &[InputEvent::QuitPanelYes, InputEvent::QuitPanelNo],
                     input,
                 ));
             } else if input.happened(&InputEvent::QuitPanelNo) {
