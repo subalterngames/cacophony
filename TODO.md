@@ -9,6 +9,7 @@
 - [ ] Test on Linux
 - [ ] github actions
 - [ ] User guide
+- [ ] Website
 - [x] Test on OSX
 - [ ] Help links
 - [x] Multi-track view
