@@ -64,3 +64,56 @@ code {
     margin-right: 18%;
     padding: 0px 10px;
 }
+
+.main .banner {
+    text-align: center;
+}
+
+.main .banner img {
+    width: 100%;
+}
+
+.main .summary {
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+
+.main .summary_text {
+    max-width: 60%;
+}
+
+
+.main .summary_image {
+    flex-basis: 40%;
+    max-width: 40%;
+    padding-right: 18px;
+    padding-bottom: 18px;
+}
+
+.main .summary_image img {
+    width: 100%;
+}
+
+.main .download {
+    text-align: center;
+}
+
+.button {
+    background-color: #5bcefa; /* Green */
+    border: none;
+    color: #272932;
+    padding: 15px 32px;
+    text-align: left;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 24px;
+}
+
+.button a {
+    color: #272932;
+}
+
+.button .subtitle {
+    font-size: 12px;
+  }
