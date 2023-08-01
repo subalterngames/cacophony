@@ -42,9 +42,9 @@ const ALLOWED_DURING_ALPHANUMERIC_INPUT: [InputEvent; 12] = [
     InputEvent::CloseOpenFile,
 ];
 
-const ILLEGAL_FILENAME_CHARACTERS: [char; 20] = [
+const ILLEGAL_FILENAME_CHARACTERS: [char; 22] = [
     '!', '@', '#', '$', '%', '^', '&', '*', '=', '+', '{', '}', '\\', '|', ':', '"', '\'', '<',
-    '>', '/',
+    '>', '/', '\n', '\t',
 ];
 
 /// Listens for user input from qwerty and MIDI devices and records the current input state.
