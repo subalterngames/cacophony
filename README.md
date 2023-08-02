@@ -62,6 +62,4 @@ SelectFile
 
 ### Documentation
 
-- [Run](doc/run.md)
-- [Design manifesto](doc/manifesto.md)
-- [Roadmap](doc/roadmap.md)
+To generate the documentation: `cargo doc --no-deps --workspace --target-dir html/docs`
