@@ -100,7 +100,8 @@ code {
 }
 
 .button {
-    background-color: #5bcefa;
+    font-family: 'NotoSansMonoBold', monospace;
+    background-color: #f5a9b8;
     border: none;
     color: #272932;
     padding: 15px 48px;
