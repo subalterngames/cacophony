@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="sidenav">
+    <p><a href="index.html">Cacophony</a></p>
+    <p><a href="install.html">Install</a></p>
+    <p><a href="user_guide.html">User Guide</a></p>
+    <p><a href="manifesto.html">Manifesto</a></p>
+    <p><a href="limitations.html">Limitations</a></p>
+    <p><a href="roadmap.html">Roadmap</a></p>
+    <p><a href="me.html">Me</a></p>
+</div>
+
+<div class="main">
+    <h1>Design Manifesto</h1>
+    <p>The overall goal is that Cacophony should feel as close as possible to improvising on an actual instrument and writing notes on physical paper with a physical pencil. There should be as little as possible between you and writing music.</p>
+    <p>Cacophony should be useable by amateurs who just want to make something simple and don't want to learn professional software.</p>
+    <h2>1. Clean Interface</h2>
+    <p>Cacophony looks like a TUI because I think it's a good design constraint. If everything has to be rendered as an ASCII grid, then the app's UI always has to be clean. Any superfluous information will take up precious space.</p>
+    <p>Every DAW I've seen seems, by design, to embrace a cluterred interface. I'm a programmer and I routinely use incredibly complex IDEs but DAWs have me stumped. I wanted to make something that is much, much easier on the eyes.</p>
+    <h2>2. Accessibility</h2>
+    <p>As it turns out, making an app accessible is another great way to ensure that the interface is clean. Cacophony by default uses a font that by design is easy on the eyes and can support a lot of languages and a high-contrast color scheme. And, almost everything on-screen can be described by an external text-to-speech engine. Audio-only tooltips are usually frowned upon because there's no way to know if the user has audio on. However, this is a music-making program so we *do* know that the user has audio on.</p>
+    <p>I anticipate one major downside of making screen readers a primary part of the overall UX: the text-to-speech engine is external, which makes Cacophony more susceptible to bitrot. However, this is probably true of many other accessibility decisions in many other apps.</p>
+    <h2>3. Ergonomic UX</h3>
+    <p>Cacophony is qwerty-and-MIDI input *only*. Between this an the helpful screen-reader, the best-case scenario for Cacophony is that it reaches a state at which experienced users hardly ever need to look at the screen.</p>
+    <p>Cacophony doesn't offer mouse support because it feels very awakware to me to have to shift between my MIDI controller, my computer keyboard, and my mouse. I feel like I can handle two input devices at a time, so I opted for qwerty and MIDI.</p>
+    <h2>4. Limited Goals</h2>
+    <p>Many DAWs are attempting to simulate actual studio setups or synthesizers. That's probably useful if you want to actually make a career out of making music, but I don't want to make a career out of making music, I just want to make music. So, Cacophony doesn't make any attempt to emulate any "real-world" audio production verbs.</p>
+    <h2>5. Music Notation Input</h2>
+    <p>I really like how music notation programs such as MuseScore handle note input so Cacophony handles note input similarly, despite being a MIDI sequencer.</p>
+    <h2>6. Open Source</h2>
+    <p>I'm wary of ever adapting to a closed-source DAW that I subscribe to rather than actually own. I want to know that if I make some music, I can edit it whenever I want. In five years, on a different computer, I want to be able to open up the same file. Most DAWs just don't seem optimized for that kind of long-term workflow. I also want to know that if I ever need to drop this project, anyone can fork the repo and no one will need to lose access to their music.</p>
+    <h2>7. Privacy</h2>
+    <p>I don't want your data. Please don't give it to me.</p>
+</div>
+   
+</body>
+</html> 
