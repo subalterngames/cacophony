@@ -4,16 +4,55 @@
 
 ![Screenshot of Cacophony](doc/images/screenshot.jpg)
 
-I made Cacophony because I want to make music in a very particular way that I couldn't find anywhere.
+[Buy Cacophony](https://subalterngames.itch.io/cacophony) (or compile it yourself).
 
-Cacophony's mascot is Casey the Transgender Cacodemon. No official artwork of Casey exists because I don't want to be cursed.
+[User-end documentation.](https://subalterngames.com/cacophony.html)
 
-## Documentation
+## How to compile
 
-- [Supported platforms](doc/platforms.md)
+You can compile Cacophony for Linux, MacOS, or Windows. Below is a list of operating systems I've tested:
+
+Linux:
+
+- Ubuntu 18.04 x64 with X11
+- Ubuntu 20.04 x64 with X11
+
+MacOS:
+
+- Catalina 10.15.7 x64
+- Ventura 13.2.1 Apple Silicon
+
+Windows:
+
+- Windows 10 x64
+
+### All platforms
+
+1. Install Rust
+2. Clone this repo
+
+### Linux
+
+1. `apt install clang libspeechd-dev`
+2. `cargo build --release`
+
+### MacOS
+
+1. `cargo install cargo-bundle`
+2. `cargo bundle`
+
+### Windows
+
+1. `cargo build --release`
+
+## Debugging
+
+If you `cargo build` instead of `cargo build --release`
+
+### Documentation
+
 - [Setup](doc/setup.md)
 - [Run](doc/run.md)
-- [Compile](doc/compile.md)
 - [Design manifesto](doc/manifesto.md)
 - [Roadmap](doc/roadmap.md)
 - [Limitations](doc/limitations.md)

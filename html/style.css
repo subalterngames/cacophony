@@ -100,10 +100,10 @@ code {
 }
 
 .button {
-    background-color: #5bcefa; /* Green */
+    background-color: #5bcefa;
     border: none;
     color: #272932;
-    padding: 15px 32px;
+    padding: 15px 48px;
     text-align: left;
     text-decoration: none;
     display: inline-block;
@@ -116,4 +116,5 @@ code {
 
 .button .subtitle {
     font-size: 12px;
+    padding-bottom: 6px;
   }

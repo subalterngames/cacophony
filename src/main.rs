@@ -151,9 +151,9 @@ fn window_conf() -> Conf {
     let window_resizable = cfg!(target_os = "linux");
     Conf {
         window_title: "Cacophony".to_string(),
-        window_width: 815,
+        window_width: 926,
         window_height: 240,
-        high_dpi: true,
+        high_dpi: false,
         window_resizable,
         icon,
         ..Default::default()
