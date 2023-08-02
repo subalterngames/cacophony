@@ -55,7 +55,7 @@ code {
 
 .sidenav {
     height: 100%;
-    width: 12%;
+    width: 14%;
     position: fixed;
     z-index: 1;
     top: 0;
@@ -73,8 +73,8 @@ code {
 }
 
 .main {
-    margin-left: 14%;
-    margin-right: 18%;
+    margin-left: 16%;
+    margin-right: 16%;
     padding: 0px 10px;
 }
 
