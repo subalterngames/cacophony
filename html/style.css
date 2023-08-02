@@ -86,30 +86,8 @@ code {
     width: 100%;
 }
 
-.main .summary {
-    display: flex;
-    align-items: center;
-    justify-content: center
-}
-
-.main .summary_text {
-    max-width: 60%;
-}
-
-
-.main .summary_image {
-    flex-basis: 40%;
-    max-width: 40%;
-    padding-right: 18px;
-    padding-bottom: 18px;
-}
-
-.main .summary_image img {
-    width: 100%;
-}
-
 .main .download {
-    text-align: center;
+    text-align: left;
 }
 
 .button {
