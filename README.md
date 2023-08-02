@@ -62,7 +62,6 @@ SelectFile
 
 ### Documentation
 
-- [Setup](doc/setup.md)
 - [Run](doc/run.md)
 - [Design manifesto](doc/manifesto.md)
 - [Roadmap](doc/roadmap.md)

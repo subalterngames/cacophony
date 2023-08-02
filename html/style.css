@@ -10,6 +10,11 @@
         url('fonts/noto/NotoSansMono-ExtraBold.ttf');
 }
 
+@font-face {
+    font-family: 'NotoSansMono_Condensed-Light';
+    src: url('fonts/noto/NotoSansMono_Condensed-Light.ttf')
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -36,8 +41,16 @@ a {
     color: #f5a9b8;
 }
 
+li {
+    margin-bottom: 32px;
+}
+
 code {
-    font-family: 'NotoSansMono', monospace;
+    font-family: 'NotoSansMono_Condensed-Light', monospace;
+    font-size: 22px;
+    color: #272932;
+    background-color: #5bcefa;
+    padding: 6px;
 }
 
 .sidenav {

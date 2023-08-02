@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="sidenav">
+    <p><a href="index.html">Cacophony</a></p>
+    <p><a href="install.html">Install</a></p>
+</div>
+
+<div class="main">
+    <h1>How to Install</h1>
+    <h2>Requirements</h2>
+    <p>Cacophony runs on Linux, MacOS, and Windows. Want a mobile version? <a href="limitations.html">It ain't happening.</a></p>
+    <p>I've compiled Cacophony for 64 bit CPUs. I don't know if it works with 32 bit CPUs but you're welcome to try to <a href="https://github.com/subalterngames/cacophony">compile the app</a> and find out.</p>
+    <p>You can optionally use any number of MIDI controllers with Cacophony.</p>
+    <p>If you want to buy Cacophony, you can do so on <a href="https://subalterngames.itch.io/cacophony">itch.io</a> and then download it.</p>
+    <p>You can also <a href="https://github.com/subalterngames/cacophony">compile Cacophony for free</a>.</p>
+    <h2>Install on Linux</h2>
+    <p>If you want to use a MIDI controller, you may need to add yourself as an audio user. Open a terminal, type this, and press enter:</p>
+    <p><code>sudo usermod -a -G audio replacethiswithyourusername</code></p>
+    <p><b>You can't launch Cacophony on Linux by double-clicking the executable. I don't know why. Sorry.</b></p>
+    <p>To run Cacophony (you need to do this <i>every</i> time you run it), open a terminal. Type each of these and press enter each time:</p>
+    <ol>
+        <li><code>cd path_to/cacophony</code> (replace path_to with the actual path)</li>
+        <li><code>./cacophony</code></li>
+        <li>Don't forget to have fun.</li>
+    </ol>
+    <h2>Install on MacOS</h2>
+    <p>The first time you try running Cacophony you might be greeted with an error about Cacophony.app being damaged. It's not damaged. The actual problem is that Apple wants me to pay money to get the app code signed.</p>
+    <p>To "fix" Cacophony.app:</p>
+    <ol>
+        <li>Move Cacophony.app into your home directory (the one above Documents/ and Downloads/). To get there, open Finder and press: <b>⌘ LShift h</b></li>
+        <li>Open a new terminal, type this, and press enter: <p><code>xattr -r -d com.apple.quarantine Cacophony.app</code></p></li>
+        <li>You can now double-click Cacophony.app. You can move it into Applications/ or wherever, if you want. Don't forget to have fun.</li>
+    </ol>
+    <h2>Install on Windows</h2>
+    <p>Double-click to run. It's that easy! Don't forget to have fun.</p>
+</div>
+   
+</body>
+</html> 
