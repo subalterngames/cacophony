@@ -54,7 +54,7 @@ pub use u64_or_f32::*;
 pub mod fraction;
 
 /// The version that will be printed on-screen.
-pub const VERSION: &str = "0.1.0";
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// The maximum volume.
 pub const MAX_VOLUME: u8 = 127;
 
