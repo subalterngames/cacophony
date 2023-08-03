@@ -36,9 +36,10 @@ impl Panels {
         input: &Input,
         text: &mut Text,
         renderer: &Renderer,
+        remote_version: Option<String>,
     ) -> Self {
         let music_panel = MusicPanel::new(config, text);
-        let main_menu = MainMenu::new(config, input, text);
+        let main_menu = MainMenu::new(config, input, text, remote_version);
         let tracks_panel = TracksPanel::new(config, text);
         let open_file_panel = OpenFilePanel::new(config, text);
         let piano_roll_panel = PianoRollPanel::new(config, state, text, renderer);

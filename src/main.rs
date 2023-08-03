@@ -4,11 +4,14 @@ use audio::connect;
 use audio::exporter::Exporter;
 use common::config::{load, parse_bool};
 use common::sizes::get_window_pixel_size;
-use common::{get_bytes, Paths, PathsState, State};
+use common::{get_bytes, Paths, PathsState, State, VERSION};
+use ini::Ini;
 use input::Input;
 use io::IO;
 use macroquad::prelude::*;
+use regex::Regex;
 use render::{draw_subtitles, Panels, Renderer};
+use reqwest::blocking::get;
 use text::{Text, TTS};
 
 const CLEAR_COLOR: macroquad::color::Color = macroquad::color::BLACK;
@@ -43,6 +46,9 @@ async fn main() {
     // Load the config file.
     let config = load();
 
+    // Check if a new version is available.
+    let remote_version = get_remote_version(&config);
+
     // Create the text.
     let mut text = Text::new(&config, &paths);
 
@@ -71,7 +77,14 @@ async fn main() {
     let renderer = Renderer::new(&config);
 
     // Load the panels.
-    let mut panels = Panels::new(&config, &state, &input, &mut text, &renderer);
+    let mut panels = Panels::new(
+        &config,
+        &state,
+        &input,
+        &mut text,
+        &renderer,
+        remote_version,
+    );
 
     // Resize the screen.
     let window_size = get_window_pixel_size(&config);
@@ -157,5 +170,41 @@ fn window_conf() -> Conf {
         window_resizable,
         icon,
         ..Default::default()
+    }
+}
+
+/// Returns a string of the latest version if an update is available.
+fn get_remote_version(config: &Ini) -> Option<String> {
+    // Check the config file to decide if we should to an HTTP request.
+    if parse_bool(config.section(Some("UPDATE")).unwrap(), "check_for_updates") {
+        // HTTPS request.
+        match get("https://raw.githubusercontent.com/subalterngames/cacophony/main/Cargo.toml")
+        {
+            // We got a request.
+            Ok(resp) => match resp.text() {
+                // We got text.
+                Ok(text) => {
+                    // Get the version from the Cargo.toml.
+                    let regex = Regex::new("version = \"(.*?)\"").unwrap();
+                    match regex.captures(&text) {
+                        Some(captures) => {
+                            // If the remote version is the same as the local version, return None.
+                            // Why? Because we only need this to show a UI message.
+                            // If the versions are the same, we don't need to show the message.
+                            if &captures[1] == VERSION {
+                                None
+                            } else {
+                                Some(captures[1].to_string())
+                            }
+                        }
+                        None => None,
+                    }
+                }
+                Err(_) => None,
+            },
+            Err(_) => None,
+        }
+    } else {
+        None
     }
 }

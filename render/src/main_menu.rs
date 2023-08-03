@@ -15,19 +15,31 @@ pub(crate) struct MainMenu {
 }
 
 impl MainMenu {
-    pub fn new(config: &Ini, input: &Input, text: &mut Text) -> Self {
+    pub fn new(
+        config: &Ini,
+        input: &Input,
+        text: &mut Text,
+        remote_version: Option<String>,
+    ) -> Self {
         // Get the width of the panel.
         let width = get_main_menu_width(config);
 
         let position = get_main_menu_position(config);
 
         // Get the panel.
-        let panel = Panel::new(
+        let mut panel = Panel::new(
             PanelType::MainMenu,
             position,
             [width, MAIN_MENU_HEIGHT],
             text,
         );
+        // Add an update notice to the title.
+        if let Some(remote_version) = remote_version {
+            let update = text.get_with_values("MAIN_MENU_UPDATE", &[&remote_version]);
+            panel.title.label.text.push_str("   ");
+            panel.title.label.text.push_str(&update);
+            panel.title.rect.size[0] += update.chars().count() as u32 + 3;
+        }
         let title_changes = LabelRectangle::new(
             panel.title.label.position,
             format!("*{}", panel.title.label.text),
