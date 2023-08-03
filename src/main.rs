@@ -177,7 +177,7 @@ fn window_conf() -> Conf {
 fn get_remote_version(config: &Ini) -> Option<String> {
     // Check the config file to decide if we should to an HTTP request.
     if parse_bool(config.section(Some("UPDATE")).unwrap(), "check_for_updates") {
-        // HTTPS request.
+        // HTTP request.
         match get("https://raw.githubusercontent.com/subalterngames/cacophony/main/Cargo.toml")
         {
             // We got a request.
