@@ -9,11 +9,15 @@
     <p><a href="index.html">Cacophony</a></p>
     <p><a href="install.html">Install</a></p>
     <p><a href="user_guide.html">User Guide</a></p>
+    <p><a href="manifesto.html">Manifesto</a></p>
+    <p><a href="limitations.html">Limitations</a></p>
+    <p><a href="roadmap.html">Roadmap</a></p>
+    <p><a href="me.html">Me</a></p>
 </div>
 
 <div class="main">
     <h1>User Guide</h1>
-    <h2>How to run</h2>
+    <h2>How do I run this?</h2>
     <p>Want to know how install Cacophony? <a href="install.html">Read this.</a></p>
     <p>On Windows and MacOS, just double-click the app.</p>
     <p>On Linux, you can't launch Cacophony by double-clicking the app. <b>I don't know why. Sorry.</b> To run Cacophony, open a terminal, type each of these, press enter each time:</p>
@@ -21,19 +25,40 @@
         <li><code>cd path_to/cacophony</code> (replace path_to with the actual path)</li>
         <li><code>./cacophony</code></li>
     </ol>
-    <h2>Get a SoundFont</h2>
-    <p>You need to have at least one SoundFont .sf2 file on your computer. <a href="https://musical-artifacts.com/">I like this site.</a></p>
-    <p>Cacophony will initially look for SoundFonts in Documents/cacophony/soundfonts/ so it's usually a good idea to move them there, but you don't have to.</p>
-    <h2>Add notes</h2>
-    <p>Once you've added a track, loaded a SoundFont, cycled over to the piano roll, and armed the track, you can start adding notes.</p>
-    <p>You can add notes from a MIDI controller or from a qwerty keyboard.</p>
-    <p>Cacophony doesn't live-record your inputs. It halts and waits for you to do something. Once you add a note, it will be at a quantized start time, for a quantized duration; you can set the input beat duration from in the piano roll panel.</p>
-    <p>To add silence between notes, enable Time mode in the piano roll panel and move the cursor.</p>
-    <h2>Edit the config.ini file</h2>
-    <p>Cacophony's font, color scheme, every keyboard binding, and lots of other settings, are in a config file. To edit the config file, first copy it from cacophony/data/config.ini to Documents/cacophony/config.ini (the app will always prefer the one in Documents/ if it exists). Feel free to experiment with editing the file. If you mess up you can always copy+paste the default file again.</p>
-    <h2>Ask for help</h2>
-    <p>I don't want to give too much away, but I'll say this: Casey the Cacodemon can talk to you via your computer's text-to-speech engine and tell you how to use the app. Try pressing F1, F2, F3, and F4.</p>
-    <p>F1 Status and F2 Input are contextual; they'll tell you different things depending which panel you've selected, whether you've selected any notes, etc.</p>
+    <h2>What even is this?</h2>
+    <p>Cacophony is an terminal-esque MIDI sequencer. By "terminal-esque" I mean that it looks like a terminal shell and doesn't support mouse input. By "MIDI sequencer" I mean that the music you're going to make is defined by MIDI messages.</p>
+    <p>You aren't going to record audio. You going to input MIDI messages which will be processed when the music plays or is exported. A MIDI message is several numbers that a synthesizer or computer program interprets as messages. How they interpret these messages is up to them, though there is a MIDI standard that everyone is supposed to follow. In Cacophony, MIDI messages can be interpreted as note-on/off events or to control the app.</p>
+    <p>In Cacophony, music is divided into tracks, and tracks are divided into notes. A note is a discrete pitch, volume, start time, and duration. A note is *not* audio. It's just some data that will tell the app how to generate audio.</p>
+    <p>Every track needs a SoundFont in order to convert notes to audio. A SoundFont is a file with instruments, called "presets", that are divided into "banks". A SoundFont can take a MIDI event (or a Cacophony note, which is essentially the same thing) and use that to "render" audio.</p>
+    <p><b>To use Cacophony, you need to first download at least one SoundFont.</b> <a href="https://musical-artifacts.com/">I like this site.</a> Move the .sf2 file you just downloaded to <code>Documents/cacophony/soundfonts/</code></p>
+    <p>When you save your music, the save file will include the music/track/note data (similar to a .mid) file, along with the filepaths to the SoundFonts you've assigned to each track and some other data too.</p>
+    <h2>How do I do anything?</h2>
+    <p>You can only use your MIDI controller and your qwerty keyboard. You can't use your mouse.</p>
+    <p>There aren't any tooltips because that would go against Cacophony's <a href="manifesto.html">design principles</a>. Instead, you've got Casey the Cacodemon, who I've hooked up to your computer's text-to-speech engine. Press <code>F1</code>, <code>F2</code>, <code>F3</code>, or <code>F4</code> and Casey will tell you what to do.</p>
+    <p>Before doing anything else, I recommend pressing <code>F3</code> to get an overview of the app and <code>F4</code> to learn how to save, export, etc. You'll use <code>F1</code> and <code>F2</code> often; they're contextual and they'll tell you how to use the panel or widget you've selected, *what* it is you've selected, etc.</p>
+    <p>The best way to use Cacophony is to listen to Casey and gradually learn the controls.</p>
+    <p>If you want to get started right away, try this: First, download a SoundFont and move it to the directory, like I recommended in the previous section. Then launch Cacophony and do this:</p>
+    <ol>
+        <li><code>PageUp</code> Cycle to the Tracks Panel</li>
+        <li><code>=</code> Add a new track</li>
+        <li><code>Return</code> Show the open-file dialogue to load a SoundFont</li>
+        <li><code>Return</code> Select the SoundFont</li>
+        <li><code>PageUp</code> Cycle to the Piano Roll Panel</li>
+        <li><code>Backspace</code> Arm the track</li>
+        <li>Play notes with your MIDI controller or your qwerty keyboard. Not sure how? Press <code>F2</code> to ask Casey.</li>
+    </ol>
+    <p>I'm going to given you a few more useful pointers but I'm not going to tell you the controls. Ask Casey.</p>
+    <p>Cacophony lets you add notes whenever you want and doesn't support live recording; it won't do anything until you enter a new note. You can set the next note's duration. To add silence between notes, go to Time and move the cursor. The cursor defines where the next note starts.</p>
+    <p>Cacophony has several volume controls. The Music Panel has an overall gain value. Each track has its own gain value. When you input notes, you can either use the velocity value from messages originating from a MIDI controller or you can manually set the volume of the next note.</p>
+    <p>When you like how it sounds, you can export your music to wav, ogg, mp3, or mid. You can export each track separately if you want.</p>
+    <p>Cacophony's interface can be controlled from a MIDI controller. By default, the tooltips are for my own MPK Mini III. More on this in a moment:</p>
+    <h2>Can I customize Cacophony?</h2>
+    <p>Cacophony's font, color scheme, every keyboard binding, and lots of other settings, are in a config file. To edit the config file, first copy it from <code>cacophony/data/config.ini</code> to <code>Documents/cacophony/config.ini</code> (the app will always prefer the one in Documents/ if it exists). Feel free to experiment with editing the file. If you mess up you can always copy+paste the default file again.</p>
+    <p>For MIDI bindings to work correctly, your MIDI controller needs to support Inc/Dec input, e.g. the values are always 1 or 127. Sorry, I know that's weird, but it makes it a lot easier to support input that is meant to wrap around values (e.g. cycling around panels). For my own controller, I used the MPK Mini III Program Editor to set each knob to be Inc/Dec.</p>
+    <h2>What if I still need help?</h2>
+    <p>Ask Casey for help whenever you get stuck.</p>
+    <p>Oh, you want help from a *human*?? In *this* economy??</p>
+    <p>Well, fine. If you want to report a bug, the best way to do so is to create a <a href="https://github.com/subalterngames/cacophony">GitHub Issue</a>. You can also join the Discord and ask for help.</p>
 </div>
    
 </body>
