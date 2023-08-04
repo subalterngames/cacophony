@@ -190,6 +190,7 @@ impl Default for Exporter {
 }
 
 impl Exporter {
+    /// Returns a new shareable Exporter.
     pub fn new_shared() -> SharedExporter {
         Arc::new(Mutex::new(Exporter::default()))
     }
@@ -210,7 +211,6 @@ impl Exporter {
         if notes.is_empty() {
             return;
         }
-
         // Set the name of the music.
         let mut messages = vec![Message::MetaEvent {
             delta_time: 0,

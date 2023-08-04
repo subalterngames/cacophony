@@ -64,9 +64,9 @@
 ## Tests
 
 - [x] ~~config~~
-- [ ] exporter
+- [x] ~~exporter~~
 - [x] fraction
-- [ ] input_state
+- [x] ~~input_state~~
 - [x] ~~file_or_directory~~
 - [x] ~~file_and_directory~~
 - [x] ~~child_paths~~
@@ -75,7 +75,7 @@
 - [x] indexed_values
 - [x] ~~paths_state~~
 - [x] ~~select_mode~~
-- [ ] sizes
+- [x] ~~sizes~~
 - [x] ~~midi_binding~~
 - [x] ~~qwerty_binding~~
 - [x] ~~abc123~~
