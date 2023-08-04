@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use serde_json::{from_str, Error};
 
 /// Bindings for MIDI input.
 #[derive(Clone, Deserialize)]
@@ -14,17 +13,6 @@ pub struct MidiBinding {
 }
 
 impl MidiBinding {
-    pub(crate) fn deserialize(string: &str) -> Self {
-        let m: Result<Self, Error> = from_str(string);
-        match m {
-            Ok(m) => m,
-            Err(error) => panic!(
-                "Failed to deserialize {} into a MidiBinding: {}",
-                string, error
-            ),
-        }
-    }
-
     /// Update the event state. Returns true if the event happened.
     pub(crate) fn update(&mut self, buffer: &[[u8; 3]], counter: i16) -> bool {
         if let Some(b) = buffer

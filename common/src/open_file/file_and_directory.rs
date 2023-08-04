@@ -22,7 +22,7 @@ impl FileAndDirectory {
 
     /// Create from a `PathBuf` that may or may not be a file.
     pub fn new_path(path: PathBuf) -> Self {
-        let directory = FileOrDirectory::new(&path.parent().unwrap());
+        let directory = FileOrDirectory::new(path.parent().unwrap());
         let filename = Some(path.file_name().unwrap().to_str().unwrap().to_string());
         Self {
             directory,

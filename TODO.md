@@ -74,9 +74,9 @@
 - [x] index
 - [x] indexed_values
 - [x] ~~paths_state~~
-- [ ] select_mode
+- [x] ~~select_mode~~
 - [ ] sizes
-- [ ] midi_binding
+- [x] ~~midi_binding~~
 - [ ] qwerty_binding
 - [x] ~~abc123~~
 - [x] ~~boolean_corners~~

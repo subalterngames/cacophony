@@ -20,6 +20,7 @@ use midi_binding::MidiBinding;
 use midi_conn::MidiConn;
 use note_on::NoteOn;
 pub use qwerty_binding::QwertyBinding;
+use serde_json::from_str;
 use std::env;
 use std::fs::File;
 use std::io::Read;
@@ -377,7 +378,13 @@ impl Input {
     // Parse a MIDI binding from a key-value pair of strings (i.e. from a config file).
     fn parse_midi_binding(key: &str, value: &str) -> (InputEvent, MidiBinding) {
         match key.parse::<InputEvent>() {
-            Ok(input_key) => (input_key, MidiBinding::deserialize(value)),
+            Ok(input_key) => match from_str(value) {
+                Ok(m) => (input_key, m),
+                Err(error) => panic!(
+                    "Failed to deserialize {} into a MidiBinding: {}",
+                    value, error
+                ),
+            },
             Err(error) => panic!("Invalid input key {}: {}", key, error),
         }
     }
@@ -385,7 +392,7 @@ impl Input {
     /// Push a new note from qwerty input.
     fn qwerty_note(&mut self, note: u8, state: &State) {
         let pitch = (9 - self.qwerty_octave) * 12 + note;
-        let note = [144, pitch, state.input.volume.get() as u8];
+        let note: [u8; 3] = [144, pitch, state.input.volume.get() as u8];
         if state.input.armed {
             self.new_notes.push(note);
         }
