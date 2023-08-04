@@ -161,7 +161,7 @@ impl ExportSettingsPanel {
     /// - `exporter` The exporter.
     fn set_index<F>(mut f: F, input: &Input, exporter: &mut Exporter)
     where
-        F: FnMut(&mut Exporter) -> &mut Index,
+        F: FnMut(&mut Exporter) -> &mut Index<usize>,
     {
         if input.happened(&InputEvent::PreviousExportSettingValue) {
             f(exporter).increment(false);

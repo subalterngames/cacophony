@@ -81,14 +81,14 @@
 - [x] ~~abc123~~
 - [x] ~~boolean_corners~~
 - [x] boolean
-- [ ] key_input
-- [ ] key_list_corners
+- [x] ~~key_input~~
+- [x] ~~key_list_corners~~
 - [x] key_list
 - [x] key_width
 - [x] list
-- [ ] viewable_notes
+- [x] ~~viewable_notes~~
 - [x] ~~tts_string~~
-- [ ] value_map
+- [x] ~~value_map~~
 
 ## Linux Bugs
 

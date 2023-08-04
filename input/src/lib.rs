@@ -237,7 +237,7 @@ impl Input {
                 }
             }
             // Get note-on and note-off events.
-            let volume = state.input.volume.get() as u8;
+            let volume = state.input.volume.get();
             for midi in midi.iter() {
                 // Note-on.
                 if midi[0] >= 144 && midi[0] <= 159 {
@@ -397,7 +397,7 @@ impl Input {
     /// Push a new note from qwerty input.
     fn qwerty_note(&mut self, note: u8, state: &State) {
         let pitch = (9 - self.qwerty_octave) * 12 + note;
-        let note: [u8; 3] = [144, pitch, state.input.volume.get() as u8];
+        let note: [u8; 3] = [144, pitch, state.input.volume.get()];
         if state.input.armed {
             self.new_notes.push(note);
         }

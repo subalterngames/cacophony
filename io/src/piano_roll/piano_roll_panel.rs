@@ -24,7 +24,7 @@ pub struct PianoRollPanel {
     /// The beats that we can potentially input as PPQ values.
     beats: Vec<u64>,
     /// The index of the current beat.
-    beat: Index,
+    beat: Index<usize>,
     /// A buffer of copied notes.
     copied_notes: Vec<Note>,
 }

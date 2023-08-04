@@ -82,15 +82,15 @@ pub struct Exporter {
     /// If true, write copyright info.
     pub copyright: bool,
     /// The mp3 quality index.
-    pub mp3_bit_rate: Index,
+    pub mp3_bit_rate: Index<usize>,
     /// The mp3 quality index.
-    pub mp3_quality: Index,
+    pub mp3_quality: Index<usize>,
     /// If true, export to multiple files.
     pub multi_file: bool,
     /// Multi-file suffix setting.
     pub multi_file_suffix: IndexedValues<MultiFileSuffix, 3>,
     /// The .ogg file quality index.
-    pub ogg_quality: Index,
+    pub ogg_quality: Index<usize>,
     /// The export type.
     pub export_type: IndexedValues<ExportType, 4>,
     /// Export settings for .mid files.

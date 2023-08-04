@@ -1,20 +1,24 @@
 use serde::{Deserialize, Serialize};
+use num_traits::int::PrimInt;
+use num_traits::{One, Zero};
+use std::fmt::Display;
+use std::ops::{AddAssign, SubAssign};
 
 /// An `Index` is an index in a known-length array.
 /// The index can be incremented or decremented past the bounds of length, in which case it will loop to the start/end value.
 /// The index can never exceed the length.
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Deserialize, Serialize)]
-pub struct Index {
+pub struct Index<T> where T : PrimInt + Display + One + Zero + AddAssign + SubAssign {
     /// The index in the array.
-    index: usize,
+    index: T,
     /// The length of the array.
-    length: usize,
+    length: T,
 }
 
-impl Index {
+impl<T> Index<T> where T: PrimInt + Display + One + Zero + AddAssign + SubAssign {
     /// - `index` The index in the array.
     /// - `length` The size of the array.
-    pub fn new(index: usize, length: usize) -> Self {
+    pub fn new(index: T, length: T) -> Self {
         Self { index, length }
     }
 
@@ -25,19 +29,21 @@ impl Index {
     ///
     /// - `up` If true, increment. If false, decrement.
     pub fn increment(&mut self, up: bool) {
-        if self.length == 0 {
+        let zero = T::zero();
+        let one = T::one();
+        if self.length == zero {
             return;
         }
         self.index = if up {
-            if self.index == self.length - 1 {
-                0
+            if self.index == self.length - one {
+                zero
             } else {
-                self.index + 1
+                self.index + one
             }
-        } else if self.index == 0 {
-            self.length - 1
+        } else if self.index == zero {
+            self.length - one
         } else {
-            self.index - 1
+            self.index - one
         };
     }
 
@@ -47,17 +53,19 @@ impl Index {
     ///
     /// Returns true if we incremented.
     pub fn increment_no_loop(&mut self, up: bool) -> bool {
-        if self.length == 0 {
+        let zero = T::zero();
+        let one = T::one();
+        if self.length == zero {
             false
         } else if up {
-            if self.index < self.length - 1 {
-                self.index += 1;
+            if self.index < self.length - one {
+                self.index += one;
                 true
             } else {
                 false
             }
-        } else if self.index > 0 {
-            self.index -= 1;
+        } else if self.index > zero {
+            self.index -= one;
             true
         } else {
             false
@@ -65,12 +73,12 @@ impl Index {
     }
 
     /// Returns the index.
-    pub fn get(&self) -> usize {
+    pub fn get(&self) -> T {
         self.index
     }
 
     /// Set `self.index` to `index`. Panics if `index` is greater than or equal to `self.length`.
-    pub fn set(&mut self, index: usize) {
+    pub fn set(&mut self, index: T) {
         if index >= self.length {
             panic!("Index {} exceeds length {}!", index, self.length)
         } else {
@@ -79,12 +87,12 @@ impl Index {
     }
 
     /// Returns the length of the value range.
-    pub fn get_length(&self) -> usize {
+    pub fn get_length(&self) -> T {
         self.length
     }
 }
 
-impl Default for Index {
+impl Default for Index<usize> {
     fn default() -> Self {
         Self::new(0, 0)
     }

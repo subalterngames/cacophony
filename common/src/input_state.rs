@@ -9,7 +9,7 @@ pub struct InputState {
     /// If true, we're inputting an alphanumeric string and we should ignore certain key bindings.
     pub alphanumeric_input: bool,
     /// The volume for all new notes.
-    pub volume: Index,
+    pub volume: Index<u8>,
     /// If true, we'll use the volume value.
     pub use_volume: bool,
     /// The input beat in PPQ.
@@ -21,7 +21,7 @@ impl Default for InputState {
         Self {
             armed: false,
             alphanumeric_input: false,
-            volume: Index::new(MAX_VOLUME as usize, MAX_VOLUME as usize + 1),
+            volume: Index::new(MAX_VOLUME, MAX_VOLUME + 1),
             use_volume: true,
             beat: U64orF32::from(PPQ_U),
         }

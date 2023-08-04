@@ -5,8 +5,6 @@ use crate::panel::*;
 use common::music_panel_field::*;
 use common::{U64orF32, DEFAULT_BPM, MAX_VOLUME};
 
-const MAX_GAIN: usize = MAX_VOLUME as usize;
-
 /// Set global music values.
 pub(crate) struct MusicPanel {}
 
@@ -18,9 +16,9 @@ impl MusicPanel {
             gain: conn.state.gain,
         }];
         // Increment/decrement the gain.
-        let mut index = Index::new(conn.state.gain as usize, MAX_GAIN);
+        let mut index = Index::new(conn.state.gain, MAX_VOLUME + 1);
         index.increment(up);
-        let gain = index.get() as u8;
+        let gain = index.get();
         let gain1 = vec![Command::SetGain { gain }];
         // Send the commands.
         Some(Snapshot::from_commands(gain0, gain1, conn))

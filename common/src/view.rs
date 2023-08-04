@@ -24,7 +24,7 @@ pub struct View {
     /// The zoom time deltas.
     zoom_levels: Vec<u64>,
     /// The index of the current zoom level.
-    zoom_index: Index,
+    zoom_index: Index<usize>,
     /// Zoom increments per edit mode.
     zoom_increments: HashMap<EditMode, usize>,
     /// The default zoom index.

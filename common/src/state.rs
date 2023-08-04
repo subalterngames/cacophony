@@ -21,7 +21,7 @@ pub struct State {
     /// A list of all panels that need to be drawn.
     pub panels: Vec<PanelType>,
     /// The index of the focused panel.
-    pub focus: Index,
+    pub focus: Index<usize>,
     /// The currently-selected music panel field.
     pub music_panel_field: IndexedValues<MusicPanelField, 3>,
     /// The piano roll panel's current mode.

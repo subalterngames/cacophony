@@ -1,7 +1,7 @@
 use crate::panel::*;
 use crate::select_track;
 use common::open_file::OpenFileType;
-use common::{MidiTrack, SelectMode};
+use common::{MidiTrack, SelectMode, MAX_VOLUME};
 use text::get_file_name_no_ex;
 
 const TRACK_SCROLL_EVENTS: [InputEvent; 2] = [InputEvent::PreviousTrack, InputEvent::NextTrack];
@@ -63,9 +63,9 @@ impl TracksPanel {
     fn set_gain(state: &mut State, up: bool) -> Option<Snapshot> {
         let s0 = state.clone();
         let track = state.music.get_selected_track_mut().unwrap();
-        let mut index = Index::new(track.gain as usize, 128);
+        let mut index = Index::new(track.gain, MAX_VOLUME + 1);
         index.increment(up);
-        let gain = index.get() as u8;
+        let gain = index.get();
         track.gain = gain;
         Some(Snapshot::from_states(s0, state))
     }

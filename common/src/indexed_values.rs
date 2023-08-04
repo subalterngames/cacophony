@@ -12,7 +12,7 @@ where
     /// The values as an array of type `N`. These will be accessed via `index`.
     values: [T; N],
     /// The index. The length is always `N`.
-    pub index: Index,
+    pub index: Index<usize>,
 }
 
 impl<T, const N: usize> Default for IndexedValues<T, N>
