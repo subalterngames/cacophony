@@ -8,13 +8,25 @@ pub struct FileOrDirectory {
     pub path: PathBuf,
     /// If true, this is a file.
     pub is_file: bool,
+    /// The top folder or the filename.
+    pub stem: String,
 }
 
 impl FileOrDirectory {
     pub fn new(path: &Path) -> Self {
+        let is_file = path.is_file();
+        let stem = path
+            .components()
+            .last()
+            .unwrap()
+            .as_os_str()
+            .to_str()
+            .unwrap()
+            .to_string();
         Self {
             path: path.to_path_buf(),
-            is_file: path.is_file(),
+            is_file,
+            stem,
         }
     }
 }

@@ -592,15 +592,3 @@ pub fn get_file_name_no_ex(path: &Path) -> String {
         None => panic!("Not a file: {:?}", path),
     }
 }
-
-/// Returns the folder name of a path.
-pub fn get_folder_name(path: &Path) -> String {
-    let components = path.components();
-    match components.last() {
-        Some(s) => match s.as_os_str().to_str() {
-            Some(s) => s.to_string(),
-            None => panic!("Invalid folder name: {:?}", s),
-        },
-        None => panic!("No path components: {:?}", path),
-    }
-}

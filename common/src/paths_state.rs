@@ -38,7 +38,7 @@ impl PathsState {
     }
 
     /// Returns the current working directory for the open file type.
-    pub fn get_directory(&self) -> &PathBuf {
+    pub fn get_directory(&self) -> &FileOrDirectory {
         match self.open_file_type {
             OpenFileType::Export => &self.exports.directory,
             OpenFileType::ReadSave | OpenFileType::WriteSave => &self.saves.directory,
@@ -58,44 +58,17 @@ impl PathsState {
     /// Try to go up a directory.
     pub fn up_directory(&mut self, extensions: &[String]) -> bool {
         match self.open_file_type {
-            OpenFileType::Export => match &self.exports.directory.parent() {
-                Some(parent) => {
-                    self.children.set(
-                        parent,
-                        extensions,
-                        Some(self.exports.directory.to_path_buf()),
-                    );
-                    self.exports.directory = parent.to_path_buf();
-                    true
-                }
-                None => false,
-            },
-            OpenFileType::ReadSave | OpenFileType::WriteSave => {
-                match &self.saves.directory.parent() {
-                    Some(parent) => {
-                        self.children.set(
-                            parent,
-                            extensions,
-                            Some(self.saves.directory.to_path_buf()),
-                        );
-                        self.saves.directory = parent.to_path_buf();
-                        true
-                    }
-                    None => false,
-                }
+            OpenFileType::Export => {
+                Self::up_directory_type(&mut self.exports.directory, &mut self.children, extensions)
             }
-            OpenFileType::SoundFont => match &self.soundfonts.directory.parent() {
-                Some(parent) => {
-                    self.children.set(
-                        parent,
-                        extensions,
-                        Some(self.soundfonts.directory.to_path_buf()),
-                    );
-                    self.soundfonts.directory = parent.to_path_buf();
-                    true
-                }
-                None => false,
-            },
+            OpenFileType::ReadSave | OpenFileType::WriteSave => {
+                Self::up_directory_type(&mut self.saves.directory, &mut self.children, extensions)
+            }
+            OpenFileType::SoundFont => Self::up_directory_type(
+                &mut self.soundfonts.directory,
+                &mut self.children,
+                extensions,
+            ),
         }
     }
 
@@ -110,22 +83,26 @@ impl PathsState {
                         false
                     } else {
                         let cwd0 = match &self.open_file_type {
-                            OpenFileType::Export => self.exports.directory.to_path_buf(),
+                            OpenFileType::Export => self.exports.directory.path.to_path_buf(),
                             OpenFileType::ReadSave | OpenFileType::WriteSave => {
-                                self.saves.directory.to_path_buf()
+                                self.saves.directory.path.to_path_buf()
                             }
-                            OpenFileType::SoundFont => self.soundfonts.directory.to_path_buf(),
+                            OpenFileType::SoundFont => self.soundfonts.directory.path.to_path_buf(),
                         };
                         let cwd1 = self.children.children[*selected].path.clone();
                         // Set the children.
                         self.children.set(&cwd1, extensions, Some(cwd0));
                         // Set the directory.
                         match &self.open_file_type {
-                            OpenFileType::Export => self.exports.directory = cwd1,
-                            OpenFileType::ReadSave | OpenFileType::WriteSave => {
-                                self.saves.directory = cwd1
+                            OpenFileType::Export => {
+                                self.exports.directory = FileOrDirectory::new(&cwd1)
                             }
-                            OpenFileType::SoundFont => self.soundfonts.directory = cwd1,
+                            OpenFileType::ReadSave | OpenFileType::WriteSave => {
+                                self.saves.directory = FileOrDirectory::new(&cwd1)
+                            }
+                            OpenFileType::SoundFont => {
+                                self.soundfonts.directory = FileOrDirectory::new(&cwd1)
+                            }
                         }
                         true
                     }
@@ -172,6 +149,21 @@ impl PathsState {
             OpenFileType::Export => self.exports.get_path(),
             OpenFileType::ReadSave | OpenFileType::WriteSave => self.saves.get_path(),
             OpenFileType::SoundFont => self.soundfonts.get_path(),
+        }
+    }
+
+    fn up_directory_type(
+        directory: &mut FileOrDirectory,
+        children: &mut ChildPaths,
+        extensions: &[String],
+    ) -> bool {
+        match &directory.path.parent() {
+            Some(parent) => {
+                children.set(parent, extensions, Some(directory.path.to_path_buf()));
+                *directory = FileOrDirectory::new(parent);
+                true
+            }
+            None => false,
         }
     }
 }

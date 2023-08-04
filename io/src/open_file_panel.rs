@@ -3,7 +3,7 @@ use crate::Save;
 use audio::exporter::*;
 use common::open_file::*;
 use common::PanelType;
-use text::{get_file_name_no_ex, get_folder_name};
+use text::get_file_name_no_ex;
 
 /// Data for an open-file panel.
 pub struct OpenFilePanel {
@@ -47,7 +47,7 @@ impl OpenFilePanel {
     pub fn soundfont(&mut self, state: &mut State, paths_state: &mut PathsState) {
         let open_file_type = OpenFileType::SoundFont;
         paths_state.children.set(
-            &paths_state.soundfonts.directory,
+            &paths_state.soundfonts.directory.path,
             &self.soundfont_extensions,
             None,
         );
@@ -76,7 +76,7 @@ impl OpenFilePanel {
         let open_file_type = OpenFileType::Export;
         paths_state
             .children
-            .set(&paths_state.exports.directory, &[extension], None);
+            .set(&paths_state.exports.directory.path, &[extension], None);
         self.enable(open_file_type, state, paths_state);
     }
 
@@ -99,7 +99,7 @@ impl OpenFilePanel {
         paths_state: &mut PathsState,
     ) {
         paths_state.children.set(
-            &paths_state.saves.directory,
+            &paths_state.saves.directory.path,
             &self.save_file_extensions,
             None,
         );
@@ -143,7 +143,7 @@ impl Panel for OpenFilePanel {
             // Current working directory.
             let mut s = text.get_with_values(
                 "OPEN_FILE_PANEL_STATUS_TTS_CWD",
-                &[&get_folder_name(paths_state.get_directory())],
+                &[&paths_state.get_directory().stem],
             );
             s.push(' ');
             // Export file type.
@@ -163,7 +163,7 @@ impl Panel for OpenFilePanel {
                     let name = if path.is_file {
                         text.get_with_values("FILE", &[&get_file_name_no_ex(&path.path)])
                     } else {
-                        text.get_with_values("FILE", &[&get_folder_name(&path.path)])
+                        text.get_with_values("FILE", &[&path.stem])
                     };
                     s.push_str(
                         &text.get_with_values("OPEN_FILE_PANEL_STATUS_TTS_SELECTION", &[&name]),
@@ -177,11 +177,11 @@ impl Panel for OpenFilePanel {
         else if input.happened(&InputEvent::InputTTS) {
             let mut tts_strings = vec![];
             // Up directory.
-            if let Some(parent) = paths_state.get_directory().parent() {
+            if let Some(parent) = paths_state.get_directory().path.parent() {
                 tts_strings.push(text.get_tooltip_with_values(
                     "OPEN_FILE_PANEL_INPUT_TTS_UP_DIRECTORY",
                     &[InputEvent::UpDirectory],
-                    &[&get_folder_name(parent)],
+                    &[&FileOrDirectory::new(parent).stem],
                     input,
                 ))
             }
@@ -231,7 +231,7 @@ impl Panel for OpenFilePanel {
                     false => tts_strings.push(text.get_tooltip_with_values(
                         "OPEN_FILE_PANEL_INPUT_TTS_DOWN_DIRECTORY",
                         &[InputEvent::DownDirectory],
-                        &[&get_folder_name(&path.path)],
+                        &[&path.stem],
                         input,
                     )),
                 }
@@ -315,7 +315,7 @@ impl Panel for OpenFilePanel {
                         state.unsaved_changes = false;
                         // Write.
                         Save::write(
-                            &paths_state.saves.directory.join(filename),
+                            &paths_state.saves.directory.path.join(filename),
                             state,
                             conn,
                             paths_state,
@@ -337,24 +337,24 @@ impl Panel for OpenFilePanel {
                             // Export to a .wav file.
                             ExportType::Wav => {
                                 return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
-                                    paths_state.exports.directory.join(filename),
+                                    paths_state.exports.directory.path.join(filename),
                                 )]));
                             }
                             // Export to a .mp3 file.
                             ExportType::MP3 => {
                                 return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
-                                    paths_state.exports.directory.join(filename),
+                                    paths_state.exports.directory.path.join(filename),
                                 )]));
                             }
                             ExportType::Ogg => {
                                 return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
-                                    paths_state.exports.directory.join(filename),
+                                    paths_state.exports.directory.path.join(filename),
                                 )]));
                             }
                             // Export to a .mid file.
                             ExportType::Mid => {
                                 ex.mid(
-                                    &paths_state.exports.directory.join(filename),
+                                    &paths_state.exports.directory.path.join(filename),
                                     &state.music,
                                     &state.time,
                                     &conn.state,

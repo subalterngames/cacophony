@@ -178,8 +178,7 @@ fn get_remote_version(config: &Ini) -> Option<String> {
     // Check the config file to decide if we should to an HTTP request.
     if parse_bool(config.section(Some("UPDATE")).unwrap(), "check_for_updates") {
         // HTTP request.
-        match get("https://raw.githubusercontent.com/subalterngames/cacophony/main/Cargo.toml")
-        {
+        match get("https://raw.githubusercontent.com/subalterngames/cacophony/main/Cargo.toml") {
             // We got a request.
             Ok(resp) => match resp.text() {
                 // We got text.
