@@ -13,9 +13,7 @@ pub struct QwertyBinding {
     /// All mods that are *not* part of this qwerty binding.
     non_mods: Vec<KeyCode>,
     /// Wait this many frame for a repeat event.
-    sensitivity: u64,
-    /// The frame of the most recent press.
-    frame: u64,
+    sensitivity: i8,
     /// If true, listen to down events.
     repeatable: bool,
     /// If true, this event is pressed.
@@ -56,7 +54,6 @@ impl QwertyBinding {
                     non_mods,
                     repeatable,
                     sensitivity,
-                    frame: 0,
                     pressed: false,
                 }
             }
@@ -86,7 +83,13 @@ impl QwertyBinding {
     /// - `pressed` The keys that were pressed on this frame.
     /// - `down` The keys that were held down on this frame.
     /// - `alphanumeric` If true, we're in alphanumeric input mode, which can affect whether we can listen for certain qwerty bindings.
-    pub(crate) fn update(&mut self, pressed: &[KeyCode], down: &[KeyCode], alphanumeric: bool) {
+    pub(crate) fn update(
+        &mut self,
+        pressed: &[KeyCode],
+        down: &[KeyCode],
+        alphanumeric: bool,
+        counter: i8,
+    ) {
         self.pressed = false;
         // Mods.
         if self.mods.iter().all(|m| down.contains(m))
@@ -97,20 +100,15 @@ impl QwertyBinding {
                 (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(k)) && pressed.contains(k)
             }) {
                 self.pressed = true;
-                self.frame = 0;
             }
             // Down.
             if self.repeatable
                 && self.keys.iter().all(|k| {
                     (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(k)) && down.contains(k)
                 })
+                && counter % self.sensitivity == 0
             {
-                if self.frame >= self.sensitivity {
-                    self.frame = 0;
-                    self.pressed = true;
-                } else {
-                    self.frame += 1;
-                }
+                self.pressed = true;
             }
         }
     }
@@ -126,7 +124,7 @@ struct SerializableQwertyBinding {
     mods: Vec<String>,
     /// Wait this many frame for a repeat event.
     #[serde(default)]
-    dt: u64,
+    dt: i8,
 }
 
 fn keycode_from_str(s: &str) -> Option<KeyCode> {

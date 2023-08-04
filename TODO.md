@@ -77,7 +77,7 @@
 - [x] ~~select_mode~~
 - [ ] sizes
 - [x] ~~midi_binding~~
-- [ ] qwerty_binding
+- [x] ~~qwerty_binding~~
 - [x] ~~abc123~~
 - [x] ~~boolean_corners~~
 - [x] boolean
