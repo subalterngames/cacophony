@@ -95,12 +95,6 @@ impl QwertyBinding {
         if self.mods.iter().all(|m| down.contains(m))
             && !self.non_mods.iter().any(|m| down.contains(m))
         {
-            // Pressed.
-            if self.keys.iter().all(|k| {
-                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(k)) && pressed.contains(k)
-            }) {
-                self.pressed = true;
-            }
             // Down.
             if self.repeatable
                 && self.keys.iter().all(|k| {
@@ -108,6 +102,12 @@ impl QwertyBinding {
                 })
                 && counter % self.sensitivity == 0
             {
+                self.pressed = true;
+            }
+            // Pressed.
+            else if self.keys.iter().all(|k| {
+                (!alphanumeric || !ALPHANUMERIC_INPUT_MODS.contains(k)) && pressed.contains(k)
+            }) {
                 self.pressed = true;
             }
         }

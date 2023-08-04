@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
 use num_traits::int::PrimInt;
 use num_traits::{One, Zero};
+use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use std::ops::{AddAssign, SubAssign};
 
@@ -8,14 +8,20 @@ use std::ops::{AddAssign, SubAssign};
 /// The index can be incremented or decremented past the bounds of length, in which case it will loop to the start/end value.
 /// The index can never exceed the length.
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Deserialize, Serialize)]
-pub struct Index<T> where T : PrimInt + Display + One + Zero + AddAssign + SubAssign {
+pub struct Index<T>
+where
+    T: PrimInt + Display + One + Zero + AddAssign + SubAssign,
+{
     /// The index in the array.
     index: T,
     /// The length of the array.
     length: T,
 }
 
-impl<T> Index<T> where T: PrimInt + Display + One + Zero + AddAssign + SubAssign {
+impl<T> Index<T>
+where
+    T: PrimInt + Display + One + Zero + AddAssign + SubAssign,
+{
     /// - `index` The index in the array.
     /// - `length` The size of the array.
     pub fn new(index: T, length: T) -> Self {
