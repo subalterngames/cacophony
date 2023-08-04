@@ -67,9 +67,9 @@
 - [ ] exporter
 - [x] fraction
 - [ ] input_state
-- [ ] file_or_directory
-- [ ] file_and_directory
-- [ ] child_paths
+- [x] ~~file_or_directory~~
+- [x] ~~file_and_directory~~
+- [x] ~~child_paths~~
 - [x] ~~font~~
 - [x] index
 - [x] indexed_values

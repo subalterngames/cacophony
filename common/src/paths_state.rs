@@ -152,6 +152,7 @@ impl PathsState {
         }
     }
 
+    /// Go up a directory, given an open-file type.
     fn up_directory_type(
         directory: &mut FileOrDirectory,
         children: &mut ChildPaths,
