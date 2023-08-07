@@ -2,7 +2,6 @@
 
 ## Big picture
 
-- [ ] Setup and MIDI setup docs
 - [ ] Discord
 - [ ] License
 - [ ] itch page
