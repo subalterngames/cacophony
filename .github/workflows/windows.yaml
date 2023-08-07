@@ -1,0 +1,43 @@
+name: windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Build version
+        required: True
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.71.0
+      - name: cargo build
+        run: cargo build --release
+      - name: Download butler
+        run: Invoke-WebRequest -Uri https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default -OutFile butler.zip
+        shell: powershell
+      - name: Unzip butler
+        run: Expand-Archive -Path butler.zip -DestinationPath .
+        shell: powershell
+      - name: butler login
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: ./butler.exe login
+      - name: Create release directory
+        run: New-Item -Path cacophony/cacophony/data -ItemType directory
+        shell: powershell
+      - name: Copy cacophony.exe
+        run: Copy-Item cacophony/target/release/cacophony.exe cacophony/cacophony/cacophony.exe
+        shell: powershell
+      - name: Copy data/
+        run: Copy-Item -Recurse cacophony/data cacophony/cacophony/data
+        shell: powershell
+      - name: butler push
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: ./butler.exe push cacophony/cacophony subalterngames/cacophony:windows --userversion=${{ inputs.version }}

@@ -39,7 +39,7 @@ Windows:
 ### MacOS
 
 1. `cargo install cargo-bundle`
-2. `cargo bundle --releawse`
+2. `cargo bundle --release`
 
 ### Windows
 
