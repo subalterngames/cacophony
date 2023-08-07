@@ -73,8 +73,8 @@ pub struct Input {
     pub pressed_chars: Vec<char>,
     /// Debug input events.
     debug_inputs: Vec<InputEvent>,
-    /// The time counter.
-    time_counter: i8,
+    /// The MIDI time counter.
+    time_counter: i16,
 }
 
 impl Input {
@@ -169,14 +169,9 @@ impl Input {
         let down: Vec<KeyCode> = KEYS.iter().filter(|&k| is_key_down(*k)).copied().collect();
 
         // Update the qwerty key bindings.
-        self.qwerty_events.iter_mut().for_each(|q| {
-            q.1.update(
-                &pressed,
-                &down,
-                state.input.alphanumeric_input,
-                self.time_counter,
-            )
-        });
+        self.qwerty_events
+            .iter_mut()
+            .for_each(|q| q.1.update(&pressed, &down, state.input.alphanumeric_input));
         // Get the key presses.
         let mut events: Vec<InputEvent> = self
             .qwerty_events
@@ -236,6 +231,11 @@ impl Input {
                     self.events.push(*mde.0);
                 }
             }
+            // Increment the time counter.
+            self.time_counter += 1;
+            if self.time_counter >= 255 {
+                self.time_counter = 0;
+            }
             // Get note-on and note-off events.
             let volume = state.input.volume.get();
             for midi in midi.iter() {
@@ -274,11 +274,6 @@ impl Input {
             }
             // Clear the MIDI buffer.
             midi.clear();
-        }
-        // Increment the time counter.
-        self.time_counter += 1;
-        if self.time_counter == 127 {
-            self.time_counter = 0;
         }
     }
 
