@@ -6,7 +6,7 @@
 
 [Buy Cacophony](https://subalterngames.itch.io/cacophony) (or compile it yourself).
 
-[User-end documentation.](https://subalterngames.com/cacophony.html)
+[User-end documentation.](https://subalterngames.com/cacophony)
 
 ## How to compile
 

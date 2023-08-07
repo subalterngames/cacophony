@@ -2,15 +2,10 @@
 
 ## Big picture
 
-- [ ] Discord
-- [ ] License
-- [ ] itch page
-- [ ] Test on Linux
-- [ ] github actions
-- [ ] User guide
-- [ ] Website
+- [x] Test on Linux
+- [x] Website
 - [ ] Trailer
-- [ ] ftp
+- [x] ftp
 - [x] Version check
 - [x] Test on OSX
 - [ ] Help links
@@ -50,6 +45,27 @@
 - [x] TTS is not helpful!!
 - [x] Internal documentation (see below)
 - [x] More tests (see below)
+
+## itch.io
+
+- [ ] Trailer
+- [ ] More screenshots
+- [ ] Builds
+- [ ] Make public
+
+## Discord
+
+- [ ] Create it!
+- [ ] Add a link in the app
+- [ ] Add a link on itch.io
+- [ ] Add a link on the website
+- [ ] Add a link on github
+- [ ] Add a release bot
+
+## Repo
+
+- [ ] License
+- [ ] GitHub actions
 - [ ] Merge and clobber
 
 ## Internal documentation
