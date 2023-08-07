@@ -9,6 +9,8 @@
 - [ ] github actions
 - [ ] User guide
 - [ ] Website
+- [ ] Trailer
+- [ ] ftp
 - [x] Version check
 - [x] Test on OSX
 - [ ] Help links

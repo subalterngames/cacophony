@@ -60,6 +60,9 @@ EnableSoundFontPanel
 SelectFile
 ```
 
-### Documentation
+## Upload
 
-To generate the documentation: `cargo doc --no-deps --workspace --target-dir html/docs`
+Assuming that you are Esther Alter and you have the relevant credentials on your computer, you can upload the website and create itch.io builds by doing this:
+
+1. `cd py`
+2. `py -3 build.py`
