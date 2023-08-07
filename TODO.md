@@ -10,7 +10,7 @@
 - [ ] github actions
 - [ ] User guide
 - [ ] Website
-- [ ] Version check
+- [x] Version check
 - [x] Test on OSX
 - [ ] Help links
 - [x] Multi-track view
