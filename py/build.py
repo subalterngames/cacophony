@@ -35,7 +35,7 @@ if version == latest_version:
 
 # Tag.
 token: str = Path("credentials/github.txt").resolve().read_text(encoding="utf-8").strip()
-repo: Repository = Github(token).get_repo("subalterngames/procemon_rpg")
+repo: Repository = Github(token).get_repo("subalterngames/cacophony")
 repo.create_git_tag(tag=version, message=version, type="commit", object=repo.get_commits()[0].sha)
 print("Tagged.")
 
@@ -55,7 +55,5 @@ ftp.close()
 print("...Done!")
 
 # Build the releases.
-token: str = Path("credentials/github.txt").resolve().read_text(encoding="utf-8").strip()
-repo: Repository = Github(token).get_repo("subalterngames/cacophony")
 workflow = repo.get_workflow("build")
 workflow.create_dispatch(ref="main", inputs={"version": version})
