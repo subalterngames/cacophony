@@ -47,7 +47,7 @@
 - [x] Export buffer
 - [x] TTS is not helpful!!
 - [x] Internal documentation (see below)
-- [ ] More tests (see below)
+- [x] More tests (see below)
 - [ ] Merge and clobber
 
 ## Internal documentation
