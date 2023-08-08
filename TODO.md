@@ -50,17 +50,17 @@
 ## itch.io
 
 - [ ] Trailer
-- [ ] More screenshots
+- [x] More screenshots
 - [ ] Builds
 - [ ] Make public
 
 ## Discord
 
-- [ ] Create it!
-- [ ] Add a link in the app
-- [ ] Add a link on itch.io
-- [ ] Add a link on the website
-- [ ] Add a link on github
+- [x] Create it!
+- [x] Add a link in the app
+- [x] Add a link on itch.io
+- [x] Add a link on the website
+- [x] Add a link on github
 - [ ] Add a release bot
 
 ## Repo
@@ -68,6 +68,15 @@
 - [ ] License
 - [ ] GitHub actions
 - [ ] Merge and clobber
+
+## Website
+
+- [ ] API docs?
+- [x] Fix font size
+- [x] Fix mobile
+- [x] Discord link
+- [x] Repo link
+- [x] Itch link
 
 ## Internal documentation
 
@@ -78,15 +87,6 @@
 - [x] render
 - [x] text
 - [x] main
-
-## Website
-
-- [ ] API docs?
-- [ ] Fix font size
-- [ ] Fix mobile
-- [ ] Discord link
-- [ ] Repo link
-- [ ] Itch link
 
 ## Tests
 

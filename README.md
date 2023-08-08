@@ -8,6 +8,8 @@
 
 [User-end documentation.](https://subalterngames.com/cacophony)
 
+[Discord Server](https://discord.gg/fUapDXgTYj)
+
 ## How to compile
 
 You can compile Cacophony for Linux, MacOS, or Windows. Below is a list of operating systems I've tested:

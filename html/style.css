@@ -21,12 +21,12 @@ html {
 
 body {
     font-family: 'NotoSansMono', monospace;
-    font-size: 24px;
+    font-size: 18px;
     color: #c8c8c8;
     background-color: #272932;
     margin: 0;
-    line-height: 36px;
-    margin-bottom: 48px;
+    line-height: 24px;
+    margin-bottom: 28px;
 }
 
 h1 {
@@ -42,15 +42,13 @@ a {
 }
 
 li {
-    margin-bottom: 32px;
+    margin-bottom: 18px;
 }
 
 code {
     font-family: 'NotoSansMono_Condensed-Light', monospace;
-    font-size: 22px;
     color: #272932;
     background-color: #5bcefa;
-    padding: 6px;
 }
 
 .sidenav {
@@ -74,7 +72,7 @@ code {
 
 .main {
     margin-left: 16%;
-    margin-right: 16%;
+    margin-right: 30%;
     padding: 0px 10px;
 }
 
