@@ -14,6 +14,8 @@ pub enum InputEvent {
     AppTTS,
     FileTTS,
     StopTTS,
+    // Enable links panel.
+    EnableLinksPanel,
     // Undo-redo.
     Undo,
     Redo,

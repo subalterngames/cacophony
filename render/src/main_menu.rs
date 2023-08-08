@@ -11,7 +11,9 @@ pub(crate) struct MainMenu {
     /// The title if there are unsaved changes.
     title_changes: LabelRectangle,
     /// The field labels and the version label.
-    labels: [Label; 6],
+    labels: [Label; 7],
+    /// The positions of the separator lines.
+    separator_positions: [[u32; 2]; 2]
 }
 
 impl MainMenu {
@@ -83,12 +85,28 @@ impl MainMenu {
             input,
             text,
         );
-        let fields = [help, status, input_field, app, file, stop];
+        x += 1;
+        let separator_help = [x, y];
+        x += 2;
+        let x0 = x;
+        let links = Self::tooltip(
+            "MAIN_MENU_ONLINE",
+            InputEvent::EnableLinksPanel,
+            &mut x,
+            y,
+            input,
+            text,
+        );
+        x = x0 + links.text.chars().count() as u32 + 1;
+        let separator_links = [x, y];
+        let fields = [help, status, input_field, app, file, stop, links];
+        let separator_positions = [separator_help, separator_links];
 
         Self {
             panel,
             labels: fields,
             title_changes,
+            separator_positions
         }
     }
 
@@ -137,6 +155,9 @@ impl Drawable for MainMenu {
         }
         for label in self.labels.iter() {
             renderer.text(label, &COLOR)
+        }
+        for position in self.separator_positions {
+            renderer.vertical_line_separator(position, &COLOR)
         }
     }
 }
