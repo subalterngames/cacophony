@@ -35,7 +35,7 @@ Windows:
 
 ### Linux
 
-1. `apt install clang libspeechd-dev`
+1. `apt install clang libspeechd-dev pkg-config libssl-dev`
 2. `cargo build --release`
 
 ### MacOS
