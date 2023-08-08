@@ -252,6 +252,7 @@ APP_TTS_2,\0 to quit.
 APP_TTS_3,\0 and \1 to cycle panels. 
 APP_TTS_4,\0 or \1 to undo or redo. 
 APP_TTS_5,\0 to ask me to stop talking.
+APP_TTS_6,\0 to open a panel with helpful website links.
 FILE_TTS_0,\0 for new music.
 FILE_TTS_1,\0 to open a file.
 FILE_TTS_2,\0 to save. \1 to save as.
@@ -385,6 +386,7 @@ TITLE_OPEN_FILE,Open File
 TITLE_EXPORT_STATE,Exporting...
 TITLE_EXPORT_SETTINGS,Settings
 TITLE_QUIT,Really quit?
+TITLE_LINKS,Open a link in your browser
 TITLE_BPM,BPM
 TITLE_GAIN,Gain
 MAIN_MENU_HELP,Help:
@@ -479,3 +481,11 @@ EXPORT_SETTINGS_PANEL_FILE_SUFFIX_CHANNEL_AND_PRESET,Channel and Preset
 QUIT_PANEL_INPUT_TTS,You have unsaved changes. \0 to quit. \1 to go back to the app.
 QUIT_PANEL_YES,\0 Yes
 QUIT_PANEL_NO,\0 No
+LINKS_PANEL_WEBSITE,\0 Cacophony's website
+LINKS_PANEL_DISCORD,\0 Discord server
+LINKS_PANEL_GITHUB,\0 GitHub repo
+LINKS_PANEL_INPUT_TTS_0,Open links in your web browser.
+LINKS_PANEL_INPUT_TTS_1,\0 to open the Cacophony website.
+LINKS_PANEL_INPUT_TTS_2,\0 to open an invite link to the Cacophony Discord server.
+LINKS_PANEL_INPUT_TTS_3,\0 to open an Cacophony repo.
+LINKS_PANEL_INPUT_TTS_4,\0 to close this panel.

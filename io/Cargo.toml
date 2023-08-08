@@ -12,6 +12,7 @@ serde_json = { workspace = true }
 edit = { workspace = true }
 hashbrown = { workspace = true }
 rust-ini = { workspace = true }
+webbrowser = { workspace = true }
 
 [dependencies.audio]
 path = "../audio"

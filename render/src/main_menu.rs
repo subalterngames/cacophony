@@ -13,7 +13,7 @@ pub(crate) struct MainMenu {
     /// The field labels and the version label.
     labels: [Label; 7],
     /// The positions of the separator lines.
-    separator_positions: [[u32; 2]; 2]
+    separator_positions: [[u32; 2]; 2],
 }
 
 impl MainMenu {
@@ -106,7 +106,7 @@ impl MainMenu {
             panel,
             labels: fields,
             title_changes,
-            separator_positions
+            separator_positions,
         }
     }
 

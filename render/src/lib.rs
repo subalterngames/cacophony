@@ -42,6 +42,7 @@ use audio::Conn;
 use common::State;
 pub(crate) use page::Page;
 pub(crate) use page_position::PagePosition;
+mod links_panel;
 mod quit_panel;
 
 pub(crate) const TRACK_HEIGHT_SOUNDFONT: u32 = 4;

@@ -8,7 +8,7 @@
 - [x] ftp
 - [x] Version check
 - [x] Test on OSX
-- [ ] Help links
+- [x] Help links
 - [ ] Power bars
 - [x] Multi-track view
 - [x] ~~Effects~~
@@ -78,6 +78,15 @@
 - [x] render
 - [x] text
 - [x] main
+
+## Website
+
+- [ ] API docs?
+- [ ] Fix font size
+- [ ] Fix mobile
+- [ ] Discord link
+- [ ] Repo link
+- [ ] Itch link
 
 ## Tests
 
@@ -211,5 +220,3 @@
 
 - [x] Automatically choose input devices
 
-
-https://discord.gg/fUapDXgTYj

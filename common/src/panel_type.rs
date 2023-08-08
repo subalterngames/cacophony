@@ -11,4 +11,5 @@ pub enum PanelType {
     ExportState,
     ExportSettings,
     Quit,
+    Links,
 }

@@ -1,5 +1,6 @@
 use crate::export_panel::ExportPanel;
 use crate::export_settings_panel::ExportSettingsPanel;
+use crate::links_panel::LinksPanel;
 use crate::main_menu::MainMenu;
 use crate::music_panel::MusicPanel;
 use crate::open_file_panel::OpenFilePanel;
@@ -27,6 +28,8 @@ pub struct Panels {
     export_settings_panel: ExportSettingsPanel,
     /// The quit panel.
     quit_panel: QuitPanel,
+    /// The links panel.
+    links_panel: LinksPanel,
 }
 
 impl Panels {
@@ -46,6 +49,7 @@ impl Panels {
         let export_panel = ExportPanel::new(config, text);
         let export_settings_panel = ExportSettingsPanel::new(config, text);
         let quit_panel = QuitPanel::new(config, text, input);
+        let links_panel = LinksPanel::new(config, text, input);
         Self {
             music_panel,
             main_menu,
@@ -55,6 +59,7 @@ impl Panels {
             export_panel,
             export_settings_panel,
             quit_panel,
+            links_panel,
         }
     }
 
@@ -92,6 +97,7 @@ impl Panels {
                 PanelType::ExportState => &self.export_panel,
                 PanelType::ExportSettings => &self.export_settings_panel,
                 PanelType::Quit => &self.quit_panel,
+                PanelType::Links => &self.links_panel,
             };
             // Draw the panel.
             panel.update(renderer, state, conn, input, text, paths_state, exporter);
@@ -103,5 +109,6 @@ impl Panels {
         self.open_file_panel.popup.late_update(state, renderer);
         self.export_panel.popup.late_update(state, renderer);
         self.quit_panel.popup.late_update(state, renderer);
+        self.links_panel.popup.late_update(state, renderer);
     }
 }

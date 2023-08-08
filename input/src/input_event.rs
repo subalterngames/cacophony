@@ -124,6 +124,11 @@ pub enum InputEvent {
     // Quit Panel.
     QuitPanelYes,
     QuitPanelNo,
+    // Links panel.
+    WebsiteUrl,
+    DiscordUrl,
+    GitHubUrl,
+    CloseLinksPanel,
     // Qwerty note input.
     C,
     CSharp,

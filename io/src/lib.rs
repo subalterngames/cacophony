@@ -52,7 +52,9 @@ mod abc123;
 mod export_settings_panel;
 mod quit_panel;
 use quit_panel::QuitPanel;
+mod links_panel;
 mod popup;
+use links_panel::LinksPanel;
 
 /// The maximum size of the undo stack.
 const MAX_UNDOS: usize = 100;
@@ -87,6 +89,8 @@ pub struct IO {
     export_settings_panel: ExportSettingsPanel,
     /// The quit panel.
     quit_panel: QuitPanel,
+    /// The links panel.
+    links_panel: LinksPanel,
     /// Queued commands that will be used to export audio to multiple files.
     export_queue: Vec<QueuedExportCommands>,
     /// The active panels prior to exporting audio.
@@ -118,6 +122,7 @@ impl IO {
             ),
             text.get_tooltip("APP_TTS_4", &[InputEvent::Undo, InputEvent::Redo], input),
             text.get_tooltip("APP_TTS_5", &[InputEvent::StopTTS], input),
+            text.get_tooltip("APP_TTS_6", &[InputEvent::EnableLinksPanel], input),
         ];
         tts.insert(InputEvent::AppTTS, app_tts);
         // File TTS.
@@ -140,6 +145,7 @@ impl IO {
         let export_panel = ExportPanel::default();
         let export_settings_panel = ExportSettingsPanel {};
         let quit_panel = QuitPanel::default();
+        let links_panel = LinksPanel::default();
         Self {
             tts,
             music_panel,
@@ -149,6 +155,7 @@ impl IO {
             export_panel,
             export_settings_panel,
             quit_panel,
+            links_panel,
             redo: vec![],
             undo: vec![],
             export_queue: vec![],
@@ -390,6 +397,11 @@ impl IO {
         {
             tts.stop();
         }
+        // Links.
+        if input.happened(&InputEvent::EnableLinksPanel) {
+            self.links_panel.enable(state);
+            return false;
+        }
         // Get the focused panel.
         let panel = self.get_panel(&state.panels[state.focus.get()]);
         // Update the focuses panel and potentially get a screenshot.
@@ -434,6 +446,7 @@ impl IO {
             PanelType::PianoRoll => &mut self.piano_roll_panel,
             PanelType::Tracks => &mut self.tracks_panel,
             PanelType::Quit => &mut self.quit_panel,
+            PanelType::Links => &mut self.links_panel,
         }
     }
 
