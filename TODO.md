@@ -9,6 +9,7 @@
 - [x] Version check
 - [x] Test on OSX
 - [ ] Help links
+- [ ] Power bars
 - [x] Multi-track view
 - [x] ~~Effects~~
 - [x] ~~Text ref~~
@@ -209,3 +210,6 @@
 ## MIDI
 
 - [x] Automatically choose input devices
+
+
+https://discord.gg/fUapDXgTYj

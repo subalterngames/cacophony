@@ -127,7 +127,7 @@ impl Renderer {
     /// - `position` The top-left position in pixel coordinates.
     /// - `size` The width-height in pixel coordinates.
     /// - `color` A `ColorKey` for the rectangle.
-    pub fn rectangle_pixel(&self, position: [f32; 2], size: [f32; 2], color: &ColorKey) {
+    pub(crate) fn rectangle_pixel(&self, position: [f32; 2], size: [f32; 2], color: &ColorKey) {
         draw_rectangle(
             position[0],
             position[1],
@@ -253,7 +253,7 @@ impl Renderer {
     /// - `texture` The texture.
     /// - `position` The top-left position in grid coordinates.
     /// - `rect` An array of grid coordinates (left, top, width, height) that defines the area of the texture to draw.
-    pub fn texture(&self, texture: &Texture2D, position: [u32; 2], rect: Option<[u32; 4]>) {
+    pub(crate) fn texture(&self, texture: &Texture2D, position: [u32; 2], rect: Option<[u32; 4]>) {
         let xy = self.grid_to_pixel(position);
         match rect {
             Some(r) => {
@@ -278,32 +278,14 @@ impl Renderer {
     /// - `texture` The texture.
     /// - `position` The top-left position in grid coordinates.
     /// - `params` Draw texture parameters.
-    pub fn texture_ex(&self, texture: &Texture2D, position: [u32; 2], params: DrawTextureParams) {
+    pub(crate) fn texture_ex(
+        &self,
+        texture: &Texture2D,
+        position: [u32; 2],
+        params: DrawTextureParams,
+    ) {
         let xy = self.grid_to_pixel(position);
         draw_texture_ex(texture, xy[0], xy[1], TEXTURE_COLOR, params);
-    }
-
-    /// Draw a line from top to bottom.
-    ///
-    /// - `x` The x grid coordinate.
-    /// - `x_offset` A float between 0.0 and 1.0 to offset `x` in pixel coordinates. 0.5 will put the x coordinate at the mid-point of the grid cell.
-    /// - `top` The top y grid coordinate.
-    /// - `bottom` The bottom y grid coordinate.
-    /// - `y_offsets` Two floats between 0.0 and 1.0 to offset `top` and `bottom` in pixel coordinates. 0.5 will put the y coordinate at the mid-point of the grid cell.
-    /// - `color` A `ColorKey` for the rectangle.
-    pub fn vertical_line(
-        &self,
-        x: u32,
-        x_offset: f32,
-        top: u32,
-        bottom: u32,
-        y_offsets: [f32; 2],
-        color: &ColorKey,
-    ) {
-        let x = x as f32 * self.cell_size[0] + x_offset * self.cell_size[0];
-        let top = top as f32 * self.cell_size[1] + y_offsets[0] * self.cell_size[1];
-        let bottom = bottom as f32 * self.cell_size[1] + y_offsets[1] * self.cell_size[1];
-        draw_line(x, top, x, bottom, self.line_width, self.colors[color]);
     }
 
     /// Draw a line from top to bottom in pixel coordinates.
@@ -311,9 +293,24 @@ impl Renderer {
     /// - `x` The x pixel coordinate.
     /// - `top` The top y pixel coordinate.
     /// - `bottom` The bottom y pixel coordinate.
-    /// - `color` A `ColorKey` for the rectangle.
-    pub fn vertical_line_pixel(&self, x: f32, top: f32, bottom: f32, color: &ColorKey) {
+    /// - `color` A `ColorKey` for the line.
+    pub(crate) fn vertical_line_pixel(&self, x: f32, top: f32, bottom: f32, color: &ColorKey) {
         draw_line(x, top, x, bottom, self.line_width, self.colors[color]);
+    }
+
+    /// Draw a a vertical line with fixed offsets that can be used as a separator between rows.
+    ///
+    /// - `position` The top position in grid coordinates.
+    /// - `color` A `ColorKey` for the line.
+    pub fn vertical_line_separator(&self, position: [u32; 2], color: &ColorKey) {
+        self.vertical_line(
+            position[0],
+            0.5,
+            position[1],
+            position[1] + 1,
+            [-0.6, 0.4],
+            color,
+        );
     }
 
     /// Draw a line from left to right.
@@ -324,7 +321,7 @@ impl Renderer {
     /// - `y` The y grid coordinate.
     /// - `y_offset` A float between 0.0 and 1.0 to offset `y` in pixel coordinates. 0.5 will put the y coordinate at the mid-point of the grid cell.
     /// - `color` A `ColorKey` for the rectangle.
-    pub fn horizontal_line(
+    pub(crate) fn horizontal_line(
         &self,
         left: u32,
         right: u32,
@@ -345,14 +342,14 @@ impl Renderer {
     /// - `right` The right pixel coordinate.
     /// - `y` The y pixel coordinate.
     /// - `color` A `ColorKey` for the rectangle.
-    pub fn horizontal_line_pixel(&self, left: f32, right: f32, y: f32, color: &ColorKey) {
+    pub(crate) fn horizontal_line_pixel(&self, left: f32, right: f32, y: f32, color: &ColorKey) {
         draw_line(left, y, right, y, self.half_line_width, self.colors[color]);
     }
 
     /// Draw subtitles.
     ///
     /// - `text` The text.
-    pub fn subtitle(&self, text: &str) {
+    pub(crate) fn subtitle(&self, text: &str) {
         let width = text.chars().count() as u32;
         // One row.
         if width <= self.max_subtitle_width {
@@ -412,7 +409,7 @@ impl Renderer {
     }
 
     /// Capture the screen, flipping the image as needed.
-    pub fn screen_capture(&self) -> (Texture2D, DrawTextureParams) {
+    pub(crate) fn screen_capture(&self) -> (Texture2D, DrawTextureParams) {
         let texture = Texture2D::from_image(&get_screen_data());
         let dest_size = Some(Vec2::new(
             self.window_pixel_size[0],
@@ -552,7 +549,7 @@ impl Renderer {
     /// Returns the color of the value text.
     ///
     /// - `focus` A two-element array. Element 0: Panel focus. Element 1: widget focus.
-    pub fn get_value_color(focus: Focus) -> ColorKey {
+    pub(crate) fn get_value_color(focus: Focus) -> ColorKey {
         match (focus[0], focus[1]) {
             (true, true) => ColorKey::Value,
             (true, false) => ColorKey::Key,
@@ -564,7 +561,7 @@ impl Renderer {
     /// Returns the color of the key text.
     ///
     /// - `focus` If true, the panel has focus.
-    pub fn get_key_color(focus: bool) -> ColorKey {
+    pub(crate) fn get_key_color(focus: bool) -> ColorKey {
         if focus {
             ColorKey::Key
         } else {
@@ -573,7 +570,7 @@ impl Renderer {
     }
 
     /// Returns the color of a boolean value.
-    pub fn get_boolean_color(focus: bool, value: bool) -> ColorKey {
+    pub(crate) fn get_boolean_color(focus: bool, value: bool) -> ColorKey {
         if !focus {
             ColorKey::NoFocus
         } else if value {
@@ -584,14 +581,14 @@ impl Renderer {
     }
 
     /// Returns a color.
-    pub fn get_color(&self, color_key: &ColorKey) -> Color {
+    pub(crate) fn get_color(&self, color_key: &ColorKey) -> Color {
         self.colors[color_key]
     }
 
     /// Converts a grid point to a pixel point.
     ///
     /// - `point` The point in grid coordinates.
-    pub fn grid_to_pixel(&self, point: [u32; 2]) -> [f32; 2] {
+    pub(crate) fn grid_to_pixel(&self, point: [u32; 2]) -> [f32; 2] {
         [
             point[0] as f32 * self.cell_size[0],
             point[1] as f32 * self.cell_size[1],
@@ -610,13 +607,36 @@ impl Renderer {
     /// Draw subtitle text.
     ///
     /// - `label` Parameters for drawing text.
-    pub(crate) fn text_sub(&self, label: &Label) {
+    fn text_sub(&self, label: &Label) {
         self.text_ex(
             label,
             &ColorKey::Subtitle,
             &self.subtitle_font,
             self.subtitle_font_size,
         );
+    }
+
+    /// Draw a line from top to bottom.
+    ///
+    /// - `x` The x grid coordinate.
+    /// - `x_offset` A float between 0.0 and 1.0 to offset `x` in pixel coordinates. 0.5 will put the x coordinate at the mid-point of the grid cell.
+    /// - `top` The top y grid coordinate.
+    /// - `bottom` The bottom y grid coordinate.
+    /// - `y_offsets` Two floats between 0.0 and 1.0 to offset `top` and `bottom` in pixel coordinates. 0.5 will put the y coordinate at the mid-point of the grid cell.
+    /// - `color` A `ColorKey` for the line.
+    fn vertical_line(
+        &self,
+        x: u32,
+        x_offset: f32,
+        top: u32,
+        bottom: u32,
+        y_offsets: [f32; 2],
+        color: &ColorKey,
+    ) {
+        let x = x as f32 * self.cell_size[0] + x_offset * self.cell_size[0];
+        let top = top as f32 * self.cell_size[1] + y_offsets[0] * self.cell_size[1];
+        let bottom = bottom as f32 * self.cell_size[1] + y_offsets[1] * self.cell_size[1];
+        draw_line(x, top, x, bottom, self.line_width, self.colors[color]);
     }
 
     /// Draw text.

@@ -139,7 +139,7 @@ impl TopBar {
         } else {
             &ColorKey::NoFocus
         };
-        Self::vertical_line(self.inputs_separator_position, line_color, renderer);
+        renderer.vertical_line_separator(self.inputs_separator_position, line_color);
 
         // Draw the modes.
         for mode in self.modes.iter() {
@@ -160,7 +160,7 @@ impl TopBar {
         }
 
         // Separator.
-        Self::vertical_line(self.modes_separator_position, line_color, renderer);
+        renderer.vertical_line_separator(self.modes_separator_position, line_color);
 
         // Edit mode.
         let edit_mode = match state.piano_roll_mode {
@@ -202,18 +202,6 @@ impl TopBar {
             EditMode::Precise => "PIANO_ROLL_PANEL_EDIT_MODE_PRECISE",
         };
         text.get(key)
-    }
-
-    /// Render a vertical line from `position`.
-    fn vertical_line(position: [u32; 2], color: &ColorKey, renderer: &Renderer) {
-        renderer.vertical_line(
-            position[0],
-            0.5,
-            position[1],
-            position[1] + 1,
-            [-0.6, 0.4],
-            color,
-        );
     }
 
     /// Insert an edit mode label into a HashMap.
