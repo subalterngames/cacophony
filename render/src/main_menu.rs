@@ -9,6 +9,8 @@ use macroquad::texture::Texture2D;
 const COLOR: ColorKey = ColorKey::Key;
 /// Lerp the sample bars by this delta.
 const LERP_DT: f32 = 0.2;
+/// Check the power bar sample this many samples.
+const POWER_BAR_DELTA: u64 = 5;
 
 /// Apply a lerp to a sample value.
 #[derive(Default)]
@@ -56,6 +58,8 @@ pub(crate) struct MainMenu {
     power_bar_rects: [[[f32; 2]; 2]; 2],
     /// Sample lerp targets per bar.
     power_bar_lerps: [Lerp; 2],
+    /// The current sample time. This is updated continuously and is used to smooth the power bars.
+    time: u64,
 }
 
 impl MainMenu {
@@ -168,6 +172,7 @@ impl MainMenu {
             power_bar_texture,
             power_bar_rects,
             power_bar_lerps,
+            time: 0,
         }
     }
 
@@ -255,8 +260,11 @@ impl MainMenu {
     pub fn late_update(&mut self, renderer: &Renderer, conn: &Conn) {
         // Set the power bar lerp targets from the sample.
         if let Some(sample) = conn.sample {
-            self.set_lerp_target(0, sample.0);
-            self.set_lerp_target(1, sample.1);
+            if self.time % POWER_BAR_DELTA == 0 {
+                self.set_lerp_target(0, sample.0);
+                self.set_lerp_target(1, sample.1);
+            }
+            self.time += 1;
         }
         // Draw each bar.
         self.draw_sample_power(0, renderer);
