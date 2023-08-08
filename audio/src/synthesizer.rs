@@ -82,6 +82,7 @@ impl Synthesizer {
     /// - `send_state` Send a state to the conn.
     /// - `send_export` Send audio samples to an exporter.
     /// - `send_time` Send the time to the conn.
+    /// - `send_sample` Send an audio sample to the conn.
     /// - `exporter` The shared exporter.
     pub(crate) fn start(
         recv_commands: Receiver<CommandsMessage>,
@@ -89,6 +90,7 @@ impl Synthesizer {
         send_state: Sender<SynthState>,
         send_export: Sender<Option<ExportState>>,
         send_time: Sender<TimeState>,
+        send_sample: Sender<AudioMessage>,
         exporter: SharedExporter,
     ) {
         // Create the synthesizer.
@@ -407,6 +409,8 @@ impl Synthesizer {
                         // Wait.
                         Err(_) => continue,
                     }
+                    // Send the sample.
+                    if send_sample.try_send(sample).is_ok() {}
                     // Send the time state.
                     if send_time.try_send(s.state.time).is_ok() {}
                 }

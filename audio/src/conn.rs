@@ -1,4 +1,4 @@
-use crate::{Command, CommandsMessage, ExportState, Player, SynthState, TimeState};
+use crate::{AudioMessage, Command, CommandsMessage, ExportState, Player, SynthState, TimeState};
 use crossbeam_channel::{Receiver, Sender};
 
 /// The connects used by an external function.
@@ -19,6 +19,10 @@ pub struct Conn {
     recv_export: Receiver<Option<ExportState>>,
     /// Receive the updated time.
     recv_time: Receiver<TimeState>,
+    /// Receive an audio sample.
+    recv_sample: Receiver<AudioMessage>,
+    /// The most recent sample.
+    pub sample: Option<AudioMessage>,
 }
 
 impl Conn {
@@ -28,6 +32,7 @@ impl Conn {
         recv: Receiver<SynthState>,
         recv_export: Receiver<Option<ExportState>>,
         recv_time: Receiver<TimeState>,
+        recv_sample: Receiver<AudioMessage>,
     ) -> Self {
         let framerate = match &player {
             Some(player) => player.framerate as f32,
@@ -41,7 +46,9 @@ impl Conn {
             recv,
             recv_export,
             recv_time,
+            recv_sample,
             framerate,
+            sample: None,
         }
     }
 
@@ -64,6 +71,10 @@ impl Conn {
         if let Ok(time) = self.recv_time.try_recv() {
             self.state.time = time;
         }
+        self.sample = match self.recv_sample.try_recv() {
+            Ok(sample) => Some(sample),
+            Err(_) => None,
+        };
         // Get the export state.
         if self.export_state.is_some() {
             self.send(vec![Command::SendExportState]);

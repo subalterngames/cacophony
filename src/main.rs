@@ -142,7 +142,7 @@ async fn main() {
             tts.update();
 
             // Late update to do stuff like screen capture.
-            panels.late_update(&state, &renderer);
+            panels.late_update(&state, &conn, &renderer);
 
             // Wait.
             next_frame().await;

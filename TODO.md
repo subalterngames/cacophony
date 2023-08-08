@@ -9,7 +9,7 @@
 - [x] Version check
 - [x] Test on OSX
 - [x] Help links
-- [ ] Power bars
+- [x] Power bars
 - [x] Multi-track view
 - [x] ~~Effects~~
 - [x] ~~Text ref~~

@@ -254,22 +254,36 @@ impl Renderer {
     /// - `position` The top-left position in grid coordinates.
     /// - `rect` An array of grid coordinates (left, top, width, height) that defines the area of the texture to draw.
     pub(crate) fn texture(&self, texture: &Texture2D, position: [u32; 2], rect: Option<[u32; 4]>) {
-        let xy = self.grid_to_pixel(position);
+        let rect = rect.map(|rect| Rect {
+            x: rect[0] as f32 * self.cell_size[0],
+            y: rect[1] as f32 * self.cell_size[1],
+            w: rect[2] as f32 * self.cell_size[0],
+            h: rect[3] as f32 * self.cell_size[1],
+        });
+        let position = self.grid_to_pixel(position);
+        self.texture_pixel(texture, position, rect);
+    }
+
+    /// Draw an arbitrary texture at a pixel position
+    ///
+    /// - `texture` The texture.
+    /// - `position` The top-left position in pixel coordinates.
+    /// - `rect` The area of the texture to draw.
+    pub(crate) fn texture_pixel(
+        &self,
+        texture: &Texture2D,
+        position: [f32; 2],
+        rect: Option<Rect>,
+    ) {
         match rect {
-            Some(r) => {
-                let source = Rect {
-                    x: r[0] as f32 * self.cell_size[0],
-                    y: r[1] as f32 * self.cell_size[1],
-                    w: r[2] as f32 * self.cell_size[0],
-                    h: r[3] as f32 * self.cell_size[1],
-                };
+            Some(rect) => {
                 let params = DrawTextureParams {
-                    source: Some(source),
+                    source: Some(rect),
                     ..Default::default()
                 };
-                draw_texture_ex(texture, xy[0], xy[1], TEXTURE_COLOR, params);
+                draw_texture_ex(texture, position[0], position[1], TEXTURE_COLOR, params);
             }
-            None => draw_texture(texture, xy[0], xy[1], TEXTURE_COLOR),
+            None => draw_texture(texture, position[0], position[1], TEXTURE_COLOR),
         }
     }
 

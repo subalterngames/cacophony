@@ -17,6 +17,7 @@ rusttype = { workspace = true }
 rust-ini = { workspace = true }
 macroquad = { workspace = true }
 hashbrown = { workspace = true }
+colorgrad = { workspace = true }
 
 [dependencies.audio]
 path = "../audio"

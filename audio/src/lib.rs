@@ -53,6 +53,7 @@ pub fn connect(exporter: &SharedExporter) -> Conn {
     let (send_audio, recv_audio) = bounded(1);
     let (send_time, recv_time) = bounded(1);
     let (send_export, recv_export) = bounded(1);
+    let (send_sample, recv_sample) = bounded(1);
 
     let ex = Arc::clone(exporter);
     // Spawn the synthesizer thread.
@@ -63,13 +64,21 @@ pub fn connect(exporter: &SharedExporter) -> Conn {
             send_state,
             send_export,
             send_time,
+            send_sample,
             ex,
         )
     });
     // Spawn the audio thread.
     let player = Player::new(recv_audio);
     // Get the conn.
-    Conn::new(player, send_commands, recv_state, recv_export, recv_time)
+    Conn::new(
+        player,
+        send_commands,
+        recv_state,
+        recv_export,
+        recv_time,
+        recv_sample,
+    )
 }
 
 #[cfg(test)]

@@ -42,7 +42,7 @@ impl Panels {
         remote_version: Option<String>,
     ) -> Self {
         let music_panel = MusicPanel::new(config, text);
-        let main_menu = MainMenu::new(config, input, text, remote_version);
+        let main_menu = MainMenu::new(config, input, text, renderer, remote_version);
         let tracks_panel = TracksPanel::new(config, text);
         let open_file_panel = OpenFilePanel::new(config, text);
         let piano_roll_panel = PianoRollPanel::new(config, state, text, renderer);
@@ -105,10 +105,11 @@ impl Panels {
     }
 
     /// Do something after input is received from elsewhere.
-    pub fn late_update(&mut self, state: &State, renderer: &Renderer) {
+    pub fn late_update(&mut self, state: &State, conn: &Conn, renderer: &Renderer) {
         self.open_file_panel.popup.late_update(state, renderer);
         self.export_panel.popup.late_update(state, renderer);
         self.quit_panel.popup.late_update(state, renderer);
         self.links_panel.popup.late_update(state, renderer);
+        self.main_menu.late_update(renderer, conn);
     }
 }
