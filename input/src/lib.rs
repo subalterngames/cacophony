@@ -9,7 +9,7 @@ mod midi_binding;
 mod midi_conn;
 mod note_on;
 mod qwerty_binding;
-use common::State;
+use common::{State, MAX_NOTE, MIN_NOTE};
 use hashbrown::HashMap;
 use ini::Ini;
 pub use input_event::InputEvent;
@@ -240,7 +240,7 @@ impl Input {
             let volume = state.input.volume.get();
             for midi in midi.iter() {
                 // Note-on.
-                if midi[0] >= 144 && midi[0] <= 159 {
+                if midi[0] >= 144 && midi[0] <= 159 && midi[1] > MIN_NOTE && midi[2] <= MAX_NOTE {
                     // Set the volume.
                     let midi = if state.input.use_volume {
                         [midi[0], midi[1], volume]
