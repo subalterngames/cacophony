@@ -73,7 +73,7 @@
 
 - [ ] API docs?
 - [x] Fix font size
-- [x] Fix mobile
+- [ ] Fix mobile
 - [x] Discord link
 - [x] Repo link
 - [x] Itch link
