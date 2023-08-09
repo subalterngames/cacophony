@@ -150,7 +150,7 @@ impl MainMenu {
         let separator_positions = [separator_help, separator_links];
         x += 1;
         let window_grid_size = get_window_grid_size(config);
-        let w = window_grid_size[0] - x - 1;
+        let w = window_grid_size[0] - x - 2;
         let (power_bar_texture, power_bar_position_left) =
             Self::get_power_textures([x, y], [w, 1], renderer);
         let cell_height = renderer.grid_to_pixel([1, 1])[1];
