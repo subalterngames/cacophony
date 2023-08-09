@@ -26,7 +26,7 @@ body {
     background-color: #272932;
     margin: 0;
     line-height: 24px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
 }
 
 h1 {
@@ -109,3 +109,43 @@ code {
     font-size: 12px;
     padding-bottom: 6px;
   }
+
+/* Extra small-small devices (phones, 420px and down) */
+@media only screen and (max-width: 420px)  {
+
+    a {
+        font-size: 3vw;
+        line-height: 4vw;
+        margin-bottom: 4vw;
+    }
+    p {
+        font-size: 3vw;
+        line-height: 4vw;
+        margin-bottom: 4vw;
+    }
+    code {
+        font-size: 3vw;
+    }
+    body {
+        font-size: 3vw;
+        line-height: 4vw;
+        margin-bottom: 4vw;
+    }
+    .main {
+        margin-left: 22%;
+        margin-right: 0%;
+        padding: 0px 10px;
+    }
+    .button {
+        padding: 6px 24px;
+        margin-bottom: 20px;
+        font-size: 3vw;
+    }
+    .button .subtitle {
+        font-size: 1.5vw;
+        padding-bottom: 6px;
+      }
+    .sidenav {
+        width: 22%;
+    }
+}
