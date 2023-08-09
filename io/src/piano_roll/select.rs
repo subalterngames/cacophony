@@ -175,7 +175,7 @@ impl Panel for Select {
                             }
                             // Select the note closest to the cursor.
                             None => {
-                                if let Some(index) = Select::get_note_index_closest_to_before_cursor(
+                                if let Some(index) = Select::get_note_index_closest_to_after_cursor(
                                     &track.notes,
                                     &state.time,
                                 ) {
