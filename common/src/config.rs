@@ -20,7 +20,7 @@ pub fn load() -> Ini {
 }
 
 /// Parse a string `value` and returns an enum of type `T`.
-fn string_to_enum<T>(value: &str) -> T
+fn string_to_value<T>(value: &str) -> T
 where
     T: FromStr,
     <T as FromStr>::Err: Display,
@@ -41,7 +41,7 @@ where
     <T as FromStr>::Err: Display,
 {
     match properties.get(key) {
-        Some(value) => string_to_enum(value),
+        Some(value) => string_to_value(value),
         None => panic!("Missing key {}", key),
     }
 }

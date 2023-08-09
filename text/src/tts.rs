@@ -1,7 +1,7 @@
 use crate::TtsString;
 use common::config::{parse, parse_bool};
 use ini::Ini;
-use tts::Tts;
+use tts::{Gender, Tts, Voice};
 
 /// Text-to-speech.
 pub struct TTS {
@@ -20,12 +20,48 @@ impl TTS {
         let show_subtitles = parse_bool(section, "subtitles");
         // Try to load the text-to-speech engine.
         let tts = match Tts::default() {
-            Ok(mut t) => {
+            Ok(mut tts) => {
                 // Try to set the voice.
-                if let Ok(voices) = t.voices() {
-                    if t.set_voice(&voices[parse::<usize>(section, "voice_id")])
-                        .is_ok()
-                    {}
+                if let Ok(voices) = tts.voices() {
+                    // Try to parse the voice ID as an index.
+                    let voice_id = section.get("voice_id").unwrap();
+                    match voice_id.parse::<usize>() {
+                        Ok(index) => if tts.set_voice(&voices[index]).is_ok() {},
+                        // Try to parse the voice ID as a language.
+                        Err(_) => {
+                            // Get all voices in this language.
+                            let voices_lang: Vec<&Voice> =
+                                voices.iter().filter(|v| v.language() == voice_id).collect();
+                            if voices_lang.is_empty() {
+                                println!(
+                                    "No voices found with language {}. Using the default instead.",
+                                    voice_id
+                                );
+                                if tts.set_voice(&voices[0]).is_ok() {}
+                            } else {
+                                // Try to get the gender.
+                                match section.get("gender") {
+                                    Some(gender) => {
+                                        // Convert the gender to an enum value.
+                                        let gender = match gender {
+                                            "f" => Some(Gender::Female),
+                                            "m" => Some(Gender::Male),
+                                            _ => None,
+                                        };
+                                        // Try to get the first voice.
+                                        match voices_lang.iter().find(|v| v.gender() == gender) {
+                                            // Set the first voice in this language with this gender.
+                                            Some(voice) => if tts.set_voice(voice).is_ok() {},
+                                            // Set the first voice in this language.
+                                            None => if tts.set_voice(voices_lang[0]).is_ok() {},
+                                        }
+                                    }
+                                    // Set the first voice in this language.
+                                    None => if tts.set_voice(voices_lang[0]).is_ok() {},
+                                }
+                            }
+                        }
+                    }
                 }
                 // Try to set the rate.
                 let rate_key = if cfg!(windows) {
@@ -35,8 +71,8 @@ impl TTS {
                 } else {
                     "rate_linux"
                 };
-                if t.set_rate(parse(section, rate_key)).is_ok() {}
-                Some(t)
+                if tts.set_rate(parse(section, rate_key)).is_ok() {}
+                Some(tts)
             }
             Err(_) => None,
         };
