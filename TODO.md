@@ -71,7 +71,7 @@
 
 ## Website
 
-- [ ] API docs?
+- [x] ~~API docs?~~
 - [x] Fix font size
 - [ ] Fix mobile
 - [x] Discord link
