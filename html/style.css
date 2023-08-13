@@ -110,8 +110,7 @@ code {
     padding-bottom: 6px;
   }
 
-/* Extra small-small devices (phones, 420px and down) */
-@media only screen and (max-width: 420px)  {
+@media only screen and (max-device-aspect-ratio: 99 / 100)  {
 
     a {
         font-size: 3vw;
