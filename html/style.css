@@ -110,23 +110,62 @@ code {
     padding-bottom: 6px;
   }
 
-@media only screen and (max-device-aspect-ratio: 99 / 100)  {
+  @media only screen and (max-device-aspect-ratio: 99 / 100) and (orientation: portrait)  {
 
     a {
-        font-size: 3vw;
+        font-size:1.25vh;
+        line-height: 2.5vh;
+        margin-bottom: 2.5vh;
+    }
+    p {
+        font-size: 1.25vh;
+        line-height: 2.5vh;
+        margin-bottom: 2.5vh;
+    }
+    code {
+        font-size: 1.25vh;
+    }
+    body {
+        font-size: 1.25vh;
+        line-height: 2.5vh;
+        margin-bottom: 2.5vh;
+    }
+    .main {
+        margin-left: 22%;
+        margin-right: 0%;
+        padding: 0px 10px;
+    }
+    .button {
+        padding: 6px 24px;
+        margin-bottom: 20px;
+        font-size: 1.25vh;
+    }
+    .button .subtitle {
+        font-size: 1vh;
+        padding-bottom: 6px;
+      }
+    .sidenav {
+        width: 22%;
+    }
+}
+
+@media only screen and (max-height: 650px) and (orientation: landscape)  {
+
+    a {
+        font-size: 2vw;
         line-height: 4vw;
         margin-bottom: 4vw;
     }
     p {
-        font-size: 3vw;
+        font-size: 2vw;
         line-height: 4vw;
         margin-bottom: 4vw;
     }
     code {
-        font-size: 3vw;
+        font-size: 2vw;
     }
     body {
-        font-size: 3vw;
+        font-size: 2vw;
         line-height: 4vw;
         margin-bottom: 4vw;
     }
@@ -138,10 +177,10 @@ code {
     .button {
         padding: 6px 24px;
         margin-bottom: 20px;
-        font-size: 3vw;
+        font-size: 2vw;
     }
     .button .subtitle {
-        font-size: 1.5vw;
+        font-size: 1vw;
         padding-bottom: 6px;
       }
     .sidenav {
