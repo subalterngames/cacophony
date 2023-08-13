@@ -77,4 +77,4 @@ def create_builds() -> None:
 f = ftp_login()
 ftp_website(f)
 f.close()
-#create_builds()
+create_builds()
