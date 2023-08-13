@@ -1,7 +1,6 @@
-from shutil import move
 from typing import Optional
-from os import chdir, getcwd, walk
-from subprocess import call, check_output, CalledProcessError
+from os import chdir, getcwd
+from subprocess import check_output, CalledProcessError
 from pathlib import Path
 from ftplib import FTP, error_perm
 import re
