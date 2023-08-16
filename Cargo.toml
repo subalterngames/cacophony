@@ -86,10 +86,6 @@ description = "A minimalist and ergonomic MIDI sequencer"
 documentation = "https://github.com/subalterngames/cacophony"
 edition = "2021"
 
-[[bin]]
-name = "cacophony"
-path = "src/main.rs"
-
 [dependencies]
 macroquad = { workspace = true }
 parking_lot = { workspace = true }
