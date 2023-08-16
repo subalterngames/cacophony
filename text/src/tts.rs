@@ -1,7 +1,13 @@
 use crate::TtsString;
 use common::config::{parse, parse_bool};
 use ini::Ini;
-use tts::{Gender, Tts, Voice};
+use lazy_static::lazy_static;
+use parking_lot::Mutex;
+use tts::{Gender, Tts, UtteranceId, Voice};
+
+lazy_static! {
+    static ref UTTERANCE_ID: Mutex<Option<UtteranceId>> = Mutex::new(None);
+}
 
 /// Text-to-speech.
 pub struct TTS {
@@ -11,6 +17,8 @@ pub struct TTS {
     speech: Vec<TtsString>,
     /// If true, return subtitle text.
     pub show_subtitles: bool,
+    /// If true, callbacks are supported.
+    callbacks: bool,
 }
 
 impl TTS {
@@ -19,8 +27,23 @@ impl TTS {
         // Get subtitles.
         let show_subtitles = parse_bool(section, "subtitles");
         // Try to load the text-to-speech engine.
-        let tts = match Tts::default() {
+        let (tts, callbacks) = match Tts::default() {
             Ok(mut tts) => {
+                let callbacks = tts.supported_features().utterance_callbacks;
+                if callbacks {
+                    if tts
+                        .on_utterance_begin(Some(Box::new(on_utterance_begin)))
+                        .is_ok()
+                    {}
+                    if tts
+                        .on_utterance_end(Some(Box::new(on_utterance_end)))
+                        .is_ok()
+                    {}
+                    if tts
+                        .on_utterance_stop(Some(Box::new(on_utterance_end)))
+                        .is_ok()
+                    {}
+                }
                 // Try to set the voice.
                 if let Ok(voices) = tts.voices() {
                     // Try to parse the voice ID as an index.
@@ -72,14 +95,15 @@ impl TTS {
                     "rate_linux"
                 };
                 if tts.set_rate(parse(section, rate_key)).is_ok() {}
-                Some(tts)
+                (Some(tts), callbacks)
             }
-            Err(_) => None,
+            Err(_) => (None, false),
         };
         Self {
             show_subtitles,
             tts,
             speech: vec![],
+            callbacks,
         }
     }
 
@@ -118,7 +142,14 @@ impl TTS {
     /// Returns true if Casey is speaking.
     fn is_speaking(&self) -> bool {
         match &self.tts {
-            Some(tts) => tts.is_speaking().unwrap_or(false),
+            Some(tts) => {
+                if self.callbacks {
+                    let u = UTTERANCE_ID.lock();
+                    u.is_some()
+                } else {
+                    tts.is_speaking().unwrap_or(false)
+                }
+            }
             None => false,
         }
     }
@@ -171,4 +202,16 @@ impl Enqueable<Vec<TtsString>> for TTS {
 pub trait Enqueable<T> {
     /// Enqueue something to the text-to-speech strings.
     fn enqueue(&mut self, text: T);
+}
+
+/// Invoked when an utterance begins.
+fn on_utterance_begin(utterance: UtteranceId) {
+    let mut u = UTTERANCE_ID.lock();
+    *u = Some(utterance);
+}
+
+/// Invoked when an utterance ends.
+fn on_utterance_end(_: UtteranceId) {
+    let mut u = UTTERANCE_ID.lock();
+    *u = None;
 }
