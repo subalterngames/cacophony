@@ -157,7 +157,12 @@ impl TTS {
     /// Say something and show subtitles.
     fn say(&mut self, text: &str) {
         if let Some(tts) = &mut self.tts {
-            if tts.speak(text, true).is_ok() {}
+            if let Ok(utterance) = tts.speak(text, true) {
+                if self.callbacks {
+                    let mut u = UTTERANCE_ID.lock();
+                    *u = utterance.clone();
+                }
+            }
         }
     }
 }

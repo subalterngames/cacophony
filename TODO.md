@@ -125,7 +125,7 @@
 - [ ] Note names aren't aligned correctly in high DPI Linux
 - [x] Textures are too big in high DPI Linux
 - [x] Splash window is too small in high DPI Linux
-- [ ] Subtitles are broken
+- [x] Subtitles are broken
 
 ## Bugs
 
