@@ -28,7 +28,7 @@ jobs:
       - name: Copy executable
         run: cp target/release/cacophony cacophony/cacophony
       - name: Copy data/
-        run: cp -R data cacophony/data
+        run: cp -R data cacophony
       - name: Download butler
         run: wget -O butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
       - name: Unzip butler
@@ -67,7 +67,7 @@ jobs:
       - name: butler push
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: ./butler push target/release/Cacophony.app subalterngames/cacophony:macos --userversion=${{ inputs.version }}
+        run: ./butler push target/release/bundle/Cacophony.app subalterngames/cacophony:macos --userversion=${{ inputs.version }}
   build-windows:
     name: Windows
     runs-on: windows-latest
@@ -96,7 +96,7 @@ jobs:
         run: Copy-Item target/release/cacophony.exe cacophony/cacophony.exe
         shell: powershell
       - name: Copy data/
-        run: Copy-Item -Recurse data cacophony/data
+        run: Copy-Item -Recurse data cacophony
         shell: powershell
       - name: butler push
         env:

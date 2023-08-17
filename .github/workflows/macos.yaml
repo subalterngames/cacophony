@@ -30,7 +30,8 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: ./butler login
-      - run: cd target/release && ls && cd ../..
+      - run: cd target/release/bundle && ls && cd ../../..
+      - run: cd target/release/cacophony && ls && cd ../../..
       - name: butler push
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
