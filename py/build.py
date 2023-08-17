@@ -17,12 +17,6 @@ def upload_directory(ftp: FTP, folder: str = None) -> None:
                 ftp.storbinary(f'STOR {fi.name}', bs)
             print(f"Uploaded: {fi.name}")
 
-def get_latest_version() -> Optional[str]:
-    try:
-        resp = check_output(["git", "describe", "--tags", "--abbrev=0"])
-        return str(resp).strip()
-    except CalledProcessError:
-        return None
     
 def ftp_login() -> FTP:
     ftp = FTP("subalterngames.com")
@@ -54,26 +48,40 @@ def ftp_cwd(ftp: FTP, folder: str) -> None:
         ftp.cwd(folder)
 
 
-def create_builds() -> None:
+def get_repo() -> Repository:
+    token: str = Path("credentials/github.txt").resolve().read_text(encoding="utf-8").strip()
+    return Github(token).get_repo("subalterngames/cacophony")
+
+
+def get_version() -> str:
     # Compare versions.
     version = re.search(r'version = "(.*?)"', Path("../Cargo.toml").read_text()).group(1)
-    latest_version = get_latest_version()
+    try:
+        resp = check_output(["git", "describe", "--tags", "--abbrev=0"])
+        latest_version = str(resp).strip()
+    except CalledProcessError:
+        latest_version = None
     if version == latest_version:
         print("Can't upload. Update the version.")
         exit()
+    return version
 
-    # Tag.
-    token: str = Path("credentials/github.txt").resolve().read_text(encoding="utf-8").strip()
-    repo: Repository = Github(token).get_repo("subalterngames/cacophony")
+
+def tag(repo: Repository, version: str) -> None:
     repo.create_git_tag(tag=version, message=version, type="commit", object=repo.get_commits()[0].sha)
     print("Tagged.")
 
+
+def create_builds(repo: Repository, version: str) -> None:
     # Build the releases.
-    workflow = repo.get_workflow("build")
+    workflow = repo.get_workflow(66524374)
     workflow.create_dispatch(ref="main", inputs={"version": version})
 
 
-f = ftp_login()
-ftp_website(f)
-f.close()
-# create_builds()
+# f = ftp_login()
+# ftp_website(f)
+# f.close()
+r = get_repo()
+v = get_version()
+# tag(r, v)
+create_builds(r, v)
