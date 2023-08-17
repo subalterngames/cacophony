@@ -18,6 +18,7 @@ Linux:
 
 - Ubuntu 18.04 x64 with X11
 - Ubuntu 20.04 x64 with X11
+- Ubuntu 22.04 x64 with X11
 
 MacOS:
 
@@ -35,8 +36,9 @@ Windows:
 
 ### Linux
 
-1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
-2. `cargo build --release`
+1. On Ubuntu 20 and older, change this: `features = ["speech_dispatcher_0_11"]` to this: `features = ["speech_dispatcher_0_9"]`
+2. `apt install clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
+3. `cargo build --release`
 
 ### MacOS
 

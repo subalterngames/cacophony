@@ -24,11 +24,11 @@ jobs:
       - name: cargo build
         run: cargo build --release
       - name: Create release directory
-        run: mkdir -p cacophony/cacophony/data
+        run: mkdir -p cacophony/data
       - name: Copy executable
-        run: cp cacophony/target/release/cacophony cacophony/cacophony
+        run: cp target/release/cacophony cacophony/cacophony
       - name: Copy data/
-        run: cp -R cacophony/data cacophony/cacophony/data
+        run: cp -R data cacophony/data
       - name: Download butler
         run: wget -O butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
       - name: Unzip butler
@@ -41,7 +41,7 @@ jobs:
       - name: butler push
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: ./butler push cacophony/cacophony subalterngames/cacophony:linux --userversion=${{ inputs.version }}
+        run: ./butler push cacophony subalterngames/cacophony:linux --userversion=${{ inputs.version }}
   build-macos:
     name: MacOS
     runs-on: macos-latest
@@ -67,7 +67,7 @@ jobs:
       - name: butler push
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: ./butler push cacophony/target/release/Cacophony.app subalterngames/cacophony:macos --userversion=${{ inputs.version }}
+        run: ./butler push target/release/Cacophony.app subalterngames/cacophony:macos --userversion=${{ inputs.version }}
   build-windows:
     name: Windows
     runs-on: windows-latest
@@ -90,15 +90,15 @@ jobs:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: ./butler.exe login
       - name: Create release directory
-        run: New-Item -Path cacophony/cacophony/data -ItemType directory
+        run: New-Item -Path cacophony/data -ItemType directory
         shell: powershell
       - name: Copy cacophony.exe
-        run: Copy-Item cacophony/target/release/cacophony.exe cacophony/cacophony/cacophony.exe
+        run: Copy-Item target/release/cacophony.exe cacophony/cacophony.exe
         shell: powershell
       - name: Copy data/
-        run: Copy-Item -Recurse cacophony/data cacophony/cacophony/data
+        run: Copy-Item -Recurse data cacophony/data
         shell: powershell
       - name: butler push
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: ./butler.exe push cacophony/cacophony subalterngames/cacophony:windows --userversion=${{ inputs.version }}
+        run: ./butler.exe push cacophony subalterngames/cacophony:windows --userversion=${{ inputs.version }}
