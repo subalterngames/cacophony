@@ -158,13 +158,24 @@ impl TTS {
     fn say(&mut self, text: &str) {
         if let Some(tts) = &mut self.tts {
             if let Ok(utterance) = tts.speak(text, true) {
-                if self.callbacks {
-                    let mut u = UTTERANCE_ID.lock();
-                    *u = utterance.clone();
-                }
+                self.on_utter(utterance);
             }
         }
     }
+
+    /// Don't use utterances because we can't clone them.
+    #[cfg(target_os = "macos")]
+    fn on_utter(&self, _: Option<UtteranceId>) {
+    } 
+
+    /// Store the utterance.
+    #[cfg(not(target_os = "macos"))]
+    fn on_utter(&self, utterance: Option<UtteranceId>) {
+        if self.callbacks {
+            let mut u = UTTERANCE_ID.lock();
+            *u = utterance;
+        }
+    } 
 }
 
 impl Enqueable<TtsString> for TTS {
