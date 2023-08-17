@@ -29,7 +29,7 @@ impl TTS {
         // Try to load the text-to-speech engine.
         let (tts, callbacks) = match Tts::default() {
             Ok(mut tts) => {
-                let callbacks = tts.supported_features().utterance_callbacks;
+                let callbacks = tts.supported_features().utterance_callbacks && !cfg!(target_os = "macos");
                 if callbacks {
                     if tts
                         .on_utterance_begin(Some(Box::new(on_utterance_begin)))
