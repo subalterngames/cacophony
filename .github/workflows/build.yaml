@@ -16,7 +16,7 @@ jobs:
       - name: apt update
         run: sudo apt-get update
       - name: install
-        run: sudo apt install wget clang libspeechd-dev pkg-config libssl-dev alsa
+        run: sudo apt install wget clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
