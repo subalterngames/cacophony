@@ -34,5 +34,5 @@ jobs:
       - name: butler push
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: ./butler push target/release/Cacophony.app subalterngames/cacophony:macos --userversion=${{ inputs.version }}
+        run: ./butler push target/release/bundle/Cacophony.app subalterngames/cacophony:macos --userversion=${{ inputs.version }}
 
