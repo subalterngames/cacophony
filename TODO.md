@@ -66,7 +66,7 @@
 ## Repo
 
 - [x] License
-- [ ] GitHub actions
+- [x] GitHub actions
 - [ ] Merge and clobber
 
 ## Website
