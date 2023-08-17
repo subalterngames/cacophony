@@ -36,7 +36,7 @@ Windows:
 
 ### Linux
 
-1. On Ubuntu 20 and older, change this: `features = ["speech_dispatcher_0_11"]` to this: `features = ["speech_dispatcher_0_9"]`
+1. On Ubuntu 22, change this: `features = ["speech_dispatcher_0_9"]` to this: `features = ["speech_dispatcher_0_11"]`
 2. `apt install clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
 3. `cargo build --release`
 
