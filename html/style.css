@@ -113,22 +113,22 @@ code {
   @media only screen and (max-device-aspect-ratio: 99 / 100) and (orientation: portrait)  {
 
     a {
-        font-size:1.25vh;
-        line-height: 2.5vh;
-        margin-bottom: 2.5vh;
+        font-size: 16px;
+        line-height: 32px;
+        margin-bottom: 32px;
     }
     p {
-        font-size: 1.25vh;
-        line-height: 2.5vh;
-        margin-bottom: 2.5vh;
+        font-size: 16px;
+        line-height: 32px;
+        margin-bottom: 32px;
     }
     code {
-        font-size: 1.25vh;
+        font-size: 16px;
     }
     body {
-        font-size: 1.25vh;
-        line-height: 2.5vh;
-        margin-bottom: 2.5vh;
+        font-size: 16px;
+        line-height: 32px;
+        margin-bottom: 32px;
     }
     .main {
         margin-left: 22%;
@@ -138,10 +138,10 @@ code {
     .button {
         padding: 6px 24px;
         margin-bottom: 20px;
-        font-size: 1.25vh;
+        font-size: 16px;
     }
     .button .subtitle {
-        font-size: 1vh;
+        font-size: 12px;
         padding-bottom: 6px;
       }
     .sidenav {
