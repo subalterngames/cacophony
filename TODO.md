@@ -51,7 +51,7 @@
 
 - [ ] Trailer
 - [x] More screenshots
-- [ ] Builds
+- [x] Builds
 - [ ] Make public
 
 ## Discord

@@ -78,10 +78,10 @@ def create_builds(repo: Repository, version: str) -> None:
     workflow.create_dispatch(ref="main", inputs={"version": version})
 
 
-# f = ftp_login()
-# ftp_website(f)
-# f.close()
+f = ftp_login()
+ftp_website(f)
+f.close()
 r = get_repo()
 v = get_version()
-# tag(r, v)
+tag(r, v)
 create_builds(r, v)
