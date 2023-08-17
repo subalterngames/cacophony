@@ -12,7 +12,7 @@
 
 ## How to compile
 
-You can compile Cacophony for Linux, MacOS, or Windows. Below is a list of operating systems I've tested:
+I compile Cacophony with Rust 1.71.0 for Linux, MacOS, or Windows. Below is a list of operating systems I've tested:
 
 Linux:
 
@@ -35,7 +35,7 @@ Windows:
 
 ### Linux
 
-1. `apt install clang libspeechd-dev pkg-config libssl-dev`
+1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
 2. `cargo build --release`
 
 ### MacOS

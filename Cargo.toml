@@ -76,7 +76,7 @@ branch = "master"
 [workspace.dependencies.tts]
 version = "0.25.5"
 default-features = false
-features = ["speech_dispatcher_0_9"]
+features = ["speech_dispatcher_0_11"]
 
 [package]
 name = "cacophony"
