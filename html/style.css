@@ -15,6 +15,10 @@
     src: url('fonts/noto/NotoSansMono_Condensed-Light.ttf')
 }
 
+* {
+    -webkit-text-size-adjust: none;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -113,35 +117,35 @@ code {
   @media only screen and (max-device-aspect-ratio: 99 / 100) and (orientation: portrait)  {
 
     a {
-        font-size: 16px;
-        line-height: 32px;
-        margin-bottom: 32px;
+        font-size:1.5vh;
+        line-height: 3vh;
+        margin-bottom: 3vh;
     }
     p {
-        font-size: 16px;
-        line-height: 32px;
-        margin-bottom: 32px;
+        font-size: 1.5vh;
+        line-height: 3vh;
+        margin-bottom: 3vh;
     }
     code {
-        font-size: 16px;
+        font-size: 1.25vh;
     }
     body {
-        font-size: 16px;
-        line-height: 32px;
-        margin-bottom: 32px;
+        font-size: 1.5vh;
+        line-height: 3vh;
+        margin-bottom: 3vh;
     }
     .main {
-        margin-left: 22%;
+        margin-left: 24%;
         margin-right: 0%;
         padding: 0px 10px;
     }
     .button {
         padding: 6px 24px;
         margin-bottom: 20px;
-        font-size: 16px;
+        font-size: 1.5vh;
     }
     .button .subtitle {
-        font-size: 12px;
+        font-size: 1vh;
         padding-bottom: 6px;
       }
     .sidenav {
