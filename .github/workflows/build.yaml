@@ -90,7 +90,7 @@ jobs:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: ./butler.exe login
       - name: Create release directory
-        run: New-Item -Path cacophony/data -ItemType directory
+        run: New-Item -Path cacophony -ItemType directory
         shell: powershell
       - name: Copy cacophony.exe
         run: Copy-Item target/release/cacophony.exe cacophony/cacophony.exe
