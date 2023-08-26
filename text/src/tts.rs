@@ -29,7 +29,8 @@ impl TTS {
         // Try to load the text-to-speech engine.
         let (tts, callbacks) = match Tts::default() {
             Ok(mut tts) => {
-                let callbacks = tts.supported_features().utterance_callbacks && !cfg!(target_os = "macos");
+                let callbacks =
+                    tts.supported_features().utterance_callbacks && !cfg!(target_os = "macos");
                 if callbacks {
                     if tts
                         .on_utterance_begin(Some(Box::new(on_utterance_begin)))
@@ -52,9 +53,17 @@ impl TTS {
                         Ok(index) => if tts.set_voice(&voices[index]).is_ok() {},
                         // Try to parse the voice ID as a language.
                         Err(_) => {
+                            let language = if cfg!(target_os = "linux") {
+                                match voice_id.split('-').next() {
+                                    Some(language) => language,
+                                    None => voice_id,
+                                }
+                            } else {
+                                voice_id
+                            };
                             // Get all voices in this language.
                             let voices_lang: Vec<&Voice> =
-                                voices.iter().filter(|v| v.language() == voice_id).collect();
+                                voices.iter().filter(|v| v.language() == language).collect();
                             if voices_lang.is_empty() {
                                 println!(
                                     "No voices found with language {}. Using the default instead.",
@@ -165,8 +174,7 @@ impl TTS {
 
     /// Don't use utterances because we can't clone them.
     #[cfg(target_os = "macos")]
-    fn on_utter(&self, _: Option<UtteranceId>) {
-    } 
+    fn on_utter(&self, _: Option<UtteranceId>) {}
 
     /// Store the utterance.
     #[cfg(not(target_os = "macos"))]
@@ -175,7 +183,7 @@ impl TTS {
             let mut u = UTTERANCE_ID.lock();
             *u = utterance;
         }
-    } 
+    }
 }
 
 impl Enqueable<TtsString> for TTS {
