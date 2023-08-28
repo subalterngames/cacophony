@@ -23,11 +23,6 @@ pub fn get_font_size(config: &Ini) -> u16 {
     parse(get_font_section(config), "font_height")
 }
 
-/// Returns the subtitle font height.
-pub fn get_subtitle_font_size(config: &Ini) -> u16 {
-    parse(get_font_section(config), "subtitle_font_height")
-}
-
 /// Returns the size of a cell in pixels (width, height).
 pub fn get_cell_size(config: &Ini) -> [f32; 2] {
     let font_size: u16 = get_font_size(config);

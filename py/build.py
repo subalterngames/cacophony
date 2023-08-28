@@ -5,6 +5,27 @@ from pathlib import Path
 from ftplib import FTP, error_perm
 import re
 from github import Repository, Github
+import discord
+
+
+class DiscordBot(discord.Client):
+    """
+    Post the changelog and change the server icon.
+    """
+
+    async def on_ready(self):
+        discord_text = Path("credentials/discord.txt").read_text()
+        # Connect to the Discord channel.
+        channel = self.get_channel(int(re.search("channel_id=(.*)", discord_text).group(1)))
+        # Get the changelog.
+        post = re.search("(# " + VERSION.replace(".", r"\.") + r"((.|\n)*?))^# ",
+                         Path("changelog.md").read_text(encoding="utf-8"),
+                         flags=re.MULTILINE).group(2).strip()
+        post = f"**Update {VERSION}**\n{post}"
+        # Post.
+        await channel.send(post)
+        # Quit.
+        await self.close()
 
 
 def upload_directory(ftp: FTP, folder: str = None) -> None:

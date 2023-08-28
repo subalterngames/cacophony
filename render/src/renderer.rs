@@ -17,8 +17,6 @@ pub struct Renderer {
     font: Font,
     /// The font used for subtitles.
     subtitle_font: Font,
-    /// The font size used for subtitles.
-    subtitle_font_size: u16,
     /// The size of a single cell.
     cell_size: [f32; 2],
     /// The font size.
@@ -68,10 +66,9 @@ impl Renderer {
         // Fonts.
         let font = get_font(config);
         let subtitle_font = get_subtitle_font(config);
-        let subtitle_font_size = get_subtitle_font_size(config);
+        let font_size = get_font_size(config);
 
         // Sizes.
-        let font_size = get_font_size(config);
         let cell_size = get_cell_size(config);
         let main_menu_position = get_main_menu_position(config);
         let subtitle_position = [(main_menu_position[0] + 1), (main_menu_position[1] + 1)];
@@ -104,7 +101,6 @@ impl Renderer {
             border_offsets,
             flip_y,
             subtitle_position,
-            subtitle_font_size,
             max_subtitle_width,
             window_pixel_size,
         }
@@ -626,7 +622,7 @@ impl Renderer {
             label,
             &ColorKey::Subtitle,
             &self.subtitle_font,
-            self.subtitle_font_size,
+            self.font_size,
         );
     }
 
