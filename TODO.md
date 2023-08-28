@@ -61,7 +61,7 @@
 - [x] Add a link on itch.io
 - [x] Add a link on the website
 - [x] Add a link on github
-- [ ] Add a release bot
+- [x] Add a release bot
 
 ## Repo
 
