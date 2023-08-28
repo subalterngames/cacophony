@@ -260,23 +260,24 @@ impl IO {
             } else if let Some(track) = state.music.get_selected_track() {
                 let mut commands = vec![];
                 // Play notes.
-                if !&input.note_on_messages.is_empty() && panel.allow_play_music() {
-                    if conn.state.programs.get(&track.channel).is_some() {
-                        let gain = track.gain as f64 / 127.0;
-                        // Set the framerate for playback.
-                        commands.push(Command::SetFramerate {
-                            framerate: conn.framerate as u32,
+                if !&input.note_on_messages.is_empty()
+                    && panel.allow_play_music()
+                    && conn.state.programs.get(&track.channel).is_some()
+                {
+                    let gain = track.gain as f64 / 127.0;
+                    // Set the framerate for playback.
+                    commands.push(Command::SetFramerate {
+                        framerate: conn.framerate as u32,
+                    });
+                    // Play the notes.
+                    for note in input.note_on_messages.iter() {
+                        // Set the volume.
+                        let volume = (note[2] as f64 * gain) as u8;
+                        commands.push(Command::NoteOn {
+                            channel: track.channel,
+                            key: note[1],
+                            velocity: volume,
                         });
-                        // Play the notes.
-                        for note in input.note_on_messages.iter() {
-                            // Set the volume.
-                            let volume = (note[2] as f64 * gain) as u8;
-                            commands.push(Command::NoteOn {
-                                channel: track.channel,
-                                key: note[1],
-                                velocity: volume,
-                            });
-                        }
                     }
                 }
                 // Note-offs.
