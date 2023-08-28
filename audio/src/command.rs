@@ -15,12 +15,7 @@ pub enum Command {
     /// Stop all sound.
     SoundOff,
     /// Note-on ASAP.
-    NoteOn {
-        channel: u8,
-        key: u8,
-        velocity: u8,
-        duration: u64,
-    },
+    NoteOn { channel: u8, key: u8, velocity: u8 },
     /// Schedule a note-on event.
     NoteOnAt {
         channel: u8,

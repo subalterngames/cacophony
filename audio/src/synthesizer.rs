@@ -162,7 +162,6 @@ impl Synthesizer {
                                     channel,
                                     key,
                                     velocity,
-                                    duration,
                                 } => {
                                     let ch = *channel;
                                     let k = *key;
@@ -175,14 +174,6 @@ impl Synthesizer {
                                         &mut s.synth,
                                     );
                                     s.state.time.time = Some(0);
-                                    // Queue a note-off event.
-                                    s.events_queue.push(QueuedEvent {
-                                        time: s.state.time() + duration,
-                                        event: MidiEvent::NoteOff {
-                                            channel: ch,
-                                            key: k,
-                                        },
-                                    });
                                     s.sort_queue();
                                 }
                                 // Schedule a note-on and a note-off.

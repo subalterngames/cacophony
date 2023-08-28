@@ -15,13 +15,6 @@ pub struct SynthState {
     pub gain: u8,
 }
 
-impl SynthState {
-    /// A wrapper for time that returns 0 if there is no time.
-    pub(crate) fn time(&self) -> u64 {
-        self.time.time.unwrap_or(0)
-    }
-}
-
 impl Default for SynthState {
     fn default() -> Self {
         Self {

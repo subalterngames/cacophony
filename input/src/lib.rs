@@ -42,6 +42,21 @@ const ALLOWED_DURING_ALPHANUMERIC_INPUT: [InputEvent; 12] = [
     InputEvent::PreviousPath,
     InputEvent::CloseOpenFile,
 ];
+const QWERTY_NOTE_EVENTS: [InputEvent; 12] = [
+    InputEvent::G,
+    InputEvent::FSharp,
+    InputEvent::F,
+    InputEvent::E,
+    InputEvent::DSharp,
+    InputEvent::D,
+    InputEvent::CSharp,
+    InputEvent::C,
+    InputEvent::B,
+    InputEvent::ASharp,
+    InputEvent::A,
+    InputEvent::GSharp,
+];
+const QWERTY_NOTE_INDICES: [u8; 12] = [7, 6, 5, 4, 3, 2, 1, 0, 11, 10, 9, 8];
 
 const ILLEGAL_FILENAME_CHARACTERS: [char; 23] = [
     '!', '@', '#', '$', '%', '^', '&', '*', '=', '+', '{', '}', '\\', '|', ':', '"', '\'', '<',
@@ -56,7 +71,9 @@ pub struct Input {
     /// The MIDI connection.
     midi_conn: Option<MidiConn>,
     // Note-on MIDI messages. These will be sent immediately to the synthesizer to be played.
-    pub play_now: Vec<[u8; 3]>,
+    pub note_on_messages: Vec<[u8; 3]>,
+    // Note-off MIDI messages. These will be sent immediately to the synthesizer.
+    pub note_off_keys: Vec<u8>,
     /// Note-on events that don't have corresponding off events.
     note_on_events: Vec<NoteOn>,
     /// Notes that were added after all note-off events are done.
@@ -148,7 +165,8 @@ impl Input {
     pub fn update(&mut self, state: &State) {
         // Clear the old new notes.
         self.new_notes.clear();
-        self.play_now.clear();
+        self.note_on_messages.clear();
+        self.note_off_keys.clear();
 
         // QWERTY INPUT.
 
@@ -179,6 +197,7 @@ impl Input {
             .filter(|q| q.1.pressed)
             .map(|q| *q.0)
             .collect();
+
         // DEBUG.
         if cfg!(debug_assertions) && !&self.debug_inputs.is_empty() {
             let e = self.debug_inputs.remove(0);
@@ -215,6 +234,25 @@ impl Input {
                 _ => (),
             }
         }
+        // Qwerty note-off.
+        for (_, qwerty_note_off) in
+            QWERTY_NOTE_EVENTS
+                .iter()
+                .zip(QWERTY_NOTE_INDICES)
+                .filter(|(e, _)| {
+                    self.qwerty_events[*e]
+                        .keys
+                        .iter()
+                        .all(|k| is_key_released(*k))
+                        && self.qwerty_events[*e]
+                            .mods
+                            .iter()
+                            .all(|k| is_key_released(*k))
+                })
+        {
+            self.note_off_keys.push(self.get_pitch(qwerty_note_off));
+        }
+
         // Remove events during alphanumeric input.
         if state.input.alphanumeric_input {
             events.retain(|e| ALLOWED_DURING_ALPHANUMERIC_INPUT.contains(e));
@@ -252,15 +290,18 @@ impl Input {
                         self.note_on_events.push(NoteOn::new(&midi));
                     }
                     // Copy this note to the immediate note-on array.
-                    self.play_now.push(midi);
+                    self.note_on_messages.push(midi);
                 }
                 // Note-off.
-                if state.input.armed && midi[0] >= 128 && midi[0] <= 143 {
-                    // Find the corresponding note.
-                    for note_on in self.note_on_events.iter_mut() {
-                        // Same key. Note-off.
-                        if note_on.note[1] == midi[1] {
-                            note_on.off = true;
+                if midi[0] >= 128 && midi[0] <= 143 {
+                    self.note_off_keys.push(midi[1]);
+                    if state.input.armed {
+                        // Find the corresponding note.
+                        for note_on in self.note_on_events.iter_mut() {
+                            // Same key. Note-off.
+                            if note_on.note[1] == midi[1] {
+                                note_on.off = true;
+                            }
                         }
                     }
                 }
@@ -391,11 +432,15 @@ impl Input {
 
     /// Push a new note from qwerty input.
     fn qwerty_note(&mut self, note: u8, state: &State) {
-        let pitch = (9 - self.qwerty_octave) * 12 + note;
-        let note: [u8; 3] = [144, pitch, state.input.volume.get()];
+        let note: [u8; 3] = [144, self.get_pitch(note), state.input.volume.get()];
         if state.input.armed {
             self.new_notes.push(note);
         }
-        self.play_now.push(note);
+        self.note_on_messages.push(note);
+    }
+
+    /// Converts the note index to a MIDI note value.
+    fn get_pitch(&self, note: u8) -> u8 {
+        (9 - self.qwerty_octave) * 12 + note
     }
 }

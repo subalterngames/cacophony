@@ -257,34 +257,37 @@ impl IO {
                 ));
                 self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
                 return false;
-            } else {
+            } else if let Some(track) = state.music.get_selected_track() {
+                let mut commands = vec![];
                 // Play notes.
-                if !&input.play_now.is_empty() && panel.allow_play_music() {
-                    if let Some(track) = state.music.get_selected_track() {
-                        if conn.state.programs.get(&track.channel).is_some() {
-                            let gain = track.gain as f64 / 127.0;
-                            // Set the framerate for playback.
-                            let mut commands = vec![Command::SetFramerate {
-                                framerate: conn.framerate as u32,
-                            }];
-                            // Get the beat duration.
-                            let duration = state
-                                .time
-                                .ppq_to_samples(state.input.beat.get_u(), conn.framerate);
-                            // Play the notes.
-                            for note in input.play_now.iter() {
-                                // Set the volume.
-                                let volume = (note[2] as f64 * gain) as u8;
-                                commands.push(Command::NoteOn {
-                                    channel: track.channel,
-                                    key: note[1],
-                                    velocity: volume,
-                                    duration,
-                                });
-                            }
-                            conn.send(commands);
+                if !&input.note_on_messages.is_empty() && panel.allow_play_music() {
+                    if conn.state.programs.get(&track.channel).is_some() {
+                        let gain = track.gain as f64 / 127.0;
+                        // Set the framerate for playback.
+                        commands.push(Command::SetFramerate {
+                            framerate: conn.framerate as u32,
+                        });
+                        // Play the notes.
+                        for note in input.note_on_messages.iter() {
+                            // Set the volume.
+                            let volume = (note[2] as f64 * gain) as u8;
+                            commands.push(Command::NoteOn {
+                                channel: track.channel,
+                                key: note[1],
+                                velocity: volume,
+                            });
                         }
                     }
+                }
+                // Note-offs.
+                for note_off in input.note_off_keys.iter() {
+                    commands.push(Command::NoteOff {
+                        channel: track.channel,
+                        key: *note_off,
+                    });
+                }
+                if !commands.is_empty() {
+                    conn.send(commands);
                 }
             }
         }
