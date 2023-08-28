@@ -11,20 +11,20 @@ use rusttype::{Font, Scale};
 /// Returns a `FocusableTexture` of a column of note names.
 /// This is rendered on the left side of the piano roll panel.
 pub(crate) fn get_note_names(config: &Ini, renderer: &Renderer) -> FocusableTexture {
-    let (font, font_scale, font_size) = get_font(config);
+    let (font, font_scale, _) = get_font(config);
     // Get the background color.
     let bg_color = get_color(&ColorKey::Background, renderer);
 
-    // Get the width of the image.
-    let font_size = [font_size.0 as u32, font_size.1 as u32];
-    let pixel_width = PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH * font_size[0];
-
-    // Get the height of the image.
+    // Get the width and height of the image.
+    let cell_size = get_cell_size(config);
     let dn = MAX_NOTE - MIN_NOTE;
-    let pixel_height = dn as u32 * font_size[1];
-    let font_height = font_size[1] as i32;
+    let pixel_height = dn as u32 * cell_size[1] as u32;
+    let font_height = cell_size[1].ceil() as i32;
 
-    let pixel_size = [pixel_width, pixel_height];
+    let pixel_size = [
+        cell_size[0].ceil() as u32 * PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
+        pixel_height,
+    ];
 
     // Get the textures.
     let focus = get_texture(
