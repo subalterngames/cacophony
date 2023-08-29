@@ -311,6 +311,20 @@ impl Drawable for PianoRollPanel {
             text: selection_string,
             position: [selection_x, self.time_y],
         };
+        // Current playback time.
+        if conn.state.time.music {
+            if let Some(music_time) = conn.state.time.time {
+                let music_time_string =
+                    ppq_to_string(state.time.samples_to_ppq(music_time, conn.framerate));
+                let music_time_x =
+                    selection_x + selection_label.text.chars().count() as u32 + TIME_PADDING;
+                let music_time_label = Label {
+                    text: music_time_string,
+                    position: [music_time_x, self.time_y],
+                };
+                renderer.text(&music_time_label, &Renderer::get_key_color(focus));
+            }
+        }
         renderer.text(
             &selection_label,
             &if focus {
