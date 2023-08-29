@@ -16,6 +16,7 @@ I compile Cacophony with Rust 1.71.0 for Linux, MacOS, or Windows. Below is a li
 
 Linux:
 
+- Ubuntu 18.04 i386 with X11
 - Ubuntu 18.04 x64 with X11
 - Ubuntu 20.04 x64 with X11
 - Ubuntu 22.04 x64 with X11
@@ -36,7 +37,7 @@ Windows:
 
 ### Linux
 
-1. On Ubuntu 22, change this: `features = ["speech_dispatcher_0_9"]` to this: `features = ["speech_dispatcher_0_11"]`
+1. On Ubuntu 22 and newer, change this: `features = ["speech_dispatcher_0_9"]` to this: `features = ["speech_dispatcher_0_11"]`
 2. `apt install clang libspeechd-dev pkg-config libssl-dev alsa`
 3. Ubuntu 20 and newer: `apt install librust-alsa-sys-dev`
 4. `cargo build --release`

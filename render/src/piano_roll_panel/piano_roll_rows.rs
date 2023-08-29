@@ -25,7 +25,7 @@ pub(crate) fn get_piano_roll_rows(config: &Ini, renderer: &Renderer) -> Focusabl
     let line_width = get_line_width(config) as usize;
     let pixel_size = [width_pixels, height_pixels];
     let grid_height = viewport_size[1] as i64;
-    let cell_height = cell_size[1] as u32;
+    let cell_height = cell_size[1].ceil() as u32;
 
     let focus = get_texture(
         grid_height,
@@ -67,12 +67,9 @@ fn get_texture(
     let x_offset = font_width / 2.0 - dash_w / 2.0;
     while x < x1 {
         for h in 0..line_width {
-            draw_line_segment_mut(
-                &mut row,
-                (x + x_offset, y + h as f32),
-                (x + x_offset + dash_w, y + h as f32),
-                color,
-            );
+            let line_y = y + h as f32;
+            let x0 = x + x_offset;
+            draw_line_segment_mut(&mut row, (x0, line_y), (x0 + dash_w, line_y), color);
         }
         x += font_width;
     }
@@ -80,9 +77,9 @@ fn get_texture(
     let mut image = RgbaImage::from_pixel(pixel_size[0], pixel_size[1], bg_color);
     // Copy the row.
     let x: i64 = 0;
-    let font_height = font_size.1 as i64;
+    let row_height = cell_height as i64;
     for y in 0..grid_height {
-        overlay(&mut image, &row, x, font_height * y);
+        overlay(&mut image, &row, x, row_height * y);
     }
     Texture2D::from_rgba8(pixel_size[0] as u16, pixel_size[1] as u16, &image)
 }

@@ -212,16 +212,12 @@ impl Input {
             self.qwerty_note(*note_index, state);
         }
         // Octave up.
-        if events.contains(&InputEvent::OctaveUp) {
-            if self.qwerty_octave < MAX_OCTAVE {
-                self.qwerty_octave += 1;
-            }
+        if events.contains(&InputEvent::OctaveUp) && self.qwerty_octave < MAX_OCTAVE {
+            self.qwerty_octave += 1;
         }
         // Octave down.
-        if events.contains(&InputEvent::OctaveDown) {
-            if self.qwerty_octave > 0 {
-                self.qwerty_octave -= 1;
-            }
+        if events.contains(&InputEvent::OctaveDown) && self.qwerty_octave > 0 {
+            self.qwerty_octave -= 1;
         }
         // Qwerty note-off.
         for (_, qwerty_note_off) in QWERTY_NOTE_EVENTS.iter().filter(|(e, _)| {
