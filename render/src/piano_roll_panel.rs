@@ -1,15 +1,14 @@
 use crate::panel::*;
 mod image;
-mod note_names;
 mod piano_roll_rows;
-use note_names::get_note_names;
 use piano_roll_rows::get_piano_roll_rows;
 mod multi_track;
 mod top_bar;
 mod viewable_notes;
 mod volume;
 use super::FocusableTexture;
-use common::{SelectMode, State, U64orF32, MAX_NOTE, PPQ_U};
+use common::{SelectMode, State, U64orF32, NOTE_NAMES, PPQ_U};
+use hashbrown::HashSet;
 use multi_track::MultiTrack;
 use text::ppq_to_string;
 use top_bar::TopBar;
@@ -30,12 +29,8 @@ pub struct PianoRollPanel {
     volume: Volume,
     /// The multi-track sub-panel.
     multi_track: MultiTrack,
-    /// The note names textures.
-    note_names: FocusableTexture,
     /// The position of the note names.
-    note_names_position: [u32; 2],
-    /// The height of the piano roll sub-panel.
-    piano_roll_height: u32,
+    note_name_positions: Vec<[u32; 2]>,
     /// The piano roll rows textures.
     piano_roll_rows: FocusableTexture,
     /// The position of the piano roll rows.
@@ -53,7 +48,7 @@ pub struct PianoRollPanel {
 }
 
 impl PianoRollPanel {
-    pub fn new(config: &Ini, state: &State, text: &Text, renderer: &Renderer) -> Self {
+    pub fn new(config: &Ini, text: &Text, renderer: &Renderer) -> Self {
         let piano_roll_panel_position = get_piano_roll_panel_position(config);
         let piano_roll_panel_size = get_piano_roll_panel_size(config);
         let panel_single_track = Panel::new(
@@ -63,12 +58,15 @@ impl PianoRollPanel {
             text,
         );
         let top_bar = TopBar::new(config, text);
-        let note_names = get_note_names(config, renderer);
         let note_names_position = [
             panel_single_track.rect.position[0] + 1,
             panel_single_track.rect.position[1] + PIANO_ROLL_PANEL_TOP_BAR_HEIGHT + 1,
         ];
-        let piano_roll_height = (state.view.dn[0] - state.view.dn[1]) as u32;
+        let viewport_height = get_viewport_size(config)[1];
+        let note_name_positions: Vec<[u32; 2]> = (note_names_position[1]
+            ..=note_names_position[1] + viewport_height)
+            .map(|y| [note_names_position[0], y])
+            .collect();
         let piano_roll_rows = get_piano_roll_rows(config, renderer);
         let piano_roll_rows_position = [
             note_names_position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
@@ -99,9 +97,7 @@ impl PianoRollPanel {
             panel_single_track,
             panel_multi_track,
             top_bar,
-            note_names,
-            note_names_position,
-            piano_roll_height,
+            note_name_positions,
             piano_roll_rows,
             piano_roll_rows_position,
             piano_roll_rows_rect,
@@ -220,20 +216,89 @@ impl Drawable for PianoRollPanel {
         // Top bar.
         self.top_bar.update(state, renderer, text, focus);
 
-        if state.view.single_track {
-            // Note names.
-            let texture = &self.note_names.get(focus);
-            let rect = [
-                0,
-                (MAX_NOTE - state.view.dn[0]) as u32,
-                PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
-                self.piano_roll_height,
-            ];
-            renderer.texture(texture, self.note_names_position, Some(rect));
+        let dt = Self::get_view_dt(state, conn).map(U64orF32::from);
 
+        if state.view.single_track {
             // Piano roll rows.
             let texture = &self.piano_roll_rows.get(focus);
             renderer.texture(texture, self.piano_roll_rows_position, None);
+            // Get the viewable notes.
+            let notes = ViewableNotes::new(
+                self.piano_roll_rows_rect[0],
+                self.piano_roll_rows_rect[2],
+                state,
+                conn,
+                focus,
+                dt,
+            );
+            // Draw the selection background.
+            let selected = notes
+                .notes
+                .iter()
+                .filter(|n| n.selected && n.in_pitch_range)
+                .collect::<Vec<&ViewableNote>>();
+            // Get the start and end of the selection.
+            if let Some(select_0) = selected
+                .iter()
+                .min_by(|a, b| a.note.start.cmp(&b.note.start))
+            {
+                if let Some(select_1) = selected.iter().max_by(|a, b| a.note.end.cmp(&b.note.end)) {
+                    let color = if focus {
+                        ColorKey::SelectedNotesBackground
+                    } else {
+                        ColorKey::NoFocus
+                    };
+                    let x1 = notes.get_note_x(
+                        select_1.note.end,
+                        self.piano_roll_rows_rect[0],
+                        self.piano_roll_rows_rect[2],
+                    );
+                    renderer.rectangle_pixel(
+                        [select_0.x, self.piano_roll_rows_rect[1]],
+                        [x1 - select_0.x, self.piano_roll_rows_rect[3]],
+                        &color,
+                    )
+                }
+            }
+
+            let in_pitch_range: Vec<&ViewableNote> =
+                notes.notes.iter().filter(|n| n.in_pitch_range).collect();
+            let selected_pitches: Vec<u8> = selected
+                .iter()
+                .map(|n| n.note.note)
+                .collect::<HashSet<u8>>()
+                .into_iter()
+                .collect();
+
+            // Draw the notes.
+            for note in in_pitch_range.iter() {
+                let w = notes.get_note_w(note);
+                // Get the y value from the pitch.
+                let y = self.piano_roll_rows_rect[1]
+                    + ((state.view.dn[0] - note.note.note) as f32) * self.cell_size[1];
+                renderer.rectangle_pixel([note.x, y], [w, self.cell_size[1]], &note.color)
+            }
+            // Volume.
+            self.volume.update(&notes, renderer, state);
+            // Note names.
+            let note_name_color = if focus {
+                &ColorKey::Separator
+            } else {
+                &ColorKey::NoFocus
+            };
+            for (position, pitch) in self
+                .note_name_positions
+                .iter()
+                .zip((state.view.dn[1] + 1..state.view.dn[0] + 1).rev())
+            {
+                let note_name = LabelRef::new(*position, NOTE_NAMES[127 - pitch as usize]);
+                let note_name_color = if selected_pitches.contains(&pitch) {
+                    &ColorKey::NoteSelected
+                } else {
+                    note_name_color
+                };
+                renderer.text_ref(&note_name, note_name_color);
+            }
         }
 
         // Cursor label.
@@ -338,8 +403,6 @@ impl Drawable for PianoRollPanel {
             },
         );
 
-        let dt = Self::get_view_dt(state, conn).map(U64orF32::from);
-
         // Time delta label.
         let dt_string = text.get_with_values(
             "PIANO_ROLL_PANEL_VIEW_DT",
@@ -354,55 +417,6 @@ impl Drawable for PianoRollPanel {
         renderer.text(&dt_label, &Renderer::get_key_color(focus));
 
         if state.view.single_track {
-            // Get the viewable notes.
-            let notes = ViewableNotes::new(
-                self.piano_roll_rows_rect[0],
-                self.piano_roll_rows_rect[2],
-                state,
-                conn,
-                focus,
-                dt,
-            );
-            // Draw the selection background.
-            let selected = notes
-                .notes
-                .iter()
-                .filter(|n| n.selected && n.in_pitch_range)
-                .collect::<Vec<&ViewableNote>>();
-            // Get the start and end of the selection.
-            if let Some(select_0) = selected
-                .iter()
-                .min_by(|a, b| a.note.start.cmp(&b.note.start))
-            {
-                if let Some(select_1) = selected.iter().max_by(|a, b| a.note.end.cmp(&b.note.end)) {
-                    let color = if focus {
-                        ColorKey::SelectedNotesBackground
-                    } else {
-                        ColorKey::NoFocus
-                    };
-                    let x1 = notes.get_note_x(
-                        select_1.note.end,
-                        self.piano_roll_rows_rect[0],
-                        self.piano_roll_rows_rect[2],
-                    );
-                    renderer.rectangle_pixel(
-                        [select_0.x, self.piano_roll_rows_rect[1]],
-                        [x1 - select_0.x, self.piano_roll_rows_rect[3]],
-                        &color,
-                    )
-                }
-            }
-
-            // Draw the notes.
-            for note in notes.notes.iter().filter(|n| n.in_pitch_range) {
-                let w = notes.get_note_w(note);
-                // Get the y value from the pitch.
-                let y = self.piano_roll_rows_rect[1]
-                    + ((state.view.dn[0] - note.note.note) as f32) * self.cell_size[1];
-                renderer.rectangle_pixel([note.x, y], [w, self.cell_size[1]], &note.color)
-            }
-            // Volume.
-            self.volume.update(&notes, renderer, state);
         }
         // Multi-track.
         else {

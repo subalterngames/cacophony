@@ -77,14 +77,7 @@ async fn main() {
     let renderer = Renderer::new(&config);
 
     // Load the panels.
-    let mut panels = Panels::new(
-        &config,
-        &state,
-        &input,
-        &mut text,
-        &renderer,
-        remote_version,
-    );
+    let mut panels = Panels::new(&config, &input, &mut text, &renderer, remote_version);
 
     // Resize the screen.
     let window_size = get_window_pixel_size(&config);

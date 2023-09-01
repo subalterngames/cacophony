@@ -35,7 +35,6 @@ pub struct Panels {
 impl Panels {
     pub fn new(
         config: &Ini,
-        state: &State,
         input: &Input,
         text: &mut Text,
         renderer: &Renderer,
@@ -45,7 +44,7 @@ impl Panels {
         let main_menu = MainMenu::new(config, input, text, renderer, remote_version);
         let tracks_panel = TracksPanel::new(config, text);
         let open_file_panel = OpenFilePanel::new(config, text);
-        let piano_roll_panel = PianoRollPanel::new(config, state, text, renderer);
+        let piano_roll_panel = PianoRollPanel::new(config, text, renderer);
         let export_panel = ExportPanel::new(config, text);
         let export_settings_panel = ExportSettingsPanel::new(config, text);
         let quit_panel = QuitPanel::new(config, text, input);

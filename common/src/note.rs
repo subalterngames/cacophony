@@ -55,7 +55,7 @@ impl Note {
 
     /// Returns the name of the note.
     pub fn get_name(&self) -> &str {
-        NOTE_NAMES[self.note as usize]
+        NOTE_NAMES[127 - self.note as usize]
     }
 }
 

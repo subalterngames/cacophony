@@ -153,7 +153,27 @@ impl Renderer {
     /// - `label` Parameters for drawing text.
     /// - `color` A `ColorKey` for the rectangle.
     pub(crate) fn text(&self, label: &Label, text_color: &ColorKey) {
-        self.text_ex(label, text_color, &self.font, self.font_size);
+        self.text_ex(
+            label.position,
+            &label.text,
+            text_color,
+            &self.font,
+            self.font_size,
+        );
+    }
+
+    /// Draw text.
+    ///
+    /// - `label` Parameters for drawing text.
+    /// - `color` A `ColorKey` for the rectangle.
+    pub(crate) fn text_ref(&self, label: &LabelRef, text_color: &ColorKey) {
+        self.text_ex(
+            label.position,
+            label.text,
+            text_color,
+            &self.font,
+            self.font_size,
+        );
     }
 
     /// Draw corner borders around a rectangle.
@@ -619,7 +639,8 @@ impl Renderer {
     /// - `label` Parameters for drawing text.
     fn text_sub(&self, label: &Label) {
         self.text_ex(
-            label,
+            label.position,
+            &label.text,
             &ColorKey::Subtitle,
             &self.subtitle_font,
             self.font_size,
@@ -651,14 +672,22 @@ impl Renderer {
 
     /// Draw text.
     ///
-    /// - `label` Parameters for drawing text.
+    /// - `position` The position of the text.
+    /// - `text` The text.
     /// - `color` A `ColorKey` for the rectangle.
     /// - `font` The font.
     /// - `font_size` The font size.
-    fn text_ex(&self, label: &Label, text_color: &ColorKey, font: &Font, font_size: u16) {
+    fn text_ex(
+        &self,
+        position: [u32; 2],
+        text: &str,
+        text_color: &ColorKey,
+        font: &Font,
+        font_size: u16,
+    ) {
         let font = Some(font);
-        let mut xy = self.grid_to_pixel(label.position);
-        let dim = measure_text(&label.text, font, font_size, 1.0);
+        let mut xy = self.grid_to_pixel(position);
+        let dim = measure_text(text, font, font_size, 1.0);
         xy[1] += self.cell_size[1] - dim.offset_y / 3.0;
         let color = self.colors[text_color];
         let text_params = TextParams {
@@ -669,6 +698,6 @@ impl Renderer {
             rotation: 0.0,
             color,
         };
-        draw_text_ex(&label.text, xy[0], xy[1], text_params);
+        draw_text_ex(text, xy[0], xy[1], text_params);
     }
 }
