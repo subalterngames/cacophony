@@ -85,17 +85,18 @@ impl PianoRollRows {
     /// Write color data to the row buffer and use it to create a very thin texture.
     fn set_row_texture(texture: &mut Texture2D, sub_row: &mut [u8],
         row: &mut [u8],
-        width: f32,
+        w: f32,
         focus: bool,
         state: &State,
         renderer: &Renderer,
     ) {
         let len = sub_row.len();
-        // Get the length of each line segment as a fraction of the viewport time-width.
-        let line_segment_width = (width
-            * (state.input.beat.get_f()
-                / (state.view.dt[1] - state.view.dt[0]) as f32))
-            .clamp(1.0, f32::MAX).floor() as usize;
+        let line_segment_width = super::viewable_notes::get_note_x(
+            state.input.beat.get_u(),
+            0.0,
+            w,
+            &[U64orF32::from(state.view.dt[0]), U64orF32::from(state.view.dt[1])],
+        ).clamp(1.0, f32::MAX).ceil() as usize;
         let color: [u8; 4] = renderer
             .get_color(if focus {
                 &ColorKey::Separator
@@ -119,7 +120,7 @@ impl PianoRollRows {
             let ir = i * len;
             row[ir..ir + len].copy_from_slice(&sub_row);
         }
-        let image = Image { bytes: row.to_vec(), width: width as u16, height: num_sub_rows as u16};
+        let image = Image { bytes: row.to_vec(), width: w as u16, height: num_sub_rows as u16};
         texture.update(&image);
     }
 }
