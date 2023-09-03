@@ -144,4 +144,7 @@ pub enum InputEvent {
     B,
     OctaveUp,
     OctaveDown,
+    /// Debug.
+    #[cfg(debug_assertions)]
+    NotesOff
 }

@@ -7,8 +7,11 @@ use macroquad::prelude::*;
 const BACKGROUND_COLOR: ColorKey = ColorKey::Background;
 
 pub(crate) struct PianoRollRows {
-    /// A 1-D linear RGBA buffer defining a row. We'll use this to quickly write simple texture data.
+    /// A RGBA buffer defining a row. We'll use this to quickly write simple texture data.
     row: Vec<u8>,
+    /// A 1-D RGBA buffer used to fill `row`.
+    sub_row: Vec<u8>,
+    width: f32,
     // The position of each row on the screen.
     positions: Vec<[f32; 2]>,
     /// The viewport rectangle.
@@ -21,16 +24,16 @@ pub(crate) struct PianoRollRows {
     beat: U64orF32,
     /// The row texture.
     texture: Texture2D,
-    /// The parameters used to draw each row (the actual size).
-    texture_params: DrawTextureParams,
 }
 
 impl PianoRollRows {
     pub fn new(rect: Rectangle, state: &State, renderer: &Renderer) -> Self {
         // Get the pixel width of the viewport.
         let width = rect.size[0] as f32 * renderer.cell_size[0];
-        // Define the row buffer.
-        let mut row = vec![0u8; width as usize * 4];
+        // Define the row buffers.
+        let row_width = width as usize * 4;
+        let mut row = vec![0u8; row_width * renderer.line_width as usize];
+        let mut sub_row = vec![0u8; row_width];
         // Get the half-height of each cell. This will be used to position the lines in the vertical-center of the cell.
         let half_height = renderer.cell_size[1] / 2.0;
         // Derive the positions of each row from the dimensions of the viewport.
@@ -40,20 +43,18 @@ impl PianoRollRows {
                 [p[0], p[1] + half_height]
             })
             .collect();
-        let texture = Self::get_row_texture(&mut row, false, state, renderer);
-        let texture_params = DrawTextureParams {
-            dest_size: Some(Vec2::new(width, renderer.line_width)),
-            ..Default::default()
-        };
+        let mut texture = Texture2D::from_rgba8(width as u16, renderer.line_width as u16, &row);
+        Self::set_row_texture(&mut texture, &mut sub_row, &mut row, width, false, state, renderer);
         Self {
             row,
+            sub_row,
+            width,
             positions,
             rect,
             view: state.view.clone(),
             focus: false,
             beat: state.input.beat,
             texture,
-            texture_params,
         }
     }
 
@@ -64,7 +65,7 @@ impl PianoRollRows {
         // Draw each row.
         self.positions
             .iter()
-            .for_each(|p| renderer.texture_pixel_ex(&self.texture, p, &self.texture_params));
+            .for_each(|p| renderer.texture_pixel(&self.texture, p, None));
     }
 
     /// Check if we need to re-define the row pattern and, if so, do it.
@@ -77,24 +78,24 @@ impl PianoRollRows {
             self.focus = focus;
             self.beat = state.input.beat;
             self.view = state.view.clone();
-            self.texture = Self::get_row_texture(&mut self.row, focus, state, renderer);
+            Self::set_row_texture(&mut self.texture, &mut self.sub_row, &mut self.row, self.width, focus, state, renderer);
         }
     }
 
     /// Write color data to the row buffer and use it to create a very thin texture.
-    fn get_row_texture(
+    fn set_row_texture(texture: &mut Texture2D, sub_row: &mut [u8],
         row: &mut [u8],
+        width: f32,
         focus: bool,
         state: &State,
         renderer: &Renderer,
-    ) -> Texture2D {
-        let width = row.len() / 4;
+    ) {
+        let len = sub_row.len();
         // Get the length of each line segment as a fraction of the viewport time-width.
-        let line_segment_width = (width as f32
-            * ((state.input.beat.get_f() - state.view.dt[0] as f32)
-                / (state.view.dt[1] as f32 - state.view.dt[0] as f32)))
-            .clamp(1.0, f32::MAX)
-            .floor() as usize;
+        let line_segment_width = (width
+            * (state.input.beat.get_f()
+                / (state.view.dt[1] - state.view.dt[0]) as f32))
+            .clamp(1.0, f32::MAX).floor() as usize;
         let color: [u8; 4] = renderer
             .get_color(if focus {
                 &ColorKey::Separator
@@ -103,15 +104,22 @@ impl PianoRollRows {
             })
             .into();
         let clear = [0u8; 4];
-        // Copy the color into the row.
+        // Copy the color into the sub-row.
         let mut draw_color = false;
         let lsw = line_segment_width * 4;
-        for i in (0..row.len()).step_by(4) {
+        for i in (0..sub_row.len()).step_by(4) {
             if i % lsw == 0 {
                 draw_color = !draw_color;
             }
-            row[i..i + 4].copy_from_slice(if draw_color { &color } else { &clear });
+            sub_row[i..i + 4].copy_from_slice(if draw_color { &color } else { &clear });
         }
-        Texture2D::from_rgba8(width as u16, 1, row)
+        let num_sub_rows = row.len() / sub_row.len();
+        // Copy the sub-row into the row.
+        for i in 0..num_sub_rows {
+            let ir = i * len;
+            row[ir..ir + len].copy_from_slice(&sub_row);
+        }
+        let image = Image { bytes: row.to_vec(), width: width as u16, height: num_sub_rows as u16};
+        texture.update(&image);
     }
 }

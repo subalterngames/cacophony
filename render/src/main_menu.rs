@@ -244,7 +244,7 @@ impl MainMenu {
     fn draw_sample_power(&mut self, index: usize, renderer: &Renderer) {
         // Draw the bar.
         let rect = &self.power_bar_rects[index];
-        renderer.texture_pixel(&self.power_bar_texture, rect[0], None);
+        renderer.texture_pixel(&self.power_bar_texture, &rect[0], None);
         let value = self.power_bar_lerps[index].lerp();
         // Get the width of the mask.
         let w = rect[1][0] * (1.0 - value);

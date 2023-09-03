@@ -272,7 +272,7 @@ impl Renderer {
     pub(crate) fn texture_pixel(
         &self,
         texture: &Texture2D,
-        position: [f32; 2],
+        position: &[f32; 2],
         rect: Option<Rect>,
     ) {
         match rect {
@@ -300,26 +300,6 @@ impl Renderer {
     ) {
         let xy = self.grid_to_pixel(position);
         draw_texture_ex(texture, xy[0], xy[1], TEXTURE_COLOR, params);
-    }
-
-    /// Draw an arbitrary texture with texture parameters.
-    ///
-    /// - `texture` The texture.
-    /// - `position` The top-left position in pixel coordinates.
-    /// - `params` Draw texture parameters.
-    pub(crate) fn texture_pixel_ex(
-        &self,
-        texture: &Texture2D,
-        position: &[f32; 2],
-        params: &DrawTextureParams,
-    ) {
-        draw_texture_ex(
-            texture,
-            position[0],
-            position[1],
-            TEXTURE_COLOR,
-            params.clone(),
-        );
     }
 
     /// Draw a line from top to bottom in pixel coordinates.
@@ -375,7 +355,7 @@ impl Renderer {
     /// - `left` The left pixel coordinate.
     /// - `right` The right pixel coordinate.
     /// - `y` The y pixel coordinate.
-    /// - `color` A `ColorKey` for the rectangle.
+    /// - `color` A `ColorKey` for the line.
     pub(crate) fn horizontal_line_pixel(&self, left: f32, right: f32, y: f32, color: &ColorKey) {
         draw_line(left, y, right, y, self.half_line_width, self.colors[color]);
     }

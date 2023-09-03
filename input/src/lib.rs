@@ -233,6 +233,9 @@ impl Input {
             self.note_off_keys.push(self.get_pitch(*qwerty_note_off));
         }
 
+        #[cfg(debug_assertions)]
+        self.listen_for_note_offs();
+
         // Remove events during alphanumeric input.
         if state.input.alphanumeric_input {
             events.retain(|e| ALLOWED_DURING_ALPHANUMERIC_INPUT.contains(e));
@@ -422,5 +425,12 @@ impl Input {
     /// Converts the note index to a MIDI note value.
     fn get_pitch(&self, note: u8) -> u8 {
         (9 - self.qwerty_octave) * 12 + note
+    }
+
+    #[cfg(debug_assertions)]
+    fn listen_for_note_offs(&mut self) {
+        if self.happened(&InputEvent::NotesOff) {
+            self.note_off_keys.append(&mut (MIN_NOTE..MAX_NOTE).collect());
+        }
     }
 }
