@@ -1,12 +1,10 @@
 use crate::panel::*;
-mod image;
 mod piano_roll_rows;
-use piano_roll_rows::get_piano_roll_rows;
+use piano_roll_rows::PianoRollRows;
 mod multi_track;
 mod top_bar;
 mod viewable_notes;
 mod volume;
-use super::FocusableTexture;
 use common::{SelectMode, State, U64orF32, NOTE_NAMES, PPQ_U};
 use hashbrown::HashSet;
 use multi_track::MultiTrack;
@@ -32,9 +30,7 @@ pub struct PianoRollPanel {
     /// The position of the note names.
     note_name_positions: Vec<[u32; 2]>,
     /// The piano roll rows textures.
-    piano_roll_rows: FocusableTexture,
-    /// The position of the piano roll rows.
-    piano_roll_rows_position: [u32; 2],
+    piano_roll_rows: PianoRollRows,
     /// The (x, y, w, h) values of the piano row rolls rect.
     piano_roll_rows_rect: [f32; 4],
     /// The size of a cell.
@@ -48,7 +44,7 @@ pub struct PianoRollPanel {
 }
 
 impl PianoRollPanel {
-    pub fn new(config: &Ini, text: &Text, renderer: &Renderer) -> Self {
+    pub fn new(config: &Ini, state: &State, text: &Text, renderer: &Renderer) -> Self {
         let piano_roll_panel_position = get_piano_roll_panel_position(config);
         let piano_roll_panel_size = get_piano_roll_panel_size(config);
         let panel_single_track = Panel::new(
@@ -62,23 +58,24 @@ impl PianoRollPanel {
             panel_single_track.rect.position[0] + 1,
             panel_single_track.rect.position[1] + PIANO_ROLL_PANEL_TOP_BAR_HEIGHT + 1,
         ];
-        let viewport_height = get_viewport_size(config)[1];
+        let piano_roll_rows_size = get_viewport_size(config);
         let note_name_positions: Vec<[u32; 2]> = (note_names_position[1]
-            ..=note_names_position[1] + viewport_height)
+            ..=note_names_position[1] + piano_roll_rows_size[1])
             .map(|y| [note_names_position[0], y])
             .collect();
-        let piano_roll_rows = get_piano_roll_rows(config, renderer);
         let piano_roll_rows_position = [
             note_names_position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
             note_names_position[1],
         ];
-        let tex = &piano_roll_rows.get(true);
+        let piano_roll_rows_rect = Rectangle::new(piano_roll_rows_position, piano_roll_rows_size);
+        let piano_roll_rows = PianoRollRows::new(piano_roll_rows_rect, state, renderer);
         let piano_roll_rows_position_f = renderer.grid_to_pixel(piano_roll_rows_position);
+        let viewport_size = renderer.grid_to_pixel(piano_roll_rows_size);
         let piano_roll_rows_rect = [
             piano_roll_rows_position_f[0],
             piano_roll_rows_position_f[1],
-            tex.width(),
-            tex.height(),
+            viewport_size[0],
+            viewport_size[1],
         ];
         let cell_size = get_cell_size(config);
         let time_y = note_names_position[1] - 1;
@@ -99,7 +96,6 @@ impl PianoRollPanel {
             top_bar,
             note_name_positions,
             piano_roll_rows,
-            piano_roll_rows_position,
             piano_roll_rows_rect,
             cell_size,
             time_y,
@@ -108,6 +104,10 @@ impl PianoRollPanel {
             multi_track,
             time_line_bottoms,
         }
+    }
+
+    pub fn late_update(&mut self, state: &State, renderer: &Renderer) {
+        self.piano_roll_rows.late_update(state, renderer);
     }
 
     /// Draw a horizontal line from a time label and optionally a vertical line down the rows.
@@ -220,8 +220,7 @@ impl Drawable for PianoRollPanel {
 
         if state.view.single_track {
             // Piano roll rows.
-            let texture = &self.piano_roll_rows.get(focus);
-            renderer.texture(texture, self.piano_roll_rows_position, None);
+            self.piano_roll_rows.update(renderer);
             // Get the viewable notes.
             let notes = ViewableNotes::new(
                 self.piano_roll_rows_rect[0],

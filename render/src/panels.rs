@@ -36,6 +36,7 @@ impl Panels {
     pub fn new(
         config: &Ini,
         input: &Input,
+        state: &State,
         text: &mut Text,
         renderer: &Renderer,
         remote_version: Option<String>,
@@ -44,7 +45,7 @@ impl Panels {
         let main_menu = MainMenu::new(config, input, text, renderer, remote_version);
         let tracks_panel = TracksPanel::new(config, text);
         let open_file_panel = OpenFilePanel::new(config, text);
-        let piano_roll_panel = PianoRollPanel::new(config, text, renderer);
+        let piano_roll_panel = PianoRollPanel::new(config, state, text, renderer);
         let export_panel = ExportPanel::new(config, text);
         let export_settings_panel = ExportSettingsPanel::new(config, text);
         let quit_panel = QuitPanel::new(config, text, input);
@@ -110,5 +111,6 @@ impl Panels {
         self.quit_panel.popup.late_update(state, renderer);
         self.links_panel.popup.late_update(state, renderer);
         self.main_menu.late_update(renderer, conn);
+        self.piano_roll_panel.late_update(state, renderer);
     }
 }

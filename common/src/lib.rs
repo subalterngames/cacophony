@@ -23,7 +23,7 @@ mod paths;
 mod paths_state;
 mod state;
 pub mod time;
-mod view;
+pub mod view;
 pub use index::Index;
 mod indexed_values;
 pub use indexed_values::IndexedValues;

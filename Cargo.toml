@@ -26,8 +26,6 @@ strum = "0.24"
 strum_macros = "0.24"
 edit = "0.1.4"
 regex = "1.9.1"
-imageproc = "0.23.0"
-rusttype = "0.9.3"
 parking_lot = "0.12.1"
 num-traits = "0.2.16"
 webbrowser = "0.8.10"
@@ -37,11 +35,6 @@ lazy_static = "1.4.0"
 version = "0.6.2"
 default-features = false
 features = []
-
-[workspace.dependencies.image]
-version = "0.24.7"
-default-features = false
-features = ["png"]
 
 [workspace.dependencies.id3]
 version = "1.7.0"

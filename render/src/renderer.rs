@@ -18,7 +18,7 @@ pub struct Renderer {
     /// The font used for subtitles.
     subtitle_font: Font,
     /// The size of a single cell.
-    cell_size: [f32; 2],
+    pub(crate) cell_size: [f32; 2],
     /// The font size.
     font_size: u16,
     /// The top-left position of the subtitle text.
@@ -26,7 +26,7 @@ pub struct Renderer {
     /// The maximum width of a line of subtitles.
     max_subtitle_width: u32,
     /// The width of all lines.
-    line_width: f32,
+    pub(crate) line_width: f32,
     /// Half-width line.
     half_line_width: f32,
     /// The offsets used when drawing a border.
@@ -264,22 +264,6 @@ impl Renderer {
         );
     }
 
-    /// Draw an arbitrary texture.
-    ///
-    /// - `texture` The texture.
-    /// - `position` The top-left position in grid coordinates.
-    /// - `rect` An array of grid coordinates (left, top, width, height) that defines the area of the texture to draw.
-    pub(crate) fn texture(&self, texture: &Texture2D, position: [u32; 2], rect: Option<[u32; 4]>) {
-        let rect = rect.map(|rect| Rect {
-            x: rect[0] as f32 * self.cell_size[0],
-            y: rect[1] as f32 * self.cell_size[1],
-            w: rect[2] as f32 * self.cell_size[0],
-            h: rect[3] as f32 * self.cell_size[1],
-        });
-        let position = self.grid_to_pixel(position);
-        self.texture_pixel(texture, position, rect);
-    }
-
     /// Draw an arbitrary texture at a pixel position
     ///
     /// - `texture` The texture.
@@ -316,6 +300,26 @@ impl Renderer {
     ) {
         let xy = self.grid_to_pixel(position);
         draw_texture_ex(texture, xy[0], xy[1], TEXTURE_COLOR, params);
+    }
+
+    /// Draw an arbitrary texture with texture parameters.
+    ///
+    /// - `texture` The texture.
+    /// - `position` The top-left position in pixel coordinates.
+    /// - `params` Draw texture parameters.
+    pub(crate) fn texture_pixel_ex(
+        &self,
+        texture: &Texture2D,
+        position: &[f32; 2],
+        params: &DrawTextureParams,
+    ) {
+        draw_texture_ex(
+            texture,
+            position[0],
+            position[1],
+            TEXTURE_COLOR,
+            params.clone(),
+        );
     }
 
     /// Draw a line from top to bottom in pixel coordinates.

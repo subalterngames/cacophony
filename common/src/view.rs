@@ -11,7 +11,7 @@ const MIN_ZOOM: u64 = PPQ_U * 2;
 const MAX_ZOOM: u64 = PPQ_U * 10000;
 
 /// The dimensions of the piano roll viewport.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 pub struct View {
     /// The start and end time of the viewport in PPQ.
     pub dt: [u64; 2],

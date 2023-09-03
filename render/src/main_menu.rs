@@ -1,7 +1,6 @@
 use crate::panel::*;
 use colorgrad::Color;
 use colorgrad::CustomGradient;
-use image::{ImageBuffer, Rgba};
 use input::InputEvent;
 use macroquad::texture::Texture2D;
 
@@ -219,11 +218,17 @@ impl MainMenu {
             .build()
             .unwrap();
         // Define the image.
-        let mut image = ImageBuffer::new(size[0] as u32, size[1] as u32);
-        let width = size[0] as f64;
-        for (x, _, pixel) in image.enumerate_pixels_mut() {
-            let rgba = gradiant.at(x as f64 / width).to_rgba8();
-            *pixel = Rgba(rgba);
+        let width_u = size[0] as usize;
+        let width_f = size[0] as f64;
+        let height = size[1] as usize;
+        let mut image: Vec<u8> = vec![0; width_u * height * 4];
+        let mut i = 0;
+        for _ in 0..height {
+            for x in 0..width_u {
+                let rgba = gradiant.at(x as f64 / width_f).to_rgba8();
+                image[i..i + 4].copy_from_slice(&rgba);
+                i += 4;
+            }
         }
         let texture = Texture2D::from_rgba8(size[0] as u16, size[1] as u16, &image);
         (texture, [position, size])
