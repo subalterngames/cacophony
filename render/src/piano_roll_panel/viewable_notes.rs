@@ -146,7 +146,7 @@ impl<'a> ViewableNotes<'a> {
         } else {
             note.note.end
         };
-        (get_note_x(t1, self.x, self.w, &self.dt) - note.x).clamp(1.0, f32::MAX)
+        (get_note_x(t1, self.x, self.w, &self.dt) - note.x).clamp(1.0, f32::MAX).floor()
     }
 
     /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
@@ -157,5 +157,5 @@ impl<'a> ViewableNotes<'a> {
 
 /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
 pub(crate) fn get_note_x(t: u64, x: f32, w: f32, dt: &[U64orF32; 2]) -> f32 {
-    x + w * ((t as f32 - dt[0].get_f()) / (dt[1].get_f() - dt[0].get_f()))
+    (x + w * ((t as f32 - dt[0].get_f()) / (dt[1].get_f() - dt[0].get_f()))).floor()
 }

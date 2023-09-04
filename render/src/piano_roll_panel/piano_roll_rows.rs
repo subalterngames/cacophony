@@ -96,7 +96,7 @@ impl PianoRollRows {
             0.0,
             w,
             &[U64orF32::from(state.view.dt[0]), U64orF32::from(state.view.dt[1])],
-        ).clamp(1.0, f32::MAX).ceil() as usize;
+        ).clamp(1.0, f32::MAX).floor() as usize;
         let color: [u8; 4] = renderer
             .get_color(if focus {
                 &ColorKey::Separator
