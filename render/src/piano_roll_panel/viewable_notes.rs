@@ -145,7 +145,7 @@ impl<'a> ViewableNotes<'a> {
             note.note.end
         };
         let dt = t1 - note.note.start;
-        Self::get_note_x(dt, self.pulses_per_pixel, 0.0, &self.dt)
+        (dt / self.pulses_per_pixel) as f32
     }
 
     /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
@@ -153,7 +153,12 @@ impl<'a> ViewableNotes<'a> {
     /// - `t` The time in PPQ.
     /// - `ppp` The number of pulses in 1 pixel.
     pub fn get_note_x(t: u64, ppp: u64, x: f32, dt: &[U64orF32; 2]) -> f32 {
-        x + ((t / ppp) - (dt[0].get_u() / ppp)) as f32
+        if t > dt[0].get_u() {
+            x + ((t - dt[0].get_u()) / ppp) as f32
+        }
+        else {
+            x + (t / ppp) as f32
+        }
     }
 
     /// Returns the number of pulses in 1 pixel.
