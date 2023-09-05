@@ -430,7 +430,8 @@ impl Input {
     #[cfg(debug_assertions)]
     fn listen_for_note_offs(&mut self) {
         if self.happened(&InputEvent::NotesOff) {
-            self.note_off_keys.append(&mut (MIN_NOTE..MAX_NOTE).collect());
+            self.note_off_keys
+                .append(&mut (MIN_NOTE..MAX_NOTE).collect());
         }
     }
 }

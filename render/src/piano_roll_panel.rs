@@ -140,7 +140,7 @@ impl PianoRollPanel {
                     time,
                     ViewableNotes::get_pulses_per_pixel(dt, self.piano_roll_rows_rect[2]),
                     self.piano_roll_rows_rect[0],
-                    &dt
+                    dt,
                 ),
                 true,
             )
@@ -251,7 +251,7 @@ impl Drawable for PianoRollPanel {
                         select_1.note.end,
                         notes.pulses_per_pixel,
                         self.piano_roll_rows_rect[0],
-                        &dt
+                        &dt,
                     );
                     renderer.rectangle_pixel(
                         [select_0.x, self.piano_roll_rows_rect[1]],
@@ -449,7 +449,7 @@ impl Drawable for PianoRollPanel {
                         music_time,
                         ViewableNotes::get_pulses_per_pixel(&dt, self.piano_roll_rows_rect[2]),
                         self.piano_roll_rows_rect[0],
-                        &dt
+                        &dt,
                     );
                     let music_color = if focus {
                         ColorKey::FocusDefault

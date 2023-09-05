@@ -146,5 +146,5 @@ pub enum InputEvent {
     OctaveDown,
     /// Debug.
     #[cfg(debug_assertions)]
-    NotesOff
+    NotesOff,
 }

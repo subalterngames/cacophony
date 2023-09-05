@@ -1,9 +1,9 @@
+use super::viewable_notes::ViewableNotes;
 use crate::panel::Rectangle;
 use crate::{ColorKey, Renderer};
 use common::view::View;
 use common::{PanelType, State, U64orF32};
 use macroquad::prelude::*;
-use super::viewable_notes::ViewableNotes;
 
 const BACKGROUND_COLOR: ColorKey = ColorKey::Background;
 
@@ -45,7 +45,15 @@ impl PianoRollRows {
             })
             .collect();
         let mut texture = Texture2D::from_rgba8(width as u16, renderer.line_width as u16, &row);
-        Self::set_row_texture(&mut texture, &mut sub_row, &mut row, width, false, state, renderer);
+        Self::set_row_texture(
+            &mut texture,
+            &mut sub_row,
+            &mut row,
+            width,
+            false,
+            state,
+            renderer,
+        );
         Self {
             row,
             sub_row,
@@ -79,12 +87,22 @@ impl PianoRollRows {
             self.focus = focus;
             self.beat = state.input.beat;
             self.view = state.view.clone();
-            Self::set_row_texture(&mut self.texture, &mut self.sub_row, &mut self.row, self.width, focus, state, renderer);
+            Self::set_row_texture(
+                &mut self.texture,
+                &mut self.sub_row,
+                &mut self.row,
+                self.width,
+                focus,
+                state,
+                renderer,
+            );
         }
     }
 
     /// Write color data to the row buffer and use it to create a very thin texture.
-    fn set_row_texture(texture: &mut Texture2D, sub_row: &mut [u8],
+    fn set_row_texture(
+        texture: &mut Texture2D,
+        sub_row: &mut [u8],
         row: &mut [u8],
         w: f32,
         focus: bool,
@@ -92,14 +110,17 @@ impl PianoRollRows {
         renderer: &Renderer,
     ) {
         let len = sub_row.len();
-        let dt = [U64orF32::from(state.view.dt[0]), U64orF32::from(state.view.dt[1])];
+        let dt = [
+            U64orF32::from(state.view.dt[0]),
+            U64orF32::from(state.view.dt[1]),
+        ];
         let t1 = dt[1].get_u() - dt[0].get_u();
         let ppp = ViewableNotes::get_pulses_per_pixel(&dt, w);
         let line_segment_width = ViewableNotes::get_note_x(
             state.input.beat.get_u(),
             ppp,
             0.0,
-            &[U64orF32::from(0), U64orF32::from(t1)]
+            &[U64orF32::from(0), U64orF32::from(t1)],
         ) as usize;
         let color: [u8; 4] = renderer
             .get_color(if focus {
@@ -122,9 +143,13 @@ impl PianoRollRows {
         // Copy the sub-row into the row.
         for i in 0..num_sub_rows {
             let ir = i * len;
-            row[ir..ir + len].copy_from_slice(&sub_row);
+            row[ir..ir + len].copy_from_slice(sub_row);
         }
-        let image = Image { bytes: row.to_vec(), width: w as u16, height: num_sub_rows as u16};
+        let image = Image {
+            bytes: row.to_vec(),
+            width: w as u16,
+            height: num_sub_rows as u16,
+        };
         texture.update(&image);
     }
 }

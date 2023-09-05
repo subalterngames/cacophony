@@ -26,7 +26,7 @@ pub(crate) struct ViewableNotes<'a> {
     /// Cached viewport dt in PPQ.
     dt: [U64orF32; 2],
     /// The number of pulses in 1 pixel.
-    pub pulses_per_pixel: u64
+    pub pulses_per_pixel: u64,
 }
 
 impl<'a> ViewableNotes<'a> {
@@ -93,7 +93,7 @@ impl<'a> ViewableNotes<'a> {
         let mut notes = vec![];
         for note in track.notes.iter() {
             // Is the note in view?
-            if !(note.end >= dt[0].get_u() && note.start <= dt[1].get_u()) {
+            if note.end <= dt[0].get_u() || note.start >= dt[1].get_u() {
                 continue;
             }
             // Get the start time of the note. This could be the start of the viewport.
@@ -134,7 +134,11 @@ impl<'a> ViewableNotes<'a> {
                 in_pitch_range,
             });
         }
-        Self { notes, dt, pulses_per_pixel }
+        Self {
+            notes,
+            dt,
+            pulses_per_pixel,
+        }
     }
 
     /// Returns the width of a note.
@@ -149,20 +153,19 @@ impl<'a> ViewableNotes<'a> {
     }
 
     /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
-    /// 
+    ///
     /// - `t` The time in PPQ.
     /// - `ppp` The number of pulses in 1 pixel.
     pub fn get_note_x(t: u64, ppp: u64, x: f32, dt: &[U64orF32; 2]) -> f32 {
-        if t > dt[0].get_u() {
+        if t >= dt[0].get_u() {
             x + ((t - dt[0].get_u()) / ppp) as f32
-        }
-        else {
-            x + (t / ppp) as f32
+        } else {
+            x + ((dt[0].get_u() - t) / ppp) as f32
         }
     }
 
     /// Returns the number of pulses in 1 pixel.
-    /// 
+    ///
     /// - `dt` The start and end time in PPQ.
     /// - `w` The width of the view in pixels.
     pub fn get_pulses_per_pixel(dt: &[U64orF32; 2], w: f32) -> u64 {

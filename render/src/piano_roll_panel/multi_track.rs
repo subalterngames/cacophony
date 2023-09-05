@@ -143,7 +143,12 @@ impl MultiTrack {
                     } else {
                         ColorKey::NoFocus
                     };
-                    let x1 = ViewableNotes::get_note_x(select_1.note.end, notes.pulses_per_pixel, self.rect_f[0], &dt) - dt[0].get_f();
+                    let x1 = ViewableNotes::get_note_x(
+                        select_1.note.end,
+                        notes.pulses_per_pixel,
+                        self.rect_f[0],
+                        &dt,
+                    ) - dt[0].get_f();
                     renderer.rectangle_pixel(
                         [select_0.x, position[1]],
                         [x1 - select_0.x, h],
