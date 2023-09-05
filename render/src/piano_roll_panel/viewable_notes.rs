@@ -25,8 +25,6 @@ pub(crate) struct ViewableNotes<'a> {
     pub notes: Vec<ViewableNote<'a>>,
     /// Cached viewport dt in PPQ.
     dt: [U64orF32; 2],
-    /// The x pixel coordinate of the viewport.
-    x: f32,
     /// The width in pixels of the viewport.
     w: f32,
 }
@@ -49,7 +47,6 @@ impl<'a> ViewableNotes<'a> {
         match state.music.get_selected_track() {
             Some(track) => Self::new_from_track(x, w, track, state, conn, focus, dt, state.view.dn),
             None => Self {
-                x,
                 w,
                 notes: vec![],
                 dt,
@@ -136,7 +133,7 @@ impl<'a> ViewableNotes<'a> {
                 in_pitch_range,
             });
         }
-        Self { notes, x, w, dt }
+        Self { notes, w, dt }
     }
 
     /// Returns the width of a note.
@@ -146,7 +143,8 @@ impl<'a> ViewableNotes<'a> {
         } else {
             note.note.end
         };
-        (get_note_x(t1, self.x, self.w, &self.dt) - note.x).clamp(1.0, f32::MAX).floor()
+        let dt = t1 - note.note.start;
+        get_note_x(dt, 0.0, self.w, &self.dt).clamp(1.0, f32::MAX).floor()
     }
 
     /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
