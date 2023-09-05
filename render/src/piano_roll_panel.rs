@@ -10,7 +10,7 @@ use hashbrown::HashSet;
 use multi_track::MultiTrack;
 use text::ppq_to_string;
 use top_bar::TopBar;
-use viewable_notes::*;
+use viewable_notes::{ViewableNote, ViewableNotes};
 use volume::Volume;
 
 const TIME_PADDING: u32 = 3;
@@ -136,11 +136,11 @@ impl PianoRollPanel {
         // The time is within the viewport.
         else {
             (
-                get_note_x(
+                ViewableNotes::get_note_x(
                     time,
+                    ViewableNotes::get_pulses_per_pixel(dt, self.piano_roll_rows_rect[2]),
                     self.piano_roll_rows_rect[0],
-                    self.piano_roll_rows_rect[2],
-                    dt,
+                    &dt
                 ),
                 true,
             )
@@ -247,10 +247,11 @@ impl Drawable for PianoRollPanel {
                     } else {
                         ColorKey::NoFocus
                     };
-                    let x1 = notes.get_note_x(
+                    let x1 = ViewableNotes::get_note_x(
                         select_1.note.end,
+                        notes.pulses_per_pixel,
                         self.piano_roll_rows_rect[0],
-                        self.piano_roll_rows_rect[2],
+                        &dt
                     );
                     renderer.rectangle_pixel(
                         [select_0.x, self.piano_roll_rows_rect[1]],
@@ -444,11 +445,11 @@ impl Drawable for PianoRollPanel {
             if let Some(music_time) = conn.state.time.time {
                 let music_time = state.time.samples_to_ppq(music_time, conn.framerate);
                 if music_time >= dt[0].get_u() && music_time <= dt[1].get_u() {
-                    let x = get_note_x(
+                    let x = ViewableNotes::get_note_x(
                         music_time,
+                        ViewableNotes::get_pulses_per_pixel(&dt, self.piano_roll_rows_rect[2]),
                         self.piano_roll_rows_rect[0],
-                        self.piano_roll_rows_rect[2],
-                        &dt,
+                        &dt
                     );
                     let music_color = if focus {
                         ColorKey::FocusDefault

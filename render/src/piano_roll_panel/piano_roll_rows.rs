@@ -3,6 +3,7 @@ use crate::{ColorKey, Renderer};
 use common::view::View;
 use common::{PanelType, State, U64orF32};
 use macroquad::prelude::*;
+use super::viewable_notes::ViewableNotes;
 
 const BACKGROUND_COLOR: ColorKey = ColorKey::Background;
 
@@ -91,12 +92,15 @@ impl PianoRollRows {
         renderer: &Renderer,
     ) {
         let len = sub_row.len();
-        let line_segment_width = super::viewable_notes::get_note_x(
+        let dt = [U64orF32::from(state.view.dt[0]), U64orF32::from(state.view.dt[1])];
+        let t1 = dt[1].get_u() - dt[0].get_u();
+        let ppp = ViewableNotes::get_pulses_per_pixel(&dt, w);
+        let line_segment_width = ViewableNotes::get_note_x(
             state.input.beat.get_u(),
+            ppp,
             0.0,
-            w,
-            &[U64orF32::from(state.view.dt[0]), U64orF32::from(state.view.dt[1])],
-        ).clamp(1.0, f32::MAX).floor() as usize;
+            &[U64orF32::from(0), U64orF32::from(t1)]
+        ) as usize;
         let color: [u8; 4] = renderer
             .get_color(if focus {
                 &ColorKey::Separator

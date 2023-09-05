@@ -25,8 +25,8 @@ pub(crate) struct ViewableNotes<'a> {
     pub notes: Vec<ViewableNote<'a>>,
     /// Cached viewport dt in PPQ.
     dt: [U64orF32; 2],
-    /// The width in pixels of the viewport.
-    w: f32,
+    /// The number of pulses in 1 pixel.
+    pub pulses_per_pixel: u64
 }
 
 impl<'a> ViewableNotes<'a> {
@@ -47,7 +47,7 @@ impl<'a> ViewableNotes<'a> {
         match state.music.get_selected_track() {
             Some(track) => Self::new_from_track(x, w, track, state, conn, focus, dt, state.view.dn),
             None => Self {
-                w,
+                pulses_per_pixel: Self::get_pulses_per_pixel(&dt, w),
                 notes: vec![],
                 dt,
             },
@@ -74,6 +74,7 @@ impl<'a> ViewableNotes<'a> {
         dt: [U64orF32; 2],
         dn: [u8; 2],
     ) -> Self {
+        let pulses_per_pixel = Self::get_pulses_per_pixel(&dt, w);
         // Get any notes being played.
         let playtime = match conn.state.time.music {
             true => conn
@@ -102,7 +103,7 @@ impl<'a> ViewableNotes<'a> {
                 note.start
             };
             // Get the x coordinate of the note.
-            let x = get_note_x(t, x, w, &dt);
+            let x = Self::get_note_x(t, pulses_per_pixel, x, &dt);
             // Is this note in the selection?
             let selected = selected.contains(&note);
             // Is this note being played?
@@ -133,7 +134,7 @@ impl<'a> ViewableNotes<'a> {
                 in_pitch_range,
             });
         }
-        Self { notes, w, dt }
+        Self { notes, dt, pulses_per_pixel }
     }
 
     /// Returns the width of a note.
@@ -144,16 +145,22 @@ impl<'a> ViewableNotes<'a> {
             note.note.end
         };
         let dt = t1 - note.note.start;
-        get_note_x(dt, 0.0, self.w, &self.dt).clamp(1.0, f32::MAX).floor()
+        Self::get_note_x(dt, self.pulses_per_pixel, 0.0, &self.dt)
     }
 
     /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
-    pub fn get_note_x(&self, t: u64, x: f32, w: f32) -> f32 {
-        get_note_x(t, x, w, &self.dt)
+    /// 
+    /// - `t` The time in PPQ.
+    /// - `ppp` The number of pulses in 1 pixel.
+    pub fn get_note_x(t: u64, ppp: u64, x: f32, dt: &[U64orF32; 2]) -> f32 {
+        x + ((t / ppp) - (dt[0].get_u() / ppp)) as f32
     }
-}
 
-/// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
-pub(crate) fn get_note_x(t: u64, x: f32, w: f32, dt: &[U64orF32; 2]) -> f32 {
-    (x + w * ((t as f32 - dt[0].get_f()) / (dt[1].get_f() - dt[0].get_f()))).floor()
+    /// Returns the number of pulses in 1 pixel.
+    /// 
+    /// - `dt` The start and end time in PPQ.
+    /// - `w` The width of the view in pixels.
+    pub fn get_pulses_per_pixel(dt: &[U64orF32; 2], w: f32) -> u64 {
+        (((dt[1].get_f() - dt[0].get_f()) / w) as u64).clamp(1, u64::MAX)
+    }
 }

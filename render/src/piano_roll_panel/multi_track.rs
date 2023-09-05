@@ -1,4 +1,4 @@
-use super::viewable_notes::*;
+use super::viewable_notes::{ViewableNote, ViewableNotes};
 use crate::panel::*;
 use crate::{get_track_heights, Page};
 use common::config::parse;
@@ -143,7 +143,7 @@ impl MultiTrack {
                     } else {
                         ColorKey::NoFocus
                     };
-                    let x1 = notes.get_note_x(select_1.note.end, self.rect_f[0], self.rect_f[2]);
+                    let x1 = ViewableNotes::get_note_x(select_1.note.end, notes.pulses_per_pixel, self.rect_f[0], &dt) - dt[0].get_f();
                     renderer.rectangle_pixel(
                         [select_0.x, position[1]],
                         [x1 - select_0.x, h],
