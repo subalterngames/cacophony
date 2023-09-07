@@ -143,13 +143,17 @@ impl<'a> ViewableNotes<'a> {
 
     /// Returns the width of a note.
     pub fn get_note_w(&self, note: &ViewableNote) -> f32 {
+        let t0 = if note.note.start < self.dt[0].get_u() {
+            self.dt[0].get_u()
+        } else {
+            note.note.start
+        };
         let t1 = if note.note.end > self.dt[1].get_u() {
             self.dt[1].get_u()
         } else {
             note.note.end
         };
-        let dt = t1 - note.note.start;
-        (dt / self.pulses_per_pixel) as f32
+        ((t1 - t0) / self.pulses_per_pixel) as f32
     }
 
     /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.
