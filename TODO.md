@@ -122,7 +122,7 @@
 - [x] Can't resize window in Linux
 - [ ] Can't double-click Linux executable
 - [x] Can't connect to MIDI input on Linux
-- [ ] Note names aren't aligned correctly in high DPI Linux
+- [x] Note names aren't aligned correctly in high DPI Linux
 - [x] Textures are too big in high DPI Linux
 - [x] Splash window is too small in high DPI Linux
 - [x] Subtitles are broken
