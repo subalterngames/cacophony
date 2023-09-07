@@ -66,7 +66,6 @@ impl Drawable for TracksPanel {
         renderer: &Renderer,
         state: &State,
         conn: &Conn,
-        _: &Input,
         text: &Text,
         _: &PathsState,
         _: &SharedExporter,

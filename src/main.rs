@@ -104,15 +104,7 @@ async fn main() {
         clear_background(CLEAR_COLOR);
 
         // Draw.
-        panels.update(
-            &renderer,
-            &state,
-            &conn,
-            &input,
-            &text,
-            &paths_state,
-            &exporter,
-        );
+        panels.update(&renderer, &state, &conn, &text, &paths_state, &exporter);
 
         // Draw subtitles.
         draw_subtitles(&renderer, &tts);

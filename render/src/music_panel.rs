@@ -68,7 +68,6 @@ impl Drawable for MusicPanel {
         renderer: &Renderer,
         state: &State,
         conn: &Conn,
-        _: &Input,
         _: &Text,
         _: &PathsState,
         exporter: &SharedExporter,

@@ -51,7 +51,6 @@ impl Drawable for QuitPanel {
         renderer: &Renderer,
         _: &State,
         _: &Conn,
-        _: &Input,
         _: &Text,
         _: &PathsState,
         _: &SharedExporter,

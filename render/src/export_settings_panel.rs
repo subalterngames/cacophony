@@ -313,7 +313,6 @@ impl Drawable for ExportSettingsPanel {
         renderer: &Renderer,
         state: &State,
         _: &Conn,
-        _: &Input,
         text: &Text,
         _: &PathsState,
         exporter: &SharedExporter,

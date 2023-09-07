@@ -192,7 +192,6 @@ impl Drawable for PianoRollPanel {
         renderer: &Renderer,
         state: &State,
         conn: &Conn,
-        _: &Input,
         text: &Text,
         _: &PathsState,
         _: &SharedExporter,

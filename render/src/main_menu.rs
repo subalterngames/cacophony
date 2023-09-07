@@ -283,7 +283,6 @@ impl Drawable for MainMenu {
         renderer: &Renderer,
         state: &State,
         _: &Conn,
-        _: &Input,
         _: &Text,
         _: &PathsState,
         _: &SharedExporter,

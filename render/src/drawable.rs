@@ -11,17 +11,14 @@ pub(crate) trait Drawable {
     /// - `renderer` The renderer.
     /// - `state` The state of the app.
     /// - `conn` The synthesizer-player connection.
-    /// - `input` Input events, key presses, etc.
     /// - `text` The text.
     /// - `paths_state` The file paths state.
     /// - `exporter` The exporter state.
-    #[allow(clippy::too_many_arguments)]
     fn update(
         &self,
         renderer: &Renderer,
         state: &State,
         conn: &Conn,
-        input: &Input,
         text: &Text,
         paths_state: &PathsState,
         exporter: &SharedExporter,

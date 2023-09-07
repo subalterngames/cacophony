@@ -29,7 +29,6 @@ impl Drawable for ExportPanel {
         renderer: &Renderer,
         _: &State,
         conn: &Conn,
-        _: &Input,
         _: &Text,
         _: &PathsState,
         _: &SharedExporter,

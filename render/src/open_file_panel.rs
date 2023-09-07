@@ -135,7 +135,6 @@ impl Drawable for OpenFilePanel {
         renderer: &Renderer,
         state: &State,
         _: &Conn,
-        _: &Input,
         _: &Text,
         paths_state: &PathsState,
         exporter: &SharedExporter,
