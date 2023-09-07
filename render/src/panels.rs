@@ -102,7 +102,7 @@ impl Panels {
     }
 
     /// Do something after input is received from elsewhere.
-    pub fn late_update(&mut self, state: &State, conn: &Conn, renderer: &Renderer) {
+    pub fn late_update(&mut self, state: &State, conn: &Conn, renderer: &mut Renderer) {
         self.open_file_panel.popup.late_update(state, renderer);
         self.export_panel.popup.late_update(state, renderer);
         self.quit_panel.popup.late_update(state, renderer);

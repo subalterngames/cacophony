@@ -74,7 +74,7 @@ async fn main() {
     let mut io = IO::new(&config, &input, &state.input, &mut text);
 
     // Load the renderer.
-    let renderer = Renderer::new(&config);
+    let mut renderer = Renderer::new(&config);
 
     // Load the panels.
     let mut panels = Panels::new(
@@ -134,7 +134,7 @@ async fn main() {
             tts.update();
 
             // Late update to do stuff like screen capture.
-            panels.late_update(&state, &conn, &renderer);
+            panels.late_update(&state, &conn, &mut renderer);
 
             // Wait.
             next_frame().await;

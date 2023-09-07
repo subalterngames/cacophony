@@ -37,6 +37,10 @@ pub struct Renderer {
     flip_y: bool,
     /// This is used to resize captured textures.
     pub(crate) window_pixel_size: [f32; 2],
+    /// An optional background texture. This is used for popups.
+    background: Option<Texture2D>,
+    /// Parameters for drawing the texture.
+    background_params: Option<DrawTextureParams>,
 }
 
 impl Renderer {
@@ -103,6 +107,8 @@ impl Renderer {
             subtitle_position,
             max_subtitle_width,
             window_pixel_size,
+            background: None,
+            background_params: None,
         }
     }
 
@@ -287,19 +293,12 @@ impl Renderer {
         }
     }
 
-    /// Draw an arbitrary texture with texture parameters.
-    ///
-    /// - `texture` The texture.
-    /// - `position` The top-left position in grid coordinates.
-    /// - `params` Draw texture parameters.
-    pub(crate) fn texture_ex(
-        &self,
-        texture: &Texture2D,
-        position: [u32; 2],
-        params: DrawTextureParams,
-    ) {
-        let xy = self.grid_to_pixel(position);
-        draw_texture_ex(texture, xy[0], xy[1], TEXTURE_COLOR, params);
+    pub(crate) fn background(&self) {
+        if let Some(texture) = &self.background {
+            if let Some(params) = &self.background_params {
+                draw_texture_ex(texture, 0.0, 0.0, TEXTURE_COLOR, params.clone());
+            }
+        }
     }
 
     /// Draw a line from top to bottom in pixel coordinates.
@@ -422,19 +421,26 @@ impl Renderer {
         }
     }
 
-    /// Capture the screen, flipping the image as needed.
-    pub(crate) fn screen_capture(&self) -> (Texture2D, DrawTextureParams) {
-        let texture = Texture2D::from_image(&get_screen_data());
-        let dest_size = Some(Vec2::new(
-            self.window_pixel_size[0],
-            self.window_pixel_size[1],
-        ));
-        let params = DrawTextureParams {
-            flip_y: self.flip_y,
-            dest_size,
-            ..Default::default()
-        };
-        (texture, params)
+    /// Capture the screen and update the cached background texture.
+    pub(crate) fn screen_capture(&mut self) {
+        let screen_data = get_screen_data();
+        match self.background.as_mut() {
+            Some(background) => {
+                background.update(&screen_data);
+            }
+            None => {
+                self.background = Some(Texture2D::from_image(&screen_data));
+                let dest_size = Some(Vec2::new(
+                    self.window_pixel_size[0],
+                    self.window_pixel_size[1],
+                ));
+                self.background_params = Some(DrawTextureParams {
+                    flip_y: self.flip_y,
+                    dest_size,
+                    ..Default::default()
+                });
+            }
+        }
     }
 
     /// Draw a value with left and right arrows with a key.

@@ -12,6 +12,7 @@ pub(crate) struct PianoRollRows {
     row: Vec<u8>,
     /// A 1-D RGBA buffer used to fill `row`.
     sub_row: Vec<u8>,
+    /// The width of the piano roll rows in pixels.
     width: f32,
     // The position of each row on the screen.
     positions: Vec<[f32; 2]>,
