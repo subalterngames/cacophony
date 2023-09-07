@@ -270,7 +270,7 @@ impl Renderer {
         );
     }
 
-    /// Draw an arbitrary texture at a pixel position
+    /// Draw an arbitrary texture at a pixel position.
     ///
     /// - `texture` The texture.
     /// - `position` The top-left position in pixel coordinates.
@@ -293,6 +293,7 @@ impl Renderer {
         }
     }
 
+    /// Draw the background texture. This is used by popups.
     pub(crate) fn background(&self) {
         if let Some(texture) = &self.background {
             if let Some(params) = &self.background_params {
