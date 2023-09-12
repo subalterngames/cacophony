@@ -25,6 +25,7 @@ pub enum InputEvent {
     SaveFile,
     SaveFileAs,
     ExportFile,
+    ImportMidi,
     EditConfig,
     // Quit.
     Quit,

@@ -331,6 +331,11 @@ impl IO {
                 self.open_file_panel.export(state, paths_state, exporter)
             }
         }
+        else if input.happened(&InputEvent::ImportMidi) {
+            let path = Path::new("MIDI_sample.mid");
+            import_midi::import(path, state, exporter);
+            state.unsaved_changes = true;
+        }
         // Open config file.
         else if input.happened(&InputEvent::EditConfig) {
             let paths = Paths::default();
