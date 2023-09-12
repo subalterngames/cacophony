@@ -30,6 +30,7 @@ parking_lot = "0.12.1"
 num-traits = "0.2.16"
 webbrowser = "0.8.10"
 lazy_static = "1.4.0"
+midly = "0.5.3"
 
 [workspace.dependencies.colorgrad]
 version = "0.6.2"

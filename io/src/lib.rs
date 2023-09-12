@@ -27,6 +27,7 @@ use input::{Input, InputEvent};
 use std::path::Path;
 use text::{Enqueable, Text, TTS};
 mod export_panel;
+mod import_midi;
 mod io_command;
 mod music_panel;
 mod panel;

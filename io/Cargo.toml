@@ -13,6 +13,7 @@ edit = { workspace = true }
 hashbrown = { workspace = true }
 rust-ini = { workspace = true }
 webbrowser = { workspace = true }
+midly = { workspace = true }
 
 [dependencies.audio]
 path = "../audio"
