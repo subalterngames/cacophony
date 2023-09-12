@@ -15,9 +15,10 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
       - name: Build docker image
-        run: docker build -t ubuntu-18-i386 Docker/ubuntu-18-i386
-      - name: Run Docker image
-        run: docker run -it ubuntu-18-i386 ${{ inputs.version }} ${{ secrets.BUTLER_API_KEY }}
+        working-directory: Docker build
+        run: docker build -t ubuntu-18-i386 .
+      - name: Docker run
+        run: docker run -e VERSION=${{ inputs.version }} -e BUTLER=${{ secrets.BUTLER_API_KEY }} ubuntu-18-i386
   build-ubuntu-20:
     name: Ubuntu 20
     runs-on: ubuntu-20.04
