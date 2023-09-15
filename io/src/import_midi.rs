@@ -1,6 +1,5 @@
 use audio::SharedExporter;
 use common::{MidiTrack, Music, Note, State, U64orF32};
-use hashbrown::HashMap;
 use midly::{MetaMessage, MidiMessage, Smf, TrackEventKind};
 use std::fs::read;
 use std::path::Path;
@@ -29,8 +28,8 @@ pub(crate) fn import(path: &Path, state: &mut State, exporter: &mut SharedExport
                     MetaMessage::Tempo(data) => {
                         state.time.bpm = U64orF32::from(60000000 / data.as_int() as u64);
                     }
-                    MetaMessage::TimeSignature(_, d, _, _) => {
-                        let quarter_note = 2u8.pow(d as u32) / 4;
+                    MetaMessage::TimeSignature(_, d, _, b) => {
+                        let quarter_note = 2u8.pow(d as u32) / 4 * (b / 8);
                         state.time.bpm = U64orF32::from(state.time.bpm.get_u() * quarter_note as u64);
                     }
                     MetaMessage::Text(data) => {
@@ -39,7 +38,12 @@ pub(crate) fn import(path: &Path, state: &mut State, exporter: &mut SharedExport
                             exporter.metadata.comment = Some(text.to_string())
                         }
                     }
-                    _ => ()
+                    MetaMessage::TrackName(data) => {
+                        if let Ok(text) = from_utf8(data) {
+                            track.name = Some(text.to_string());
+                        }
+                    }
+                    _ =>  ()
                 }
                 TrackEventKind::Midi { channel, message } => {
                     track.channel = channel.as_int();

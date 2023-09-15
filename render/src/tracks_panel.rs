@@ -116,12 +116,23 @@ impl Drawable for TracksPanel {
             match conn.state.programs.get(&channel) {
                 // No program. No SoundFont.
                 None => {
-                    let label = Label {
-                        text: text
-                            .get_with_values("TRACKS_PANEL_TRACK_TITLE", &[&channel.to_string()]),
-                        position: [x + 1, y],
-                    };
-                    renderer.text(&label, &Renderer::get_key_color(focus));
+                    let track_position = [x + 1, y];
+                    match &track.name {
+                        // This track has a name (probably from an imported MIDI file).
+                        Some(track_name) => {
+                            let label = LabelRef::new(track_position, track_name);
+                            renderer.text_ref(&label, &Renderer::get_key_color(focus));
+                        }
+                        // Use a generic name.
+                        None => {
+                            let label = Label {
+                                text: text
+                                    .get_with_values("TRACKS_PANEL_TRACK_TITLE", &[&channel.to_string()]),
+                                position: [x + 1, y],
+                            };
+                            renderer.text(&label, &Renderer::get_key_color(focus));
+                        }
+                    }
                     y += 1;
                 }
                 // There is a program. Draw the properties.
