@@ -136,7 +136,8 @@ impl IO {
                 input,
             ),
             text.get_tooltip("FILE_TTS_3", &[InputEvent::ExportFile], input),
-            text.get_tooltip("FILE_TTS_4", &[InputEvent::EditConfig], input),
+            text.get_tooltip("FILE_TTS_4", &[InputEvent::ImportMidi], input),
+            text.get_tooltip("FILE_TTS_5", &[InputEvent::EditConfig], input),
         ];
         tts.insert(InputEvent::FileTTS, file_tts);
         let music_panel = MusicPanel {};
@@ -331,9 +332,7 @@ impl IO {
                 self.open_file_panel.export(state, paths_state, exporter)
             }
         } else if input.happened(&InputEvent::ImportMidi) {
-            let path = Path::new("MIDI_sample.mid");
-            import_midi::import(path, state, conn, exporter);
-            state.unsaved_changes = true;
+            self.open_file_panel.import_midi(state, paths_state);
         }
         // Open config file.
         else if input.happened(&InputEvent::EditConfig) {
@@ -487,6 +486,9 @@ impl IO {
                             }
                             OpenFileType::WriteSave => {
                                 self.open_file_panel.write_save(state, paths_state)
+                            }
+                            OpenFileType::ImportMidi => {
+                                self.open_file_panel.import_midi(state, paths_state)
                             }
                         },
                         // Export.

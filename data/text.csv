@@ -257,7 +257,8 @@ FILE_TTS_0,\0 for new music.
 FILE_TTS_1,\0 to open a file.
 FILE_TTS_2,\0 to save. \1 to save as.
 FILE_TTS_3,\0 to export.
-FILE_TTS_4,\0 to edit the config file.
+FILE_TTS_4,\0 to import a MIDI file.
+FILE_TTS_5,\0 to edit the config file.
 MUSIC_PANEL_STATUS_TTS,This music is named \0. The BPM is \1. The gain is \2.
 MUSIC_PANEL_INPUT_TTS,\0 and \1 to scroll.
 NAME,name
@@ -296,6 +297,7 @@ OPEN_FILE_PANEL_TITLE_SOUNDFONT,Load SoundFont
 OPEN_FILE_PANEL_TITLE_READ_SAVE,Load Save
 OPEN_FILE_PANEL_TITLE_WRITE_SAVE,Save
 OPEN_FILE_PANEL_TITLE_EXPORT,Export
+OPEN_FILE_PANEL_TITLE_IMPORT_MIDI,Import MIDI
 OPEN_FILE_PANEL_STATUS_TTS_SELECTION,You selected \0.
 OPEN_FILE_PANEL_STATUS_TTS_NO_SELECTION,This directory is empty.
 OPEN_FILE_PANEL_STATUS_TTS_EXPORT,The file type is \0.
@@ -307,6 +309,7 @@ OPEN_FILE_PANEL_INPUT_TTS_READ_SAVE,\0 to load save file %0.
 OPEN_FILE_PANEL_INPUT_TTS_EXPORT,\0 to load audio file %0.
 OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT,\0 to load sound font %0.
 OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE,\0 to write save file %0.
+OPEN_FILE_PANEL_INPUT_TTS_IMPORT_MIDI,\0 to import MIDI file %0.
 OPEN_FILE_PANEL_INPUT_TTS_CLOSE,\0 to close.
 PIANO_ROLL_PANEL_TTS_NO_TRACK,You cannot use this panel until you have added a track and loaded a sound font.
 PIANO_ROLL_PANEL_STATUS_TTS_MODE,The piano roll mode is \0.

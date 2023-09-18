@@ -84,6 +84,13 @@ impl OpenFilePanel {
                 text.get("OPEN_FILE_PANEL_TITLE_EXPORT"),
             ),
         );
+        titles.insert(
+            OpenFileType::ImportMidi,
+            LabelRectangle::new(
+                panel.title.label.position,
+                text.get("OPEN_FILE_PANEL_TITLE_IMPORT_MIDI"),
+            ),
+        );
 
         // Get the scroll labels.
         let mut scroll_labels = HashMap::new();
@@ -241,6 +248,7 @@ impl Drawable for OpenFilePanel {
                 OpenFileType::ReadSave | OpenFileType::WriteSave => ".cac",
                 OpenFileType::SoundFont => ".sf2",
                 OpenFileType::Export => e.get_extension(true),
+                OpenFileType::ImportMidi => ".mid",
             };
             extension.push_str(ext);
             renderer.text(

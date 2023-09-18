@@ -16,6 +16,8 @@ pub struct PathsState {
     pub saves: FileAndDirectory,
     /// When the user wants to export a file, it will be exported to this path.
     pub exports: FileAndDirectory,
+    /// When the user wants to import a MIDI file, this is the path.
+    pub midis: FileAndDirectory,
     /// The child paths within the current working directory.
     #[serde(skip_serializing, skip_deserializing)]
     pub children: ChildPaths,
@@ -29,10 +31,12 @@ impl PathsState {
         let soundfonts = FileAndDirectory::new_directory(paths.soundfonts_directory.clone());
         let saves = FileAndDirectory::new_directory(paths.saves_directory.clone());
         let exports = FileAndDirectory::new_directory(paths.export_directory.clone());
+        let midis = FileAndDirectory::new_directory(paths.user_directory.clone());
         Self {
             soundfonts,
             saves,
             exports,
+            midis,
             ..Default::default()
         }
     }
@@ -43,6 +47,7 @@ impl PathsState {
             OpenFileType::Export => &self.exports.directory,
             OpenFileType::ReadSave | OpenFileType::WriteSave => &self.saves.directory,
             OpenFileType::SoundFont => &self.soundfonts.directory,
+            OpenFileType::ImportMidi => &self.midis.directory,
         }
     }
 
@@ -69,6 +74,9 @@ impl PathsState {
                 &mut self.children,
                 extensions,
             ),
+            OpenFileType::ImportMidi => {
+                Self::up_directory_type(&mut self.midis.directory, &mut self.children, extensions)
+            }
         }
     }
 
@@ -88,6 +96,7 @@ impl PathsState {
                                 self.saves.directory.path.to_path_buf()
                             }
                             OpenFileType::SoundFont => self.soundfonts.directory.path.to_path_buf(),
+                            OpenFileType::ImportMidi => self.midis.directory.path.to_path_buf(),
                         };
                         let cwd1 = self.children.children[*selected].path.clone();
                         // Set the children.
@@ -102,6 +111,9 @@ impl PathsState {
                             }
                             OpenFileType::SoundFont => {
                                 self.soundfonts.directory = FileOrDirectory::new(&cwd1)
+                            }
+                            OpenFileType::ImportMidi => {
+                                self.midis.directory = FileOrDirectory::new(&cwd1)
                             }
                         }
                         true
@@ -140,6 +152,7 @@ impl PathsState {
             OpenFileType::Export => self.exports.filename = f,
             OpenFileType::ReadSave | OpenFileType::WriteSave => self.saves.filename = f,
             OpenFileType::SoundFont => (),
+            OpenFileType::ImportMidi => self.midis.filename = f,
         }
     }
 
@@ -149,6 +162,7 @@ impl PathsState {
             OpenFileType::Export => self.exports.get_path(),
             OpenFileType::ReadSave | OpenFileType::WriteSave => self.saves.get_path(),
             OpenFileType::SoundFont => self.soundfonts.get_path(),
+            OpenFileType::ImportMidi => self.midis.get_path(),
         }
     }
 

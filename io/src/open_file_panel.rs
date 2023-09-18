@@ -1,3 +1,4 @@
+use super::import_midi::import;
 use crate::panel::*;
 use crate::Save;
 use audio::exporter::*;
@@ -9,10 +10,9 @@ use text::get_file_name_no_ex;
 pub struct OpenFilePanel {
     /// Popup handler.
     popup: Popup,
-    /// Valid SoundFont file extensions.
     soundfont_extensions: Vec<String>,
-    /// Valid save file extensions.
     save_file_extensions: Vec<String>,
+    midi_file_extensions: Vec<String>,
 }
 
 impl Default for OpenFilePanel {
@@ -21,6 +21,7 @@ impl Default for OpenFilePanel {
             popup: Default::default(),
             soundfont_extensions: vec!["sf2".to_string(), "sf3".to_string()],
             save_file_extensions: vec!["cac".to_string()],
+            midi_file_extensions: vec!["mid".to_string()],
         }
     }
 }
@@ -62,6 +63,11 @@ impl OpenFilePanel {
     /// Enable the panel for setting the save path to be written to.
     pub fn write_save(&mut self, state: &mut State, paths_state: &mut PathsState) {
         self.enable_as_save(OpenFileType::WriteSave, state, paths_state);
+        paths_state.children.set(
+            &paths_state.midis.directory.path,
+            &self.save_file_extensions,
+            None,
+        );
     }
 
     /// Enable a panel for setting the export path.
@@ -80,6 +86,16 @@ impl OpenFilePanel {
         self.enable(open_file_type, state, paths_state);
     }
 
+    /// Enable a panel for importing a MIDI file.
+    pub fn import_midi(&mut self, state: &mut State, paths_state: &mut PathsState) {
+        paths_state.children.set(
+            &paths_state.midis.directory.path,
+            &self.midi_file_extensions,
+            None,
+        );
+        self.enable(OpenFileType::ImportMidi, state, paths_state);
+    }
+
     fn get_extensions(&self, paths_state: &PathsState, exporter: &SharedExporter) -> Vec<String> {
         let ex = exporter.lock();
         let extension = ex.export_type.get().get_extension(false).to_string();
@@ -89,6 +105,7 @@ impl OpenFilePanel {
             }
             OpenFileType::ReadSave | OpenFileType::WriteSave => self.save_file_extensions.clone(),
             OpenFileType::SoundFont => self.soundfont_extensions.clone(),
+            OpenFileType::ImportMidi => self.midi_file_extensions.clone(),
         }
     }
 
@@ -219,6 +236,7 @@ impl Panel for OpenFilePanel {
                             OpenFileType::Export => "OPEN_FILE_PANEL_INPUT_TTS_EXPORT",
                             OpenFileType::SoundFont => "OPEN_FILE_PANEL_INPUT_TTS_SOUNDFONT",
                             OpenFileType::WriteSave => "OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE",
+                            OpenFileType::ImportMidi => "OPEN_FILE_PANEL_INPUT_TTS_IMPORT_MIDI",
                         };
                         tts_strings.push(text.get_tooltip_with_values(
                             open_file_key,
@@ -361,6 +379,14 @@ impl Panel for OpenFilePanel {
                                 );
                             }
                         }
+                    }
+                }
+                OpenFileType::ImportMidi => {
+                    if let Some(selected) = paths_state.children.selected {
+                        let path = paths_state.children.children[selected].path.clone();
+                        import(&path, state, conn, exporter);
+                        state.unsaved_changes = true;
+                        self.disable(state);
                     }
                 }
             }

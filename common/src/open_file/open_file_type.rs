@@ -10,4 +10,6 @@ pub enum OpenFileType {
     WriteSave,
     /// Set the export path.
     Export,
+    /// Import a MIDI file.
+    ImportMidi,
 }
