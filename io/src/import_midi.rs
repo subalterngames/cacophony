@@ -1,16 +1,21 @@
 use audio::{Command, Conn, SharedExporter};
-use common::{MidiTrack, Music, Note, State, U64orF32, Paths};
-use midly::{MetaMessage, MidiMessage, Smf, TrackEventKind, Timing};
+use common::{MidiTrack, Music, Note, Paths, State, U64orF32};
+use midly::{MetaMessage, MidiMessage, Smf, Timing, TrackEventKind};
 use std::fs::read;
 use std::path::Path;
 use std::str::from_utf8;
 
-pub(crate) fn import(path: &Path, state: &mut State, conn: &mut Conn, exporter: &mut SharedExporter) {
+pub(crate) fn import(
+    path: &Path,
+    state: &mut State,
+    conn: &mut Conn,
+    exporter: &mut SharedExporter,
+) {
     let bytes = read(path).unwrap();
     let smf = Smf::parse(&bytes).unwrap();
     let timing = match smf.header.timing {
         Timing::Metrical(v) => v.as_int() as f32,
-        Timing::Timecode(fps, t) => fps.as_f32() / t as f32
+        Timing::Timecode(fps, t) => fps.as_f32() / t as f32,
     };
     let mut music = Music::default();
     let paths = Paths::default();
@@ -19,7 +24,10 @@ pub(crate) fn import(path: &Path, state: &mut State, conn: &mut Conn, exporter: 
         let c = i as u8;
         let mut track = MidiTrack::new(c);
         // Load the default SoundFont.
-        conn.send(vec![Command::LoadSoundFont { channel: c, path: paths.default_soundfont_path.clone() }]);
+        conn.send(vec![Command::LoadSoundFont {
+            channel: c,
+            path: paths.default_soundfont_path.clone(),
+        }]);
         let mut time = 0;
         // A list of note-on events that need corresponding note-off messages.
         let mut note_ons = vec![];
@@ -51,25 +59,47 @@ pub(crate) fn import(path: &Path, state: &mut State, conn: &mut Conn, exporter: 
                             exporter.metadata.comment = Some(text.to_string())
                         }
                     }
-                    _ => ()
-                }
-                TrackEventKind::Midi { channel: _, message } => {
+                    _ => (),
+                },
+                TrackEventKind::Midi {
+                    channel: _,
+                    message,
+                } => {
                     match message {
                         MidiMessage::NoteOn { key, vel } => {
                             note_ons.push((key, vel, time));
                         }
                         MidiMessage::NoteOff { key, vel } => {
-                            let (index, note_on) = note_ons.iter().enumerate().filter(|(_, n)| n.0 == key).next().unwrap();
+                            let (index, note_on) = note_ons
+                                .iter()
+                                .enumerate()
+                                .find(|(_, n)| n.0 == key)
+                                .unwrap();
                             // Add a note.
-                            track.notes.push(Note { note: note_on.0.as_int(), velocity: u8::max(vel.as_int(), note_on.1.as_int()), start: note_on.2, end: time });
+                            track.notes.push(Note {
+                                note: note_on.0.as_int(),
+                                velocity: u8::max(vel.as_int(), note_on.1.as_int()),
+                                start: note_on.2,
+                                end: time,
+                            });
                             // Remove the note-on event.
                             note_ons.remove(index);
                         }
                         // Set the preset.
                         MidiMessage::ProgramChange { program } => {
-                            conn.send(vec![Command::SetProgram { channel: track.channel, path: paths.default_soundfont_path.clone(), bank_index: conn.state.programs.get(&track.channel).unwrap().bank_index, preset_index: program.as_int() as usize}]);
+                            conn.send(vec![Command::SetProgram {
+                                channel: track.channel,
+                                path: paths.default_soundfont_path.clone(),
+                                bank_index: conn
+                                    .state
+                                    .programs
+                                    .get(&track.channel)
+                                    .unwrap()
+                                    .bank_index,
+                                preset_index: program.as_int() as usize,
+                            }]);
                         }
-                        _ => ()
+                        _ => (),
                     }
                 }
             }

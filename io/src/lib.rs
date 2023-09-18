@@ -330,8 +330,7 @@ impl IO {
             if conn.export_state.is_none() {
                 self.open_file_panel.export(state, paths_state, exporter)
             }
-        }
-        else if input.happened(&InputEvent::ImportMidi) {
+        } else if input.happened(&InputEvent::ImportMidi) {
             let path = Path::new("MIDI_sample.mid");
             import_midi::import(path, state, conn, exporter);
             state.unsaved_changes = true;
