@@ -1,12 +1,15 @@
 use crate::panel::*;
 use crate::select_track;
 use common::open_file::OpenFileType;
-use common::{MidiTrack, SelectMode, MAX_VOLUME};
+use common::{MidiTrack, Paths, SelectMode, MAX_VOLUME};
 use text::get_file_name_no_ex;
+use std::path::PathBuf;
 
 const TRACK_SCROLL_EVENTS: [InputEvent; 2] = [InputEvent::PreviousTrack, InputEvent::NextTrack];
 /// A list of tracks and their parameters.
-pub(crate) struct TracksPanel {}
+pub(crate) struct TracksPanel {
+    default_soundfont_path: PathBuf,
+}
 
 impl TracksPanel {
     /// Increment or decrement the preset index. Returns a new undo-redo state.
@@ -68,6 +71,13 @@ impl TracksPanel {
         let gain = index.get();
         track.gain = gain;
         Some(Snapshot::from_states(s0, state))
+    }
+}
+
+impl Default for TracksPanel{
+    fn default() -> Self {
+        let default_soundfont_path = Paths::default().default_soundfont_path.clone();
+        Self { default_soundfont_path }
     }
 }
 
@@ -208,7 +218,10 @@ impl Panel for TracksPanel {
                     state.music.selected = Some(state.music.midi_tracks.len());
                     // Add a track.
                     state.music.midi_tracks.push(MidiTrack::new(channel));
-                    Some(Snapshot::from_states(s0, state))
+                    // Set the soundfont to the default.
+                    let c0 = vec![Command::UnsetProgram { channel }];
+                    let c1 = vec![Command::LoadSoundFont { channel, path: self.default_soundfont_path.clone() }];
+                    Some(Snapshot::from_states_and_commands(s0, state, c0, c1, conn))
                 }
                 None => None,
             }

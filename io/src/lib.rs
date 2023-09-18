@@ -140,7 +140,7 @@ impl IO {
         ];
         tts.insert(InputEvent::FileTTS, file_tts);
         let music_panel = MusicPanel {};
-        let tracks_panel = TracksPanel {};
+        let tracks_panel = TracksPanel::default();
         let open_file_panel = OpenFilePanel::default();
         let piano_roll_panel = PianoRollPanel::new(&input_state.beat.get_u(), config);
         let export_panel = ExportPanel::default();
@@ -333,7 +333,7 @@ impl IO {
         }
         else if input.happened(&InputEvent::ImportMidi) {
             let path = Path::new("MIDI_sample.mid");
-            import_midi::import(path, state, exporter);
+            import_midi::import(path, state, conn, exporter);
             state.unsaved_changes = true;
         }
         // Open config file.

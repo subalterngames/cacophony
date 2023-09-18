@@ -14,10 +14,6 @@ pub struct MidiTrack {
     pub mute: bool,
     /// True if the track is soloed.
     pub solo: bool,
-    /// The name of the track. 
-    /// This is used for imported MIDI tracks. 
-    /// The SoundFont preset name supersedes it.
-    pub name: Option<String>,
 }
 
 impl MidiTrack {
@@ -28,7 +24,6 @@ impl MidiTrack {
             notes: vec![],
             mute: false,
             solo: false,
-            name: None
         }
     }
 
@@ -46,7 +41,6 @@ impl Clone for MidiTrack {
             notes: self.notes.clone(),
             mute: self.mute,
             solo: self.solo,
-            name: self.name.clone()
         }
     }
 }

@@ -1,18 +1,30 @@
-use audio::SharedExporter;
-use common::{MidiTrack, Music, Note, State, U64orF32};
-use midly::{MetaMessage, MidiMessage, Smf, TrackEventKind};
+use audio::{Command, Conn, SharedExporter};
+use common::{MidiTrack, Music, Note, State, U64orF32, Paths};
+use midly::{MetaMessage, MidiMessage, Smf, TrackEventKind, Timing};
 use std::fs::read;
 use std::path::Path;
 use std::str::from_utf8;
 
-pub(crate) fn import(path: &Path, state: &mut State, exporter: &mut SharedExporter) {
+pub(crate) fn import(path: &Path, state: &mut State, conn: &mut Conn, exporter: &mut SharedExporter) {
     let bytes = read(path).unwrap();
     let smf = Smf::parse(&bytes).unwrap();
+    let timing = match smf.header.timing {
+        Timing::Metrical(v) => v.as_int() as f32,
+        Timing::Timecode(fps, t) => fps.as_f32() / t as f32
+    };
     let mut music = Music::default();
+    let paths = Paths::default();
     for (i, track_events) in smf.tracks.iter().enumerate() {
-        let mut track = MidiTrack::new(i as u8);
+        // Create a new track.
+        let c = i as u8;
+        let mut track = MidiTrack::new(c);
+        // Load the default SoundFont.
+        conn.send(vec![Command::LoadSoundFont { channel: c, path: paths.default_soundfont_path.clone() }]);
         let mut time = 0;
+        // A list of note-on events that need corresponding note-off messages.
         let mut note_ons = vec![];
+
+        // Iterate through this track's events.
         for track_event in track_events {
             time += track_event.delta.as_int() as u64;
             match track_event.kind {
@@ -28,9 +40,10 @@ pub(crate) fn import(path: &Path, state: &mut State, exporter: &mut SharedExport
                     MetaMessage::Tempo(data) => {
                         state.time.bpm = U64orF32::from(60000000 / data.as_int() as u64);
                     }
-                    MetaMessage::TimeSignature(_, d, _, b) => {
-                        let quarter_note = 2u8.pow(d as u32) / 4 * (b / 8);
-                        state.time.bpm = U64orF32::from(state.time.bpm.get_u() * quarter_note as u64);
+                    MetaMessage::TimeSignature(n, d, c, b) => {
+                        // This SHOULD always be correct. If not, there might be an error with how n is used.
+                        let q = (n as f32 / 2f32.powf(d as f32)) * (timing / (c * b) as f32);
+                        state.time.bpm = U64orF32::from(state.time.bpm.get_f() * q);
                     }
                     MetaMessage::Text(data) => {
                         if let Ok(text) = from_utf8(data) {
@@ -38,15 +51,9 @@ pub(crate) fn import(path: &Path, state: &mut State, exporter: &mut SharedExport
                             exporter.metadata.comment = Some(text.to_string())
                         }
                     }
-                    MetaMessage::TrackName(data) => {
-                        if let Ok(text) = from_utf8(data) {
-                            track.name = Some(text.to_string());
-                        }
-                    }
-                    _ =>  ()
+                    _ => ()
                 }
-                TrackEventKind::Midi { channel, message } => {
-                    track.channel = channel.as_int();
+                TrackEventKind::Midi { channel: _, message } => {
                     match message {
                         MidiMessage::NoteOn { key, vel } => {
                             note_ons.push((key, vel, time));
@@ -57,6 +64,10 @@ pub(crate) fn import(path: &Path, state: &mut State, exporter: &mut SharedExport
                             track.notes.push(Note { note: note_on.0.as_int(), velocity: u8::max(vel.as_int(), note_on.1.as_int()), start: note_on.2, end: time });
                             // Remove the note-on event.
                             note_ons.remove(index);
+                        }
+                        // Set the preset.
+                        MidiMessage::ProgramChange { program } => {
+                            conn.send(vec![Command::SetProgram { channel: track.channel, path: paths.default_soundfont_path.clone(), bank_index: conn.state.programs.get(&track.channel).unwrap().bank_index, preset_index: program.as_int() as usize}]);
                         }
                         _ => ()
                     }
@@ -72,24 +83,4 @@ pub(crate) fn import(path: &Path, state: &mut State, exporter: &mut SharedExport
         music.selected = Some(0);
     }
     state.music = music;
-}
-
-#[cfg(test)]
-mod tests {
-    use audio::exporter::Exporter;
-    use std::path::Path;
-    use super::import;
-    use common::State;
-    use ini::Ini;
-
-    #[test]
-    fn import_midi() {
-        let config = Ini::load_from_file("../data/config.ini");
-        assert!(config.is_ok());
-        let path = Path::new("../MIDI_sample.mid");
-        assert!(path.exists());
-        let mut state = State:: new(&config.unwrap());
-        let mut exporter = Exporter::new_shared();
-        import(path, &mut state, &mut exporter);
-    }
 }

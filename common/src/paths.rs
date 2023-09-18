@@ -23,6 +23,8 @@ pub struct Paths {
     pub export_directory: PathBuf,
     /// The path to the splash image.
     pub splash_path: PathBuf,
+    /// The path to the default soundfont in data/
+    pub default_soundfont_path: PathBuf,
 }
 
 impl Paths {
@@ -48,6 +50,7 @@ impl Paths {
         let saves_directory = get_directory("saves", &user_directory);
         let export_directory = get_directory("exports", &user_directory);
         let splash_path = data_directory.join("splash.png");
+        let default_soundfont_path = data_directory.join("CT1MBGMRSV1.06.sf2");
         Self {
             default_ini_path,
             user_directory,
@@ -57,6 +60,7 @@ impl Paths {
             saves_directory,
             export_directory,
             splash_path,
+            default_soundfont_path,
         }
     }
 
