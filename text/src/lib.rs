@@ -4,6 +4,7 @@
 //! 2. `TTS` converts text-to-speech strings into spoken audio.
 //! 3. This crate also contains language-agnostic string manipulation functions e.g. `truncate`.
 
+mod tooltips;
 mod tts;
 mod value_map;
 pub use self::tts::{Enqueable, TTS};
@@ -13,10 +14,9 @@ mod tts_string;
 use common::config::parse;
 use common::{EditMode, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U};
 use csv::Reader;
-use hashbrown::hash_map::Entry;
 use hashbrown::HashMap;
 use ini::Ini;
-use input::{Input, InputEvent, QwertyBinding, KEYS};
+use input::{QwertyBinding, KEYS};
 use macroquad::input::KeyCode;
 use regex::Regex;
 pub use tts_string::TtsString;
@@ -147,10 +147,8 @@ const KEYCODE_LOOKUPS: [&str; 121] = [
     "Menu",
     "Unknown",
 ];
-const NUM_REGEXES: usize = 16;
 
 type TextMap = HashMap<String, String>;
-type Regexes = [Regex; NUM_REGEXES];
 
 /// Localized text lookup.
 pub struct Text {
@@ -170,10 +168,7 @@ pub struct Text {
     booleans: ValueMap<bool>,
     /// Cached text-to-speech strings.
     tts_strings: HashMap<String, TtsString>,
-    /// The regex used to find bindings.
-    re_bindings: Regexes,
-    /// The regex used to find wildcard values.
-    re_values: Regexes,
+
 }
 
 impl Text {
@@ -208,8 +203,6 @@ impl Text {
             [true, false],
             [text["TRUE"].clone(), text["FALSE"].clone()],
         );
-        let re_bindings = Self::get_regexes("\\");
-        let re_values = Self::get_regexes("%");
         Self {
             text,
             keycodes_spoken,
@@ -219,8 +212,6 @@ impl Text {
             note_names,
             booleans,
             tts_strings: HashMap::new(),
-            re_bindings,
-            re_values,
         }
     }
 
@@ -228,6 +219,14 @@ impl Text {
     pub fn get(&self, key: &str) -> String {
         match self.text.get(key) {
             Some(t) => t.clone(),
+            None => panic!("Invalid text key {}", key),
+        }
+    }
+
+    /// Returns the text.
+    pub fn get_ref(&self, key: &str) -> &str {
+        match self.text.get(key) {
+            Some(t) => t,
             None => panic!("Invalid text key {}", key),
         }
     }
@@ -345,113 +344,6 @@ impl Text {
         self.note_names[(note - MIN_NOTE) as usize].clone()
     }
 
-    /// Build a tooltip from a text lookup key and a list of events.
-    ///
-    /// - `key` The text lookup key, for example "TITLE_MAIN_MENU".
-    /// - `events` An ordered list of input events. These will be inserted in the order that the binding wildcards are found.
-    /// - `input` The input manager.
-    ///
-    /// Returns a tooltip `TtsString`.
-    pub fn get_tooltip(&mut self, key: &str, events: &[InputEvent], input: &Input) -> TtsString {
-        if let Entry::Occupied(o) = self.tts_strings.entry(key.to_string()) {
-            o.get().clone()
-        } else {
-            let t = self.get_tooltip_with_values(key, events, &[], input);
-            self.tts_strings.insert(key.to_string(), t);
-            self.tts_strings[key].clone()
-        }
-    }
-
-    /// Build a tooltip from a text lookup key and a list of events and another list of values.
-    ///
-    /// - `key` The text lookup key, for example "TITLE_MAIN_MENU".
-    /// - `events` An ordered list of input events. The index is used to find the wildcard in the text, e.g. if the index is 0 then the wildcard is "\0".
-    /// - `values` An ordered list of string values. The index is used to find the wildcard in the text, e.g. if the index is 0 then the wildcard is "%0".
-    /// - `input` The input manager.
-    ///
-    /// Returns a list of text-to-speech strings.
-    pub fn get_tooltip_with_values(
-        &self,
-        key: &str,
-        events: &[InputEvent],
-        values: &[&str],
-        input: &Input,
-    ) -> TtsString {
-        // Get the string with the wildcards.
-        let raw_string = self.get(key);
-        let mut spoken = raw_string.clone();
-        let mut seen = raw_string;
-        let mut regexes = HashMap::new();
-        // Iterate through each event.
-        for (i, event) in events.iter().enumerate() {
-            let regex = &self.re_bindings[i];
-            regexes.insert(i, regex.clone());
-            // Get the key bindings.
-            let bindings = input.get_bindings(event);
-            // The replacement string.
-            let mut spoken_replacement = vec![];
-            let mut seen_replacement = vec![];
-            let mut has_qwerty = false;
-            // Get the qwerty binding.
-            if let Some(qwerty) = bindings.0 {
-                has_qwerty = true;
-                // Add spoken mods.
-                for m in self.get_mods(qwerty, true) {
-                    spoken_replacement.push(m.to_string());
-                }
-                // Add seen mod tokens.
-                for m in self.get_mods(qwerty, false) {
-                    seen_replacement.push(m.to_string());
-                }
-                // Add spoken keys.
-                for k in self.get_keys(qwerty, true) {
-                    spoken_replacement.push(k.to_string());
-                }
-                // Add seen key tokens.
-                for k in self.get_keys(qwerty, false) {
-                    seen_replacement.push(k.to_string());
-                }
-            }
-            // Get the MIDI binding.
-            if let Some(midi) = bindings.1 {
-                if has_qwerty {
-                    // Or...
-                    let or_str = self.get("OR").trim().to_string();
-                    spoken_replacement.push(or_str.clone());
-                    seen_replacement.push(or_str.clone());
-                    // Get the MIDI binding.
-                    let midi = match &midi.alias {
-                        Some(alias) => alias.clone(),
-                        None => self.get_with_values(
-                            "MIDI_CONTROL",
-                            &[&midi.bytes[0].to_string(), &midi.bytes[1].to_string()],
-                        ),
-                    };
-                    spoken_replacement.push(midi.clone());
-                    seen_replacement.push(midi);
-                }
-            }
-            // Replace.
-            spoken = regexes[&i]
-                .replace(&spoken, &spoken_replacement.join(" "))
-                .to_string();
-            seen = regexes[&i]
-                .replace(&seen, &seen_replacement.join(" "))
-                .to_string();
-        }
-        // Iterate through each value.
-        let mut regexes = HashMap::new();
-        for (i, value) in values.iter().enumerate() {
-            // Get the value regex.
-            let regex = &self.re_values[i];
-            regexes.insert(i, regex.clone());
-            // Replace the value wildcard.
-            spoken = regex.replace(&spoken, *value).to_string();
-            seen = regex.replace(&seen, *value).to_string();
-        }
-        TtsString { spoken, seen }
-    }
-
     /// Returns a map of keycodes to displayable/sayable text (NOT string keys).
     fn get_keycode_map(text: &HashMap<String, String>, spoken: bool) -> HashMap<KeyCode, String> {
         let suffix = if spoken { "_SPOKEN" } else { "_SEEN" };
@@ -486,9 +378,7 @@ impl Text {
         piano_roll_modes
     }
 
-    fn get_regexes(prefix: &str) -> Regexes {
-        [0; NUM_REGEXES].map(|i| Regex::new(&format!("{}{}", prefix, i)).unwrap())
-    }
+
 
     /// Returns a qwerty binding's mods as strings.
     ///
