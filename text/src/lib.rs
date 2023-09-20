@@ -147,9 +147,10 @@ const KEYCODE_LOOKUPS: [&str; 121] = [
     "Menu",
     "Unknown",
 ];
+const NUM_REGEXES: usize = 16;
 
 type TextMap = HashMap<String, String>;
-type RegexMap = HashMap<usize, Regex>;
+type Regexes = [Regex; NUM_REGEXES];
 
 /// Localized text lookup.
 pub struct Text {
@@ -170,9 +171,9 @@ pub struct Text {
     /// Cached text-to-speech strings.
     tts_strings: HashMap<String, TtsString>,
     /// The regex used to find bindings.
-    re_bindings: RegexMap,
+    re_bindings: Regexes,
     /// The regex used to find wildcard values.
-    re_values: RegexMap,
+    re_values: Regexes,
 }
 
 impl Text {
@@ -207,6 +208,8 @@ impl Text {
             [true, false],
             [text["TRUE"].clone(), text["FALSE"].clone()],
         );
+        let re_bindings = Self::get_regexes("\\");
+        let re_values = Self::get_regexes("%");
         Self {
             text,
             keycodes_spoken,
@@ -216,8 +219,8 @@ impl Text {
             note_names,
             booleans,
             tts_strings: HashMap::new(),
-            re_bindings: RegexMap::new(),
-            re_values: RegexMap::new(),
+            re_bindings,
+            re_values,
         }
     }
 
@@ -368,7 +371,7 @@ impl Text {
     ///
     /// Returns a list of text-to-speech strings.
     pub fn get_tooltip_with_values(
-        &mut self,
+        &self,
         key: &str,
         events: &[InputEvent],
         values: &[&str],
@@ -381,7 +384,7 @@ impl Text {
         let mut regexes = HashMap::new();
         // Iterate through each event.
         for (i, event) in events.iter().enumerate() {
-            let regex = self.get_regex(&i, true);
+            let regex = &self.re_bindings[i];
             regexes.insert(i, regex.clone());
             // Get the key bindings.
             let bindings = input.get_bindings(event);
@@ -440,7 +443,7 @@ impl Text {
         let mut regexes = HashMap::new();
         for (i, value) in values.iter().enumerate() {
             // Get the value regex.
-            let regex = self.get_regex(&i, false);
+            let regex = &self.re_values[i];
             regexes.insert(i, regex.clone());
             // Replace the value wildcard.
             spoken = regex.replace(&spoken, *value).to_string();
@@ -483,29 +486,8 @@ impl Text {
         piano_roll_modes
     }
 
-    /// Returns a regex that searches for wildcard `i`. Creates a regext if there is none.
-    ///
-    /// - `i` The wildcard value.
-    /// - `bindings` If true, add a regex to `self.re_bindings`. If false add a regex to `self.re_values`.
-    fn get_regex<'a>(&'a mut self, i: &usize, bindings: bool) -> &'a Regex {
-        if bindings {
-            Self::get_or_insert_regex(i, &mut self.re_bindings, r"\\")
-        } else {
-            Self::get_or_insert_regex(i, &mut self.re_values, "%")
-        }
-    }
-
-    /// Get or insert a regex in a HashMap.
-    fn get_or_insert_regex<'a>(i: &usize, map: &'a mut RegexMap, prefix: &str) -> &'a Regex {
-        map.entry(*i)
-            .or_insert(Self::get_regex_from_index(i, prefix))
-    }
-
-    /// Returns a regex generated from index `i` and a string `prefix`.
-    fn get_regex_from_index(i: &usize, prefix: &str) -> Regex {
-        let mut r = prefix.to_string();
-        r.push_str(&i.to_string());
-        Regex::new(&r).unwrap()
+    fn get_regexes(prefix: &str) -> Regexes {
+        [0; NUM_REGEXES].map(|i| Regex::new(&format!("{}{}", prefix, i)).unwrap())
     }
 
     /// Returns a qwerty binding's mods as strings.
