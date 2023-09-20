@@ -226,7 +226,7 @@ impl Text {
 
     /// Returns the text.
     pub fn get(&self, key: &str) -> String {
-        match self.text.get(&key.to_string()) {
+        match self.text.get(key) {
             Some(t) => t.clone(),
             None => panic!("Invalid text key {}", key),
         }
