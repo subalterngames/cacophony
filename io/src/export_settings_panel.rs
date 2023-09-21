@@ -34,8 +34,11 @@ impl ExportSettingsPanel {
         input: &Input,
         text: &Text,
     ) -> TtsString {
-        let n = text.get("NONE");
-        let value = value.as_ref().unwrap_or(&n);
+        let n = text.get_ref("NONE");
+        let value = match value {
+            Some(value) => value.as_str(),
+            None => n,
+        };
         if state.input.alphanumeric_input {
             TtsString::from(text.get_with_values(if_true, &[value]))
         } else {
@@ -320,7 +323,7 @@ impl ExportSettingsPanel {
                             "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_CHANNEL_AND_PRESET"
                         }
                     };
-                    TtsString::from(text.get(key))
+                    TtsString::from(text.get_ref(key))
                 }
             };
             tts.enqueue(s);

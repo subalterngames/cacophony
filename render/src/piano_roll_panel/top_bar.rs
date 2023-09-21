@@ -166,13 +166,13 @@ impl TopBar {
         let edit_mode = match state.piano_roll_mode {
             PianoRollMode::Edit => Self::get_edit_mode_text(&state.edit_mode, text),
             PianoRollMode::Select => match state.select_mode {
-                SelectMode::Single(_) => text.get("PIANO_ROLL_PANEL_EDIT_MODE_SINGLE"),
-                SelectMode::Many(_) => text.get("PIANO_ROLL_PANEL_EDIT_MODE_MANY"),
+                SelectMode::Single(_) => text.get_ref("PIANO_ROLL_PANEL_EDIT_MODE_SINGLE"),
+                SelectMode::Many(_) => text.get_ref("PIANO_ROLL_PANEL_EDIT_MODE_MANY"),
             },
             PianoRollMode::Time => Self::get_edit_mode_text(&state.time.mode, text),
             PianoRollMode::View => Self::get_edit_mode_text(&state.view.mode, text),
         };
-        let edit_mode = Label {
+        let edit_mode = LabelRef {
             text: edit_mode,
             position: self.edit_mode_position,
         };
@@ -181,7 +181,7 @@ impl TopBar {
         } else {
             ColorKey::NoFocus
         };
-        renderer.text(&edit_mode, &edit_mode_color);
+        renderer.text_ref(&edit_mode, &edit_mode_color);
 
         // Horizontal line.
         renderer.horizontal_line(
@@ -195,13 +195,13 @@ impl TopBar {
     }
 
     /// Returns the string corresponding to the edit mode.
-    fn get_edit_mode_text(edit_mode: &IndexedEditModes, text: &Text) -> String {
+    fn get_edit_mode_text<'t>(edit_mode: &IndexedEditModes, text: &'t Text) -> &'t str {
         let key = match edit_mode.get_ref() {
             EditMode::Normal => "PIANO_ROLL_PANEL_EDIT_MODE_NORMAL",
             EditMode::Quick => "PIANO_ROLL_PANEL_EDIT_MODE_QUICK",
             EditMode::Precise => "PIANO_ROLL_PANEL_EDIT_MODE_PRECISE",
         };
-        text.get(key)
+        text.get_ref(key)
     }
 
     /// Insert an edit mode label into a HashMap.

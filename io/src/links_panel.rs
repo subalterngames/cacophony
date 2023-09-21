@@ -56,7 +56,7 @@ impl Panel for LinksPanel {
         _: &mut SharedExporter,
     ) -> Option<Snapshot> {
         if input.happened(&InputEvent::InputTTS) {
-            tts.enqueue(TtsString::from(text.get("LINKS_PANEL_INPUT_TTS_0")));
+            tts.enqueue(TtsString::from(text.get_ref("LINKS_PANEL_INPUT_TTS_0")));
             tts.enqueue(self.tooltips.get_tooltip(
                 "LINKS_PANEL_INPUT_TTS_1",
                 &[InputEvent::WebsiteUrl],

@@ -148,7 +148,7 @@ impl ExportSettingsPanel {
                 }
                 ExportSetting::Title => {
                     let key_input = KeyInput::new_from_padding(
-                        &text.get("EXPORT_SETTINGS_PANEL_TITLE"),
+                        text.get_ref("EXPORT_SETTINGS_PANEL_TITLE"),
                         &exporter.metadata.title,
                         [x, y],
                         self.width - 2,
@@ -167,7 +167,7 @@ impl ExportSettingsPanel {
                     }
                 }
                 ExportSetting::Artist => self.draw_optional_input(
-                    &text.get("EXPORT_SETTINGS_PANEL_ARTIST"),
+                    text.get_ref("EXPORT_SETTINGS_PANEL_ARTIST"),
                     &exporter.metadata.artist,
                     (x, &mut y),
                     renderer,
@@ -185,7 +185,7 @@ impl ExportSettingsPanel {
                     );
                 }
                 ExportSetting::Album => self.draw_optional_input(
-                    &text.get("EXPORT_SETTINGS_PANEL_ALBUM"),
+                    text.get_ref("EXPORT_SETTINGS_PANEL_ALBUM"),
                     &exporter.metadata.album,
                     (x, &mut y),
                     renderer,
@@ -209,7 +209,7 @@ impl ExportSettingsPanel {
                     y += 1;
                 }
                 ExportSetting::Genre => self.draw_optional_input(
-                    &text.get("EXPORT_SETTINGS_PANEL_GENRE"),
+                    text.get_ref("EXPORT_SETTINGS_PANEL_GENRE"),
                     &exporter.metadata.genre,
                     (x, &mut y),
                     renderer,
@@ -218,7 +218,7 @@ impl ExportSettingsPanel {
                 ),
                 ExportSetting::Comment => {
                     self.draw_optional_input(
-                        &text.get("EXPORT_SETTINGS_PANEL_COMMENT"),
+                        text.get_ref("EXPORT_SETTINGS_PANEL_COMMENT"),
                         &exporter.metadata.comment,
                         (x, &mut y),
                         renderer,

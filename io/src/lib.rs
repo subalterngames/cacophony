@@ -105,7 +105,7 @@ impl IO {
         let mut tooltips = Tooltips::default();
         // App TTS.
         let app_tts = vec![
-            TtsString::from(text.get("APP_TTS_0")),
+            TtsString::from(text.get_ref("APP_TTS_0")),
             tooltips
                 .get_tooltip(
                     "APP_TTS_1",

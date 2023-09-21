@@ -188,7 +188,7 @@ impl Panel for OpenFilePanel {
                         &text.get_with_values("OPEN_FILE_PANEL_STATUS_TTS_SELECTION", &[&name]),
                     );
                 }
-                _ => s.push_str(&text.get("OPEN_FILE_PANEL_STATUS_TTS_NO_SELECTION")),
+                _ => s.push_str(text.get_ref("OPEN_FILE_PANEL_STATUS_TTS_NO_SELECTION")),
             }
             tts.enqueue(s);
         }

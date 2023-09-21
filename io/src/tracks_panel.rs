@@ -122,20 +122,20 @@ impl Panel for TracksPanel {
                             // Muted.
                             if track.mute {
                                 s.push(' ');
-                                s.push_str(&text.get("TRACKS_PANEL_STATUS_TTS_MUTED"))
+                                s.push_str(text.get_ref("TRACKS_PANEL_STATUS_TTS_MUTED"))
                             }
                             // Soloed.
                             if track.solo {
                                 s.push(' ');
-                                s.push_str(&text.get("TRACKS_PANEL_STATUS_TTS_SOLOED"))
+                                s.push_str(text.get_ref("TRACKS_PANEL_STATUS_TTS_SOLOED"))
                             }
                         }
                         // No SoundFont.
-                        None => s.push_str(&text.get("TRACKS_PANEL_STATUS_TTS_NO_SOUNDFONT")),
+                        None => s.push_str(text.get_ref("TRACKS_PANEL_STATUS_TTS_NO_SOUNDFONT")),
                     }
                     tts.enqueue(s)
                 }
-                None => tts.enqueue(text.get("TRACKS_PANEL_STATUS_TTS_NO_SELECTION")),
+                None => tts.enqueue(text.get_ref("TRACKS_PANEL_STATUS_TTS_NO_SELECTION")),
             }
             None
         }

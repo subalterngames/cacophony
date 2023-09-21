@@ -50,7 +50,7 @@ impl LinksPanel {
             &website.text,
             &discord.text,
             &github.text,
-            &text.get("TITLE_LINKS"),
+            text.get_ref("TITLE_LINKS"),
         ]
         .iter()
         .map(|s| s.chars().count() as u32)

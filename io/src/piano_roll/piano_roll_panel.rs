@@ -83,7 +83,9 @@ impl PianoRollPanel {
 
     /// Returns the text-to-speech string that will be said if there is no valid track.
     fn tts_no_track(text: &Text) -> Vec<TtsString> {
-        vec![TtsString::from(text.get("PIANO_ROLL_PANEL_TTS_NO_TRACK"))]
+        vec![TtsString::from(
+            text.get_ref("PIANO_ROLL_PANEL_TTS_NO_TRACK"),
+        )]
     }
 
     /// Returns the sub-panel corresponding to the current piano roll mode.
@@ -209,7 +211,7 @@ impl Panel for PianoRollPanel {
                             }
                             // Not armed.
                             false => tts_strings.push(TtsString::from(
-                                text.get("PIANO_ROLL_PANEL_STATUS_TTS_NOT_ARMED"),
+                                text.get_ref("PIANO_ROLL_PANEL_STATUS_TTS_NOT_ARMED"),
                             )),
                         }
                         // How many tracks?

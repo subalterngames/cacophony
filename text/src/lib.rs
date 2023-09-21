@@ -229,7 +229,7 @@ impl Text {
 
     /// Returns the text. Fills in the values.
     pub fn get_with_values(&self, key: &str, values: &[&str]) -> String {
-        match self.text.get(&String::from(key)) {
+        match self.text.get(key) {
             Some(t) => {
                 let mut text = t.clone();
                 for (i, v) in values.iter().enumerate() {
