@@ -262,17 +262,17 @@ impl Text {
     }
 
     /// Returns the string version of a piano roll mode.
-    pub fn get_piano_roll_mode(&self, mode: &PianoRollMode) -> String {
+    pub fn get_piano_roll_mode(&self, mode: &PianoRollMode) -> &str {
         match self.piano_roll_modes.get(mode) {
-            Some(t) => t.clone(),
+            Some(t) => t,
             None => panic!("Invalid piano roll mode {:?}", mode),
         }
     }
 
     /// Returns the string version of an edit mode.
-    pub fn get_edit_mode(&self, mode: &EditMode) -> String {
+    pub fn get_edit_mode(&self, mode: &EditMode) -> &str {
         match self.edit_modes.get(mode) {
-            Some(t) => t.clone(),
+            Some(t) => t,
             None => panic!("Invalid edit mode {:?}", mode),
         }
     }

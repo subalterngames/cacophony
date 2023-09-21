@@ -187,7 +187,7 @@ impl Panel for PianoRollPanel {
                         // The piano roll mode.
                         tts_strings.push(TtsString::from(text.get_with_values(
                             "PIANO_ROLL_PANEL_STATUS_TTS_PIANO_ROLL_MODE",
-                            &[&text.get_piano_roll_mode(&state.piano_roll_mode)],
+                            &[text.get_piano_roll_mode(&state.piano_roll_mode)],
                         )));
                         match state.input.armed {
                             // The beat and the volume.

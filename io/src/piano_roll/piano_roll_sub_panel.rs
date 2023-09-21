@@ -14,7 +14,7 @@ pub(crate) trait PianoRollSubPanel {
 pub(crate) fn get_edit_mode_status_tts(mode: &EditMode, text: &Text) -> TtsString {
     TtsString::from(text.get_with_values(
         "PIANO_ROLL_PANEL_STATUS_TTS_EDIT_MODE",
-        &[&text.get_edit_mode(mode)],
+        &[text.get_edit_mode(mode)],
     ))
 }
 
@@ -30,7 +30,7 @@ pub(crate) fn get_cycle_edit_mode_input_tts(
     tooltips.get_tooltip_with_values(
         "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_MODE",
         &[InputEvent::PianoRollCycleMode],
-        &[&text.get_edit_mode(m1.get_ref())],
+        &[text.get_edit_mode(m1.get_ref())],
         input,
         text,
     )
