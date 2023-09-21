@@ -8,6 +8,8 @@ const NUM_REGEXES: usize = 16;
 
 type Regexes = [Regex; NUM_REGEXES];
 
+/// A map of tooltips and the regex bindings used to find them.
+/// This isn't handled globally because we want `Text` to be immutable.
 pub struct Tooltips {
     /// The map of keys and tooltips.
     tooltips: HashMap<String, TtsString>,
@@ -20,7 +22,7 @@ pub struct Tooltips {
 impl Default for Tooltips {
     fn default() -> Self {
         let tooltips = HashMap::new();
-        let re_bindings = Self::get_regexes("\\");
+        let re_bindings = Self::get_regexes("\\\\");
         let re_values = Self::get_regexes("%");
         Self {
             tooltips,
@@ -108,10 +110,15 @@ impl Tooltips {
         TtsString { spoken, seen }
     }
 
+    /// Returns an array of regexes with search patterns that begin with `prefix`.
     fn get_regexes(prefix: &str) -> Regexes {
-        [0; NUM_REGEXES].map(|i| Regex::new(&format!("{}{}", prefix, i)).unwrap())
+        let iv = (0..NUM_REGEXES).collect::<Vec<usize>>();
+        let mut ia = [0usize; NUM_REGEXES];
+        ia.copy_from_slice(&iv[0..NUM_REGEXES]);
+        ia.map(|i| Regex::new(&format!("{}{}", prefix, i)).unwrap())
     }
 
+    /// Converts an input event to spoken and seen strings.
     fn event_to_text(
         regex: &Regex,
         event: &InputEvent,
