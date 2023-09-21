@@ -5,6 +5,7 @@ use common::PanelType;
 #[derive(Default)]
 pub(crate) struct QuitPanel {
     popup: Popup,
+    tooltips: Tooltips,
 }
 
 impl QuitPanel {
@@ -20,7 +21,7 @@ impl Panel for QuitPanel {
         _: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &mut Text,
+        text: &Text,
         _: &mut PathsState,
         _: &mut SharedExporter,
     ) -> Option<Snapshot> {
@@ -28,10 +29,11 @@ impl Panel for QuitPanel {
             Some(Snapshot::from_io_commands(vec![IOCommand::Quit]))
         } else {
             if input.happened(&InputEvent::InputTTS) {
-                tts.enqueue(text.get_tooltip(
+                tts.enqueue(self.tooltips.get_tooltip(
                     "QUIT_PANEL_INPUT_TTS",
                     &[InputEvent::QuitPanelYes, InputEvent::QuitPanelNo],
                     input,
+                    text,
                 ));
             } else if input.happened(&InputEvent::QuitPanelNo) {
                 self.popup.disable(state);

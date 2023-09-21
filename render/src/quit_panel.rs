@@ -1,5 +1,6 @@
 use crate::{panel::*, popup::Popup};
 use input::InputEvent;
+use text::Tooltips;
 
 const LABEL_PADDING: u32 = 8;
 const LABEL_COLOR: ColorKey = ColorKey::Value;
@@ -15,13 +16,14 @@ pub(crate) struct QuitPanel {
 }
 
 impl QuitPanel {
-    pub fn new(config: &Ini, text: &mut Text, input: &Input) -> Self {
+    pub fn new(config: &Ini, text: &Text, input: &Input) -> Self {
+        let mut tooltips = Tooltips::default();
         // Get the width of the panel.
-        let yes = text
-            .get_tooltip("QUIT_PANEL_YES", &[InputEvent::QuitPanelYes], input)
+        let yes = tooltips
+            .get_tooltip("QUIT_PANEL_YES", &[InputEvent::QuitPanelYes], input, text)
             .seen;
-        let no = text
-            .get_tooltip("QUIT_PANEL_NO", &[InputEvent::QuitPanelNo], input)
+        let no = tooltips
+            .get_tooltip("QUIT_PANEL_NO", &[InputEvent::QuitPanelNo], input, text)
             .seen;
         let yes_w = yes.chars().count() as u32 + LABEL_PADDING;
         let w = yes_w + no.chars().count() as u32 + 4;

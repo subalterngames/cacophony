@@ -4,6 +4,7 @@ use super::{
 use crate::panel::*;
 use common::sizes::get_viewport_size;
 use ini::Ini;
+use text::Tooltips;
 
 /// The piano roll view sub-panel.
 pub(super) struct View {
@@ -11,6 +12,7 @@ pub(super) struct View {
     deltas: EditModeDeltas,
     /// The default viewport dt.
     dt_0: u64,
+    tooltips: Tooltips,
 }
 
 impl View {
@@ -20,6 +22,7 @@ impl View {
         Self {
             deltas: EditModeDeltas::new(config),
             dt_0,
+            tooltips: Tooltips::default(),
         }
     }
 
@@ -57,7 +60,7 @@ impl Panel for View {
         _: &mut Conn,
         input: &Input,
         _: &mut TTS,
-        _: &mut Text,
+        _: &Text,
         _: &mut PathsState,
         _: &mut SharedExporter,
     ) -> Option<Snapshot> {
@@ -156,7 +159,7 @@ impl Panel for View {
 }
 
 impl PianoRollSubPanel for View {
-    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString> {
+    fn get_status_tts(&mut self, state: &State, text: &Text) -> Vec<TtsString> {
         let mut s = vec![TtsString::from(text.get_with_values(
             "PIANO_ROLL_PANEL_STATUS_TTS_VIEW",
             &[
@@ -170,9 +173,9 @@ impl PianoRollSubPanel for View {
         s
     }
 
-    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
+    fn get_input_tts(&mut self, state: &State, input: &Input, text: &Text) -> Vec<TtsString> {
         let mut s = if state.view.single_track {
-            vec![text.get_tooltip(
+            vec![self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_0",
                 &[
                     InputEvent::ViewUp,
@@ -181,39 +184,50 @@ impl PianoRollSubPanel for View {
                     InputEvent::ViewRight,
                 ],
                 input,
+                text,
             )]
         } else {
             vec![
-                text.get_tooltip(
+                self.tooltips.get_tooltip(
                     "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK_0",
                     &[InputEvent::ViewLeft, InputEvent::ViewRight],
                     input,
+                    text,
                 ),
-                text.get_tooltip(
+                self.tooltips.get_tooltip(
                     "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK_1",
                     &[InputEvent::ViewStart, InputEvent::ViewEnd],
                     input,
+                    text,
                 ),
             ]
         };
         s.append(&mut vec![
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_1",
                 &[InputEvent::ViewStart, InputEvent::ViewEnd],
                 input,
+                text,
             ),
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_2",
                 &[InputEvent::ViewZoomIn, InputEvent::ViewZoomOut],
                 input,
+                text,
             ),
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_3",
                 &[InputEvent::ViewZoomDefault],
                 input,
+                text,
             ),
         ]);
-        s.push(get_cycle_edit_mode_input_tts(&state.view.mode, input, text));
+        s.push(get_cycle_edit_mode_input_tts(
+            &mut self.tooltips,
+            &state.view.mode,
+            input,
+            text,
+        ));
         s
     }
 }

@@ -25,7 +25,7 @@ use hashbrown::HashMap;
 use ini::Ini;
 use input::{Input, InputEvent};
 use std::path::Path;
-use text::{Enqueable, Text, TTS};
+use text::{Enqueable, Text, Tooltips, TtsString, TTS};
 mod export_panel;
 mod import_midi;
 mod io_command;
@@ -47,7 +47,6 @@ use panel::Panel;
 use piano_roll::PianoRollPanel;
 use save::Save;
 use snapshot::Snapshot;
-use text::TtsString;
 use tracks_panel::TracksPanel;
 mod abc123;
 mod export_settings_panel;
@@ -103,49 +102,82 @@ pub struct IO {
 impl IO {
     pub fn new(config: &Ini, input: &Input, input_state: &InputState, text: &mut Text) -> Self {
         let mut tts = HashMap::new();
+        let mut tooltips = Tooltips::default();
         // App TTS.
         let app_tts = vec![
             TtsString::from(text.get("APP_TTS_0")),
-            text.get_tooltip(
-                "APP_TTS_1",
-                &[
-                    InputEvent::StatusTTS,
-                    InputEvent::InputTTS,
-                    InputEvent::FileTTS,
-                ],
-                input,
-            ),
-            text.get_tooltip("APP_TTS_2", &[InputEvent::Quit], input),
-            text.get_tooltip(
-                "APP_TTS_3",
-                &[InputEvent::PreviousPanel, InputEvent::NextPanel],
-                input,
-            ),
-            text.get_tooltip("APP_TTS_4", &[InputEvent::Undo, InputEvent::Redo], input),
-            text.get_tooltip("APP_TTS_5", &[InputEvent::StopTTS], input),
-            text.get_tooltip("APP_TTS_6", &[InputEvent::EnableLinksPanel], input),
+            tooltips
+                .get_tooltip(
+                    "APP_TTS_1",
+                    &[
+                        InputEvent::StatusTTS,
+                        InputEvent::InputTTS,
+                        InputEvent::FileTTS,
+                    ],
+                    input,
+                    text,
+                )
+                .clone(),
+            tooltips
+                .get_tooltip("APP_TTS_2", &[InputEvent::Quit], input, text)
+                .clone(),
+            tooltips
+                .get_tooltip(
+                    "APP_TTS_3",
+                    &[InputEvent::PreviousPanel, InputEvent::NextPanel],
+                    input,
+                    text,
+                )
+                .clone(),
+            tooltips
+                .get_tooltip(
+                    "APP_TTS_4",
+                    &[InputEvent::Undo, InputEvent::Redo],
+                    input,
+                    text,
+                )
+                .clone(),
+            tooltips
+                .get_tooltip("APP_TTS_5", &[InputEvent::StopTTS], input, text)
+                .clone(),
+            tooltips
+                .get_tooltip("APP_TTS_6", &[InputEvent::EnableLinksPanel], input, text)
+                .clone(),
         ];
         tts.insert(InputEvent::AppTTS, app_tts);
         // File TTS.
         let file_tts = vec![
-            text.get_tooltip("FILE_TTS_0", &[InputEvent::NewFile], input),
-            text.get_tooltip("FILE_TTS_1", &[InputEvent::OpenFile], input),
-            text.get_tooltip(
-                "FILE_TTS_2",
-                &[InputEvent::SaveFile, InputEvent::SaveFileAs],
-                input,
-            ),
-            text.get_tooltip("FILE_TTS_3", &[InputEvent::ExportFile], input),
-            text.get_tooltip("FILE_TTS_4", &[InputEvent::ImportMidi], input),
-            text.get_tooltip("FILE_TTS_5", &[InputEvent::EditConfig], input),
+            tooltips
+                .get_tooltip("FILE_TTS_0", &[InputEvent::NewFile], input, text)
+                .clone(),
+            tooltips
+                .get_tooltip("FILE_TTS_1", &[InputEvent::OpenFile], input, text)
+                .clone(),
+            tooltips
+                .get_tooltip(
+                    "FILE_TTS_2",
+                    &[InputEvent::SaveFile, InputEvent::SaveFileAs],
+                    input,
+                    text,
+                )
+                .clone(),
+            tooltips
+                .get_tooltip("FILE_TTS_3", &[InputEvent::ExportFile], input, text)
+                .clone(),
+            tooltips
+                .get_tooltip("FILE_TTS_4", &[InputEvent::ImportMidi], input, text)
+                .clone(),
+            tooltips
+                .get_tooltip("FILE_TTS_5", &[InputEvent::EditConfig], input, text)
+                .clone(),
         ];
         tts.insert(InputEvent::FileTTS, file_tts);
-        let music_panel = MusicPanel {};
+        let music_panel = MusicPanel::default();
         let tracks_panel = TracksPanel::default();
         let open_file_panel = OpenFilePanel::default();
         let piano_roll_panel = PianoRollPanel::new(&input_state.beat.get_u(), config);
         let export_panel = ExportPanel::default();
-        let export_settings_panel = ExportSettingsPanel {};
+        let export_settings_panel = ExportSettingsPanel::default();
         let quit_panel = QuitPanel::default();
         let links_panel = LinksPanel::default();
         Self {

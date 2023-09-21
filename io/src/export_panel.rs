@@ -27,7 +27,7 @@ impl Panel for ExportPanel {
         conn: &mut Conn,
         _: &Input,
         _: &mut TTS,
-        _: &mut Text,
+        _: &Text,
         _: &mut PathsState,
         _: &mut SharedExporter,
     ) -> Option<Snapshot> {

@@ -4,7 +4,10 @@ use common::time::Time;
 use common::{MidiTrack, Note, SelectMode};
 
 /// Select notes.
-pub(super) struct Select {}
+#[derive(Default)]
+pub(super) struct Select {
+    tooltips: Tooltips,
+}
 
 impl Select {
     /// Returns the index of the note closest (and before) the cursor.
@@ -61,7 +64,7 @@ impl Panel for Select {
         _: &mut Conn,
         input: &Input,
         _: &mut TTS,
-        _: &mut Text,
+        _: &Text,
         _: &mut PathsState,
         _: &mut SharedExporter,
     ) -> Option<Snapshot> {
@@ -334,7 +337,7 @@ impl Panel for Select {
 }
 
 impl PianoRollSubPanel for Select {
-    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString> {
+    fn get_status_tts(&mut self, state: &State, text: &Text) -> Vec<TtsString> {
         let tts_string = match &state.select_mode {
             SelectMode::Single(index) => match index {
                 Some(index) => match state.select_mode.get_notes(&state.music) {
@@ -370,58 +373,80 @@ impl PianoRollSubPanel for Select {
         vec![tts_string]
     }
 
-    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
+    fn get_input_tts(&mut self, state: &State, input: &Input, text: &Text) -> Vec<TtsString> {
         let (mut tts_strings, selected) = match &state.select_mode {
             SelectMode::Single(index) => match index {
                 Some(_) => (
-                    vec![text.get_tooltip(
-                        "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_SINGLE",
-                        &[InputEvent::SelectStartLeft, InputEvent::SelectStartRight],
-                        input,
-                    )],
+                    vec![self
+                        .tooltips
+                        .get_tooltip(
+                            "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_SINGLE",
+                            &[InputEvent::SelectStartLeft, InputEvent::SelectStartRight],
+                            input,
+                            text,
+                        )
+                        .clone()],
                     true,
                 ),
                 None => (vec![get_no_selection_status_tts(text)], false),
             },
             SelectMode::Many(indices) => match indices {
                 Some(_) => (
-                    vec![text.get_tooltip(
-                        "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_MANY",
-                        &[
-                            InputEvent::SelectStartLeft,
-                            InputEvent::SelectStartRight,
-                            InputEvent::SelectEndLeft,
-                            InputEvent::SelectEndRight,
-                            InputEvent::SelectNone,
-                            InputEvent::SelectAll,
-                            InputEvent::PianoRollCycleMode,
-                        ],
-                        input,
-                    )],
+                    vec![self
+                        .tooltips
+                        .get_tooltip(
+                            "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_MANY",
+                            &[
+                                InputEvent::SelectStartLeft,
+                                InputEvent::SelectStartRight,
+                                InputEvent::SelectEndLeft,
+                                InputEvent::SelectEndRight,
+                                InputEvent::SelectNone,
+                                InputEvent::SelectAll,
+                                InputEvent::PianoRollCycleMode,
+                            ],
+                            input,
+                            text,
+                        )
+                        .clone()],
                     true,
                 ),
                 None => (vec![get_no_selection_status_tts(text)], false),
             },
         };
         if state.select_mode.get_note_indices().is_some() {
-            tts_strings.push(text.get_tooltip(
-                "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_ALL",
-                &[InputEvent::SelectAll],
-                input,
-            ));
+            tts_strings.push(
+                self.tooltips
+                    .get_tooltip(
+                        "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_ALL",
+                        &[InputEvent::SelectAll],
+                        input,
+                        text,
+                    )
+                    .clone(),
+            );
         }
         if selected {
-            tts_strings.push(text.get_tooltip(
-                "PIANO_ROLL_PANEL_INPUT_TTS_DESELECT",
-                &[InputEvent::SelectNone],
-                input,
-            ));
+            tts_strings.push(
+                self.tooltips
+                    .get_tooltip(
+                        "PIANO_ROLL_PANEL_INPUT_TTS_DESELECT",
+                        &[InputEvent::SelectNone],
+                        input,
+                        text,
+                    )
+                    .clone(),
+            );
         }
         let cycle_key = match state.select_mode {
             SelectMode::Single(_) => "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_MANY",
             SelectMode::Many(_) => "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_SINGLE",
         };
-        tts_strings.push(text.get_tooltip(cycle_key, &[InputEvent::PianoRollCycleMode], input));
+        tts_strings.push(
+            self.tooltips
+                .get_tooltip(cycle_key, &[InputEvent::PianoRollCycleMode], input, text)
+                .clone(),
+        );
         tts_strings
     }
 }

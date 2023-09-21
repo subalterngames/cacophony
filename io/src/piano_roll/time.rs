@@ -6,12 +6,14 @@ use ini::Ini;
 pub(super) struct Time {
     /// Time values and deltas.
     deltas: EditModeDeltas,
+    tooltips: Tooltips,
 }
 
 impl Time {
     pub fn new(config: &Ini) -> Self {
         Self {
             deltas: EditModeDeltas::new(config),
+            tooltips: Tooltips::default(),
         }
     }
 
@@ -65,7 +67,7 @@ impl Panel for Time {
         _: &mut Conn,
         input: &Input,
         _: &mut TTS,
-        _: &mut Text,
+        _: &Text,
         _: &mut PathsState,
         _: &mut SharedExporter,
     ) -> Option<Snapshot> {
@@ -161,7 +163,7 @@ impl Panel for Time {
 }
 
 impl PianoRollSubPanel for Time {
-    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString> {
+    fn get_status_tts(&mut self, state: &State, text: &Text) -> Vec<TtsString> {
         let mut s = vec![get_edit_mode_status_tts(state.time.mode.get_ref(), text)];
         s.push(TtsString::from(text.get_with_values(
             "PIANO_ROLL_PANEL_STATUS_TTS_TIME",
@@ -173,47 +175,55 @@ impl PianoRollSubPanel for Time {
         s
     }
 
-    fn get_input_tts(&self, _: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
+    fn get_input_tts(&mut self, _: &State, input: &Input, text: &Text) -> Vec<TtsString> {
         vec![
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_TIME_0",
                 &[InputEvent::TimeCursorLeft, InputEvent::TimeCursorRight],
                 input,
+                text,
             ),
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_TIME_1",
                 &[InputEvent::TimeCursorStart, InputEvent::TimeCursorEnd],
                 input,
+                text,
             ),
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_TIME_2",
                 &[InputEvent::TimeCursorBeat],
                 input,
+                text,
             ),
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_TIME_3",
                 &[InputEvent::TimeCursorPlayback],
                 input,
+                text,
             ),
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_TIME_4",
                 &[InputEvent::TimePlaybackLeft, InputEvent::TimePlaybackRight],
                 input,
+                text,
             ),
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_TIME_5",
                 &[InputEvent::TimePlaybackStart, InputEvent::TimePlaybackEnd],
                 input,
+                text,
             ),
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_TIME_6",
                 &[InputEvent::TimePlaybackBeat],
                 input,
+                text,
             ),
-            text.get_tooltip(
+            self.tooltips.get_tooltip(
                 "PIANO_ROLL_PANEL_INPUT_TTS_TIME_7",
                 &[InputEvent::TimePlaybackCursor],
                 input,
+                text,
             ),
         ]
     }

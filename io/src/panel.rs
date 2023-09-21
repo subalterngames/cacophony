@@ -1,12 +1,10 @@
 pub(crate) use crate::io_command::IOCommand;
 pub(crate) use crate::popup::Popup;
 pub(crate) use crate::Snapshot;
-pub(crate) use audio::SharedExporter;
-pub(crate) use audio::{Command, Conn};
+pub(crate) use audio::{Command, Conn, SharedExporter};
 pub(crate) use common::{Index, PathsState, State};
 pub(crate) use input::{Input, InputEvent};
-pub(crate) use text::TtsString;
-pub(crate) use text::{Enqueable, Text, TTS};
+pub(crate) use text::{Enqueable, Text, Tooltips, TtsString, TTS};
 
 /// A panel can be updated, and can update the rest of the app state.
 pub(crate) trait Panel {
@@ -28,7 +26,7 @@ pub(crate) trait Panel {
         conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &mut Text,
+        text: &Text,
         paths_state: &mut PathsState,
         exporter: &mut SharedExporter,
     ) -> Option<Snapshot>;

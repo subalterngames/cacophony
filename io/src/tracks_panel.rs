@@ -9,6 +9,7 @@ const TRACK_SCROLL_EVENTS: [InputEvent; 2] = [InputEvent::PreviousTrack, InputEv
 /// A list of tracks and their parameters.
 pub(crate) struct TracksPanel {
     default_soundfont_path: PathBuf,
+    tooltips: Tooltips,
 }
 
 impl TracksPanel {
@@ -79,6 +80,7 @@ impl Default for TracksPanel {
         let default_soundfont_path = Paths::default().default_soundfont_path.clone();
         Self {
             default_soundfont_path,
+            tooltips: Tooltips::default(),
         }
     }
 }
@@ -90,7 +92,7 @@ impl Panel for TracksPanel {
         conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &mut Text,
+        text: &Text,
         _: &mut PathsState,
         _: &mut SharedExporter,
     ) -> Option<Snapshot> {
@@ -139,45 +141,52 @@ impl Panel for TracksPanel {
         }
         // Input TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let mut s = vec![text.get_tooltip(
+            let mut s = vec![self.tooltips.get_tooltip(
                 "TRACKS_PANEL_INPUT_TTS_ADD",
                 &[InputEvent::AddTrack],
                 input,
+                text,
             )];
             // There is a selected track.
             if let Some(track) = state.music.get_selected_track() {
-                s.push(text.get_tooltip(
+                s.push(self.tooltips.get_tooltip(
                     "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX_0",
                     &[InputEvent::RemoveTrack],
                     input,
+                    text,
                 ));
-                s.push(text.get_tooltip(
+                s.push(self.tooltips.get_tooltip(
                     "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX_1",
                     &[InputEvent::PreviousTrack, InputEvent::NextTrack],
                     input,
+                    text,
                 ));
-                s.push(text.get_tooltip(
+                s.push(self.tooltips.get_tooltip(
                     "TRACKS_PANEL_INPUT_TTS_TRACK_PREFIX_2",
                     &[InputEvent::EnableSoundFontPanel],
                     input,
+                    text,
                 ));
                 // Is there a program?
                 if conn.state.programs.get(&track.channel).is_some() {
                     // Preset, bank, gain.
-                    s.push(text.get_tooltip(
+                    s.push(self.tooltips.get_tooltip(
                         "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_0",
                         &[InputEvent::PreviousPreset, InputEvent::NextPreset],
                         input,
+                        text,
                     ));
-                    s.push(text.get_tooltip(
+                    s.push(self.tooltips.get_tooltip(
                         "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_1",
                         &[InputEvent::PreviousBank, InputEvent::NextBank],
                         input,
+                        text,
                     ));
-                    s.push(text.get_tooltip(
+                    s.push(self.tooltips.get_tooltip(
                         "TRACKS_PANEL_INPUT_TTS_TRACK_SUFFIX_2",
                         &[InputEvent::DecreaseTrackGain, InputEvent::IncreaseTrackGain],
                         input,
+                        text,
                     ));
                     // Mute.
                     let mute_key = if track.mute {
@@ -185,14 +194,20 @@ impl Panel for TracksPanel {
                     } else {
                         "TRACKS_PANEL_INPUT_TTS_MUTE"
                     };
-                    s.push(text.get_tooltip(mute_key, &[InputEvent::Mute], input));
+                    s.push(
+                        self.tooltips
+                            .get_tooltip(mute_key, &[InputEvent::Mute], input, text),
+                    );
                     // Solo.
                     let solo_key = if track.solo {
                         "TRACKS_PANEL_INPUT_TTS_UNSOLO"
                     } else {
                         "TRACKS_PANEL_INPUT_TTS_SOLO"
                     };
-                    s.push(text.get_tooltip(solo_key, &[InputEvent::Solo], input));
+                    s.push(
+                        self.tooltips
+                            .get_tooltip(solo_key, &[InputEvent::Solo], input, text),
+                    );
                 }
                 // Say it.
                 tts.enqueue(s);

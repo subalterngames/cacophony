@@ -1,6 +1,7 @@
 use crate::panel::*;
 use crate::Popup;
 use input::InputEvent;
+use text::Tooltips;
 
 const NUM_LINKS: usize = 3;
 const LABEL_COLOR: ColorKey = ColorKey::Value;
@@ -16,10 +17,12 @@ pub(crate) struct LinksPanel {
 }
 
 impl LinksPanel {
-    pub fn new(config: &Ini, text: &mut Text, input: &Input) -> Self {
+    pub fn new(config: &Ini, text: &Text, input: &Input) -> Self {
         // Get each label. The x coordinate is right now at 0.
         let mut y = MAIN_MENU_HEIGHT + 1;
+        let mut tooltips = Tooltips::default();
         let mut website = Self::get_label(
+            &mut tooltips,
             &mut y,
             "LINKS_PANEL_WEBSITE",
             InputEvent::WebsiteUrl,
@@ -27,6 +30,7 @@ impl LinksPanel {
             input,
         );
         let mut discord = Self::get_label(
+            &mut tooltips,
             &mut y,
             "LINKS_PANEL_DISCORD",
             InputEvent::DiscordUrl,
@@ -34,6 +38,7 @@ impl LinksPanel {
             input,
         );
         let mut github = Self::get_label(
+            &mut tooltips,
             &mut y,
             "LINKS_PANEL_GITHUB",
             InputEvent::GitHubUrl,
@@ -77,13 +82,17 @@ impl LinksPanel {
 
     /// Returns a label and moves the y coordinate.
     fn get_label(
+        tooltips: &mut Tooltips,
         y: &mut u32,
         key: &str,
         event: InputEvent,
-        text: &mut Text,
+        text: &Text,
         input: &Input,
     ) -> Label {
-        let label = Label::new([0, *y], text.get_tooltip(key, &[event], input).seen);
+        let label = Label::new(
+            [0, *y],
+            tooltips.get_tooltip(key, &[event], input, text).seen,
+        );
         *y += 2;
         label
     }

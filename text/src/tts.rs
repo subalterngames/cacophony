@@ -197,6 +197,17 @@ impl Enqueable<TtsString> for TTS {
     }
 }
 
+impl Enqueable<&TtsString> for TTS {
+    fn enqueue(&mut self, text: &TtsString) {
+        // Start speaking the first element.
+        if !self.is_speaking() {
+            self.say(&text.spoken)
+        }
+        // Push this element. We need it for subtitles.
+        self.speech.push(text.clone());
+    }
+}
+
 impl Enqueable<String> for TTS {
     fn enqueue(&mut self, text: String) {
         self.enqueue(TtsString::from(text));
@@ -216,9 +227,23 @@ impl Enqueable<Vec<TtsString>> for TTS {
         }
         // Start speaking the first element.
         if !self.is_speaking() {
-            self.say(&text[0].spoken.clone())
+            self.say(&text[0].spoken)
         }
         self.speech.extend(text);
+    }
+}
+
+impl Enqueable<Vec<&TtsString>> for TTS {
+    fn enqueue(&mut self, text: Vec<&TtsString>) {
+        if text.is_empty() {
+            return;
+        }
+        // Start speaking the first element.
+        if !self.is_speaking() {
+            self.say(&text[0].spoken)
+        }
+        self.speech
+            .extend(text.iter().map(|&t| t.clone()).collect::<Vec<TtsString>>());
     }
 }
 

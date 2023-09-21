@@ -3,6 +3,7 @@ use colorgrad::Color;
 use colorgrad::CustomGradient;
 use input::InputEvent;
 use macroquad::texture::Texture2D;
+use text::Tooltips;
 
 /// The color of the panel and the text.
 const COLOR: ColorKey = ColorKey::Key;
@@ -98,7 +99,9 @@ impl MainMenu {
         let y = panel.rect.position[1] + 1;
         let help = Self::label_from_key("MAIN_MENU_HELP", &mut x, y, text);
         x += 4;
+        let mut tooltips = Tooltips::default();
         let status = Self::tooltip(
+            &mut tooltips,
             "MAIN_MENU_STATUS",
             InputEvent::StatusTTS,
             &mut x,
@@ -107,6 +110,7 @@ impl MainMenu {
             text,
         );
         let input_field = Self::tooltip(
+            &mut tooltips,
             "MAIN_MENU_INPUT",
             InputEvent::InputTTS,
             &mut x,
@@ -114,8 +118,17 @@ impl MainMenu {
             input,
             text,
         );
-        let app = Self::tooltip("MAIN_MENU_APP", InputEvent::AppTTS, &mut x, y, input, text);
+        let app = Self::tooltip(
+            &mut tooltips,
+            "MAIN_MENU_APP",
+            InputEvent::AppTTS,
+            &mut x,
+            y,
+            input,
+            text,
+        );
         let file = Self::tooltip(
+            &mut tooltips,
             "MAIN_MENU_FILE",
             InputEvent::FileTTS,
             &mut x,
@@ -124,6 +137,7 @@ impl MainMenu {
             text,
         );
         let stop = Self::tooltip(
+            &mut tooltips,
             "MAIN_MENU_STOP",
             InputEvent::StopTTS,
             &mut x,
@@ -136,6 +150,7 @@ impl MainMenu {
         x += 2;
         let x0 = x;
         let links = Self::tooltip(
+            &mut tooltips,
             "MAIN_MENU_ONLINE",
             InputEvent::EnableLinksPanel,
             &mut x,
@@ -187,14 +202,15 @@ impl MainMenu {
     }
 
     fn tooltip(
+        tooltips: &mut Tooltips,
         key: &str,
         event: InputEvent,
         x: &mut u32,
         y: u32,
         input: &Input,
-        text: &mut Text,
+        text: &Text,
     ) -> Label {
-        let tooltip = text.get_tooltip(key, &[event], input).seen;
+        let tooltip = tooltips.get_tooltip(key, &[event], input, text).seen;
         let width = key.chars().count() as u32;
         let position = [*x, y];
         *x += width;

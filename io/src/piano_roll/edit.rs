@@ -10,12 +10,14 @@ use ini::Ini;
 pub(super) struct Edit {
     /// The edit mode deltas.
     deltas: EditModeDeltas,
+    tooltips: Tooltips,
 }
 
 impl Edit {
     pub fn new(config: &Ini) -> Self {
         Self {
             deltas: EditModeDeltas::new(config),
+            tooltips: Tooltips::default(),
         }
     }
 }
@@ -27,7 +29,7 @@ impl Panel for Edit {
         _: &mut Conn,
         input: &Input,
         _: &mut TTS,
-        _: &mut Text,
+        _: &Text,
         _: &mut PathsState,
         _: &mut SharedExporter,
     ) -> Option<Snapshot> {
@@ -157,37 +159,46 @@ impl Panel for Edit {
 }
 
 impl PianoRollSubPanel for Edit {
-    fn get_status_tts(&self, state: &State, text: &mut Text) -> Vec<TtsString> {
+    fn get_status_tts(&mut self, state: &State, text: &Text) -> Vec<TtsString> {
         vec![get_edit_mode_status_tts(state.edit_mode.get_ref(), text)]
     }
 
-    fn get_input_tts(&self, state: &State, input: &Input, text: &mut Text) -> Vec<TtsString> {
+    fn get_input_tts(&mut self, state: &State, input: &Input, text: &Text) -> Vec<TtsString> {
         let mut tts_strings = match state.select_mode.get_note_indices() {
             Some(_) => vec![
-                text.get_tooltip(
+                self.tooltips.get_tooltip(
                     "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_0",
                     &[InputEvent::EditPitchUp, InputEvent::EditPitchDown],
                     input,
+                    text,
                 ),
-                text.get_tooltip(
+                self.tooltips.get_tooltip(
                     "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_1",
                     &[InputEvent::EditStartLeft, InputEvent::EditStartRight],
                     input,
+                    text,
                 ),
-                text.get_tooltip(
+                self.tooltips.get_tooltip(
                     "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_2",
                     &[InputEvent::EditDurationLeft, InputEvent::EditDurationRight],
                     input,
+                    text,
                 ),
-                text.get_tooltip(
+                self.tooltips.get_tooltip(
                     "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_3",
                     &[InputEvent::EditVolumeUp, InputEvent::EditVolumeDown],
                     input,
+                    text,
                 ),
             ],
             None => vec![get_no_selection_status_tts(text)],
         };
-        tts_strings.push(get_cycle_edit_mode_input_tts(&state.edit_mode, input, text));
+        tts_strings.push(get_cycle_edit_mode_input_tts(
+            &mut self.tooltips,
+            &state.edit_mode,
+            input,
+            text,
+        ));
         tts_strings
     }
 }

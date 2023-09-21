@@ -6,7 +6,10 @@ use common::music_panel_field::*;
 use common::{U64orF32, DEFAULT_BPM, MAX_VOLUME};
 
 /// Set global music values.
-pub(crate) struct MusicPanel {}
+#[derive(Default)]
+pub(crate) struct MusicPanel {
+    tooltips: Tooltips,
+}
 
 impl MusicPanel {
     /// Increment the current gain. Returns a new undo state.
@@ -32,7 +35,7 @@ impl Panel for MusicPanel {
         conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &mut Text,
+        text: &Text,
         _: &mut PathsState,
         exporter: &mut SharedExporter,
     ) -> Option<Snapshot> {
@@ -63,13 +66,14 @@ impl Panel for MusicPanel {
         }
         // Sub-panel TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let scroll = text.get_tooltip(
+            let scroll = self.tooltips.get_tooltip(
                 "MUSIC_PANEL_INPUT_TTS",
                 &[
                     InputEvent::PreviousMusicPanelField,
                     InputEvent::NextMusicPanelField,
                 ],
                 input,
+                text,
             );
             let tts_strings = match state.music_panel_field.get_ref() {
                 MusicPanelField::BPM => {
@@ -79,10 +83,11 @@ impl Panel for MusicPanel {
                         "MUSIC_PANEL_INPUT_TTS_BPM_NO_ABC123"
                     };
                     let mut tts_strings = vec![];
-                    tts_strings.push(text.get_tooltip(
+                    tts_strings.push(self.tooltips.get_tooltip(
                         key,
                         &[InputEvent::ToggleAlphanumericInput],
                         input,
+                        text,
                     ));
                     if !state.input.alphanumeric_input {
                         tts_strings.push(scroll);
@@ -91,10 +96,11 @@ impl Panel for MusicPanel {
                 }
                 MusicPanelField::Gain => {
                     vec![
-                        text.get_tooltip(
+                        self.tooltips.get_tooltip(
                             "MUSIC_PANEL_INPUT_TTS_GAIN",
                             &[InputEvent::DecreaseMusicGain, InputEvent::IncreaseMusicGain],
                             input,
+                            text,
                         ),
                         scroll,
                     ]
@@ -105,8 +111,12 @@ impl Panel for MusicPanel {
                     } else {
                         "MUSIC_PANEL_INPUT_TTS_NAME_NO_ABC123"
                     };
-                    let mut tts_strings =
-                        vec![text.get_tooltip(key, &[InputEvent::ToggleAlphanumericInput], input)];
+                    let mut tts_strings = vec![self.tooltips.get_tooltip(
+                        key,
+                        &[InputEvent::ToggleAlphanumericInput],
+                        input,
+                        text,
+                    )];
                     if !state.input.alphanumeric_input {
                         tts_strings.push(scroll);
                     }

@@ -13,6 +13,7 @@ pub struct OpenFilePanel {
     soundfont_extensions: Vec<String>,
     save_file_extensions: Vec<String>,
     midi_file_extensions: Vec<String>,
+    tooltips: Tooltips,
 }
 
 impl Default for OpenFilePanel {
@@ -22,6 +23,7 @@ impl Default for OpenFilePanel {
             soundfont_extensions: vec!["sf2".to_string(), "sf3".to_string()],
             save_file_extensions: vec!["cac".to_string()],
             midi_file_extensions: vec!["mid".to_string()],
+            tooltips: Tooltips::default(),
         }
     }
 }
@@ -136,7 +138,7 @@ impl Panel for OpenFilePanel {
         conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &mut Text,
+        text: &Text,
         paths_state: &mut PathsState,
         exporter: &mut SharedExporter,
     ) -> Option<Snapshot> {
@@ -195,19 +197,21 @@ impl Panel for OpenFilePanel {
             let mut tts_strings = vec![];
             // Up directory.
             if let Some(parent) = paths_state.get_directory().path.parent() {
-                tts_strings.push(text.get_tooltip_with_values(
+                tts_strings.push(self.tooltips.get_tooltip_with_values(
                     "OPEN_FILE_PANEL_INPUT_TTS_UP_DIRECTORY",
                     &[InputEvent::UpDirectory],
                     &[&FileOrDirectory::new(parent).stem],
                     input,
+                    text,
                 ))
             }
             // Scroll.
             if paths_state.children.children.len() > 1 {
-                tts_strings.push(text.get_tooltip(
+                tts_strings.push(self.tooltips.get_tooltip(
                     "OPEN_FILE_PANEL_INPUT_TTS_SCROLL",
                     &[InputEvent::PreviousPath, InputEvent::NextPath],
                     input,
+                    text,
                 ));
             }
             // Set export type.
@@ -217,11 +221,12 @@ impl Panel for OpenFilePanel {
                 index.index.increment(true);
                 let e = index.get();
                 let next_export_type = e.get_extension(false);
-                tts_strings.push(text.get_tooltip_with_values(
+                tts_strings.push(self.tooltips.get_tooltip_with_values(
                     "OPEN_FILE_PANEL_INPUT_TTS_CYCLE_EXPORT",
                     &[InputEvent::CycleExportType],
                     &[next_export_type],
                     input,
+                    text,
                 ));
             }
             // Selection.
@@ -238,27 +243,30 @@ impl Panel for OpenFilePanel {
                             OpenFileType::WriteSave => "OPEN_FILE_PANEL_INPUT_TTS_WRITE_SAVE",
                             OpenFileType::ImportMidi => "OPEN_FILE_PANEL_INPUT_TTS_IMPORT_MIDI",
                         };
-                        tts_strings.push(text.get_tooltip_with_values(
+                        tts_strings.push(self.tooltips.get_tooltip_with_values(
                             open_file_key,
                             &events,
                             &[&get_file_name_no_ex(&path.path)],
                             input,
+                            text,
                         ));
                     }
                     // Down directory.
-                    false => tts_strings.push(text.get_tooltip_with_values(
+                    false => tts_strings.push(self.tooltips.get_tooltip_with_values(
                         "OPEN_FILE_PANEL_INPUT_TTS_DOWN_DIRECTORY",
                         &[InputEvent::DownDirectory],
                         &[&path.stem],
                         input,
+                        text,
                     )),
                 }
             }
             // Close.
-            tts_strings.push(text.get_tooltip(
+            tts_strings.push(self.tooltips.get_tooltip(
                 "OPEN_FILE_PANEL_INPUT_TTS_CLOSE",
                 &[InputEvent::CloseOpenFile],
                 input,
+                text,
             ));
             tts.enqueue(tts_strings);
         }

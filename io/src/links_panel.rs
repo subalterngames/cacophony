@@ -9,6 +9,8 @@ pub(crate) struct LinksPanel {
     links: HashMap<InputEvent, String>,
     /// The popup.
     popup: Popup,
+    /// The tooltips handler.
+    tooltips: Tooltips,
 }
 
 impl LinksPanel {
@@ -33,7 +35,12 @@ impl Default for LinksPanel {
             "https://github.com/subalterngames/cacophony".to_string(),
         );
         let popup = Popup::default();
-        Self { links, popup }
+        let tooltips = Tooltips::default();
+        Self {
+            links,
+            popup,
+            tooltips,
+        }
     }
 }
 
@@ -44,31 +51,35 @@ impl Panel for LinksPanel {
         _: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &mut Text,
+        text: &Text,
         _: &mut PathsState,
         _: &mut SharedExporter,
     ) -> Option<Snapshot> {
         if input.happened(&InputEvent::InputTTS) {
             tts.enqueue(TtsString::from(text.get("LINKS_PANEL_INPUT_TTS_0")));
-            tts.enqueue(text.get_tooltip(
+            tts.enqueue(self.tooltips.get_tooltip(
                 "LINKS_PANEL_INPUT_TTS_1",
                 &[InputEvent::WebsiteUrl],
                 input,
+                text,
             ));
-            tts.enqueue(text.get_tooltip(
+            tts.enqueue(self.tooltips.get_tooltip(
                 "LINKS_PANEL_INPUT_TTS_2",
                 &[InputEvent::DiscordUrl],
                 input,
+                text,
             ));
-            tts.enqueue(text.get_tooltip(
+            tts.enqueue(self.tooltips.get_tooltip(
                 "LINKS_PANEL_INPUT_TTS_2",
                 &[InputEvent::GitHubUrl],
                 input,
+                text,
             ));
-            tts.enqueue(text.get_tooltip(
+            tts.enqueue(self.tooltips.get_tooltip(
                 "LINKS_PANEL_INPUT_TTS_3",
                 &[InputEvent::CloseLinksPanel],
                 input,
+                text,
             ));
         } else {
             // Try to open links.

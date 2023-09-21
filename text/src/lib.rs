@@ -16,9 +16,9 @@ use common::{EditMode, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U};
 use csv::Reader;
 use hashbrown::HashMap;
 use ini::Ini;
-use input::{QwertyBinding, KEYS};
+use input::KEYS;
 use macroquad::input::KeyCode;
-use regex::Regex;
+pub use tooltips::Tooltips;
 pub use tts_string::TtsString;
 
 /// All possible languages.
@@ -166,9 +166,6 @@ pub struct Text {
     note_names: Vec<String>,
     /// Boolean dislay
     booleans: ValueMap<bool>,
-    /// Cached text-to-speech strings.
-    tts_strings: HashMap<String, TtsString>,
-
 }
 
 impl Text {
@@ -211,7 +208,6 @@ impl Text {
             piano_roll_modes,
             note_names,
             booleans,
-            tts_strings: HashMap::new(),
         }
     }
 
@@ -376,30 +372,6 @@ impl Text {
         piano_roll_modes.insert(PianoRollMode::Time, text["PIANO_ROLL_MODE_TIME"].clone());
         piano_roll_modes.insert(PianoRollMode::View, text["PIANO_ROLL_MODE_VIEW"].clone());
         piano_roll_modes
-    }
-
-
-
-    /// Returns a qwerty binding's mods as strings.
-    ///
-    /// The strings may be different depending on the value of `spoken` i.e. whether this is meant to be spoken or seen.
-    fn get_mods<'a>(&'a self, qwerty: &QwertyBinding, spoken: bool) -> Vec<&'a str> {
-        qwerty
-            .mods
-            .iter()
-            .map(|k| self.get_keycode(k, spoken))
-            .collect::<Vec<&str>>()
-    }
-
-    /// Returns a qwerty binding's keys as strings.
-    ///
-    /// The strings may be different depending on the value of `spoken` i.e. whether this is meant to be spoken or seen.
-    fn get_keys<'a>(&'a self, qwerty: &QwertyBinding, spoken: bool) -> Vec<&'a str> {
-        qwerty
-            .keys
-            .iter()
-            .map(|k| self.get_keycode(k, spoken))
-            .collect::<Vec<&str>>()
     }
 }
 

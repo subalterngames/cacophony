@@ -10,11 +10,15 @@ use serde::Serialize;
 const FRAMERATES: [u64; 3] = [22050, 44100, 48000];
 
 /// Set the values of export settings.
-pub(crate) struct ExportSettingsPanel {}
+#[derive(Default)]
+pub(crate) struct ExportSettingsPanel {
+    tooltips: Tooltips,
+}
 
 impl ExportSettingsPanel {
     /// Returns the text-to-speech status string for an alphanumeric field.
     ///
+    /// - `tooltips` The tooltips handler.
     /// - `if_true` The text key to use if alphanumeric input is enabled.
     /// - `if_false` The text key to use if alphanumeric input isn't enabled.
     /// - `value` The value string, if any. If none, a default string will be used.
@@ -22,103 +26,128 @@ impl ExportSettingsPanel {
     /// - `input` The input state.
     /// - `text` The text state.
     fn get_status_abc123_tts(
+        tooltips: &mut Tooltips,
         if_true: &str,
         if_false: &str,
         value: &Option<String>,
         state: &State,
         input: &Input,
-        text: &mut Text,
+        text: &Text,
     ) -> TtsString {
         let n = text.get("NONE");
         let value = value.as_ref().unwrap_or(&n);
         if state.input.alphanumeric_input {
             TtsString::from(text.get_with_values(if_true, &[value]))
         } else {
-            text.get_tooltip_with_values(
+            tooltips.get_tooltip_with_values(
                 if_false,
                 &[InputEvent::ToggleAlphanumericInput],
                 &[value],
                 input,
+                text,
             )
         }
     }
 
     /// Returns the text-to-speech status string for an boolean field.
     ///
+    /// - `tooltips` The tooltips handler.
     /// - `if_true` The text key to use if the boolean is true.
     /// - `if_false` The text key to use if the boolean is false.
     /// - `value` The value.
     /// - `input` The input state.
     /// - `text` The text state.
     fn get_status_bool_tts(
+        tooltips: &mut Tooltips,
         if_true: &str,
         if_false: &str,
         value: bool,
         input: &Input,
-        text: &mut Text,
+        text: &Text,
     ) -> TtsString {
-        text.get_tooltip(
+        tooltips.get_tooltip(
             if value { if_true } else { if_false },
             &[InputEvent::ToggleExportSettingBoolean],
             input,
+            text,
         )
     }
 
     /// Returns the text-to-speech input string for scrolling.
     ///
+    /// - `tooltips` The tooltips handler.
     /// - `input` The input state.
     /// - `text` The text state.
-    fn get_input_scroll_tts(input: &Input, text: &mut Text) -> TtsString {
-        text.get_tooltip(
+    fn get_input_scroll_tts(tooltips: &mut Tooltips, input: &Input, text: &Text) -> TtsString {
+        tooltips.get_tooltip(
             "EXPORT_SETTINGS_PANEL_INPUT_TTS_SCROLL",
             &[
                 InputEvent::PreviousExportSetting,
                 InputEvent::NextExportSetting,
             ],
             input,
+            text,
         )
     }
 
     /// Returns the text-to-speech input string for an alphanumeric field.
     ///
+    /// - `tooltips` The tooltips handler.
     /// - `if_true` The text key to use if alphanumeric input is enabled.
     /// - `if_false` The text key to use if alphanumeric input isn't enabled.
     /// - `state` The app state.
     /// - `input` The input state.
     /// - `text` The text state.
     fn get_input_abc123_tts(
+        tooltips: &mut Tooltips,
         if_true: &str,
         if_false: &str,
         state: &State,
         input: &Input,
-        text: &mut Text,
+        text: &Text,
     ) -> Vec<TtsString> {
         if state.input.alphanumeric_input {
-            vec![text.get_tooltip(if_true, &[InputEvent::ToggleAlphanumericInput], input)]
+            vec![tooltips
+                .get_tooltip(if_true, &[InputEvent::ToggleAlphanumericInput], input, text)
+                .clone()]
         } else {
             vec![
-                text.get_tooltip(if_false, &[InputEvent::ToggleAlphanumericInput], input),
-                Self::get_input_scroll_tts(input, text),
+                tooltips
+                    .get_tooltip(
+                        if_false,
+                        &[InputEvent::ToggleAlphanumericInput],
+                        input,
+                        text,
+                    )
+                    .clone(),
+                Self::get_input_scroll_tts(tooltips, input, text),
             ]
         }
     }
 
     /// Returns the text-to-speech input string cycling a field's value up or down.
     ///
+    /// - `tooltips` The tooltips handler.
     /// - `key` The text key.
     /// - `input` The input state.
     /// - `text` The text state.
-    fn get_input_lr_tts(key: &str, input: &Input, text: &mut Text) -> Vec<TtsString> {
+    fn get_input_lr_tts(
+        tooltips: &mut Tooltips,
+        key: &str,
+        input: &Input,
+        text: &Text,
+    ) -> Vec<TtsString> {
         vec![
-            text.get_tooltip(
+            tooltips.get_tooltip(
                 key,
                 &[
                     InputEvent::PreviousExportSettingValue,
                     InputEvent::NextExportSettingValue,
                 ],
                 input,
+                text,
             ),
-            Self::get_input_scroll_tts(input, text),
+            Self::get_input_scroll_tts(tooltips, input, text),
         ]
     }
 
@@ -173,6 +202,7 @@ impl ExportSettingsPanel {
     /// Update settings for a given export type.
     ///
     /// - `f` A closure that returns a mutable reference to an `IndexValues` of export settings (corresponding to the export type).
+    /// - `tooltips` The tooltips handler.
     /// - `state` The app state.
     /// - `input` The input state.
     /// - `tts` Text-to-speech.
@@ -181,9 +211,10 @@ impl ExportSettingsPanel {
     fn update_settings<F, const N: usize>(
         mut f: F,
         state: &mut State,
+        tooltips: &mut Tooltips,
         input: &Input,
         tts: &mut TTS,
-        text: &mut Text,
+        text: &Text,
         exporter: &mut SharedExporter,
     ) -> Option<Snapshot>
     where
@@ -198,6 +229,7 @@ impl ExportSettingsPanel {
                     TtsString::from(text.get("EXPORT_SETTINGS_PANEL_STATUS_TTS_FRAMERATE"))
                 }
                 ExportSetting::Title => Self::get_status_abc123_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TITLE_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TITLE_NO_ABC123",
                     &Some(ex.metadata.title.clone()),
@@ -206,6 +238,7 @@ impl ExportSettingsPanel {
                     text,
                 ),
                 ExportSetting::Artist => Self::get_status_abc123_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ARTIST",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ARTIST_NO_ABC123",
                     &ex.metadata.artist,
@@ -214,6 +247,7 @@ impl ExportSettingsPanel {
                     text,
                 ),
                 ExportSetting::Copyright => Self::get_status_bool_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COPYRIGHT_ENABLED",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COPYRIGHT_DISABLED",
                     ex.copyright,
@@ -221,6 +255,7 @@ impl ExportSettingsPanel {
                     text,
                 ),
                 ExportSetting::Album => Self::get_status_abc123_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ALBUM_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ALBUM_NO_ABC123",
                     &ex.metadata.album,
@@ -229,6 +264,7 @@ impl ExportSettingsPanel {
                     text,
                 ),
                 ExportSetting::Genre => Self::get_status_abc123_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_GENRE_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_GENRE_NO_ABC123",
                     &ex.metadata.genre,
@@ -237,6 +273,7 @@ impl ExportSettingsPanel {
                     text,
                 ),
                 ExportSetting::Comment => Self::get_status_abc123_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COMMENT_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COMMENT_NO_ABC123",
                     &ex.metadata.comment,
@@ -264,6 +301,7 @@ impl ExportSettingsPanel {
                     }],
                 )),
                 ExportSetting::MultiFile => Self::get_status_bool_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_ENABLED",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_DISABLED",
                     ex.multi_file,
@@ -291,10 +329,14 @@ impl ExportSettingsPanel {
         else if input.happened(&InputEvent::InputTTS) {
             let mut ex = exporter.lock();
             let s = match &f(&mut ex).get() {
-                ExportSetting::Framerate => {
-                    Self::get_input_lr_tts("EXPORT_SETTINGS_PANEL_INPUT_TTS_FRAMERATE", input, text)
-                }
+                ExportSetting::Framerate => Self::get_input_lr_tts(
+                    tooltips,
+                    "EXPORT_SETTINGS_PANEL_INPUT_TTS_FRAMERATE",
+                    input,
+                    text,
+                ),
                 ExportSetting::Title => Self::get_input_abc123_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_TITLE_ABC123",
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_TITLE_NO_ABC123",
                     state,
@@ -302,6 +344,7 @@ impl ExportSettingsPanel {
                     text,
                 ),
                 ExportSetting::Artist => Self::get_input_abc123_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_ARTIST_ABC123",
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_ARTIST_NO_ABC123",
                     state,
@@ -309,14 +352,18 @@ impl ExportSettingsPanel {
                     text,
                 ),
                 ExportSetting::Copyright => vec![
-                    text.get_tooltip(
-                        "EXPORT_SETTINGS_PANEL_INPUT_TTS_COPYRIGHT",
-                        &[InputEvent::ToggleExportSettingBoolean],
-                        input,
-                    ),
-                    Self::get_input_scroll_tts(input, text),
+                    tooltips
+                        .get_tooltip(
+                            "EXPORT_SETTINGS_PANEL_INPUT_TTS_COPYRIGHT",
+                            &[InputEvent::ToggleExportSettingBoolean],
+                            input,
+                            text,
+                        )
+                        .clone(),
+                    Self::get_input_scroll_tts(tooltips, input, text),
                 ],
                 ExportSetting::Album => Self::get_input_abc123_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_ALBUM_ABC123",
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_ALBUM_NO_ABC123",
                     state,
@@ -324,6 +371,7 @@ impl ExportSettingsPanel {
                     text,
                 ),
                 ExportSetting::Genre => Self::get_input_abc123_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_GENRE_ABC123",
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_GENRE_NO_ABC123",
                     state,
@@ -331,6 +379,7 @@ impl ExportSettingsPanel {
                     text,
                 ),
                 ExportSetting::Comment => Self::get_input_abc123_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_COMMENT_ABC123",
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_COMMENT_NO_ABC123",
                     state,
@@ -338,27 +387,36 @@ impl ExportSettingsPanel {
                     text,
                 ),
                 ExportSetting::TrackNumber => Self::get_input_lr_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_TRACK_NUMBER",
                     input,
                     text,
                 ),
                 ExportSetting::Mp3BitRate => Self::get_input_lr_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_MP3_BIT_RATE",
                     input,
                     text,
                 ),
-                ExportSetting::Mp3Quality | ExportSetting::OggQuality => {
-                    Self::get_input_lr_tts("EXPORT_SETTINGS_PANEL_INPUT_TTS_QUALITY", input, text)
-                }
+                ExportSetting::Mp3Quality | ExportSetting::OggQuality => Self::get_input_lr_tts(
+                    tooltips,
+                    "EXPORT_SETTINGS_PANEL_INPUT_TTS_QUALITY",
+                    input,
+                    text,
+                ),
                 ExportSetting::MultiFile => vec![
-                    text.get_tooltip(
-                        "EXPORT_SETTINGS_PANEL_INPUT_TTS_MULTI_FILE",
-                        &[InputEvent::ToggleExportSettingBoolean],
-                        input,
-                    ),
-                    Self::get_input_scroll_tts(input, text),
+                    tooltips
+                        .get_tooltip(
+                            "EXPORT_SETTINGS_PANEL_INPUT_TTS_MULTI_FILE",
+                            &[InputEvent::ToggleExportSettingBoolean],
+                            input,
+                            text,
+                        )
+                        .clone(),
+                    Self::get_input_scroll_tts(tooltips, input, text),
                 ],
                 ExportSetting::MultiFileSuffix => Self::get_input_lr_tts(
+                    tooltips,
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_MULTI_FILE_SUFFIX",
                     input,
                     text,
@@ -504,7 +562,7 @@ impl Panel for ExportSettingsPanel {
         _: &mut Conn,
         input: &Input,
         tts: &mut TTS,
-        text: &mut Text,
+        text: &Text,
         _: &mut PathsState,
         exporter: &mut SharedExporter,
     ) -> Option<Snapshot> {
@@ -514,18 +572,42 @@ impl Panel for ExportSettingsPanel {
         }
         let export_type = exporter.lock().export_type.get();
         match export_type {
-            ExportType::Mid => {
-                Self::update_settings(|e| &mut e.mid_settings, state, input, tts, text, exporter)
-            }
-            ExportType::MP3 => {
-                Self::update_settings(|e| &mut e.mp3_settings, state, input, tts, text, exporter)
-            }
-            ExportType::Ogg => {
-                Self::update_settings(|e| &mut e.ogg_settings, state, input, tts, text, exporter)
-            }
-            ExportType::Wav => {
-                Self::update_settings(|e| &mut e.wav_settings, state, input, tts, text, exporter)
-            }
+            ExportType::Mid => Self::update_settings(
+                |e| &mut e.mid_settings,
+                state,
+                &mut self.tooltips,
+                input,
+                tts,
+                text,
+                exporter,
+            ),
+            ExportType::MP3 => Self::update_settings(
+                |e| &mut e.mp3_settings,
+                state,
+                &mut self.tooltips,
+                input,
+                tts,
+                text,
+                exporter,
+            ),
+            ExportType::Ogg => Self::update_settings(
+                |e| &mut e.ogg_settings,
+                state,
+                &mut self.tooltips,
+                input,
+                tts,
+                text,
+                exporter,
+            ),
+            ExportType::Wav => Self::update_settings(
+                |e| &mut e.wav_settings,
+                state,
+                &mut self.tooltips,
+                input,
+                tts,
+                text,
+                exporter,
+            ),
         }
     }
 
