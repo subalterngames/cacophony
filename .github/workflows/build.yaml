@@ -8,17 +8,6 @@ on:
         required: True
 
 jobs:
-  build-ubuntu-18-i386:
-    runs-on: ubuntu-latest
-    name: Ubuntu 18 i386
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-      - name: Build docker image
-        working-directory: Docker build
-        run: docker build -t ubuntu-18-i386 .
-      - name: Docker run
-        run: docker run -e VERSION=${{ inputs.version }} -e BUTLER=${{ secrets.BUTLER_API_KEY }} ubuntu-18-i386
   build-ubuntu-20:
     name: Ubuntu 20
     runs-on: ubuntu-20.04
