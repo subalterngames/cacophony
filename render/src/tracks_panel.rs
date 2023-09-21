@@ -180,11 +180,11 @@ impl Drawable for TracksPanel {
                         (true, false) => ColorKey::Key,
                         _ => ColorKey::NoFocus,
                     };
-                    let file_label = Label {
+                    let file_label = LabelRef {
                         text: file_text,
                         position: [x + 1, y],
                     };
-                    renderer.text(&file_label, &file_color);
+                    renderer.text_ref(&file_label, &file_color);
                     y += 1;
                     // Draw a line separator.
                     renderer.horizontal_line(

@@ -1,4 +1,4 @@
-use super::{Label, Width};
+use super::{Label, LabelRef, Width};
 use text::truncate;
 
 const LEFT_ARROW: &str = "<";
@@ -33,12 +33,12 @@ impl List {
         }
     }
 
-    /// Truncates a value string to `self.width` and converts it into a `Label`.
-    pub fn get_value(&self, value: &str) -> Label {
-        Label {
-            position: self.label.position,
-            text: truncate(value, self.label.width, false),
-        }
+    /// Truncates a value string to `self.width` and converts it into a `LabelRef`.
+    pub fn get_value<'t>(&self, value: &'t str) -> LabelRef<'t> {
+        LabelRef::new(
+            self.label.position,
+            truncate(value, self.label.width, false),
+        )
     }
 }
 
@@ -60,6 +60,6 @@ mod tests {
         assert_eq!(li.label.width, 17);
         let la = li.get_value("This is a very long label! Too long!");
         assert_eq!(la.position, [4, 5]);
-        assert_eq!(&la.text, "This is a very lo")
+        assert_eq!(la.text, "This is a very lo")
     }
 }

@@ -1,5 +1,5 @@
 use super::util::KV_PADDING;
-use super::{Label, Width};
+use super::{Label, LabelRef, Width};
 use text::truncate;
 
 /// A key label and a value width.
@@ -31,7 +31,7 @@ impl KeyWidth {
         let half_width = Self::get_half_width(width);
 
         // The key is on the left.
-        let key = Label::new(position, truncate(key, half_width, false));
+        let key = Label::new(position, truncate(key, half_width, false).to_string());
 
         // The value is on the right.
         let value = Self::get_value_width(position, width, value_width);
@@ -39,9 +39,9 @@ impl KeyWidth {
         Self { key, value, width }
     }
 
-    /// Truncates a value string to `self.width` and converts it into a `Label`.
-    pub fn get_value(&self, value: &str) -> Label {
-        Label::new(self.value.position, truncate(value, self.value.width, true))
+    /// Truncates a value string to `self.width` and converts it into a `LabelRef`.
+    pub fn get_value<'t>(&self, value: &'t str) -> LabelRef<'t> {
+        LabelRef::new(self.value.position, truncate(value, self.value.width, true))
     }
 
     /// Returns half of the width, or slightly less than half.
@@ -79,7 +79,7 @@ mod tests {
         assert_eq!(key_width.value.position, [22, 5]);
         assert_eq!(key_width.value.width_u32, value_width);
         let value = key_width.get_value("value");
-        assert_eq!(&value.text, "lue");
+        assert_eq!(value.text, "lue");
         assert_eq!(value.position, [22, 5]);
 
         // New from width.

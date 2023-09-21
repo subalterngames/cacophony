@@ -93,7 +93,7 @@ impl Drawable for MusicPanel {
         }
         // Draw the name.
         let ex = exporter.lock();
-        renderer.text(
+        renderer.text_ref(
             &self.name.to_label(&ex.metadata.title),
             &Renderer::get_value_color([focus, name_focus]),
         );

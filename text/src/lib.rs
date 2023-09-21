@@ -400,18 +400,18 @@ pub fn ppq_to_string(ppq: u64) -> String {
 /// - `string` The string.
 /// - `length` The maximum length of the string.
 /// - `left` If true, remove characters from the left. Example: `"ABCDEFG" -> `"DEFG"`. If false, remove characters from the right. Example: `"ABCDEFG" -> `"ABCD"`.
-pub fn truncate(string: &str, length: usize, left: bool) -> String {
+pub fn truncate(string: &str, length: usize, left: bool) -> &str {
     let len = string.chars().count();
     if len <= length {
-        string.to_string()
+        string
     }
     // Remove characters on the left.
     else if left {
-        string[len - length..len].to_string()
+        &string[len - length..len]
     }
     // Remove characters on the right.
     else {
-        string[0..length].to_string()
+        &string[0..length]
     }
 }
 

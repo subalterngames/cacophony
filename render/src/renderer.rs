@@ -491,7 +491,7 @@ impl Renderer {
         // Get the label.
         let value = list.get_value(text);
         // Draw the value.
-        self.text(&value, &Self::get_value_color(focus));
+        self.text_ref(&value, &Self::get_value_color(focus));
     }
 
     /// Draw a key-value pair.
@@ -501,7 +501,7 @@ impl Renderer {
     /// - `colors` The key and value colors.
     pub(crate) fn key_value(&self, text: &str, kv: &KeyWidth, colors: [&ColorKey; 2]) {
         self.text(&kv.key, colors[0]);
-        self.text(&kv.get_value(text), colors[1]);
+        self.text_ref(&kv.get_value(text), colors[1]);
     }
 
     /// Draw a key-input pair.

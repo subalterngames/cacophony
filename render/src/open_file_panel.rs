@@ -172,7 +172,8 @@ impl Drawable for OpenFilePanel {
                 &format!("{}/", paths_state.get_directory().stem),
                 length,
                 true,
-            ),
+            )
+            .to_string(),
         };
         renderer.text(&cwd, &Renderer::get_key_color(focus));
 
@@ -220,10 +221,10 @@ impl Drawable for OpenFilePanel {
             let s = if path.path.parent().is_some() {
                 truncate(&path.stem, length, true)
             } else {
-                path.path.to_str().unwrap().to_string()
+                path.path.to_str().unwrap()
             };
-            let p = Label { position, text: s };
-            renderer.text(&p, &text_color);
+            let p = LabelRef::new(position, s);
+            renderer.text_ref(&p, &text_color);
             y += 1;
         }
 
@@ -251,7 +252,7 @@ impl Drawable for OpenFilePanel {
                 OpenFileType::ImportMidi => ".mid",
             };
             extension.push_str(ext);
-            renderer.text(
+            renderer.text_ref(
                 &self.extension.to_label(&extension),
                 &if focus {
                     ColorKey::Arrow
@@ -266,7 +267,7 @@ impl Drawable for OpenFilePanel {
             }
 
             // Draw the input text.
-            renderer.text(
+            renderer.text_ref(
                 &self.input.to_label(filename),
                 &if focus {
                     ColorKey::Key
