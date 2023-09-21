@@ -171,7 +171,7 @@ impl Drawable for TracksPanel {
                     y += 1;
                     // Draw the file.
                     let file_text = truncate(
-                        &get_file_name(&program.path),
+                        get_file_name(&program.path),
                         self.field_width as usize,
                         false,
                     );

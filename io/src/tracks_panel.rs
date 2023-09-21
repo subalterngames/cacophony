@@ -116,7 +116,7 @@ impl Panel for TracksPanel {
                                     &program.preset_name,
                                     &program.bank.to_string(),
                                     &track.gain.to_string(),
-                                    &get_file_name_no_ex(&program.path),
+                                    get_file_name_no_ex(&program.path),
                                 ],
                             ));
                             // Muted.

@@ -416,10 +416,10 @@ pub fn truncate(string: &str, length: usize, left: bool) -> String {
 }
 
 /// Returns the file name of a path.
-pub fn get_file_name(path: &Path) -> String {
+pub fn get_file_name(path: &Path) -> &str {
     match path.file_name() {
         Some(filename) => match filename.to_str() {
-            Some(s) => s.to_string(),
+            Some(s) => s,
             None => panic!("Invalid filename: {:?}", filename),
         },
         None => panic!("Not a file: {:?}", path),
@@ -427,10 +427,10 @@ pub fn get_file_name(path: &Path) -> String {
 }
 
 /// Returns the file name of a path without the extension.
-pub fn get_file_name_no_ex(path: &Path) -> String {
+pub fn get_file_name_no_ex(path: &Path) -> &str {
     match path.file_stem() {
         Some(filename) => match filename.to_str() {
-            Some(s) => s.to_string(),
+            Some(s) => s,
             None => panic!("Invalid filename: {:?}", filename),
         },
         None => panic!("Not a file: {:?}", path),

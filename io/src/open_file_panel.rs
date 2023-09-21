@@ -180,7 +180,7 @@ impl Panel for OpenFilePanel {
                 Some(selected) => {
                     let path = &paths_state.children.children[selected];
                     let name = if path.is_file {
-                        text.get_with_values("FILE", &[&get_file_name_no_ex(&path.path)])
+                        text.get_with_values("FILE", &[get_file_name_no_ex(&path.path)])
                     } else {
                         text.get_with_values("FILE", &[&path.stem])
                     };
@@ -246,7 +246,7 @@ impl Panel for OpenFilePanel {
                         tts_strings.push(self.tooltips.get_tooltip_with_values(
                             open_file_key,
                             &events,
-                            &[&get_file_name_no_ex(&path.path)],
+                            &[get_file_name_no_ex(&path.path)],
                             input,
                             text,
                         ));
