@@ -165,8 +165,8 @@ impl PianoRollSubPanel for View {
             &[
                 &text.get_ppq_tts(&state.view.dt[0]),
                 &text.get_ppq_tts(&state.view.dt[1]),
-                &text.get_note_name(state.view.dn[0]),
-                &text.get_note_name(state.view.dn[1]),
+                text.get_note_name(state.view.dn[0]),
+                text.get_note_name(state.view.dn[1]),
             ],
         ))];
         s.push(get_edit_mode_status_tts(state.view.mode.get_ref(), text));

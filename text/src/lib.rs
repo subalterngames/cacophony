@@ -336,8 +336,8 @@ impl Text {
     }
 
     /// Returns the name of the note.
-    pub fn get_note_name(&self, note: u8) -> String {
-        self.note_names[(note - MIN_NOTE) as usize].clone()
+    pub fn get_note_name(&self, note: u8) -> &str {
+        &self.note_names[(note - MIN_NOTE) as usize]
     }
 
     /// Returns a map of keycodes to displayable/sayable text (NOT string keys).
