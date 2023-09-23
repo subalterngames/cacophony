@@ -130,7 +130,7 @@ impl MultiTrack {
                 .iter()
                 .filter(|n| n.selected)
                 .collect::<Vec<&ViewableNote>>();
-            let h = renderer.grid_to_pixel([0, 1])[1] * *height as f32;
+            let h = renderer.cell_size[1] * *height as f32;
             let position = renderer.grid_to_pixel([x, y]);
             // Get the start and end of the selection.
             if let Some(select_0) = selected
