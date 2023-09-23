@@ -170,11 +170,16 @@ impl PianoRollPanel {
             match conn.state.time.time {
                 Some(time) => {
                     let time_ppq = state.time.samples_to_ppq(time, conn.framerate);
-                    let delta = dt[1] - dt[0];
-                    // This is maybe not the best way to round, but it gets the job done!
-                    let t0 = (time_ppq / delta) * delta;
-                    let t1 = t0 + delta;
-                    [t0, t1]
+                    // The time is in range
+                    if time_ppq >= dt[0] && time_ppq <= dt[1] {
+                        dt
+                    } else {
+                        let delta = dt[1] - dt[0];
+                        // This is maybe not the best way to round, but it gets the job done!
+                        let t0 = (time_ppq / delta) * delta;
+                        let t1 = t0 + delta;
+                        [t0, t1]
+                    }
                 }
                 None => dt,
             }
