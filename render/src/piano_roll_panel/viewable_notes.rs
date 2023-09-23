@@ -103,7 +103,7 @@ impl<'a> ViewableNotes<'a> {
                 note.start
             };
             // Get the x coordinate of the note.
-            let x = Self::get_note_x(t, pulses_per_pixel, x, &dt);
+            let x_note = Self::get_note_x(t, pulses_per_pixel, x, &dt);
             // Is this note in the selection?
             let selected = selected.contains(&note);
             // Is this note being played?
@@ -127,7 +127,7 @@ impl<'a> ViewableNotes<'a> {
             // Add the note.
             notes.push(ViewableNote {
                 note,
-                x,
+                x: x_note,
                 color,
                 selected,
                 playing,

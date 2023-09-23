@@ -131,7 +131,7 @@ impl MultiTrack {
                 .filter(|n| n.selected)
                 .collect::<Vec<&ViewableNote>>();
             let h = renderer.cell_size[1] * *height as f32;
-            let position = renderer.grid_to_pixel([x, y]);
+            let note_y = renderer.grid_to_pixel([x, y])[1];
             // Get the start and end of the selection.
             if let Some(select_0) = selected
                 .iter()
@@ -143,22 +143,19 @@ impl MultiTrack {
                     } else {
                         ColorKey::NoFocus
                     };
+                    // Get the end of the note last note.
                     let x1 = ViewableNotes::get_note_x(
                         select_1.note.end,
                         notes.pulses_per_pixel,
                         self.rect_f[0],
                         &dt,
-                    ) - dt[0].get_f();
-                    renderer.rectangle_pixel(
-                        [select_0.x, position[1]],
-                        [x1 - select_0.x, h],
-                        &color,
-                    )
+                    );
+                    renderer.rectangle_pixel([select_0.x, note_y], [x1 - select_0.x, h], &color)
                 }
             }
             // Draw some notes.
             for note in notes.notes.iter() {
-                let note_y = position[1] + (1.0 - ((note.note.note - MIN_NOTE) as f32) / DN_F) * h;
+                let note_y = note_y + (1.0 - ((note.note.note - MIN_NOTE) as f32) / DN_F) * h;
                 let note_w = notes.get_note_w(note);
                 renderer.rectangle_pixel(
                     [note.x, note_y],
