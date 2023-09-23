@@ -132,6 +132,7 @@ impl MultiTrack {
                 .collect::<Vec<&ViewableNote>>();
             let h = renderer.cell_size[1] * *height as f32;
             let note_y = renderer.grid_to_pixel([x, y])[1];
+            let x1 = self.rect_f[0] + self.rect_f[2];
             // Get the start and end of the selection.
             if let Some(select_0) = selected
                 .iter()
@@ -149,16 +150,23 @@ impl MultiTrack {
                         notes.pulses_per_pixel,
                         self.rect_f[0],
                         &dt,
-                    );
+                    )
+                    .clamp(self.rect_f[0], x1);
                     renderer.rectangle_pixel([select_0.x, note_y], [x1 - select_0.x, h], &color)
                 }
             }
             // Draw some notes.
             for note in notes.notes.iter() {
                 let note_y = note_y + (1.0 - ((note.note.note - MIN_NOTE) as f32) / DN_F) * h;
-                let note_w = notes.get_note_w(note);
+                let mut note_w = notes.get_note_w(note);
+                // Clamp the note.
+                let note_x0 = note.x.clamp(self.rect_f[0], x1);
+                let note_x1 = note.x + note_w;
+                if note_x1 > x1 {
+                    note_w = x1 - note_x0;
+                }
                 renderer.rectangle_pixel(
-                    [note.x, note_y],
+                    [note_x0, note_y],
                     [note_w, self.note_height],
                     &ColorKey::Background,
                 )
