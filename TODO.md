@@ -4,7 +4,7 @@
 
 - [x] Test on Linux
 - [x] Website
-- [ ] Trailer
+- [x] Trailer
 - [x] ftp
 - [x] Version check
 - [x] Test on OSX
@@ -49,7 +49,7 @@
 
 ## itch.io
 
-- [ ] Trailer
+- [x] Trailer
 - [x] More screenshots
 - [x] Builds
 - [ ] Make public
