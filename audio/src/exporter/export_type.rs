@@ -34,7 +34,7 @@ impl ExportType {
                 if period {
                     ".mp3"
                 } else {
-                    "ogg"
+                    "mp3"
                 }
             }
             Self::Ogg => {

@@ -290,8 +290,15 @@ impl Panel for OpenFilePanel {
         else if paths_state.open_file_type == OpenFileType::Export
             && input.happened(&InputEvent::CycleExportType)
         {
+            // Set the extension.
             let mut ex = exporter.lock();
             ex.export_type.index.increment(true);
+            // Set the children.
+            paths_state.children.set(
+                &paths_state.exports.directory.path,
+                &vec![ex.export_type.get().get_extension(false).to_string()],
+                None,
+            );
         }
         // We selected something.
         else if input.happened(&InputEvent::SelectFile) {
