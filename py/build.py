@@ -1,6 +1,5 @@
-from typing import Optional
 from os import chdir, getcwd
-from subprocess import check_output, CalledProcessError
+from subprocess import check_output, CalledProcessError, call
 from pathlib import Path
 from ftplib import FTP, error_perm
 import re
@@ -74,11 +73,6 @@ def ftp_cwd(ftp: FTP, folder: str) -> None:
         ftp.cwd(folder)
 
 
-def get_repo() -> Repository:
-    token: str = Path("credentials/github.txt").resolve().read_text(encoding="utf-8").strip()
-    return Github(token).get_repo("subalterngames/cacophony")
-
-
 def get_version() -> str:
     # Compare versions.
     version = re.search(r'version = "(.*?)"', Path("../Cargo.toml").read_text()).group(1)
@@ -93,12 +87,16 @@ def get_version() -> str:
     return version
 
 
-def tag(repo: Repository, version: str) -> None:
-    repo.create_git_tag(tag=version, message=version, type="commit", object=repo.get_commits()[0].sha)
+def tag(version: str) -> None:
+    call(["git", "tag", "version"])
+    call(["git", "push", "origin", version])
     print("Tagged.")
 
 
-def create_builds(repo: Repository, version: str) -> None:
+def create_builds(version: str) -> None:
+    # Get the repo.
+    token: str = Path("credentials/github.txt").resolve().read_text(encoding="utf-8").strip()
+    repo: Repository = Github(token).get_repo("subalterngames/cacophony")
     # Build the releases.
     workflow = repo.get_workflow(66524374)
     workflow.create_dispatch(ref="main", inputs={"version": version})
@@ -115,8 +113,7 @@ def discord() -> None:
 f = ftp_login()
 ftp_website(f)
 f.close()
-r = get_repo()
 v = get_version()
-tag(r, v)
-create_builds(r, v)
+tag(v)
+create_builds(v)
 discord()
