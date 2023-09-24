@@ -105,7 +105,9 @@ def create_builds(repo: Repository, version: str) -> None:
 
 
 def discord() -> None:
-    bot = DiscordBot()
+    intents = discord.Intents.default()
+    intents.message_content = True
+    bot = DiscordBot(intents=intents)
     bot.run(re.search("token=(.*)", Path("credentials/discord.txt").read_text()).group(1))
     print("Posted to Discord")
 
