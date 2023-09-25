@@ -42,7 +42,7 @@ impl Extension {
                 if period {
                     ".mid"
                 } else {
-                    "mid "
+                    "mid"
                 }
             }
             Self::MP3 => {
