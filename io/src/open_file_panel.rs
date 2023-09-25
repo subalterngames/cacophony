@@ -149,7 +149,8 @@ impl Panel for OpenFilePanel {
             if paths_state.open_file_type == OpenFileType::Export {
                 let ex = exporter.lock();
                 let e = ex.export_type.get();
-                let export_type = e.get_extension(false);
+                let extension: Extension = e.into();
+                let export_type = extension.to_str(false);
                 s.push_str(
                     &text.get_with_values("OPEN_FILE_PANEL_STATUS_TTS_EXPORT", &[export_type]),
                 );
@@ -200,7 +201,8 @@ impl Panel for OpenFilePanel {
                 let mut index = ex.export_type;
                 index.index.increment(true);
                 let e = index.get();
-                let next_export_type = e.get_extension(false);
+                let extension: Extension = e.into();
+                let next_export_type = extension.to_str(false);
                 tts_strings.push(self.tooltips.get_tooltip_with_values(
                     "OPEN_FILE_PANEL_INPUT_TTS_CYCLE_EXPORT",
                     &[InputEvent::CycleExportType],
@@ -345,7 +347,10 @@ impl Panel for OpenFilePanel {
                         // Append the extension.
                         let mut filename = filename.clone();
                         let ex = exporter.lock();
-                        filename.push_str(ex.export_type.get().get_extension(true));
+                        filename.push_str(
+                            <ExportType as Into<Extension>>::into(ex.export_type.get())
+                                .to_str(true),
+                        );
                         match &ex.export_type.get() {
                             // Export to a .wav file.
                             ExportType::Wav => {

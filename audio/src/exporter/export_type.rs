@@ -11,44 +11,6 @@ pub enum ExportType {
     Ogg,
 }
 
-impl ExportType {
-    /// Returns the file extension associated with the export type.
-    ///
-    /// - `period` If true, the extension starts with a ".", e.g. ".wav".
-    pub fn get_extension(&self, period: bool) -> &str {
-        match self {
-            Self::Wav => {
-                if period {
-                    ".wav"
-                } else {
-                    "wav"
-                }
-            }
-            Self::Mid => {
-                if period {
-                    ".mid"
-                } else {
-                    "mid "
-                }
-            }
-            Self::MP3 => {
-                if period {
-                    ".mp3"
-                } else {
-                    "mp3"
-                }
-            }
-            Self::Ogg => {
-                if period {
-                    ".ogg"
-                } else {
-                    "ogg"
-                }
-            }
-        }
-    }
-}
-
 impl From<ExportType> for Extension {
     fn from(val: ExportType) -> Self {
         match val {

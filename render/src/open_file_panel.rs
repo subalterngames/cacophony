@@ -243,15 +243,17 @@ impl Drawable for OpenFilePanel {
 
             // Draw the extension.
             let mut extension = String::from(".");
-            let ex = exporter.lock();
-            let e = ex.export_type.get();
             let ext = match paths_state.open_file_type {
-                OpenFileType::ReadSave | OpenFileType::WriteSave => ".cac",
-                OpenFileType::SoundFont => ".sf2",
-                OpenFileType::Export => e.get_extension(true),
-                OpenFileType::ImportMidi => ".mid",
+                OpenFileType::ReadSave | OpenFileType::WriteSave => Extension::Cac,
+                OpenFileType::SoundFont => Extension::Sf2,
+                OpenFileType::Export => {
+                    let ex = exporter.lock();
+                    let e = ex.export_type.get();
+                    e.into()
+                }
+                OpenFileType::ImportMidi => Extension::Mid,
             };
-            extension.push_str(ext);
+            extension.push_str(ext.to_str(true));
             renderer.text_ref(
                 &self.extension.to_label(&extension),
                 &if focus {
