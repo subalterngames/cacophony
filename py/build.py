@@ -102,7 +102,7 @@ def create_builds(version: str) -> None:
     workflow.create_dispatch(ref="main", inputs={"version": version})
 
 
-def discord() -> None:
+def post_on_discord() -> None:
     intents = discord.Intents.default()
     intents.message_content = True
     bot = DiscordBot(intents=intents)
@@ -116,4 +116,4 @@ f.close()
 v = get_version()
 tag(v)
 create_builds(v)
-discord()
+post_on_discord()
