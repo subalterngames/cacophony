@@ -1,4 +1,4 @@
-use super::FileOrDirectory;
+use super::{Extension, FileOrDirectory};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -15,16 +15,16 @@ impl ChildPaths {
     /// Set the child paths and selection.
     ///
     /// - `directory` The current parent directory.
-    /// - `extensions` The extensions of valid files.
+    /// - `extension` The extension of valid files.
     /// - `previous_directory` This is used to set the selection to the directory we just moved up from.
     pub fn set(
         &mut self,
         directory: &Path,
-        extensions: &[String],
+        extension: &Extension,
         previous_directory: Option<PathBuf>,
     ) {
         // Get the paths.
-        let children = self.get_paths_in_directory(directory, extensions);
+        let children = self.get_paths_in_directory(directory, extension);
         // Get the folders. This sets the selection.
         let folders: Vec<&FileOrDirectory> = children.iter().filter(|p| !p.is_file).collect();
         // Set the selection index.
@@ -55,11 +55,11 @@ impl ChildPaths {
     /// Get the child paths of a directory.
     ///
     /// - `directory` The current parent directory.
-    /// - `extensions` The extensions of valid files.
+    /// - `extension` The extension of valid files.
     fn get_paths_in_directory(
         &self,
         directory: &Path,
-        extensions: &[String],
+        extension: &Extension,
     ) -> Vec<FileOrDirectory> {
         // Find all valid paths.
         let valid_paths: Vec<PathBuf> = match directory.read_dir() {
@@ -76,7 +76,7 @@ impl ChildPaths {
             .filter(|p| {
                 p.is_file()
                     && p.extension().is_some()
-                    && extensions.contains(&p.extension().unwrap().to_str().unwrap().to_string())
+                    && extension.to_str(false) == p.extension().unwrap().to_str().unwrap()
             })
             .collect();
         files.sort();

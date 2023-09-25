@@ -61,27 +61,27 @@ impl PathsState {
     }
 
     /// Try to go up a directory.
-    pub fn up_directory(&mut self, extensions: &[String]) -> bool {
+    pub fn up_directory(&mut self, extension: &Extension) -> bool {
         match self.open_file_type {
             OpenFileType::Export => {
-                Self::up_directory_type(&mut self.exports.directory, &mut self.children, extensions)
+                Self::up_directory_type(&mut self.exports.directory, &mut self.children, extension)
             }
             OpenFileType::ReadSave | OpenFileType::WriteSave => {
-                Self::up_directory_type(&mut self.saves.directory, &mut self.children, extensions)
+                Self::up_directory_type(&mut self.saves.directory, &mut self.children, extension)
             }
             OpenFileType::SoundFont => Self::up_directory_type(
                 &mut self.soundfonts.directory,
                 &mut self.children,
-                extensions,
+                extension,
             ),
             OpenFileType::ImportMidi => {
-                Self::up_directory_type(&mut self.midis.directory, &mut self.children, extensions)
+                Self::up_directory_type(&mut self.midis.directory, &mut self.children, extension)
             }
         }
     }
 
     /// Try to go down a directory.
-    pub fn down_directory(&mut self, extensions: &[String]) -> bool {
+    pub fn down_directory(&mut self, extension: &Extension) -> bool {
         if self.children.children.is_empty() {
             false
         } else {
@@ -100,7 +100,7 @@ impl PathsState {
                         };
                         let cwd1 = self.children.children[*selected].path.clone();
                         // Set the children.
-                        self.children.set(&cwd1, extensions, Some(cwd0));
+                        self.children.set(&cwd1, extension, Some(cwd0));
                         // Set the directory.
                         match &self.open_file_type {
                             OpenFileType::Export => {
@@ -170,11 +170,11 @@ impl PathsState {
     fn up_directory_type(
         directory: &mut FileOrDirectory,
         children: &mut ChildPaths,
-        extensions: &[String],
+        extension: &Extension,
     ) -> bool {
         match &directory.path.parent() {
             Some(parent) => {
-                children.set(parent, extensions, Some(directory.path.to_path_buf()));
+                children.set(parent, extension, Some(directory.path.to_path_buf()));
                 *directory = FileOrDirectory::new(parent);
                 true
             }

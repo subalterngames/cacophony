@@ -1,22 +1,36 @@
-use common::open_file::Extension;
 use serde::{Deserialize, Serialize};
 
-/// This determines what we're exporting to.
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Deserialize, Serialize, Default)]
-pub enum ExportType {
-    #[default]
+/// Enum values for file extensions used in Cacophony.
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Deserialize, Serialize)]
+pub enum Extension {
+    Cac,
+    Sf2,
     Wav,
     Mid,
     MP3,
     Ogg,
 }
 
-impl ExportType {
+impl Extension {
     /// Returns the file extension associated with the export type.
     ///
     /// - `period` If true, the extension starts with a ".", e.g. ".wav".
-    pub fn get_extension(&self, period: bool) -> &str {
+    pub fn to_str(&self, period: bool) -> &str {
         match self {
+            Self::Cac => {
+                if period {
+                    ".cac"
+                } else {
+                    "cac"
+                }
+            }
+            Self::Sf2 => {
+                if period {
+                    ".sf2"
+                } else {
+                    "sf2"
+                }
+            }
             Self::Wav => {
                 if period {
                     ".wav"
@@ -45,17 +59,6 @@ impl ExportType {
                     "ogg"
                 }
             }
-        }
-    }
-}
-
-impl From<ExportType> for Extension {
-    fn from(val: ExportType) -> Self {
-        match val {
-            ExportType::Wav => Extension::Wav,
-            ExportType::Mid => Extension::Mid,
-            ExportType::MP3 => Extension::MP3,
-            ExportType::Ogg => Extension::Ogg,
         }
     }
 }

@@ -1,31 +1,18 @@
 use super::import_midi::import;
 use crate::panel::*;
 use crate::Save;
-use audio::exporter::*;
+use audio::exporter::ExportType;
 use common::open_file::*;
 use common::PanelType;
 use text::get_file_name_no_ex;
 
 /// Data for an open-file panel.
+#[derive(Default)]
 pub struct OpenFilePanel {
     /// Popup handler.
     popup: Popup,
-    soundfont_extensions: Vec<String>,
-    save_file_extensions: Vec<String>,
-    midi_file_extensions: Vec<String>,
+    /// Tooltips handler.
     tooltips: Tooltips,
-}
-
-impl Default for OpenFilePanel {
-    fn default() -> Self {
-        Self {
-            popup: Default::default(),
-            soundfont_extensions: vec!["sf2".to_string(), "sf3".to_string()],
-            save_file_extensions: vec!["cac".to_string()],
-            midi_file_extensions: vec!["mid".to_string()],
-            tooltips: Tooltips::default(),
-        }
-    }
 }
 
 impl OpenFilePanel {
@@ -51,7 +38,7 @@ impl OpenFilePanel {
         let open_file_type = OpenFileType::SoundFont;
         paths_state.children.set(
             &paths_state.soundfonts.directory.path,
-            &self.soundfont_extensions,
+            &Extension::Sf2,
             None,
         );
         self.enable(open_file_type, state, paths_state);
@@ -65,11 +52,9 @@ impl OpenFilePanel {
     /// Enable the panel for setting the save path to be written to.
     pub fn write_save(&mut self, state: &mut State, paths_state: &mut PathsState) {
         self.enable_as_save(OpenFileType::WriteSave, state, paths_state);
-        paths_state.children.set(
-            &paths_state.midis.directory.path,
-            &self.save_file_extensions,
-            None,
-        );
+        paths_state
+            .children
+            .set(&paths_state.midis.directory.path, &Extension::Cac, None);
     }
 
     /// Enable a panel for setting the export path.
@@ -80,34 +65,31 @@ impl OpenFilePanel {
         exporter: &SharedExporter,
     ) {
         let ex = exporter.lock();
-        let extension = ex.export_type.get().get_extension(false).to_string();
+        let extension = ex.export_type.get().into();
         let open_file_type = OpenFileType::Export;
         paths_state
             .children
-            .set(&paths_state.exports.directory.path, &[extension], None);
+            .set(&paths_state.exports.directory.path, &extension, None);
         self.enable(open_file_type, state, paths_state);
     }
 
     /// Enable a panel for importing a MIDI file.
     pub fn import_midi(&mut self, state: &mut State, paths_state: &mut PathsState) {
-        paths_state.children.set(
-            &paths_state.midis.directory.path,
-            &self.midi_file_extensions,
-            None,
-        );
+        paths_state
+            .children
+            .set(&paths_state.midis.directory.path, &Extension::Mid, None);
         self.enable(OpenFileType::ImportMidi, state, paths_state);
     }
 
-    fn get_extensions(&self, paths_state: &PathsState, exporter: &SharedExporter) -> Vec<String> {
-        let ex = exporter.lock();
-        let extension = ex.export_type.get().get_extension(false).to_string();
+    fn get_extension(&self, paths_state: &PathsState, exporter: &SharedExporter) -> Extension {
         match paths_state.open_file_type {
             OpenFileType::Export => {
-                vec![extension]
+                let ex = exporter.lock();
+                ex.export_type.get().into()
             }
-            OpenFileType::ReadSave | OpenFileType::WriteSave => self.save_file_extensions.clone(),
-            OpenFileType::SoundFont => self.soundfont_extensions.clone(),
-            OpenFileType::ImportMidi => self.midi_file_extensions.clone(),
+            OpenFileType::ReadSave | OpenFileType::WriteSave => Extension::Cac,
+            OpenFileType::SoundFont => Extension::Sf2,
+            OpenFileType::ImportMidi => Extension::Mid,
         }
     }
 
@@ -117,11 +99,9 @@ impl OpenFilePanel {
         state: &mut State,
         paths_state: &mut PathsState,
     ) {
-        paths_state.children.set(
-            &paths_state.saves.directory.path,
-            &self.save_file_extensions,
-            None,
-        );
+        paths_state
+            .children
+            .set(&paths_state.saves.directory.path, &Extension::Cac, None);
         self.enable(open_file_type, state, paths_state);
     }
 
@@ -272,11 +252,11 @@ impl Panel for OpenFilePanel {
         }
         // Go up a directory.
         else if input.happened(&InputEvent::UpDirectory) {
-            paths_state.up_directory(&self.get_extensions(paths_state, exporter));
+            paths_state.up_directory(&self.get_extension(paths_state, exporter));
         }
         // Go down a directory.
         else if input.happened(&InputEvent::DownDirectory) {
-            paths_state.down_directory(&self.get_extensions(paths_state, exporter));
+            paths_state.down_directory(&self.get_extension(paths_state, exporter));
         }
         // Scroll up.
         else if input.happened(&InputEvent::PreviousPath) {
@@ -296,7 +276,7 @@ impl Panel for OpenFilePanel {
             // Set the children.
             paths_state.children.set(
                 &paths_state.exports.directory.path,
-                &vec![ex.export_type.get().get_extension(false).to_string()],
+                &ex.export_type.get().into(),
                 None,
             );
         }
