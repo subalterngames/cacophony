@@ -62,7 +62,7 @@ def get_version() -> str:
 
 
 def tag(version: str) -> None:
-    call(["git", "tag", "version"])
+    call(["git", "tag", version])
     call(["git", "push", "origin", version])
     print("Tagged.")
 
