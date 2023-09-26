@@ -25,7 +25,7 @@ jobs:
         with:
           toolchain: 1.71.0
       - name: cargo build
-        run: cargo build --release --features ${{ feature }} -p text
+        run: cargo build --release --features ${{ matrix.feature }} -p text
       - name: Create release directory
         run: mkdir -p cacophony/data
       - name: Copy executable
@@ -44,7 +44,7 @@ jobs:
       - name: butler push
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: ./butler push cacophony subalterngames/cacophony:ubuntu${{ version }} --userversion=${{ inputs.version }}
+        run: ./butler push cacophony subalterngames/cacophony:ubuntu${{ matrix.version }} --userversion=${{ inputs.version }}
   build-macos:
     name: MacOS
     runs-on: macos-latest
