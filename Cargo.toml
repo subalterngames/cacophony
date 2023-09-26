@@ -68,7 +68,6 @@ branch = "master"
 [workspace.dependencies.tts]
 version = "0.25.5"
 default-features = false
-features = ["speech_dispatcher_0_9"]
 
 [workspace.dependencies.mp3lame-encoder]
 version = "0.1.2"

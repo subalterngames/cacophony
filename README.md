@@ -37,10 +37,20 @@ Windows:
 
 ### Linux
 
-1. On Ubuntu 22 and newer, change this: `features = ["speech_dispatcher_0_9"]` to this: `features = ["speech_dispatcher_0_11"]`
-2. `apt install clang libspeechd-dev pkg-config libssl-dev alsa`
-3. Ubuntu 20 and newer: `apt install librust-alsa-sys-dev`
-4. `cargo build --release`
+#### Ubuntu 18
+
+1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa`
+2. `cargo build --release --features ubuntu_18_20 -p text`
+
+#### Ubuntu 20
+
+1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
+2. `cargo build --release --features ubuntu_18_20 -p text`
+
+#### Ubuntu 22
+
+1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
+2. `cargo build --release --features ubuntu_22 -p text`
 
 ### MacOS
 

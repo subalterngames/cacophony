@@ -8,19 +8,12 @@ on:
         required: True
 
 jobs:
-  build-ubuntu-18-i386:
-    runs-on: ubuntu-latest
-    name: Ubuntu 18 i386
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-      - name: Build docker image
-        run: docker build -t ubuntu-18-i386 Docker/ubuntu-18-i386
-      - name: Run Docker image
-        run: docker run -it ubuntu-18-i386 ${{ inputs.version }} ${{ secrets.BUTLER_API_KEY }}
-  build-ubuntu-20:
-    name: Ubuntu 20
-    runs-on: ubuntu-20.04
+  build-ubuntu:
+    strategy:
+      matrix:
+      version: [20, 22]
+      feature: [ubuntu_18_20, ubuntu_22]
+      os: [ubuntu-20.04, ubuntu-22.04]
     steps:
       - uses: actions/checkout@v3
       - name: apt update
@@ -32,7 +25,7 @@ jobs:
         with:
           toolchain: 1.71.0
       - name: cargo build
-        run: cargo build --release
+        run: cargo build --release --features ${{ feature }} -p text
       - name: Create release directory
         run: mkdir -p cacophony/data
       - name: Copy executable
@@ -51,47 +44,7 @@ jobs:
       - name: butler push
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: ./butler push cacophony subalterngames/cacophony:ubuntu20 --userversion=${{ inputs.version }}
-  build-ubuntu-22:
-    name: Ubuntu 22
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v3
-      - name: apt update
-        run: sudo apt-get update
-      - name: install
-        run: sudo apt install wget clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
-      - name: Set up Python 3
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Speech Dispatcher 11
-        run: cd py && python3 speech_dispatcher_11.py && cd ..
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: 1.71.0
-      - name: cargo build
-        run: cargo build --release
-      - name: Create release directory
-        run: mkdir -p cacophony/data
-      - name: Copy executable
-        run: cp target/release/cacophony cacophony/cacophony
-      - name: Copy data/
-        run: cp -R data cacophony
-      - name: Download butler
-        run: wget -O butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
-      - name: Unzip butler
-        run: unzip butler.zip
-      - run: chmod +x butler
-      - name: butler login
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: ./butler login
-      - name: butler push
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: ./butler push cacophony subalterngames/cacophony:ubuntu22 --userversion=${{ inputs.version }}
+        run: ./butler push cacophony subalterngames/cacophony:ubuntu${{ version }} --userversion=${{ inputs.version }}
   build-macos:
     name: MacOS
     runs-on: macos-latest

@@ -21,3 +21,7 @@ path = "../common"
 
 [dependencies.input]
 path = "../input"
+
+[features]
+ubuntu_22 = ["tts/speech_dispatcher_0_11"]
+ubuntu_18_20 = ["tts/speech_dispatcher_0_9"]
