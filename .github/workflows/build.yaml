@@ -11,9 +11,10 @@ jobs:
   build-ubuntu:
     strategy:
       matrix:
-      version: [20, 22]
-      feature: [ubuntu_18_20, ubuntu_22]
-      os: [ubuntu-20.04, ubuntu-22.04]
+        version: [20, 22]
+        feature: [ubuntu_18_20, ubuntu_22]
+        os: [ubuntu-20.04, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - name: apt update
