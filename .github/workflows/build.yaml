@@ -30,7 +30,7 @@ jobs:
         with:
           toolchain: 1.71.0
       - name: cargo build
-        run: cargo build --release --features ${{ matrix.feature }} -p text
+        run: cargo build --release --features ${{ matrix.feature }}
       - name: Create release directory
         run: mkdir -p cacophony/data
       - name: Copy executable

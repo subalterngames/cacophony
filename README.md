@@ -40,17 +40,17 @@ Windows:
 #### Ubuntu 18
 
 1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa`
-2. `cargo build --release --features ubuntu_18_20 -p text`
+2. `cargo build --release --features ubuntu_18_20`
 
 #### Ubuntu 20
 
 1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
-2. `cargo build --release --features ubuntu_18_20 -p text`
+2. `cargo build --release --features ubuntu_18_20`
 
 #### Ubuntu 22
 
 1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
-2. `cargo build --release --features ubuntu_22 -p text`
+2. `cargo build --release --features ubuntu_22`
 
 ### MacOS
 

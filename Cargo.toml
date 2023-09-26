@@ -70,6 +70,10 @@ branch = "master"
 version = "0.25.5"
 default-features = false
 
+[features]
+ubuntu_22 = ["text/ubuntu_22"]
+ubuntu_18_20 = ["text/ubuntu_18_20"]
+
 [workspace.dependencies.mp3lame-encoder]
 version = "0.1.2"
 git = "https://github.com/subalterngames/mp3lame-encoder.git"
