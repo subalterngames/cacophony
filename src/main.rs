@@ -11,7 +11,7 @@ use io::IO;
 use macroquad::prelude::*;
 use regex::Regex;
 use render::{draw_subtitles, Panels, Renderer};
-use reqwest::blocking::get;
+use ureq::get;
 use text::{Text, TTS};
 
 const CLEAR_COLOR: macroquad::color::Color = macroquad::color::BLACK;
@@ -170,9 +170,9 @@ fn get_remote_version(config: &Ini) -> Option<String> {
     // Check the config file to decide if we should to an HTTP request.
     if parse_bool(config.section(Some("UPDATE")).unwrap(), "check_for_updates") {
         // HTTP request.
-        match get("https://raw.githubusercontent.com/subalterngames/cacophony/main/Cargo.toml") {
+        match get("https://raw.githubusercontent.com/subalterngames/cacophony/main/Cargo.toml").call() {
             // We got a request.
-            Ok(resp) => match resp.text() {
+            Ok(resp) => match resp.into_string() {
                 // We got text.
                 Ok(text) => {
                     // Get the version from the Cargo.toml.
