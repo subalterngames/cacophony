@@ -51,30 +51,26 @@ jobs:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: ./butler push cacophony subalterngames/cacophony:ubuntu${{ matrix.version }} --userversion=${{ inputs.version }}
   build-macos:
-    name: MacOS
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - os: macos-11
+            version: 11
+          - os: macos-12
+            version: 12
+          - os: macos-13
+            version: 13
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.71.0
-          targets: x86_64-apple-darwin, aarch64-apple-darwin
       - name: Install cargo bundle
         run: cargo install cargo-bundle
-      - name: Set up Python 3
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Install fat-macho
-        run: pip3 install fat-macho
-      - name: Build aarch64
-        run: cargo bundle --release --target aarch64-apple-darwin
-      - name: Build x64
-        run: cargo build --release --target x86_64-apple-darwin
-      - name: Create universal binary
-        working-directory: py
-        run: python3 macho.py
+      - name: cargo build
+        run: cargo bundle --release
       - name: Download butler
         run: wget -O butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
       - name: Unzip butler
@@ -87,7 +83,7 @@ jobs:
       - name: butler push
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: ./butler push target/release/aarch64-apple-darwin/bundle/osx/Cacophony.app subalterngames/cacophony:macos --userversion=${{ inputs.version }}
+        run: ./butler push target/release/bundle/osx/Cacophony.app subalterngames/cacophony:macos${{ matrix.version }} --userversion=${{ inputs.version }}
   build-windows:
     name: Windows
     runs-on: windows-latest
