@@ -13,7 +13,7 @@ hound = { workspace = true }
 id3 = { workspace = true }
 mp3lame-encoder = { workspace = true }
 chrono = { workspace = true }
-ghakuf = { workspace = true }
+midly = { workspace = true }
 vorbis-encoder = { workspace = true }
 oggvorbismeta = { workspace = true }
 oxisynth = { workspace = true }

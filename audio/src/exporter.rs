@@ -4,17 +4,15 @@ use serde::{Deserialize, Serialize};
 mod metadata;
 mod multi_file_suffix;
 use crate::{AudioBuffer, SharedExporter, SynthState};
-mod midi_note;
 use chrono::Datelike;
 use chrono::Local;
-use common::{Index, Music, Time, U64orF32, DEFAULT_FRAMERATE, PPQ_F};
+use common::{Index, Music, Time, U64orF32, DEFAULT_FRAMERATE, PPQ_F, PPQ_U};
 pub use export_type::*;
-use ghakuf::messages::*;
-use ghakuf::writer::*;
+use midly::{Format, Header, MetaMessage, MidiMessage, Timing, Track, TrackEvent, TrackEventKind, write_std};
+use midly::num::{u4, u15, u24, u28};
 use hound::*;
 use id3::*;
 pub use metadata::*;
-use midi_note::*;
 use mp3lame_encoder::*;
 pub use multi_file_suffix::*;
 use oggvorbismeta::*;
@@ -30,8 +28,6 @@ use std::sync::Arc;
 
 /// The number of channels.
 const NUM_CHANNELS: usize = 2;
-/// A MIDI pulse. This just reminds us what we're trying to accomplish.
-const PULSE: u64 = 1;
 /// Conversion factor for f32 to i16.
 const F32_TO_I16: f32 = 32767.5;
 /// An ordered list of MP3 bit rates. We can't use `IndexedValues` because this enum isn't serializable.
@@ -202,104 +198,87 @@ impl Exporter {
     /// - `text` This is is used for metadata.
     /// - `export_settings` .mid export settings.
     pub fn mid(&self, path: &Path, music: &Music, time: &Time, synth_state: &SynthState) {
-        // Gather all notes.
-        let mut notes: Vec<MidiNote> = vec![];
-        for track in music.midi_tracks.iter() {
-            notes.extend(track.notes.iter().map(|n| MidiNote::new(n, track.channel)));
-        }
-        // End here if there are no notes.
-        if notes.is_empty() {
-            return;
-        }
+
         // Set the name of the music.
-        let mut messages = vec![Message::MetaEvent {
-            delta_time: 0,
-            event: MetaEvent::TextEvent,
-            data: self.metadata.title.as_bytes().to_vec(),
-        }];
+        let mut meta_messages = vec![MetaMessage::Text(self.metadata.title.as_bytes())];
+        let mut copyright = vec![];
+        // Set the tempo.
+        meta_messages.push(MetaMessage::Tempo(u24::from((60000000 / time.bpm.get_u()) as u32)));
+        // Set the time signature.
+        meta_messages.push(MetaMessage::TimeSignature(4, 2, 24, 8));
         // Send copyright.
         if self.copyright {
             if let Some(artist) = &self.metadata.artist {
-                messages.push(Message::MetaEvent {
-                    delta_time: 0,
-                    event: MetaEvent::CopyrightNotice,
-                    data: self.get_copyright(artist).as_bytes().to_vec(),
-                });
+                copyright.append(&mut self.get_copyright(artist).as_bytes().to_vec());
+                meta_messages.push(MetaMessage::Copyright(&copyright));
             }
         }
-        // Set the instrument names.
-        for program in synth_state.programs.values() {
-            messages.push(Message::MetaEvent {
-                delta_time: 0,
-                event: MetaEvent::InstrumentName,
-                data: program.preset_name.as_bytes().to_vec(),
-            });
-        }
-        // Set the tempo.
-        let tempo = 60000000 / time.bpm.get_u();
-        messages.push(Message::MetaEvent {
-            delta_time: 0,
-            event: MetaEvent::SetTempo,
-            data: [(tempo >> 16) as u8, (tempo >> 8) as u8, tempo as u8].to_vec(),
-        });
 
-        // Sort the notes by start time.
-        notes.sort_by(|a, b| a.note.start.cmp(&b.note.start));
-        // Get the end time.
-        let t1 = notes.iter().map(|n| n.note.end).max().unwrap();
+        let mut tracks = vec![];
+        let mut track_0 = Track::new();
+        for (i, midi_track) in music.midi_tracks.iter().enumerate() {
+            if let Some(program) = synth_state.programs.get(&midi_track.channel) {
+                // Get track 0 or start a new track.
+                let mut track = Vec::new();
 
-        // Get the beat time of one pulse.
-        // This is the current time.
-        let mut t = 0;
+                if i == 0 {
+                    for meta_message in meta_messages.iter() {
+                        track_0.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Meta(meta_message.clone()) })
+                    }
+                }
 
-        // The delta-time since the last event.
-        let mut dt = 0;
+                let channel = u4::from(midi_track.channel);
 
-        // Maybe this should be a for loop.
-        while t < t1 {
-            // Are there any note-on events?
-            for note in notes.iter().filter(|n| n.note.start == t) {
-                // Note-on.
-                messages.push(Message::MidiEvent {
-                    delta_time: Self::get_delta_time(&mut dt),
-                    event: MidiEvent::NoteOn {
-                        ch: note.channel,
-                        note: note.note.note,
-                        velocity: note.note.velocity,
-                    },
-                });
+                // Set the program name.
+                track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Meta(MetaMessage::ProgramName(program.preset_name.as_bytes())) });
+                // Change the program.
+                track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Midi { channel, message: MidiMessage::ProgramChange { program: program.preset.into() } }});
+
+                // Iterate through the notes.
+                let mut notes = midi_track.notes.clone();
+                // Sort the notes by start time.
+                notes.sort_by(|a, b| a.start.cmp(&b.start));
+                // Get the start and end time.
+                let t0 = notes.iter().map(|n| n.start).min().unwrap();
+                // The delta is the first note.
+                let mut dt = t0;
+                let t1 = notes.iter().map(|n| n.end).max().unwrap();
+                // Iterate through all pulses.                
+                for t in t0..t1 {
+                    // Get all note-on events.
+                    for note in notes.iter().filter(|n| n.start == t) {
+                        let delta = Self::get_delta_time(&mut dt);
+                        track.push(TrackEvent { delta, kind: TrackEventKind::Midi { channel, message: MidiMessage::NoteOn { key: note.note.into(), vel: note.velocity.into() } } });
+                    }
+                    // Get all note-off events.
+                    for note in notes.iter().filter(|n| n.end == t){
+                        let delta = Self::get_delta_time(&mut dt);
+                        track.push(TrackEvent { delta, kind: TrackEventKind::Midi { channel, message: MidiMessage::NoteOff { key: note.note.into(), vel: note.velocity.into() } } });
+                    }
+                }
+                // End the track.
+                track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Meta(MetaMessage::EndOfTrack) });
+                // Add the track.
+                tracks.push(track);
             }
-            // Are there any note-off events?
-            for note in notes.iter().filter(|n| n.note.end == t) {
-                // Note-off.
-                messages.push(Message::MidiEvent {
-                    delta_time: Self::get_delta_time(&mut dt),
-                    event: MidiEvent::NoteOff {
-                        ch: note.channel,
-                        note: note.note.note,
-                        velocity: note.note.velocity,
-                    },
-                });
-            }
-            // Increment the time and the delta-time.
-            t += PULSE;
-            dt += PULSE;
         }
-        // Track end.
-        messages.push(Message::MetaEvent {
-            delta_time: 0,
-            event: MetaEvent::EndOfTrack,
-            data: vec![],
-        });
-        // Write.
-        let mut writer = Writer::new();
-        writer.running_status(true);
-        for message in &messages {
-            writer.push(message);
-        }
-        if let Err(error) = writer.write(path) {
+        // Create the header.
+        let header = Header::new(Format::Parallel, Timing::Metrical(u15::from(PPQ_U as u16)));
+        // Write the file.
+        let mut buffer: Vec<u8> = vec![];
+        if let Err(error) = write_std(&header, tracks.iter(), &mut buffer) {
             panic!("Error writing {:?} {:?}", path, error);
         }
+        let mut file = OpenOptions::new()
+        .write(true)
+        .append(false)
+        .truncate(true)
+        .create(true)
+        .open(path)
+        .expect("Error opening file {:?}");
+    if let Err(error) = file.write(&buffer) {
+        panic!("Failed to export mid to {:?}: {}", path, error)
+    }
     }
 
     /// Export to a .wav file.
@@ -532,12 +511,12 @@ impl Exporter {
     }
 
     /// Converts a PPQ value into a MIDI time delta and resets `ppq` to zero.
-    fn get_delta_time(ppq: &mut u64) -> u32 {
+    fn get_delta_time(ppq: &mut u64) -> u28 {
         // Get the dt.
         let dt = (*ppq as f32 / PPQ_F) as u32;
         // Reset the PPQ value.
         *ppq = 0;
-        dt
+        u28::from(dt)
     }
 
     /// Converts an f32 sample to an i16 sample.

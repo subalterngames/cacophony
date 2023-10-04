@@ -96,10 +96,10 @@ dependencies = [
  "common",
  "cpal",
  "crossbeam-channel",
- "ghakuf",
  "hashbrown 0.13.2",
  "hound",
  "id3",
+ "midly",
  "mp3lame-encoder",
  "oggvorbismeta",
  "oxisynth",
@@ -742,16 +742,6 @@ dependencies = [
  "cfg-if 1.0.0",
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
-]
-
-[[package]]
-name = "ghakuf"
-version = "0.5.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2140084e11440234ae12cd17988f5f4804233cfde7d8926e06de5423ddad63f4"
-dependencies = [
- "byteorder",
- "log",
 ]
 
 [[package]]
