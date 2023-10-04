@@ -8,11 +8,13 @@ use chrono::Datelike;
 use chrono::Local;
 use common::{Index, Music, Time, U64orF32, DEFAULT_FRAMERATE, PPQ_F, PPQ_U};
 pub use export_type::*;
-use midly::{Format, Header, MetaMessage, MidiMessage, Timing, Track, TrackEvent, TrackEventKind, write_std};
-use midly::num::{u4, u15, u24, u28};
 use hound::*;
 use id3::*;
 pub use metadata::*;
+use midly::num::{u15, u24, u28, u4};
+use midly::{
+    write_std, Format, Header, MetaMessage, MidiMessage, Timing, Track, TrackEvent, TrackEventKind,
+};
 use mp3lame_encoder::*;
 pub use multi_file_suffix::*;
 use oggvorbismeta::*;
@@ -198,12 +200,13 @@ impl Exporter {
     /// - `text` This is is used for metadata.
     /// - `export_settings` .mid export settings.
     pub fn mid(&self, path: &Path, music: &Music, time: &Time, synth_state: &SynthState) {
-
         // Set the name of the music.
         let mut meta_messages = vec![MetaMessage::Text(self.metadata.title.as_bytes())];
         let mut copyright = vec![];
         // Set the tempo.
-        meta_messages.push(MetaMessage::Tempo(u24::from((60000000 / time.bpm.get_u()) as u32)));
+        meta_messages.push(MetaMessage::Tempo(u24::from(
+            (60000000 / time.bpm.get_u()) as u32,
+        )));
         // Set the time signature.
         meta_messages.push(MetaMessage::TimeSignature(4, 2, 24, 8));
         // Send copyright.
@@ -223,16 +226,32 @@ impl Exporter {
 
                 if i == 0 {
                     for meta_message in meta_messages.iter() {
-                        track_0.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Meta(meta_message.clone()) })
+                        track_0.push(TrackEvent {
+                            delta: 0.into(),
+                            kind: TrackEventKind::Meta(*meta_message),
+                        })
                     }
                 }
 
                 let channel = u4::from(midi_track.channel);
 
                 // Set the program name.
-                track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Meta(MetaMessage::ProgramName(program.preset_name.as_bytes())) });
+                track.push(TrackEvent {
+                    delta: 0.into(),
+                    kind: TrackEventKind::Meta(MetaMessage::ProgramName(
+                        program.preset_name.as_bytes(),
+                    )),
+                });
                 // Change the program.
-                track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Midi { channel, message: MidiMessage::ProgramChange { program: program.preset.into() } }});
+                track.push(TrackEvent {
+                    delta: 0.into(),
+                    kind: TrackEventKind::Midi {
+                        channel,
+                        message: MidiMessage::ProgramChange {
+                            program: program.preset.into(),
+                        },
+                    },
+                });
 
                 // Iterate through the notes.
                 let mut notes = midi_track.notes.clone();
@@ -243,21 +262,42 @@ impl Exporter {
                 // The delta is the first note.
                 let mut dt = t0;
                 let t1 = notes.iter().map(|n| n.end).max().unwrap();
-                // Iterate through all pulses.                
+                // Iterate through all pulses.
                 for t in t0..t1 {
                     // Get all note-on events.
                     for note in notes.iter().filter(|n| n.start == t) {
                         let delta = Self::get_delta_time(&mut dt);
-                        track.push(TrackEvent { delta, kind: TrackEventKind::Midi { channel, message: MidiMessage::NoteOn { key: note.note.into(), vel: note.velocity.into() } } });
+                        track.push(TrackEvent {
+                            delta,
+                            kind: TrackEventKind::Midi {
+                                channel,
+                                message: MidiMessage::NoteOn {
+                                    key: note.note.into(),
+                                    vel: note.velocity.into(),
+                                },
+                            },
+                        });
                     }
                     // Get all note-off events.
-                    for note in notes.iter().filter(|n| n.end == t){
+                    for note in notes.iter().filter(|n| n.end == t) {
                         let delta = Self::get_delta_time(&mut dt);
-                        track.push(TrackEvent { delta, kind: TrackEventKind::Midi { channel, message: MidiMessage::NoteOff { key: note.note.into(), vel: note.velocity.into() } } });
+                        track.push(TrackEvent {
+                            delta,
+                            kind: TrackEventKind::Midi {
+                                channel,
+                                message: MidiMessage::NoteOff {
+                                    key: note.note.into(),
+                                    vel: note.velocity.into(),
+                                },
+                            },
+                        });
                     }
                 }
                 // End the track.
-                track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Meta(MetaMessage::EndOfTrack) });
+                track.push(TrackEvent {
+                    delta: 0.into(),
+                    kind: TrackEventKind::Meta(MetaMessage::EndOfTrack),
+                });
                 // Add the track.
                 tracks.push(track);
             }
@@ -270,15 +310,15 @@ impl Exporter {
             panic!("Error writing {:?} {:?}", path, error);
         }
         let mut file = OpenOptions::new()
-        .write(true)
-        .append(false)
-        .truncate(true)
-        .create(true)
-        .open(path)
-        .expect("Error opening file {:?}");
-    if let Err(error) = file.write(&buffer) {
-        panic!("Failed to export mid to {:?}: {}", path, error)
-    }
+            .write(true)
+            .append(false)
+            .truncate(true)
+            .create(true)
+            .open(path)
+            .expect("Error opening file {:?}");
+        if let Err(error) = file.write(&buffer) {
+            panic!("Failed to export mid to {:?}: {}", path, error)
+        }
     }
 
     /// Export to a .wav file.

@@ -290,23 +290,25 @@ impl Text {
     /// Converts a beat PPQ value into a time string.
     pub fn get_time(&self, ppq: u64, time: &Time) -> String {
         let duration = time.ppq_to_duration(ppq);
-        let hours = duration.whole_hours();
-        let minutes = duration.whole_minutes() - (hours * 60);
-        let seconds = duration.whole_seconds() - (minutes * 60);
+        let whole_seconds = duration.as_secs();
+        let hours = whole_seconds / 3600;
+        let minutes = whole_seconds / 60 - (hours * 60);
+        let seconds = whole_seconds - (minutes * 60);
         // Include hours?
-        match duration.whole_hours() > 0 {
-            true => self.get_with_values(
+        if hours > 0 {
+            self.get_with_values(
                 "TIME_TTS_HOURS",
                 &[
                     hours.to_string().as_str(),
                     minutes.to_string().as_str(),
                     seconds.to_string().as_str(),
                 ],
-            ),
-            false => self.get_with_values(
+            )
+        } else {
+            self.get_with_values(
                 "TIME_TTS",
                 &[minutes.to_string().as_str(), seconds.to_string().as_str()],
-            ),
+            )
         }
     }
 

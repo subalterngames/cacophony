@@ -1,7 +1,7 @@
 use crate::edit_mode::*;
 use crate::U64orF32;
 use serde::{Deserialize, Serialize};
-use time::Duration;
+use std::time::Duration;
 
 /// The default BPM.
 pub const DEFAULT_BPM: u64 = 120;
@@ -40,7 +40,7 @@ impl Time {
 
     /// Converts pulses per quarter note into a duration
     pub fn ppq_to_duration(&self, ppq: u64) -> Duration {
-        Duration::seconds_f32(self.ppq_to_seconds(ppq))
+        Duration::from_secs_f32(self.ppq_to_seconds(ppq))
     }
 
     /// Converts a quantity of samples into pulses per quarter note.
