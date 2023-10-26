@@ -29,6 +29,7 @@
         <li><code>cd path_to/cacophony</code> (replace path_to with the actual path)</li>
         <li><code>./cacophony</code></li>
     </ol>
+    <p>Or, you can add the environment variable <code>CACOPHONY_DATA_DIR</code> and launch Cacophony without needing to <code>cd</code>. For example: <code>export CACOPHONY_DATA_DIR=~/cacophony/data && ./cacophony/cacophony</code></p>
     <h2>What even is this?</h2>
     <p>Cacophony is an terminal-esque MIDI sequencer. By "terminal-esque" I mean that it looks like a terminal shell and doesn't support mouse input. By "MIDI sequencer" I mean that the music you're going to make is defined by MIDI messages.</p>
     <p>You aren't going to record audio. You going to input MIDI messages which will be processed when the music plays or is exported. A MIDI message is several numbers that a synthesizer or computer program interprets as messages. How they interpret these messages is up to them, though there is a MIDI standard that everyone is supposed to follow. In Cacophony, MIDI messages can be interpreted as note-on/off events or to control the app.</p>
