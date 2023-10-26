@@ -111,6 +111,11 @@ pub fn get_data_directory() -> PathBuf {
     }
 }
 
+/// Default directory for looking at the 'data/' folder.
+pub fn default_data_folder() -> PathBuf {
+    current_dir().unwrap().join("data")
+}
+
 /// Returns a directory. Creates the directory if it doesn't exist.
 fn get_directory(folder: &str, user_directory: &Path) -> PathBuf {
     let directory = user_directory.join(folder);

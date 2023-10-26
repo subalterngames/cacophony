@@ -1,8 +1,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::path::PathBuf;
+
 use audio::connect;
 use audio::exporter::Exporter;
+use clap::Parser;
 use common::config::{load, parse_bool};
+use common::paths::default_data_folder;
 use common::sizes::get_window_pixel_size;
 use common::{get_bytes, Paths, PathsState, State, VERSION};
 use ini::Ini;
@@ -16,10 +20,26 @@ use ureq::get;
 
 const CLEAR_COLOR: macroquad::color::Color = macroquad::color::BLACK;
 
+#[derive(Parser)]
+#[command(author, version, about)]
+struct Cli {
+    /// Open the project from disk
+    #[arg(value_name = "FILE")]
+    file: Option<PathBuf>,
+    /// Directory where Cacophony data files reside
+    ///
+    /// Uses './data' if not set
+    #[arg(short, long, value_name = "DIR", env = "CACOPHONY_DATA_DIR", default_value = default_data_folder().into_os_string())]
+    data_dir: PathBuf,
+}
+
 #[macroquad::main(window_conf)]
 async fn main() {
+    // Parse and load the command line arguments.
+    let cli = Cli::parse();
+
     // Get the paths.
-    let paths = Paths::default();
+    let paths = Paths::new(&cli.data_dir);
 
     // Load the splash image.
     let splash = load_texture(paths.splash_path.as_os_str().to_str().unwrap())

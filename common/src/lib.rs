@@ -19,7 +19,7 @@ mod midi_track;
 mod music;
 mod note;
 mod panel_type;
-mod paths;
+pub mod paths;
 mod paths_state;
 mod state;
 pub mod time;

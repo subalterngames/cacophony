@@ -30,6 +30,11 @@ webbrowser = "0.8.10"
 lazy_static = "1.4.0"
 midly = "0.5.3"
 
+[workspace.dependencies.clap]
+version = "4.4.7"
+default-features = false
+features = ["derive", "string", "env", "color", "error-context", "help", "std", "suggestions", "usage"]
+
 [workspace.dependencies.colorgrad]
 version = "0.6.2"
 default-features = false
@@ -94,6 +99,7 @@ parking_lot = { workspace = true }
 ureq = { workspace = true }
 regex = { workspace = true }
 rust-ini = { workspace = true }
+clap = { workspace = true }
 
 [dependencies.audio]
 path = "audio"
