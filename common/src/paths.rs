@@ -83,7 +83,13 @@ impl Default for Paths {
 
 /// Returns the path to the data directory.
 pub fn get_data_directory() -> PathBuf {
-    let mut data_directory = current_dir().unwrap().join("data");
+    // Try to get the directory from an environment variable first.
+    let mut data_directory = if let Some(dir_from_env) = std::env::var_os("CACOPHONY_DATA_DIR") {
+        dir_from_env.into()
+    } else {
+        // If that doesn't succeed or the variable is not set use the current directory.
+        current_dir().unwrap().join("data")
+    };
     if data_directory.exists() {
         data_directory
     }
