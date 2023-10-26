@@ -29,6 +29,9 @@ num-traits = "0.2.16"
 webbrowser = "0.8.10"
 lazy_static = "1.4.0"
 midly = "0.5.3"
+flacenc = "0.3.0"
+metaflac = "0.2.5"
+mp3lame-encoder = "0.1.4"
 
 [workspace.dependencies.colorgrad]
 version = "0.6.2"
@@ -74,11 +77,6 @@ branch = "speech_dispatcher_voices_panic"
 [features]
 ubuntu_22 = ["text/ubuntu_22"]
 ubuntu_18_20 = ["text/ubuntu_18_20"]
-
-[workspace.dependencies.mp3lame-encoder]
-version = "0.1.2"
-git = "https://github.com/subalterngames/mp3lame-encoder.git"
-branch = "x86"
 
 [package]
 name = "cacophony"

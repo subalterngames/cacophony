@@ -25,6 +25,12 @@ use std::path::{Path, PathBuf};
 use vorbis_encoder::Encoder;
 mod export_setting;
 pub use export_setting::ExportSetting;
+use flacenc::bitsink::ByteSink;
+use flacenc::component::BitRepr;
+use flacenc::config::Encoder as FlacEncoder;
+use flacenc::encode_with_fixed_block_size;
+use flacenc::source::MemSource;
+use metaflac::Tag as FlacTag;
 use parking_lot::Mutex;
 use std::sync::Arc;
 
@@ -90,7 +96,7 @@ pub struct Exporter {
     /// The .ogg file quality index.
     pub ogg_quality: Index<usize>,
     /// The export type.
-    pub export_type: IndexedValues<ExportType, 4>,
+    pub export_type: IndexedValues<ExportType, 5>,
     /// Export settings for .mid files.
     pub mid_settings: IndexedValues<ExportSetting, 3>,
     /// Export settings for .wav files.
@@ -99,6 +105,8 @@ pub struct Exporter {
     pub mp3_settings: IndexedValues<ExportSetting, 12>,
     /// Export settings for .ogg files.
     pub ogg_settings: IndexedValues<ExportSetting, 11>,
+    /// Export settings for .flac files.
+    pub flac_settings: IndexedValues<ExportSetting, 10>,
 }
 
 impl Default for Exporter {
@@ -110,6 +118,7 @@ impl Default for Exporter {
                 ExportType::Mid,
                 ExportType::MP3,
                 ExportType::Ogg,
+                ExportType::Flac,
             ],
         );
         let mid_settings = IndexedValues::new(
@@ -161,6 +170,21 @@ impl Default for Exporter {
                 ExportSetting::MultiFileSuffix,
             ],
         );
+        let flac_settings = IndexedValues::new(
+            0,
+            [
+                ExportSetting::Framerate,
+                ExportSetting::Title,
+                ExportSetting::Artist,
+                ExportSetting::Copyright,
+                ExportSetting::Album,
+                ExportSetting::TrackNumber,
+                ExportSetting::Genre,
+                ExportSetting::Comment,
+                ExportSetting::MultiFile,
+                ExportSetting::MultiFileSuffix,
+            ],
+        );
         let multi_file_suffix = IndexedValues::new(
             0,
             [
@@ -179,6 +203,7 @@ impl Default for Exporter {
             mid_settings,
             mp3_settings,
             ogg_settings,
+            flac_settings,
             multi_file_suffix,
             metadata: Metadata::default(),
             copyright: false,
@@ -309,16 +334,7 @@ impl Exporter {
         if let Err(error) = write_std(&header, tracks.iter(), &mut buffer) {
             panic!("Error writing {:?} {:?}", path, error);
         }
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(false)
-            .truncate(true)
-            .create(true)
-            .open(path)
-            .expect("Error opening file {:?}");
-        if let Err(error) = file.write(&buffer) {
-            panic!("Failed to export mid to {:?}: {}", path, error)
-        }
+        Self::write_file(path, &buffer);
     }
 
     /// Export to a .wav file.
@@ -390,16 +406,7 @@ impl Exporter {
             mp3_out_buffer.set_len(mp3_out_buffer.len().wrapping_add(encoded_size));
         }
         // Write the file.
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(false)
-            .truncate(true)
-            .create(true)
-            .open(path)
-            .expect("Error opening file {:?}");
-        if let Err(error) = file.write(&mp3_out_buffer) {
-            panic!("Failed to export mp3 to {:?}: {}", path, error)
-        }
+        Self::write_file(path, &mp3_out_buffer);
         // Write the tag.
         let time = Local::now();
         let mut tag = Tag::new();
@@ -480,14 +487,70 @@ impl Exporter {
             .read_to_end(&mut out)
             .expect("Error reading cursor.");
         // Write the file.
+        Self::write_file(path, &out);
+    }
+
+    /// Encode to flac.
+    pub(crate) fn flac(&self, path: &Path, buffer: &AudioBuffer) {
+        // Convert to i32.
+        let mut samples = vec![];
+        for (left, right) in buffer[0].iter().zip(buffer[1].iter()) {
+            samples.push(Self::to_i32(left));
+            samples.push(Self::to_i32(right));
+        }
+        self.flac_i32(path, &samples);
+    }
+
+    /// Encode interleaved i32 samples to flac.
+    fn flac_i32(&self, path: &Path, samples: &[i32]) {
+        let config = FlacEncoder::default();
+        let source =
+            MemSource::from_samples(samples, NUM_CHANNELS, 16, self.framerate.get_u() as usize);
+        match encode_with_fixed_block_size(&config, source, config.block_sizes[0]) {
+            Ok(flac_stream) => {
+                let mut sink = ByteSink::new();
+                flac_stream.write(&mut sink).unwrap();
+                // Write the file.
+                Self::write_file(path, sink.as_slice());
+                // Write the tag.
+                let mut tag = FlacTag::read_from_path(path).unwrap();
+                tag.set_vorbis("title", vec![self.metadata.title.clone()]);
+                tag.set_vorbis("date", vec![Local::now().year().to_string()]);
+                if let Some(artist) = &self.metadata.artist {
+                    tag.set_vorbis("artist", vec![artist.clone()]);
+                    if self.copyright {
+                        tag.set_vorbis("copyright", vec![self.get_copyright(artist)]);
+                    }
+                }
+                if let Some(album) = &self.metadata.album {
+                    tag.set_vorbis("album", vec![album.clone()]);
+                }
+                if let Some(genre) = &self.metadata.genre {
+                    tag.set_vorbis("genre", vec![genre.clone()]);
+                }
+                if let Some(track_number) = &self.metadata.track_number {
+                    tag.set_vorbis("track_number", vec![track_number.to_string()]);
+                }
+                if let Some(comment) = &self.metadata.genre {
+                    tag.set_vorbis("description", vec![comment.clone()]);
+                }
+                // Save the tag.
+                tag.save().unwrap();
+            }
+            Err(error) => panic!("Error encoding flac: {:?}", error),
+        }
+    }
+
+    /// Write samples to a file.
+    fn write_file(path: &Path, samples: &[u8]) {
         let mut file = OpenOptions::new()
             .write(true)
             .append(false)
             .truncate(true)
             .create(true)
             .open(path)
-            .expect("Error opening file.");
-        file.write_all(&out)
+            .expect("Error opening file {:?}");
+        file.write_all(samples)
             .expect("Failed to write samples to file.");
     }
 
@@ -533,6 +596,17 @@ impl Exporter {
                     samples.append(&mut buffer[1]);
                     self.ogg_i16(path, &samples);
                 }
+                ExportType::Flac => {
+                    // Get i16 samples.
+                    let buffer16 = Self::samples_and_silence_to_i16_buffer(path, silence);
+                    // Convert to interleaved i32.
+                    let mut buffer32 = vec![];
+                    for (left, right) in buffer16[0].iter().zip(buffer16[1].iter()) {
+                        buffer32.push(*left as i32);
+                        buffer32.push(*right as i32);
+                    }
+                    self.flac_i32(path, &buffer32)
+                }
             }
         }
     }
@@ -562,6 +636,11 @@ impl Exporter {
     /// Converts an f32 sample to an i16 sample.
     fn to_i16(sample: &f32) -> i16 {
         (sample * F32_TO_I16).floor() as i16
+    }
+
+    /// Converts an f32 sample to an i32 sample.
+    fn to_i32(sample: &f32) -> i32 {
+        (sample * F32_TO_I16).floor() as i32
     }
 
     /// Returns a copyright string.

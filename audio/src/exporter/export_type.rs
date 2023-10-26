@@ -9,6 +9,7 @@ pub enum ExportType {
     Mid,
     MP3,
     Ogg,
+    Flac,
 }
 
 impl From<ExportType> for Extension {
@@ -18,6 +19,7 @@ impl From<ExportType> for Extension {
             ExportType::Mid => Extension::Mid,
             ExportType::MP3 => Extension::MP3,
             ExportType::Ogg => Extension::Ogg,
+            ExportType::Flac => Extension::Flac,
         }
     }
 }

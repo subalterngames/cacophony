@@ -602,6 +602,15 @@ impl Panel for ExportSettingsPanel {
                 text,
                 exporter,
             ),
+            ExportType::Flac => Self::update_settings(
+                |e| &mut e.flac_settings,
+                state,
+                &mut self.tooltips,
+                input,
+                tts,
+                text,
+                exporter,
+            ),
             ExportType::Wav => Self::update_settings(
                 |e| &mut e.wav_settings,
                 state,
@@ -631,6 +640,9 @@ impl Panel for ExportSettingsPanel {
             ExportType::Ogg => {
                 Self::update_settings_abc123(|e| &mut e.ogg_settings, input, exporter)
             }
+            ExportType::Flac => {
+                Self::update_settings_abc123(|e| &mut e.flac_settings, input, exporter)
+            }
             ExportType::Wav => {
                 Self::update_settings_abc123(|e| &mut e.wav_settings, input, exporter)
             }
@@ -644,6 +656,7 @@ impl Panel for ExportSettingsPanel {
             ExportType::Mid => Self::disable_abc123(|e| &mut e.mid_settings, exporter),
             ExportType::MP3 => Self::disable_abc123(|e| &mut e.mp3_settings, exporter),
             ExportType::Ogg => Self::disable_abc123(|e| &mut e.ogg_settings, exporter),
+            ExportType::Flac => Self::disable_abc123(|e| &mut e.flac_settings, exporter),
             ExportType::Wav => Self::disable_abc123(|e| &mut e.wav_settings, exporter),
         };
     }
@@ -654,6 +667,7 @@ impl Panel for ExportSettingsPanel {
             ExportType::Mid => Self::allow_abc123(|e| &e.mid_settings, exporter),
             ExportType::MP3 => Self::allow_abc123(|e| &e.mp3_settings, exporter),
             ExportType::Ogg => Self::allow_abc123(|e| &e.ogg_settings, exporter),
+            ExportType::Flac => Self::allow_abc123(|e| &e.flac_settings, exporter),
             ExportType::Wav => Self::allow_abc123(|e: &Exporter| &e.wav_settings, exporter),
         }
     }

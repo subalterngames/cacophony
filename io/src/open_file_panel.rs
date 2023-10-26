@@ -351,33 +351,20 @@ impl Panel for OpenFilePanel {
                             <ExportType as Into<Extension>>::into(ex.export_type.get())
                                 .to_str(true),
                         );
-                        match &ex.export_type.get() {
-                            // Export to a .wav file.
-                            ExportType::Wav => {
-                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
-                                    paths_state.exports.directory.path.join(filename),
-                                )]));
-                            }
-                            // Export to a .mp3 file.
-                            ExportType::MP3 => {
-                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
-                                    paths_state.exports.directory.path.join(filename),
-                                )]));
-                            }
-                            ExportType::Ogg => {
-                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
-                                    paths_state.exports.directory.path.join(filename),
-                                )]));
-                            }
-                            // Export to a .mid file.
-                            ExportType::Mid => {
-                                ex.mid(
-                                    &paths_state.exports.directory.path.join(filename),
-                                    &state.music,
-                                    &state.time,
-                                    &conn.state,
-                                );
-                            }
+                        // Export to a .mid file.
+                        if ex.export_type.get() == ExportType::Mid {
+                            ex.mid(
+                                &paths_state.exports.directory.path.join(filename),
+                                &state.music,
+                                &state.time,
+                                &conn.state,
+                            );
+                        }
+                        // Export an audio file.
+                        else {
+                            return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
+                                paths_state.exports.directory.path.join(filename),
+                            )]));
                         }
                     }
                 }

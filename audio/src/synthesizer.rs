@@ -352,6 +352,9 @@ impl Synthesizer {
                                 ExportType::Ogg => {
                                     exporter.ogg(s.export_path.as_ref().unwrap(), &s.export_buffer)
                                 }
+                                ExportType::Flac => {
+                                    exporter.flac(s.export_path.as_ref().unwrap(), &s.export_buffer)
+                                }
                             }
                             // Stop exporting.
                             s.export_state = None;
