@@ -2,10 +2,15 @@ use directories::UserDirs;
 use std::env::{current_dir, current_exe};
 use std::fs::{copy, create_dir_all};
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 
 const CONFIG_FILENAME: &str = "config.ini";
 
+/// Global reference to paths.
+static PATHS: OnceLock<Paths> = OnceLock::new();
+
 /// Cached file paths. Unlike `PathsState`, this is meant to only include static data.
+#[derive(Debug)]
 pub struct Paths {
     /// The path to the default .ini file.
     pub default_ini_path: PathBuf,
@@ -28,7 +33,8 @@ pub struct Paths {
 }
 
 impl Paths {
-    pub fn new(data_directory: &Path) -> Self {
+    /// Setup the paths, needs to be be called at least once.
+    pub fn init(data_directory: &Path) {
         let user_directory = match UserDirs::new() {
             Some(user_dirs) => match user_dirs.document_dir() {
                 Some(documents) => documents.join("cacophony"),
@@ -51,17 +57,24 @@ impl Paths {
         let export_directory = get_directory("exports", &user_directory);
         let splash_path = data_directory.join("splash.png");
         let default_soundfont_path = data_directory.join("CT1MBGMRSV1.06.sf2");
-        Self {
-            default_ini_path,
-            user_directory,
-            user_ini_path,
-            text_path,
-            soundfonts_directory,
-            saves_directory,
-            export_directory,
-            splash_path,
-            default_soundfont_path,
-        }
+        PATHS
+            .set(Self {
+                default_ini_path,
+                user_directory,
+                user_ini_path,
+                text_path,
+                soundfonts_directory,
+                saves_directory,
+                export_directory,
+                splash_path,
+                default_soundfont_path,
+            })
+            .unwrap();
+    }
+
+    /// Get a reference to the paths, panics when not initialized.
+    pub fn get() -> &'static Self {
+        PATHS.get().expect("Paths need to be initialzed first")
     }
 
     /// Create the user .ini file by copying the default .ini file.
@@ -72,12 +85,6 @@ impl Paths {
             .unwrap()
             .to_string();
         copy(&self.default_ini_path, path).unwrap();
-    }
-}
-
-impl Default for Paths {
-    fn default() -> Self {
-        Self::new(&get_data_directory())
     }
 }
 

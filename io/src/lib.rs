@@ -368,7 +368,7 @@ impl IO {
         }
         // Open config file.
         else if input.happened(&InputEvent::EditConfig) {
-            let paths = Paths::default();
+            let paths = Paths::get();
             // Create a user .ini file.
             if !paths.user_ini_path.exists() {
                 paths.create_user_config();

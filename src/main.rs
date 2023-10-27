@@ -31,6 +31,12 @@ struct Cli {
     /// Uses './data' if not set
     #[arg(short, long, value_name = "DIR", env = "CACOPHONY_DATA_DIR", default_value = default_data_folder().into_os_string())]
     data_dir: PathBuf,
+    /// Make the window fullscreen
+    ///
+    /// Uses 'fullscreen' under '[RENDER]' in 'config.ini' if not set
+    /// Applied after displaying the splash-screen
+    #[arg(short, long, env = "CACOPHONY_FULLSCREEN")]
+    fullscreen: bool,
 }
 
 #[macroquad::main(window_conf)]
@@ -38,8 +44,9 @@ async fn main() {
     // Parse and load the command line arguments.
     let cli = Cli::parse();
 
-    // Get the paths.
-    let paths = Paths::new(&cli.data_dir);
+    // Initialize the paths.
+    Paths::init(&cli.data_dir);
+    let paths = Paths::get();
 
     // Load the splash image.
     let splash = load_texture(paths.splash_path.as_os_str().to_str().unwrap())
@@ -111,8 +118,14 @@ async fn main() {
     request_new_screen_size(window_size[0], window_size[1]);
 
     // Fullscreen.
-    let render_section = config.section(Some("RENDER")).unwrap();
-    let fullscreen = parse_bool(render_section, "fullscreen");
+    let fullscreen = if cli.fullscreen {
+        // Use the CLI or env argument first if set
+        true
+    } else {
+        let render_section = config.section(Some("RENDER")).unwrap();
+
+        parse_bool(render_section, "fullscreen")
+    };
     if fullscreen {
         set_fullscreen(fullscreen);
     }

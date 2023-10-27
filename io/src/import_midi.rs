@@ -18,7 +18,7 @@ pub(crate) fn import(
         Timing::Timecode(fps, t) => fps.as_f32() / t as f32,
     };
     let mut music = Music::default();
-    let paths = Paths::default();
+    let paths = Paths::get();
     for (i, track_events) in smf.tracks.iter().enumerate() {
         // Create a new track.
         let c = i as u8;
