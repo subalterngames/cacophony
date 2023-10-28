@@ -34,6 +34,7 @@ struct Cli {
     /// Make the window fullscreen
     ///
     /// Uses 'fullscreen' under '[RENDER]' in 'config.ini' if not set
+    ///
     /// Applied after displaying the splash-screen
     #[arg(short, long, env = "CACOPHONY_FULLSCREEN")]
     fullscreen: bool,

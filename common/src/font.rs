@@ -1,5 +1,4 @@
-use crate::get_bytes;
-use crate::paths::get_data_directory;
+use crate::{get_bytes, Paths};
 use ini::{Ini, Properties};
 use macroquad::prelude::*;
 
@@ -26,7 +25,8 @@ pub fn get_subtitle_font(config: &Ini) -> Font {
 /// Returns the path to a font.
 fn get_font_from_bytes(config: &Ini, key: &str) -> Vec<u8> {
     get_bytes(
-        get_data_directory()
+        Paths::get()
+            .data_directory
             .join(get_font_section(config).get(key).unwrap())
             .to_str()
             .unwrap(),

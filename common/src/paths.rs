@@ -30,11 +30,14 @@ pub struct Paths {
     pub splash_path: PathBuf,
     /// The path to the default soundfont in data/
     pub default_soundfont_path: PathBuf,
+    /// The path to the data/ directory itself.
+    pub data_directory: PathBuf,
 }
 
 impl Paths {
     /// Setup the paths, needs to be be called at least once.
-    pub fn init(data_directory: &Path) {
+    pub fn init(data_directory_from_cli: &Path) {
+        let data_directory = get_data_directory(data_directory_from_cli);
         let user_directory = match UserDirs::new() {
             Some(user_dirs) => match user_dirs.document_dir() {
                 Some(documents) => documents.join("cacophony"),
@@ -68,6 +71,7 @@ impl Paths {
                 export_directory,
                 splash_path,
                 default_soundfont_path,
+                data_directory,
             })
             .unwrap();
     }
@@ -89,20 +93,14 @@ impl Paths {
 }
 
 /// Returns the path to the data directory.
-pub fn get_data_directory() -> PathBuf {
-    // Try to get the directory from an environment variable first.
-    let mut data_directory = if let Some(dir_from_env) = std::env::var_os("CACOPHONY_DATA_DIR") {
-        dir_from_env.into()
-    } else {
-        // If that doesn't succeed or the variable is not set use the current directory.
-        current_dir().unwrap().join("data")
-    };
+pub fn get_data_directory(data_directory: &Path) -> PathBuf {
+    // Try to get the directory that's passed first.
     if data_directory.exists() {
-        data_directory
+        data_directory.to_path_buf()
     }
     // Maybe we're in a .app bundle.
     else if cfg!(target_os = "macos") {
-        data_directory = current_exe()
+        let data_directory = current_exe()
             .unwrap()
             .parent()
             .unwrap()
