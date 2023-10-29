@@ -6,12 +6,13 @@ use audio::connect;
 use audio::exporter::Exporter;
 use clap::Parser;
 use common::config::{load, parse_bool};
+use common::open_file::FileAndDirectory;
 use common::paths::default_data_folder;
 use common::sizes::get_window_pixel_size;
 use common::{get_bytes, Paths, PathsState, State, VERSION};
 use ini::Ini;
 use input::Input;
-use io::IO;
+use io::{Save, IO};
 use macroquad::prelude::*;
 use regex::Regex;
 use render::{draw_subtitles, Panels, Renderer};
@@ -45,12 +46,11 @@ async fn main() {
     // Parse and load the command line arguments.
     let cli = Cli::parse();
 
-    // Initialize the paths.
-    Paths::init(&cli.data_dir);
+    // Get the paths, initialized in loading the window configuration.
     let paths = Paths::get();
 
     // Load the splash image.
-    let splash = load_texture(paths.splash_path.as_os_str().to_str().unwrap())
+    let splash = load_texture(&paths.splash_path.as_os_str().to_str().unwrap())
         .await
         .unwrap();
     // Linux X11 can mess this up the initial window size.
@@ -131,6 +131,19 @@ async fn main() {
         set_fullscreen(fullscreen);
     }
 
+    // Open the initial save file if set.
+    if let Some(save_path) = cli.file {
+        Save::read(
+            &save_path,
+            &mut state,
+            &mut conn,
+            &mut paths_state,
+            &mut exporter,
+        );
+        // Set the saves directory.
+        paths_state.saves = FileAndDirectory::new_path(save_path);
+    }
+
     // Begin.
     let mut done: bool = false;
     while !done {
@@ -178,8 +191,14 @@ async fn main() {
 
 /// Configure the window.
 fn window_conf() -> Conf {
+    // Parse and load the command line arguments.
+    let cli = Cli::parse();
+
+    // Initialize the paths.
+    Paths::init(&cli.data_dir);
+
     let icon = if cfg!(windows) {
-        let icon_bytes = get_bytes("./data/icon");
+        let icon_bytes = get_bytes(&Paths::get().data_directory.join("icon"));
         let big: [u8; 16384] = icon_bytes[0..16384].try_into().unwrap();
         let medium: [u8; 4096] = icon_bytes[16384..20480].try_into().unwrap();
         let small: [u8; 1024] = icon_bytes[20480..21504].try_into().unwrap();

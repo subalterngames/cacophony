@@ -13,7 +13,7 @@ const WRITE_ERROR: &str = "Error writing file: ";
 
 /// Serializable save data.
 #[derive(Deserialize, Serialize)]
-pub(crate) struct Save {
+pub struct Save {
     /// The app state.
     state: State,
     /// The synthesizer state.

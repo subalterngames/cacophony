@@ -45,7 +45,7 @@ use export_settings_panel::ExportSettingsPanel;
 use open_file_panel::OpenFilePanel;
 use panel::Panel;
 use piano_roll::PianoRollPanel;
-use save::Save;
+pub use save::Save;
 use snapshot::Snapshot;
 use tracks_panel::TracksPanel;
 mod abc123;

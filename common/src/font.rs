@@ -25,10 +25,8 @@ pub fn get_subtitle_font(config: &Ini) -> Font {
 /// Returns the path to a font.
 fn get_font_from_bytes(config: &Ini, key: &str) -> Vec<u8> {
     get_bytes(
-        Paths::get()
+        &Paths::get()
             .data_directory
-            .join(get_font_section(config).get(key).unwrap())
-            .to_str()
-            .unwrap(),
+            .join(get_font_section(config).get(key).unwrap()),
     )
 }
