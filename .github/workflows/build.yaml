@@ -14,10 +14,10 @@ jobs:
         include:
           - os: ubuntu-20.04
             version: 20
-            feature: ubuntu_18_20
+            feature: speech_dispatcher_0_9
           - os: ubuntu-22.04
             version: 22
-            feature: ubuntu_22
+            feature: speech_dispatcher_0_11
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
