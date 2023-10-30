@@ -6,16 +6,15 @@ use audio::connect;
 use audio::exporter::Exporter;
 use clap::Parser;
 use common::config::{load, parse_bool};
-use common::open_file::FileAndDirectory;
-use common::paths::default_data_folder;
 use common::sizes::get_window_pixel_size;
 use common::{get_bytes, Paths, PathsState, State, VERSION};
 use ini::Ini;
 use input::Input;
-use io::{Save, IO};
+use io::IO;
 use macroquad::prelude::*;
 use regex::Regex;
 use render::{draw_subtitles, Panels, Renderer};
+use std::env::current_dir;
 use text::{Text, TTS};
 use ureq::get;
 
@@ -31,7 +30,7 @@ struct Cli {
     ///
     /// Uses './data' if not set
     #[arg(short, long, value_name = "DIR", env = "CACOPHONY_DATA_DIR", default_value = default_data_folder().into_os_string())]
-    data_dir: PathBuf,
+    data_directory: PathBuf,
     /// Make the window fullscreen
     ///
     /// Uses 'fullscreen' under '[RENDER]' in 'config.ini' if not set
@@ -133,15 +132,13 @@ async fn main() {
 
     // Open the initial save file if set.
     if let Some(save_path) = cli.file {
-        Save::read(
+        io.load_save(
             &save_path,
             &mut state,
             &mut conn,
             &mut paths_state,
             &mut exporter,
         );
-        // Set the saves directory.
-        paths_state.saves = FileAndDirectory::new_path(save_path);
     }
 
     // Begin.
@@ -195,7 +192,7 @@ fn window_conf() -> Conf {
     let cli = Cli::parse();
 
     // Initialize the paths.
-    Paths::init(&cli.data_dir);
+    Paths::init(&cli.data_directory);
 
     let icon = if cfg!(windows) {
         let icon_bytes = get_bytes(&Paths::get().data_directory.join("icon"));
@@ -253,4 +250,9 @@ fn get_remote_version(config: &Ini) -> Option<String> {
     } else {
         None
     }
+}
+
+/// Default directory for looking at the 'data/' folder.
+fn default_data_folder() -> PathBuf {
+    current_dir().unwrap().join("data")
 }

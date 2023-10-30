@@ -84,8 +84,9 @@ mod tests {
 
     #[test]
     fn boolean() {
+        Paths::init(&PathBuf::from("../data"));
         let config = Ini::load_from_file("../data/config.ini").unwrap();
-        let paths = Paths::new(&PathBuf::from("../data"));
+        let paths = Paths::get();
         let text = Text::new(&config, &paths);
         let b0_key = "Boolean value".to_string();
         let position = [3, 5];

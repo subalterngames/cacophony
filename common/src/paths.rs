@@ -1,5 +1,5 @@
 use directories::UserDirs;
-use std::env::{current_dir, current_exe};
+use std::env::current_exe;
 use std::fs::{copy, create_dir_all};
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
@@ -114,11 +114,6 @@ pub fn get_data_directory(data_directory: &Path) -> PathBuf {
     } else {
         panic!("Failed to get data directory: {:?}", data_directory)
     }
-}
-
-/// Default directory for looking at the 'data/' folder.
-pub fn default_data_folder() -> PathBuf {
-    current_dir().unwrap().join("data")
 }
 
 /// Returns a directory. Creates the directory if it doesn't exist.

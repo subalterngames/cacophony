@@ -39,13 +39,13 @@ use io_command::IOCommand;
 use io_command::IOCommands;
 use music_panel::MusicPanel;
 mod open_file_panel;
-use common::open_file::OpenFileType;
+use common::open_file::{FileAndDirectory, OpenFileType};
 use export_panel::ExportPanel;
 use export_settings_panel::ExportSettingsPanel;
 use open_file_panel::OpenFilePanel;
 use panel::Panel;
 use piano_roll::PianoRollPanel;
-pub use save::Save;
+use save::Save;
 use snapshot::Snapshot;
 use tracks_panel::TracksPanel;
 mod abc123;
@@ -472,6 +472,20 @@ impl IO {
         }
         // We're not done yet.
         false
+    }
+
+    /// Open a save file from a path.
+    pub fn load_save(
+        &self,
+        save_path: &Path,
+        state: &mut State,
+        conn: &mut Conn,
+        paths_state: &mut PathsState,
+        exporter: &mut SharedExporter,
+    ) {
+        Save::read(&save_path, state, conn, paths_state, exporter);
+        // Set the saves directory.
+        paths_state.saves = FileAndDirectory::new_path(save_path.to_path_buf());
     }
 
     fn get_panel(&mut self, panel_type: &PanelType) -> &mut dyn Panel {
