@@ -23,5 +23,5 @@ path = "../common"
 path = "../input"
 
 [features]
-ubuntu_22 = ["tts/speech_dispatcher_0_11"]
-ubuntu_18_20 = ["tts/speech_dispatcher_0_9"]
+speech_dispatcher_0_11 = ["tts/speech_dispatcher_0_11"]
+speech_dispatcher_0_9 = ["tts/speech_dispatcher_0_9"]

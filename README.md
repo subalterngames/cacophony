@@ -37,20 +37,30 @@ Windows:
 
 ### Linux
 
+#### Debian 11
+
+1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev librust-alsa-sys-dev`
+2. `cargo build --release --features speech_dispatcher_0_9`
+
+#### Debian 12
+
+1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev librust-alsa-sys-dev`
+2. `cargo build --release --features speech_dispatcher_0_11`
+
 #### Ubuntu 18
 
-1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa`
-2. `cargo build --release --features ubuntu_18_20`
+1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa`
+2. `cargo build --release --features speech_dispatcher_0_9`
 
 #### Ubuntu 20
 
-1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
-2. `cargo build --release --features ubuntu_18_20`
+1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
+2. `cargo build --release --features speech_dispatcher_0_9`
 
 #### Ubuntu 22
 
-1. `apt install clang libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
-2. `cargo build --release --features ubuntu_22`
+1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
+2. `cargo build --release --features speech_dispatcher_0_11`
 
 ### MacOS
 
