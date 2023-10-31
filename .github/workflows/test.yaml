@@ -1,0 +1,75 @@
+name: test
+
+on:
+  push:
+    paths-ignore:
+      - "doc/**"
+      - ".vscode/**"
+      - "html/**"
+      - "data/**"
+      - "promo/**"
+      - "py/**"
+      - "**.md"
+
+jobs:
+  # Check for formatting
+  rustfmt:
+    name: Formatter check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: rustfmt
+          override: true
+
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  # Run test check on Linux, macOS, and Windows
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04, macOS-13, macOS-12, macOS-11, windows-latest]
+    steps:
+      # Checkout the branch being tested
+      - uses: actions/checkout@v4
+
+      # Install rust stable
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      # Cache the built dependencies
+      - uses: Swatinem/rust-cache@v2.7.1
+        with:
+          save-if: ${{ github.event_name == 'push' }}
+
+      # Install the required dependencies on Ubuntu
+      - name: Install test dependencies
+        run: sudo apt-get install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
+        if: ${{ contains(matrix.os, 'ubuntu') }}
+
+      # Test for Ubuntu 20.04
+      - name: Test
+        run: cargo test --all --features speech_dispatcher_0_9
+        if: matrix.os == 'ubuntu-20.04'
+
+      # Test for Ubuntu 22.04
+      - name: Test
+        run: cargo test --all --features speech_dispatcher_0_11
+        if: matrix.os == 'ubuntu-22.04'
+
+      # Test for windows and mac
+      - name: Test
+        run: cargo test --all
+        if: ${{ !contains(matrix.os, 'ubuntu') }}
