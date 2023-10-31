@@ -483,7 +483,7 @@ impl IO {
         paths_state: &mut PathsState,
         exporter: &mut SharedExporter,
     ) {
-        Save::read(&save_path, state, conn, paths_state, exporter);
+        Save::read(save_path, state, conn, paths_state, exporter);
         // Set the saves directory.
         paths_state.saves = FileAndDirectory::new_path(save_path.to_path_buf());
     }

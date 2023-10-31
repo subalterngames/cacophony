@@ -49,7 +49,7 @@ async fn main() {
     let paths = Paths::get();
 
     // Load the splash image.
-    let splash = load_texture(&paths.splash_path.as_os_str().to_str().unwrap())
+    let splash = load_texture(paths.splash_path.as_os_str().to_str().unwrap())
         .await
         .unwrap();
     // Linux X11 can mess this up the initial window size.
@@ -77,7 +77,7 @@ async fn main() {
     let remote_version = get_remote_version(&config);
 
     // Create the text.
-    let mut text = Text::new(&config, &paths);
+    let mut text = Text::new(&config, paths);
 
     // Try to load the text-to-speech engine.
     let mut tts = TTS::new(&config);
@@ -95,7 +95,7 @@ async fn main() {
     let mut state = State::new(&config);
 
     // Create the paths state.
-    let mut paths_state = PathsState::new(&paths);
+    let mut paths_state = PathsState::new(paths);
 
     // Get the IO state.
     let mut io = IO::new(&config, &input, &state.input, &mut text);
