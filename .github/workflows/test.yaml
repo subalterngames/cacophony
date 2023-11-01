@@ -11,14 +11,19 @@ on:
       - "py/**"
       - "**.md"
 
+# Make sure CI fails on all warnings, including Clippy lints
+env:
+  RUSTFLAGS: "-Dwarnings"
+
 jobs:
-  # Check for formatting
-  rustfmt:
-    name: Formatter check
+  # Check for formatting and clippy
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      # Setup Rust toolchain
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -26,11 +31,21 @@ jobs:
           components: rustfmt
           override: true
 
-      - run: rustup component add rustfmt
+      # Install the required dependencies
+      - name: Install test dependencies
+        run: sudo apt-get install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
+
+      # Cargo fmt
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
+
+      # Cargo clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-targets --all-features
 
   # Run test check on Linux, macOS, and Windows
   test:
