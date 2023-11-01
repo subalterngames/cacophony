@@ -77,7 +77,7 @@ impl TracksPanel {
 
 impl Default for TracksPanel {
     fn default() -> Self {
-        let default_soundfont_path = Paths::default().default_soundfont_path.clone();
+        let default_soundfont_path = Paths::get().default_soundfont_path.clone();
         Self {
             default_soundfont_path,
             tooltips: Tooltips::default(),

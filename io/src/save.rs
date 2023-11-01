@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 const READ_ERROR: &str = "Error reading file: ";
 const WRITE_ERROR: &str = "Error writing file: ";
@@ -75,7 +75,7 @@ impl Save {
     /// - `paths_state` The paths state, which will be set to a deserialized version.
     /// - `exporter` The exporter.
     pub fn read(
-        path: &PathBuf,
+        path: &Path,
         state: &mut State,
         conn: &mut Conn,
         paths_state: &mut PathsState,
