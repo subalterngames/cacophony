@@ -96,7 +96,7 @@ checksum = "7079075b41f533b8c61d2a4d073c4676e1f8b249ff94a393b0595db304e0dd87"
 
 [[package]]
 name = "audio"
-version = "0.1.3"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "common",
@@ -228,7 +228,7 @@ checksum = "89b2fd2a0dcf38d7971e2194b6b6eebab45ae01067456a7fd93d5547a61b70be"
 
 [[package]]
 name = "cacophony"
-version = "0.1.3"
+version = "0.1.2"
 dependencies = [
  "audio",
  "clap",
@@ -386,7 +386,7 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "0.1.3"
+version = "0.1.2"
 dependencies = [
  "directories",
  "hashbrown 0.13.2",
@@ -931,7 +931,7 @@ dependencies = [
 
 [[package]]
 name = "input"
-version = "0.1.3"
+version = "0.1.2"
 dependencies = [
  "common",
  "hashbrown 0.13.2",
@@ -956,7 +956,7 @@ dependencies = [
 
 [[package]]
 name = "io"
-version = "0.1.3"
+version = "0.1.2"
 dependencies = [
  "audio",
  "common",
@@ -1786,7 +1786,7 @@ checksum = "e5ea92a5b6195c6ef2a0295ea818b312502c6fc94dde986c5553242e18fd4ce2"
 
 [[package]]
 name = "render"
-version = "0.1.3"
+version = "0.1.2"
 dependencies = [
  "audio",
  "colorgrad",
@@ -2081,7 +2081,7 @@ dependencies = [
 
 [[package]]
 name = "text"
-version = "0.1.3"
+version = "0.1.2"
 dependencies = [
  "common",
  "csv",
