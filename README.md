@@ -32,8 +32,15 @@ Windows:
 
 ### All platforms
 
-1. Install Rust
+1. Install Rust (stable)
 2. Clone this repo
+
+The instructions below will *compile* the code. To *run* it, do one of the following:
+
+1. Move `data/` to the output directory (`target/release/`)
+2. Replace `cargo build` in the instructions below with `cargo run`
+
+If you want debug messages, remove `--release` The output will be `target/debug/` instead of `release/`
 
 ### Linux
 

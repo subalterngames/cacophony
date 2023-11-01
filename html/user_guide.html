@@ -29,7 +29,6 @@
         <li><code>cd path_to/cacophony</code> (replace path_to with the actual path)</li>
         <li><code>./cacophony</code></li>
     </ol>
-    <p>Or, you can add the environment variable <code>CACOPHONY_DATA_DIR</code> and launch Cacophony without needing to <code>cd</code>. For example: <code>export CACOPHONY_DATA_DIR=~/cacophony/data && ./cacophony/cacophony</code></p>
     <h2>What even is this?</h2>
     <p>Cacophony is an terminal-esque MIDI sequencer. By "terminal-esque" I mean that it looks like a terminal shell and doesn't support mouse input. By "MIDI sequencer" I mean that the music you're going to make is defined by MIDI messages.</p>
     <p>You aren't going to record audio. You going to input MIDI messages which will be processed when the music plays or is exported. A MIDI message is several numbers that a synthesizer or computer program interprets as messages. How they interpret these messages is up to them, though there is a MIDI standard that everyone is supposed to follow. In Cacophony, MIDI messages can be interpreted as note-on/off events or to control the app.</p>
@@ -60,6 +59,13 @@
     <h2>Can I customize Cacophony?</h2>
     <p>Cacophony's font, color scheme, every keyboard binding, and lots of other settings, are in a config file. To edit the config file, first copy it from <code>cacophony/data/config.ini</code> to <code>Documents/cacophony/config.ini</code> (the app will always prefer the one in Documents/ if it exists). Feel free to experiment with editing the file. If you mess up you can always copy+paste the default file again.</p>
     <p>For MIDI bindings to work correctly, your MIDI controller needs to support Inc/Dec input, e.g. the values are always 1 or 127. Sorry, I know that's weird, but it makes it a lot easier to support input that is meant to wrap around values (e.g. cycling around panels). For my own controller, I used the MPK Mini III Program Editor to set each knob to be Inc/Dec.</p>
+    <h2>Command line arguments</h2>
+    <p>If you launch Cacophony from the terminal, you can add the path of a save file to open it at launch: <code>./cacophony ~/Documents/cacophony/saves/my_music.cac</code></p>
+    <p>You can set the data directory as an environment variable. This is useful if you're on Linux and you don't want to <code>cd cacophony</code> to run the app:</p>
+    <p>For example: <code>export CACOPHONY_DATA_DIR=~/cacophony/data && ./~/cacophony/cacophony</code></p>
+    <p>Or, you can do this: <code>./~/cacophony/cacophony --data_directory ~/cacophony/data</code></p>
+    <p>To enable fullscreen, you can edit the config file or do this:</p>
+    <p><code>export CACOPHONY_FULLSCREEN=1 && ./cacophony</code> or <code>./cacophony --fullscreen</code></p>
     <h2>What if I still need help?</h2>
     <p>Ask Casey for help whenever you get stuck.</p>
     <p>Oh, you want help from a *human*?? In *this* economy??</p>
