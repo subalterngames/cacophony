@@ -19,7 +19,7 @@ pub(crate) fn import(path: &Path, state: &mut State, conn: &mut Conn) {
         let c = i as u8;
         let mut track = MidiTrack::new(c);
         // Load the default SoundFont.
-        conn.do_commands(&vec![Command::LoadSoundFont {
+        conn.do_commands(&[Command::LoadSoundFont {
             channel: c,
             path: paths.default_soundfont_path.clone(),
         }]);
@@ -80,7 +80,7 @@ pub(crate) fn import(path: &Path, state: &mut State, conn: &mut Conn) {
                         }
                         // Set the preset.
                         MidiMessage::ProgramChange { program } => {
-                            conn.do_commands(&vec![Command::SetProgram {
+                            conn.do_commands(&[Command::SetProgram {
                                 channel: track.channel,
                                 path: paths.default_soundfont_path.clone(),
                                 bank_index: conn

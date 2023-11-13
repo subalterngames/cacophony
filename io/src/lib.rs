@@ -308,7 +308,7 @@ impl IO {
         }
         // Export.
         else if input.happened(&InputEvent::ExportFile) {
-            let export_state = conn.export_state.lock().clone();
+            let export_state = *conn.export_state.lock();
             // We aren't exporting already.
             if export_state == ExportState::NotExporting {
                 self.pre_export_focus = state.focus.get();

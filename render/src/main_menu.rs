@@ -280,7 +280,7 @@ impl MainMenu {
     /// Get a sample, set lerp targets, and draw bars.
     pub fn late_update(&mut self, renderer: &Renderer, conn: &Conn) {
         // Set the power bar lerp targets from the sample.
-        let sample = conn.sample.lock().clone();
+        let sample = *conn.sample.lock();
         if self.time % POWER_BAR_DELTA == 0 {
             self.set_lerp_target(0, sample.0);
             self.set_lerp_target(1, sample.1);

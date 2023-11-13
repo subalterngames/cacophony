@@ -206,7 +206,7 @@ impl Conn {
 
     /// Start to play music if music isn't playing. Stop music if music is playing.
     pub fn set_music(&mut self, state: &State) {
-        let music = self.time_state.lock().music.clone();
+        let music = self.time_state.lock().music;
         if music {
             self.stop_music(&state.music)
         } else {
@@ -270,9 +270,7 @@ impl Conn {
                 .send_event(MidiEvent::AllNotesOff {
                     channel: track.channel,
                 })
-                .is_ok()
-            {}
-            if synth
+                .is_ok() && synth
                 .send_event(MidiEvent::AllSoundOff {
                     channel: track.channel,
                 })
@@ -344,7 +342,7 @@ impl Conn {
                 let suffix = Some(self.get_export_file_suffix(track));
                 // Add an exportable.
                 exportables.push(Exportable {
-                    events: events,
+                    events,
                     total_samples: t1,
                     suffix,
                 });
@@ -359,7 +357,7 @@ impl Conn {
                 events.sort();
                 // Add an exportable.
                 exportables.push(Exportable {
-                    events: events,
+                    events,
                     total_samples: t1,
                     suffix: None,
                 });
