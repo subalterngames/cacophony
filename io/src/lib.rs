@@ -702,8 +702,6 @@ impl IO {
     }
 }
 
-
-
 /// Converts all playable tracks to note-on commands.
 fn combine_tracks_to_commands(
     state: &State,

@@ -21,7 +21,7 @@ impl Player {
         midi_event_queue: SharedMidiEventQueue,
         time_state: SharedTimeState,
         synth: SharedSynth,
-        sample: SharedSample
+        sample: SharedSample,
     ) -> Option<Self> {
         // Get the host.
         let host = default_host();
@@ -52,7 +52,7 @@ impl Player {
                         midi_event_queue,
                         time_state,
                         synth,
-                        sample
+                        sample,
                     );
                     Some(Self {
                         _host: host,
@@ -72,7 +72,7 @@ impl Player {
         midi_event_queue: SharedMidiEventQueue,
         time_state: SharedTimeState,
         synth: SharedSynth,
-        sample: SharedSample
+        sample: SharedSample,
     ) -> Option<Stream> {
         // Define the error callback.
         let err_callback = |err| println!("Stream error: {}", err);

@@ -41,7 +41,7 @@ pub use crate::conn::Conn;
 use crate::program::Program;
 pub use crate::synth_state::SynthState;
 use crate::time_state::TimeState;
-pub(crate) use crate::types::{AudioBuffer, SharedMidiEventQueue, SharedTimeState, SharedSample};
+pub(crate) use crate::types::{AudioBuffer, SharedMidiEventQueue, SharedSample, SharedTimeState};
 pub use crate::types::{AudioMessage, CommandsMessage, SharedExporter, SharedSynth};
 use crossbeam_channel::{bounded, unbounded};
 pub use export_state::ExportState;
@@ -71,16 +71,9 @@ pub fn connect(exporter: &SharedExporter) -> Conn {
             ex,
         )
     });
-    // Spawn the audio thread.
-    let player = Player::new(recv_audio);
     // Get the conn.
     Conn::new(
-        player,
-        send_commands,
-        recv_state,
         recv_export,
-        recv_time,
-        recv_sample,
     )
 }
 
