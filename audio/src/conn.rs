@@ -51,7 +51,7 @@ pub struct Conn {
     /// The current export state, if any.
     pub export_state: SharedExportState,
     /// The playback framerate.
-    framerate: f32,
+    pub framerate: f32,
     /// The audio player. This is here so we don't drop it.
     _player: Option<Player>,
     /// The most recent sample.

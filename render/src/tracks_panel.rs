@@ -61,15 +61,7 @@ impl TracksPanel {
 }
 
 impl Drawable for TracksPanel {
-    fn update(
-        &self,
-        renderer: &Renderer,
-        state: &State,
-        conn: &Conn,
-        text: &Text,
-        _: &PathsState,
-        _: &SharedExporter,
-    ) {
+    fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, text: &Text, _: &PathsState) {
         // Get the focus,
         let focus = self.panel.has_focus(state);
         // Draw the panel.

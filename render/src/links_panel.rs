@@ -99,15 +99,7 @@ impl LinksPanel {
 }
 
 impl Drawable for LinksPanel {
-    fn update(
-        &self,
-        renderer: &Renderer,
-        _: &State,
-        _: &Conn,
-        _: &Text,
-        _: &PathsState,
-        _: &SharedExporter,
-    ) {
+    fn update(&self, renderer: &Renderer, _: &State, _: &Conn, _: &Text, _: &PathsState) {
         self.popup.update(renderer);
         self.panel.update(true, renderer);
         self.labels

@@ -141,10 +141,9 @@ impl Drawable for OpenFilePanel {
         &self,
         renderer: &Renderer,
         state: &State,
-        _: &Conn,
+        conn: &Conn,
         _: &Text,
         paths_state: &PathsState,
-        exporter: &SharedExporter,
     ) {
         let focus = self.panel.has_focus(state);
         self.popup.update(renderer);
@@ -246,11 +245,7 @@ impl Drawable for OpenFilePanel {
             let ext = match paths_state.open_file_type {
                 OpenFileType::ReadSave | OpenFileType::WriteSave => Extension::Cac,
                 OpenFileType::SoundFont => Extension::Sf2,
-                OpenFileType::Export => {
-                    let ex = exporter.lock();
-                    let e = ex.export_type.get();
-                    e.into()
-                }
+                OpenFileType::Export => conn.exporter.export_type.get().into(),
                 OpenFileType::ImportMidi => Extension::Mid,
             };
             extension.push_str(ext.to_str(true));

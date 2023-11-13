@@ -1,5 +1,5 @@
 pub(crate) use crate::Renderer;
-pub(crate) use audio::{Conn, SharedExporter};
+pub(crate) use audio::Conn;
 pub(crate) use common::{PathsState, State};
 pub(crate) use input::Input;
 pub(crate) use text::Text;
@@ -13,7 +13,6 @@ pub(crate) trait Drawable {
     /// - `conn` The synthesizer-player connection.
     /// - `text` The text.
     /// - `paths_state` The file paths state.
-    /// - `exporter` The exporter state.
     fn update(
         &self,
         renderer: &Renderer,
@@ -21,6 +20,5 @@ pub(crate) trait Drawable {
         conn: &Conn,
         text: &Text,
         paths_state: &PathsState,
-        exporter: &SharedExporter,
     );
 }

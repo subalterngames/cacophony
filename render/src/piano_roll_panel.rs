@@ -192,15 +192,7 @@ impl PianoRollPanel {
 }
 
 impl Drawable for PianoRollPanel {
-    fn update(
-        &self,
-        renderer: &Renderer,
-        state: &State,
-        conn: &Conn,
-        text: &Text,
-        _: &PathsState,
-        _: &SharedExporter,
-    ) {
+    fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, text: &Text, _: &PathsState) {
         let panel = if state.view.single_track {
             &self.panel_single_track
         } else {

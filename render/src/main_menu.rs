@@ -280,13 +280,12 @@ impl MainMenu {
     /// Get a sample, set lerp targets, and draw bars.
     pub fn late_update(&mut self, renderer: &Renderer, conn: &Conn) {
         // Set the power bar lerp targets from the sample.
-        if let Some(sample) = conn.sample {
-            if self.time % POWER_BAR_DELTA == 0 {
-                self.set_lerp_target(0, sample.0);
-                self.set_lerp_target(1, sample.1);
-            }
-            self.time += 1;
+        let sample = conn.sample.lock().clone();
+        if self.time % POWER_BAR_DELTA == 0 {
+            self.set_lerp_target(0, sample.0);
+            self.set_lerp_target(1, sample.1);
         }
+        self.time += 1;
         // Draw each bar.
         self.draw_sample_power(0, renderer);
         self.draw_sample_power(1, renderer);
@@ -294,15 +293,7 @@ impl MainMenu {
 }
 
 impl Drawable for MainMenu {
-    fn update(
-        &self,
-        renderer: &Renderer,
-        state: &State,
-        _: &Conn,
-        _: &Text,
-        _: &PathsState,
-        _: &SharedExporter,
-    ) {
+    fn update(&self, renderer: &Renderer, state: &State, _: &Conn, _: &Text, _: &PathsState) {
         self.panel.update_ex(&COLOR, renderer);
         if state.unsaved_changes {
             renderer.rectangle(&self.title_changes.rect, &ColorKey::Background);
