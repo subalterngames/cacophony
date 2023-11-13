@@ -141,7 +141,6 @@ impl Panel for PianoRollPanel {
         tts: &mut TTS,
         text: &Text,
         paths_state: &mut PathsState,
-        exporter: &mut SharedExporter,
     ) -> Option<Snapshot> {
         // Select a track.
         if !state.view.single_track {
@@ -483,38 +482,29 @@ impl Panel for PianoRollPanel {
             // Sub-panel actions.
             let mode = state.piano_roll_mode;
             match mode {
-                PianoRollMode::Edit => {
-                    self.edit
-                        .update(state, conn, input, tts, text, paths_state, exporter)
-                }
+                PianoRollMode::Edit => self.edit.update(state, conn, input, tts, text, paths_state),
                 PianoRollMode::Select => {
                     self.select
-                        .update(state, conn, input, tts, text, paths_state, exporter)
+                        .update(state, conn, input, tts, text, paths_state)
                 }
-                PianoRollMode::Time => {
-                    self.time
-                        .update(state, conn, input, tts, text, paths_state, exporter)
-                }
-                PianoRollMode::View => {
-                    self.view
-                        .update(state, conn, input, tts, text, paths_state, exporter)
-                }
+                PianoRollMode::Time => self.time.update(state, conn, input, tts, text, paths_state),
+                PianoRollMode::View => self.view.update(state, conn, input, tts, text, paths_state),
             }
         }
     }
 
-    fn on_disable_abc123(&mut self, _: &mut State, _: &mut SharedExporter) {}
+    fn on_disable_abc123(&mut self, _: &mut State, _: &mut Conn) {}
 
     fn update_abc123(
         &mut self,
         _: &mut State,
         _: &Input,
-        _: &mut SharedExporter,
+        _: &mut Conn,
     ) -> (Option<Snapshot>, bool) {
         (None, false)
     }
 
-    fn allow_alphanumeric_input(&self, _: &State, _: &SharedExporter) -> bool {
+    fn allow_alphanumeric_input(&self, _: &State, _: &Conn) -> bool {
         false
     }
 

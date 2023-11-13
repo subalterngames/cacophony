@@ -94,7 +94,6 @@ impl Panel for TracksPanel {
         tts: &mut TTS,
         text: &Text,
         _: &mut PathsState,
-        _: &mut SharedExporter,
     ) -> Option<Snapshot> {
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {
@@ -342,18 +341,18 @@ impl Panel for TracksPanel {
         }
     }
 
-    fn on_disable_abc123(&mut self, _: &mut State, _: &mut SharedExporter) {}
+    fn on_disable_abc123(&mut self, _: &mut State, _: &mut Conn) {}
 
     fn update_abc123(
         &mut self,
         _: &mut State,
         _: &Input,
-        _: &mut SharedExporter,
+        _: &mut Conn,
     ) -> (Option<Snapshot>, bool) {
         (None, false)
     }
 
-    fn allow_alphanumeric_input(&self, _: &State, _: &SharedExporter) -> bool {
+    fn allow_alphanumeric_input(&self, _: &State, _: &Conn) -> bool {
         false
     }
 

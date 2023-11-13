@@ -1,5 +1,6 @@
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum ExportState {
+    NotExporting,
     /// Writing samples to a wav buffer.
     WritingWav {
         total_samples: u64,

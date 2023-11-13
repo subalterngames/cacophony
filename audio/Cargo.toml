@@ -8,7 +8,6 @@ edition.workspace = true
 
 [dependencies]
 cpal = { workspace = true }
-crossbeam-channel = { workspace = true }
 hound = { workspace = true }
 id3 = { workspace = true }
 mp3lame-encoder = { workspace = true }

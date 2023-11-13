@@ -1,7 +1,8 @@
 use super::import_midi::import;
 use crate::panel::*;
 use crate::Save;
-use audio::exporter::ExportType;
+use audio::export::ExportType;
+use audio::exporter::Exporter;
 use common::open_file::*;
 use common::PanelType;
 use text::get_file_name_no_ex;
@@ -58,14 +59,8 @@ impl OpenFilePanel {
     }
 
     /// Enable a panel for setting the export path.
-    pub fn export(
-        &mut self,
-        state: &mut State,
-        paths_state: &mut PathsState,
-        exporter: &SharedExporter,
-    ) {
-        let ex = exporter.lock();
-        let extension = ex.export_type.get().into();
+    pub fn export(&mut self, state: &mut State, paths_state: &mut PathsState, conn: &Conn) {
+        let extension = conn.exporter.export_type.get().into();
         let open_file_type = OpenFileType::Export;
         paths_state
             .children
@@ -81,12 +76,9 @@ impl OpenFilePanel {
         self.enable(OpenFileType::ImportMidi, state, paths_state);
     }
 
-    fn get_extension(&self, paths_state: &PathsState, exporter: &SharedExporter) -> Extension {
+    fn get_extension(&self, paths_state: &PathsState, exporter: &Exporter) -> Extension {
         match paths_state.open_file_type {
-            OpenFileType::Export => {
-                let ex = exporter.lock();
-                ex.export_type.get().into()
-            }
+            OpenFileType::Export => exporter.export_type.get().into(),
             OpenFileType::ReadSave | OpenFileType::WriteSave => Extension::Cac,
             OpenFileType::SoundFont => Extension::Sf2,
             OpenFileType::ImportMidi => Extension::Mid,
@@ -120,7 +112,6 @@ impl Panel for OpenFilePanel {
         tts: &mut TTS,
         text: &Text,
         paths_state: &mut PathsState,
-        exporter: &mut SharedExporter,
     ) -> Option<Snapshot> {
         match &paths_state.open_file_type {
             OpenFileType::SoundFont | OpenFileType::ReadSave => (),
@@ -147,8 +138,7 @@ impl Panel for OpenFilePanel {
             s.push(' ');
             // Export file type.
             if paths_state.open_file_type == OpenFileType::Export {
-                let ex = exporter.lock();
-                let e = ex.export_type.get();
+                let e = conn.exporter.export_type.get();
                 let extension: Extension = e.into();
                 let export_type = extension.to_str(false);
                 s.push_str(
@@ -197,8 +187,7 @@ impl Panel for OpenFilePanel {
             }
             // Set export type.
             if paths_state.open_file_type == OpenFileType::Export {
-                let ex = exporter.lock();
-                let mut index = ex.export_type;
+                let mut index = conn.exporter.export_type;
                 index.index.increment(true);
                 let e = index.get();
                 let extension: Extension = e.into();
@@ -254,11 +243,11 @@ impl Panel for OpenFilePanel {
         }
         // Go up a directory.
         else if input.happened(&InputEvent::UpDirectory) {
-            paths_state.up_directory(&self.get_extension(paths_state, exporter));
+            paths_state.up_directory(&self.get_extension(paths_state, &conn.exporter));
         }
         // Go down a directory.
         else if input.happened(&InputEvent::DownDirectory) {
-            paths_state.down_directory(&self.get_extension(paths_state, exporter));
+            paths_state.down_directory(&self.get_extension(paths_state, &conn.exporter));
         }
         // Scroll up.
         else if input.happened(&InputEvent::PreviousPath) {
@@ -273,12 +262,11 @@ impl Panel for OpenFilePanel {
             && input.happened(&InputEvent::CycleExportType)
         {
             // Set the extension.
-            let mut ex = exporter.lock();
-            ex.export_type.index.increment(true);
+            conn.exporter.export_type.index.increment(true);
             // Set the children.
             paths_state.children.set(
                 &paths_state.exports.directory.path,
-                &ex.export_type.get().into(),
+                &conn.exporter.export_type.get().into(),
                 None,
             );
         }
@@ -294,7 +282,7 @@ impl Panel for OpenFilePanel {
                         // Get the path.
                         let path = paths_state.children.children[selected].path.clone();
                         // Read the save file.
-                        Save::read(&path, state, conn, paths_state, exporter);
+                        Save::read(&path, state, conn, paths_state);
                         // Set the saves directory.
                         paths_state.saves = FileAndDirectory::new_path(path);
                     }
@@ -334,7 +322,6 @@ impl Panel for OpenFilePanel {
                             state,
                             conn,
                             paths_state,
-                            exporter,
                         );
                     }
                 }
@@ -346,32 +333,25 @@ impl Panel for OpenFilePanel {
                         self.disable(state);
                         // Append the extension.
                         let mut filename = filename.clone();
-                        let ex = exporter.lock();
                         filename.push_str(
-                            <ExportType as Into<Extension>>::into(ex.export_type.get())
+                            <ExportType as Into<Extension>>::into(conn.exporter.export_type.get())
                                 .to_str(true),
                         );
-                        match &ex.export_type.get() {
+                        match &conn.exporter.export_type.get() {
                             // Export to a .wav file.
                             ExportType::Wav => {
-                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
-                                    paths_state.exports.directory.path.join(filename),
-                                )]));
+                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export]));
                             }
                             // Export to a .mp3 file.
                             ExportType::MP3 => {
-                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
-                                    paths_state.exports.directory.path.join(filename),
-                                )]));
+                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export]));
                             }
                             ExportType::Ogg => {
-                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export(
-                                    paths_state.exports.directory.path.join(filename),
-                                )]));
+                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export]));
                             }
                             // Export to a .mid file.
                             ExportType::Mid => {
-                                ex.mid(
+                                conn.exporter.mid(
                                     &paths_state.exports.directory.path.join(filename),
                                     &state.music,
                                     &state.time,
@@ -384,7 +364,7 @@ impl Panel for OpenFilePanel {
                 OpenFileType::ImportMidi => {
                     if let Some(selected) = paths_state.children.selected {
                         let path = paths_state.children.children[selected].path.clone();
-                        import(&path, state, conn, exporter);
+                        import(&path, state, conn);
                         state.unsaved_changes = true;
                         self.disable(state);
                     }
@@ -398,19 +378,19 @@ impl Panel for OpenFilePanel {
         None
     }
 
-    fn on_disable_abc123(&mut self, _: &mut State, _: &mut SharedExporter) {}
+    fn on_disable_abc123(&mut self, _: &mut State, _: &mut Conn) {}
 
     fn update_abc123(
         &mut self,
         _: &mut State,
         _: &Input,
-        _: &mut SharedExporter,
+        _: &mut Conn,
     ) -> (Option<Snapshot>, bool) {
         // There is alphanumeric input in this struct, obviously, but we won't handle it here because we don't need to toggle it on/off.
         (None, false)
     }
 
-    fn allow_alphanumeric_input(&self, _: &State, _: &SharedExporter) -> bool {
+    fn allow_alphanumeric_input(&self, _: &State, _: &Conn) -> bool {
         false
     }
 

@@ -101,7 +101,6 @@ dependencies = [
  "chrono",
  "common",
  "cpal",
- "crossbeam-channel",
  "hashbrown 0.13.2",
  "hound",
  "id3",

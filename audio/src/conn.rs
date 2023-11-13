@@ -9,7 +9,7 @@ use crate::{
     SharedMidiEventQueue, SharedSynth, SharedTimeState, SynthState, TimeState,
 };
 use common::open_file::Extension;
-use common::{MidiTrack, PathsState, State, Time, MAX_VOLUME};
+use common::{MidiTrack, Music, PathsState, State, Time, MAX_VOLUME};
 use hashbrown::HashMap;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use parking_lot::Mutex;
@@ -94,7 +94,7 @@ impl Default for Conn {
             None => 0.0,
         };
         Self {
-            export_state: Arc::new(Mutex::new(ExportState::Done)),
+            export_state: Arc::new(Mutex::new(ExportState::NotExporting)),
             _player: player,
             framerate,
             sample,
@@ -109,20 +109,30 @@ impl Default for Conn {
 }
 
 impl Conn {
-    /// Do all note-on and note-off events created by user input on this app frame.
-    pub fn do_note_events(&mut self, state: &State, note_ons: &[[u8; 3]], note_offs: &[u8]) {
+    /// Do all note-on events created by user input on this app frame.
+    pub fn note_ons(&mut self, state: &State, note_ons: &[[u8; 3]]) {
         if let Some(track) = state.music.get_selected_track() {
             let mut synth = self.synth.lock();
+            synth.set_sample_rate(self.framerate);
+            let gain = track.gain as f32 / MAX_VOLUME as f32;
             for note_on in note_ons.iter() {
                 if synth
                     .send_event(MidiEvent::NoteOn {
                         channel: track.channel,
                         key: note_on[1],
-                        vel: note_on[2],
+                        vel: (note_on[2] as f32 * gain) as u8,
                     })
                     .is_ok()
                 {}
             }
+        }
+    }
+
+    /// Do all note-off events created by user input on this app frame.
+    pub fn note_offs(&mut self, state: &State, note_offs: &[u8]) {
+        if let Some(track) = state.music.get_selected_track() {
+            let mut synth = self.synth.lock();
+            synth.set_sample_rate(self.framerate);
             for note_off in note_offs.iter() {
                 if synth
                     .send_event(MidiEvent::NoteOff {
@@ -194,8 +204,22 @@ impl Conn {
         }
     }
 
+    /// Start to play music if music isn't playing. Stop music if music is playing.
+    pub fn set_music(&mut self, state: &State) {
+        let music = self.time_state.lock().music.clone();
+        if music {
+            self.stop_music(&state.music)
+        } else {
+            self.start_music(state)
+        }
+    }
+
+    pub fn exporting(&self) -> bool {
+        *self.export_state.lock() != ExportState::NotExporting
+    }
+
     /// Schedule MIDI events and start to play music.
-    pub fn schedule_music(&mut self, state: &State) {
+    fn start_music(&mut self, state: &State) {
         // Get the start time.
         let start = state
             .time
@@ -208,6 +232,7 @@ impl Conn {
         // Enqueue note events.
         let mut midi_event_queue = self.midi_event_queue.lock();
         for track in state.music.midi_tracks.iter() {
+            let gain = track.gain as f32 / MAX_VOLUME as f32;
             for note in track.get_playback_notes(start) {
                 // Note-on event.
                 midi_event_queue.enqueue(
@@ -215,7 +240,7 @@ impl Conn {
                     MidiEvent::NoteOn {
                         channel: track.channel,
                         key: note.note,
-                        vel: note.velocity,
+                        vel: (note.velocity as f32 * gain) as u8,
                     },
                 );
                 // Note-off event.
@@ -235,6 +260,28 @@ impl Conn {
         let mut time_state = self.time_state.lock();
         time_state.music = true;
         time_state.time = Some(start);
+    }
+
+    /// Stop ongoing music.
+    fn stop_music(&mut self, music: &Music) {
+        let mut synth = self.synth.lock();
+        for track in music.midi_tracks.iter() {
+            if synth
+                .send_event(MidiEvent::AllNotesOff {
+                    channel: track.channel,
+                })
+                .is_ok()
+            {}
+            if synth
+                .send_event(MidiEvent::AllSoundOff {
+                    channel: track.channel,
+                })
+                .is_ok()
+            {}
+        }
+        let mut time_state = self.time_state.lock();
+        time_state.music = false;
+        time_state.time = None;
     }
 
     /// Set the synthesizer program to a default program.
@@ -285,6 +332,7 @@ impl Conn {
         let gain = self.state.gain as f32 / MAX_VOLUME as f32;
         let mut exportables = vec![];
         let tracks = state.music.get_playable_tracks();
+        self.set_export_framerate();
 
         // Export each track as a separate file.
         if self.exporter.multi_file {
@@ -431,7 +479,7 @@ impl Conn {
                     .unwrap()
                     .join(format!(
                         "{}_{}{}",
-                        path.file_name().unwrap().to_str().unwrap(),
+                        path.file_stem().unwrap().to_str().unwrap(),
                         suffix,
                         extension.to_str(true)
                     ))
@@ -458,6 +506,14 @@ impl Conn {
             // Done.
             Self::set_export_state(&export_state, ExportState::Done);
         }
+        Self::set_export_state(&export_state, ExportState::NotExporting);
+    }
+
+    /// Set the exporter's framerate.
+    fn set_export_framerate(&mut self) {
+        let framerate = self.exporter.framerate.get_f();
+        let mut synth = self.synth.lock();
+        synth.set_sample_rate(framerate);
     }
 
     /// Set the number of exported wav samples.
@@ -474,10 +530,7 @@ impl Conn {
     }
 
     /// Set the export state.
-    fn set_export_state(
-        export_state: &SharedExportState,
-        state: ExportState,
-    ) {
+    fn set_export_state(export_state: &SharedExportState, state: ExportState) {
         let mut export_state = export_state.lock();
         *export_state = state;
     }

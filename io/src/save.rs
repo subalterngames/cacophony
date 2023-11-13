@@ -1,5 +1,4 @@
 use audio::exporter::Exporter;
-use audio::SharedExporter;
 use audio::*;
 use common::{PathsState, State};
 use serde::{Deserialize, Serialize};
@@ -22,6 +21,8 @@ pub(crate) struct Save {
     paths_state: PathsState,
     /// The exporter state.
     exporter: Exporter,
+    /// The version string.
+    version: String,
 }
 
 impl Save {
@@ -31,20 +32,14 @@ impl Save {
     /// - `state` The app state.
     /// - `conn` The audio connection. Its `SynthState` will be serialized.
     /// - `paths_state` The paths state.
-    /// - `exporter` The exporter.
-    pub fn write(
-        path: &PathBuf,
-        state: &State,
-        conn: &Conn,
-        paths_state: &PathsState,
-        exporter: &SharedExporter,
-    ) {
+    pub fn write(path: &PathBuf, state: &State, conn: &Conn, paths_state: &PathsState) {
         // Convert the state to something that can be serialized.
         let save = Save {
             state: state.clone(),
             synth_state: conn.state.clone(),
             paths_state: paths_state.clone(),
-            exporter: exporter.lock().clone(),
+            exporter: conn.exporter.clone(),
+            version: common::VERSION.to_string(),
         };
         // Try to open the file.
         match OpenOptions::new()
@@ -73,14 +68,7 @@ impl Save {
     /// - `state` The app state, which will be set to a deserialized version.
     /// - `conn` The audio connection. Its `SynthState` will be set via commands derived from a deserialized version.
     /// - `paths_state` The paths state, which will be set to a deserialized version.
-    /// - `exporter` The exporter.
-    pub fn read(
-        path: &Path,
-        state: &mut State,
-        conn: &mut Conn,
-        paths_state: &mut PathsState,
-        exporter: &mut SharedExporter,
-    ) {
+    pub fn read(path: &Path, state: &mut State, conn: &mut Conn, paths_state: &mut PathsState) {
         match File::open(path) {
             Ok(mut file) => {
                 let mut string = String::new();
@@ -96,8 +84,7 @@ impl Save {
                                 *paths_state = s.paths_state;
 
                                 // Set the exporter.
-                                let mut ex = exporter.lock();
-                                *ex = s.exporter;
+                                conn.exporter = s.exporter;
 
                                 // Set the synthesizer.
                                 // Set the gain.
@@ -133,7 +120,7 @@ impl Save {
                                 conn.state = s.synth_state;
 
                                 // Send the commands.
-                                conn.send(commands);
+                                conn.do_commands(&commands);
                             }
                             Err(error) => panic!("{} {}", READ_ERROR, error),
                         }

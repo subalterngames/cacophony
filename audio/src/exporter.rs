@@ -1,5 +1,5 @@
-use crate::export::{ExportType, Metadata, MultiFileSuffix};
-use crate::{AudioBuffer, SharedExporter, SynthState};
+use crate::export::{ExportSetting, ExportType, Metadata, MultiFileSuffix};
+use crate::{AudioBuffer, SynthState};
 use chrono::Datelike;
 use chrono::Local;
 use common::IndexedValues;
@@ -18,10 +18,6 @@ use std::io::Read;
 use std::io::{Cursor, Write};
 use std::path::Path;
 use vorbis_encoder::Encoder;
-mod export_setting;
-pub use export_setting::ExportSetting;
-use parking_lot::Mutex;
-use std::sync::Arc;
 
 /// The number of channels.
 const NUM_CHANNELS: usize = 2;
@@ -183,11 +179,6 @@ impl Default for Exporter {
 }
 
 impl Exporter {
-    /// Returns a new shareable Exporter.
-    pub fn new_shared() -> SharedExporter {
-        Arc::new(Mutex::new(Exporter::default()))
-    }
-
     /// Export to a .mid file.
     /// - `path` Output to this path.
     /// - `music` This is what we're saving.

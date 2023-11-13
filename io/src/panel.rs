@@ -1,7 +1,7 @@
 pub(crate) use crate::io_command::IOCommand;
 pub(crate) use crate::popup::Popup;
 pub(crate) use crate::Snapshot;
-pub(crate) use audio::{Command, Conn, SharedExporter};
+pub(crate) use audio::{Command, Conn};
 pub(crate) use common::{Index, PathsState, State};
 pub(crate) use input::{Input, InputEvent};
 pub(crate) use text::{Enqueable, Text, Tooltips, TtsString, TTS};
@@ -16,10 +16,8 @@ pub(crate) trait Panel {
     /// - `tts` Text-to-speech.
     /// - `text` The text.
     /// - `paths_state` Dynamic path data.
-    /// - `exporter` Export settings.
     ///
     /// Returns: An `Snapshot`.
-    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         state: &mut State,
@@ -28,34 +26,33 @@ pub(crate) trait Panel {
         tts: &mut TTS,
         text: &Text,
         paths_state: &mut PathsState,
-        exporter: &mut SharedExporter,
     ) -> Option<Snapshot>;
 
     /// Apply panel-specific updates to the state if alphanumeric input is enabled.
     ///
     /// - `state` The state of the app.
     /// - `input` Input events, key presses, etc.
-    /// - `exporter` Export settings.
+    /// - `conn` The audio connection.
     ///
     /// Returns: An `Snapshot` and true if something (potentially not included in the snaphot) updated.
     fn update_abc123(
         &mut self,
         state: &mut State,
         input: &Input,
-        exporter: &mut SharedExporter,
+        conn: &mut Conn,
     ) -> (Option<Snapshot>, bool);
 
     /// Do something when alphanumeric input is disabled.
     ///
     /// - `state` The state of the app.
-    /// - `exporter` Export settings.
-    fn on_disable_abc123(&mut self, state: &mut State, exporter: &mut SharedExporter);
+    /// - `conn` The audio connection.
+    fn on_disable_abc123(&mut self, state: &mut State, conn: &mut Conn);
 
     /// If true, allow the user to toggle alphanumeric input.
     ///
     /// - `state` The state.
-    /// - `exporter` Export settings.
-    fn allow_alphanumeric_input(&self, state: &State, exporter: &SharedExporter) -> bool;
+    /// - `conn` The audio connection.
+    fn allow_alphanumeric_input(&self, state: &State, conn: &Conn) -> bool;
 
     /// Returns true if we can play music.
     fn allow_play_music(&self) -> bool;
