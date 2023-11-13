@@ -2,8 +2,7 @@
 
 use std::path::PathBuf;
 
-use audio::connect;
-use audio::exporter::Exporter;
+use audio::Conn;
 use clap::Parser;
 use common::config::{load, parse_bool};
 use common::sizes::get_window_pixel_size;
@@ -85,11 +84,8 @@ async fn main() {
     // Get the input object.
     let mut input = Input::new(&config);
 
-    // Create the exporter.
-    let mut exporter = Exporter::new_shared();
-
     // Create the audio connection.
-    let mut conn = connect(&exporter);
+    let mut conn = Conn::default();
 
     // Create the state.
     let mut state = State::new(&config);
@@ -132,13 +128,7 @@ async fn main() {
 
     // Open the initial save file if set.
     if let Some(save_path) = cli.file {
-        io.load_save(
-            &save_path,
-            &mut state,
-            &mut conn,
-            &mut paths_state,
-            &mut exporter,
-        );
+        io.load_save(&save_path, &mut state, &mut conn, &mut paths_state);
     }
 
     // Begin.
@@ -148,14 +138,14 @@ async fn main() {
         clear_background(CLEAR_COLOR);
 
         // Draw.
-        panels.update(&renderer, &state, &conn, &text, &paths_state, &exporter);
+        panels.update(&renderer, &state, &conn, &text, &paths_state);
 
         // Draw subtitles.
         draw_subtitles(&renderer, &tts);
 
         // If we're exporting audio, don't allow input.
-        if conn.export_state.is_none() {
-            // Update the input state.
+        if !conn.exporting() {
+            // Update the user input state
             input.update(&state);
 
             // Modify the state.
@@ -166,14 +156,10 @@ async fn main() {
                 &mut tts,
                 &mut text,
                 &mut paths_state,
-                &mut exporter,
             );
         }
 
         if !done {
-            // Update time itself.
-            conn.update();
-
             // Update the subtitles.
             tts.update();
 
