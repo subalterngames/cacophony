@@ -25,8 +25,11 @@
 
 mod command;
 mod conn;
+mod export;
 mod export_state;
 pub mod exporter;
+pub(crate) mod midi_event_queue;
+pub(crate) mod timed_midi_event;
 mod player;
 mod program;
 mod synth_state;
