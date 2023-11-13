@@ -18,6 +18,14 @@ impl MidiEventQueue {
         self.events.push(TimedMidiEvent { time, event });
     }
 
+    pub(crate) fn get_next_time(&self) -> Option<u64> {
+        if self.events.is_empty() {
+            None
+        } else {
+            Some(self.events[0].time)
+        }
+    }
+
     /// Sort the list of events by start time.
     pub(crate) fn sort(&mut self) {
         self.events.sort_by(|a, b| a.time.cmp(&b.time))

@@ -39,7 +39,6 @@ impl Player {
                 }
                 // We have a device and a config!
                 Ok(config) => {
-                    let sample_format = config.sample_format();
                     let framerate = config.sample_rate().0;
                     let stream_config: StreamConfig = config.into();
                     let channels = stream_config.channels as usize;
@@ -78,8 +77,8 @@ impl Player {
         let err_callback = |err| println!("Stream error: {}", err);
 
         let two_channels = channels == 2;
-
-        let mut audio_buffers = [vec![0.0; 1], vec![0.0; 1]];
+        let mut left = vec![0.0; 1];
+        let mut right = vec![0.0; 1];
 
         // Define the data callback used by cpal. Move `stream_send` into the closure.
         let data_callback = move |output: &mut [f32], _: &OutputCallbackInfo| {
@@ -90,17 +89,17 @@ impl Player {
                 let len = output.len();
 
                 // Resize the buffers.
-                if len > audio_buffers[0].len() {
-                    audio_buffers[0].resize(len, 0.0);
-                    audio_buffers[1].resize(len, 0.0);
+                if len > left.len() {
+                    left.resize(len, 0.0);
+                    right.resize(len, 0.0);
                 }
 
                 // Write the samples.
                 let mut synth = synth.lock();
-                synth.write((&mut audio_buffers[0][0..len], &mut audio_buffers[1][0..len]));
+                synth.write((left[0..len].as_mut(), right[0..len].as_mut()));
 
                 // Stop time.
-                if let Some(time) = time_state.time {
+                if time_state.time.is_some() {
                     time_state.music = false;
                     time_state.time = None;
                 }

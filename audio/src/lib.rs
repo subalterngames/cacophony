@@ -26,13 +26,11 @@
 mod command;
 mod conn;
 mod export;
-mod export_state;
 pub mod exporter;
 pub(crate) mod midi_event_queue;
 mod player;
 mod program;
 mod synth_state;
-mod synthesizer;
 mod time_state;
 pub(crate) mod timed_midi_event;
 mod types;
@@ -41,69 +39,8 @@ pub use crate::conn::Conn;
 use crate::program::Program;
 pub use crate::synth_state::SynthState;
 use crate::time_state::TimeState;
-pub(crate) use crate::types::{AudioBuffer, SharedMidiEventQueue, SharedSample, SharedTimeState};
-pub use crate::types::{AudioMessage, CommandsMessage, SharedExporter, SharedSynth};
-use crossbeam_channel::{bounded, unbounded};
-pub use export_state::ExportState;
+pub(crate) use crate::types::{AudioBuffer, SharedMidiEventQueue, SharedTimeState};
+pub use crate::types::{
+    AudioMessage, CommandsMessage, SharedExportState, SharedExporter, SharedSynth,
+};
 use player::Player;
-use std::sync::Arc;
-use std::thread::spawn;
-
-/// Start the synthesizer and the audio player. Returns a `conn`.
-pub fn connect(exporter: &SharedExporter) -> Conn {
-    let (send_commands, recv_commands) = unbounded();
-    let (send_state, recv_state) = bounded(1);
-    let (send_audio, recv_audio) = bounded(1);
-    let (send_time, recv_time) = bounded(1);
-    let (send_export, recv_export) = bounded(1);
-    let (send_sample, recv_sample) = bounded(1);
-
-    let ex = Arc::clone(exporter);
-    // Spawn the synthesizer thread.
-    spawn(move || {
-        synthesizer::Synthesizer::start(
-            recv_commands,
-            send_audio,
-            send_state,
-            send_export,
-            send_time,
-            send_sample,
-            ex,
-        )
-    });
-    // Get the conn.
-    Conn::new(
-        recv_export,
-    )
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::exporter::Exporter;
-    use crate::{connect, Command};
-    use std::path::PathBuf;
-
-    const SF_PATH: &str = "tests/CT1MBGMRSV1.06.sf2";
-    const CHANNEL: u8 = 0;
-
-    #[test]
-    fn sf() {
-        // Make sure we can load the file.
-        assert!(std::fs::File::open(SF_PATH).is_ok());
-        let exporter = Exporter::new_shared();
-        let mut conn = connect(&exporter);
-        let commands = vec![Command::LoadSoundFont {
-            path: PathBuf::from(SF_PATH),
-            channel: CHANNEL,
-        }];
-        // Make sure we can send commands.
-        conn.send(commands);
-        assert!(conn.state.programs.contains_key(&CHANNEL));
-        let program = &conn.state.programs[&CHANNEL];
-        assert_eq!(program.num_banks, 2);
-        assert_eq!(program.bank_index, 0);
-        assert_eq!(program.num_presets, 128);
-        assert_eq!(program.preset_index, 0);
-        assert_eq!(program.preset_name, "Piano 1");
-    }
-}
