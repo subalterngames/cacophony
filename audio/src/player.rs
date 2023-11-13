@@ -75,7 +75,7 @@ impl Player {
 
         let two_channels = channels == 2;
 
-        let audio_buffers = [vec![0.0; 1], vec![0.0; 1]];
+        let mut audio_buffers = [vec![0.0; 1], vec![0.0; 1]];
 
         // Define the data callback used by cpal. Move `stream_send` into the closure.
         let data_callback = move |output: &mut [f32], _: &OutputCallbackInfo| {
