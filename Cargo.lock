@@ -1561,7 +1561,7 @@ checksum = "8d91edf4fbb970279443471345a4e8c491bf05bb283b3e6c88e4e606fd8c181b"
 [[package]]
 name = "oxisynth"
 version = "0.0.3"
-source = "git+https://github.com/PolyMeilex/OxiSynth.git?branch=master#3353ef0a7102ae192d58e6c6af7db6f562780ecb"
+source = "git+https://github.com/subalterngames/OxiSynth.git?branch=midi_event_copy_clone#547d62343119c0bdea24ce8b65e63ae7162f1e6d"
 dependencies = [
  "bitflags 1.3.2",
  "byte-slice-cast",
@@ -1982,7 +1982,7 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 [[package]]
 name = "soundfont"
 version = "0.0.2"
-source = "git+https://github.com/PolyMeilex/OxiSynth.git?branch=master#3353ef0a7102ae192d58e6c6af7db6f562780ecb"
+source = "git+https://github.com/subalterngames/OxiSynth.git?branch=midi_event_copy_clone#547d62343119c0bdea24ce8b65e63ae7162f1e6d"
 dependencies = [
  "riff",
 ]
