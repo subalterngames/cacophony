@@ -1,7 +1,6 @@
-use crate::AudioMessage;
+use crate::{SharedMidiEventQueue, SharedSynth, SharedTimeState};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::*;
-use crossbeam_channel::Receiver;
 
 const ERROR_MESSAGE: &str = "Failed to create an audio output stream: ";
 
@@ -17,7 +16,11 @@ pub(crate) struct Player {
 }
 
 impl Player {
-    pub(crate) fn new(recv: Receiver<AudioMessage>) -> Option<Self> {
+    pub(crate) fn new(
+        midi_event_queue: SharedMidiEventQueue,
+        time_state: SharedTimeState,
+        synth: SharedSynth,
+    ) -> Option<Self> {
         // Get the host.
         let host = default_host();
         // Try to get an output device.
@@ -40,17 +43,14 @@ impl Player {
                     let channels = stream_config.channels as usize;
 
                     // Try to get a stream.
-                    let stream = match sample_format {
-                        SampleFormat::F32 => {
-                            Player::run::<f32>(recv, channels, device, stream_config)
-                        }
-                        SampleFormat::I16 => {
-                            Player::run::<i16>(recv, channels, device, stream_config)
-                        }
-                        SampleFormat::U16 => {
-                            Player::run::<u16>(recv, channels, device, stream_config)
-                        }
-                    };
+                    let stream = Player::run(
+                        channels,
+                        device,
+                        stream_config,
+                        midi_event_queue,
+                        time_state,
+                        synth,
+                    );
                     Some(Self {
                         _host: host,
                         _stream: stream,
@@ -62,34 +62,74 @@ impl Player {
     }
 
     /// Start running the stream.
-    fn run<T>(
-        recv: Receiver<AudioMessage>,
+    fn run(
         channels: usize,
         device: Device,
         stream_config: StreamConfig,
-    ) -> Option<Stream>
-    where
-        T: Sample,
-    {
+        midi_event_queue: SharedMidiEventQueue,
+        time_state: SharedTimeState,
+        synth: SharedSynth,
+    ) -> Option<Stream> {
         // Define the error callback.
         let err_callback = |err| println!("Stream error: {}", err);
 
-        // Move `recv` into a closure.
-        let next_sample = move || recv.recv();
-
         let two_channels = channels == 2;
 
+        let audio_buffers = [vec![0.0; 1], vec![0.0; 1]];
+
         // Define the data callback used by cpal. Move `stream_send` into the closure.
-        let data_callback = move |output: &mut [T], _: &OutputCallbackInfo| {
-            for frame in output.chunks_mut(channels) {
-                // Try to receive a new sample.
-                if let Ok((l, r)) = next_sample() {
+        let data_callback = move |output: &mut [f32], _: &OutputCallbackInfo| {
+            let mut time_state = time_state.lock();
+            let mut midi_event_queue = midi_event_queue.lock();
+            // There are no more events. Fill the buffer and advance time.
+            if midi_event_queue.is_empty() {
+                let mut synth = synth.lock();
+                let len = output.len();
+
+                // Resize the buffers.
+                if len > audio_buffers[0].len() {
+                    audio_buffers[0].resize(len, 0.0);
+                    audio_buffers[1].resize(len, 0.0);
+                }
+
+                // Write the samples.
+                synth.write((&mut audio_buffers[0][0..len], &mut audio_buffers[1][0..len]));
+
+                // Advance time.
+                if let Some(time) = time_state.time {
+                    time_state.time = Some(time + len as u64);
+                }
+            } else {
+                // Iterate through the number of samples.
+                for frame in output.chunks_mut(channels) {
+                    // We're playing music. Advance to the next events.
+                    if let Some(time) = time_state.time {
+                        // Dequeue events.
+                        let events = midi_event_queue.dequeue(time);
+                        // Send the MIDI events to the synth.
+                        if !events.is_empty() {
+                            let mut synth = synth.lock();
+                            for event in events {
+                                if synth.send_event(event).is_ok() {}
+                            }
+                        }
+                        // Advance time by one sample.
+                        time_state.time = Some(time + 1)
+                    }
+                    // Get the next sample.
+                    let mut synth = synth.lock();
+                    // Get the sample.
+                    let (left, right) = synth.read_next();
+
+                    // Add the sample.
                     // This is almost certainly more performant than the code in the `else` block.
                     if two_channels {
-                        frame[0] = Sample::from::<f32>(&l);
-                        frame[1] = Sample::from::<f32>(&r);
-                    } else {
-                        let channels = [Sample::from::<f32>(&l), Sample::from::<f32>(&r)];
+                        frame[0] = left;
+                        frame[1] = right;
+                    }
+                    // Add for more than one channel. This is slower.
+                    else {
+                        let channels = [left, right];
                         for (id, sample) in frame.iter_mut().enumerate() {
                             *sample = channels[id % 2];
                         }
