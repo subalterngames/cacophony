@@ -702,30 +702,7 @@ impl IO {
     }
 }
 
-/// Returns all tracks that can be played.
-fn get_playable_tracks(music: &Music) -> Vec<&MidiTrack> {
-    // Get all tracks that can play music.
-    let tracks = match music.midi_tracks.iter().find(|t| t.solo) {
-        // Only include the solo track.
-        Some(solo) => vec![solo],
-        // Only include unmuted tracks.
-        None => music.midi_tracks.iter().filter(|t| !t.mute).collect(),
-    };
-    tracks
-}
 
-/// Returns all notes in the track that can be played (they are after t0).
-fn get_playback_notes(track: &MidiTrack) -> Vec<Note> {
-    let gain = track.gain as f64 / MAX_VOLUME as f64;
-    let mut notes = vec![];
-    for note in track.notes.iter() {
-        let mut n1 = *note;
-        n1.velocity = (n1.velocity as f64 * gain) as u8;
-        notes.push(n1);
-    }
-    notes.sort();
-    notes
-}
 
 /// Converts all playable tracks to note-on commands.
 fn combine_tracks_to_commands(

@@ -41,7 +41,7 @@ pub use crate::conn::Conn;
 use crate::program::Program;
 pub use crate::synth_state::SynthState;
 use crate::time_state::TimeState;
-pub(crate) use crate::types::{AudioBuffer, SharedMidiEventQueue, SharedTimeState};
+pub(crate) use crate::types::{AudioBuffer, SharedMidiEventQueue, SharedTimeState, SharedSample};
 pub use crate::types::{AudioMessage, CommandsMessage, SharedExporter, SharedSynth};
 use crossbeam_channel::{bounded, unbounded};
 pub use export_state::ExportState;

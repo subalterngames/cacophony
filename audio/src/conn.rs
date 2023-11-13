@@ -1,5 +1,10 @@
-use crate::{AudioMessage, Command, CommandsMessage, ExportState, Player, SynthState, TimeState};
+use crate::{
+    AudioMessage, Command, CommandsMessage, ExportState, Player, SharedMidiEventQueue, SharedSynth,
+    SharedTimeState, SynthState, TimeState, types::SharedSample,
+};
+use common::State;
 use crossbeam_channel::{Receiver, Sender};
+use oxisynth::MidiEvent;
 
 /// The connects used by an external function.
 pub struct Conn {
@@ -8,7 +13,7 @@ pub struct Conn {
     /// The current export state, if any.
     pub export_state: Option<ExportState>,
     /// The playback framerate.
-    pub framerate: f32,
+    framerate: f32,
     /// The audio player. This is here so we don't drop it.
     _player: Option<Player>,
     /// Send commands to the synthesizer.
@@ -17,12 +22,13 @@ pub struct Conn {
     recv: Receiver<SynthState>,
     /// Receive the export state.
     recv_export: Receiver<Option<ExportState>>,
-    /// Receive the updated time.
-    recv_time: Receiver<TimeState>,
     /// Receive an audio sample.
     recv_sample: Receiver<AudioMessage>,
     /// The most recent sample.
-    pub sample: Option<AudioMessage>,
+    pub sample: SharedSample,
+    synth: SharedSynth,
+    midi_event_queue: SharedMidiEventQueue,
+    time_state: SharedTimeState,
 }
 
 impl Conn {
@@ -33,6 +39,10 @@ impl Conn {
         recv_export: Receiver<Option<ExportState>>,
         recv_time: Receiver<TimeState>,
         recv_sample: Receiver<AudioMessage>,
+        synth: SharedSynth,
+        midi_event_queue: SharedMidiEventQueue,
+        time_state: SharedTimeState,
+        sample: SharedSample
     ) -> Self {
         let framerate = match &player {
             Some(player) => player.framerate as f32,
@@ -45,10 +55,12 @@ impl Conn {
             send_commands,
             recv,
             recv_export,
-            recv_time,
             recv_sample,
             framerate,
-            sample: None,
+            sample,
+            synth,
+            midi_event_queue,
+            time_state
         }
     }
 
@@ -68,13 +80,6 @@ impl Conn {
 
     /// Call this once per frame.
     pub fn update(&mut self) {
-        if let Ok(time) = self.recv_time.try_recv() {
-            self.state.time = time;
-        }
-        self.sample = match self.recv_sample.try_recv() {
-            Ok(sample) => Some(sample),
-            Err(_) => None,
-        };
         // Get the export state.
         if self.export_state.is_some() {
             self.send(vec![Command::SendExportState]);
@@ -82,5 +87,48 @@ impl Conn {
                 self.export_state = export_state;
             }
         }
+    }
+
+    /// Schedule MIDI events and start to play music.
+    pub fn schedule_music(&mut self, state: &State) {
+        // Get the start time.
+        let start = state
+            .time
+            .ppq_to_samples(state.time.playback, self.framerate);
+
+        // Set the playback framerate.
+        let mut synth = self.synth.lock();
+        synth.set_sample_rate(self.framerate);
+
+        // Enqueue note events.
+        let mut midi_event_queue = self.midi_event_queue.lock();
+        for track in state.music.midi_tracks {
+            for note in track.get_playback_notes(start) {
+                // Note-on event.
+                midi_event_queue.enqueue(
+                    state.time.ppq_to_samples(note.start, self.framerate),
+                    MidiEvent::NoteOn {
+                        channel: track.channel,
+                        key: note.note,
+                        vel: note.velocity,
+                    },
+                );
+                // Note-off event.
+                midi_event_queue.enqueue(
+                    state.time.ppq_to_samples(note.end, self.framerate),
+                    MidiEvent::NoteOff {
+                        channel: track.channel,
+                        key: note.note,
+                    },
+                );
+            }
+        }
+        // Sort the events by start time.
+        midi_event_queue.sort();
+
+        // Set time itself.
+        let mut time_state = self.time_state.lock();
+        time_state.music = true;
+        time_state.time = Some(start);
     }
 }

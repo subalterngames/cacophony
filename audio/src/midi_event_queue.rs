@@ -9,14 +9,17 @@ pub(crate) struct MidiEventQueue {
 }
 
 impl MidiEventQueue {
-    /// Enqueue a new MIDI event. This will also sort the internal list of events.
+    /// Enqueue a new MIDI event.
     ///
     /// - `time` The start time of the event in number of samples.
     /// - `event` The MIDI event.
     pub(crate) fn enqueue(&mut self, time: u64, event: MidiEvent) {
         // Add the event.
         self.events.push(TimedMidiEvent { time, event });
-        // Sort the events.
+    }
+
+    /// Sort the list of events by start time.
+    pub(crate) fn sort(&mut self) {
         self.events.sort_by(|a, b| a.time.cmp(&b.time))
     }
 

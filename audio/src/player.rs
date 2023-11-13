@@ -1,3 +1,4 @@
+use crate::types::SharedSample;
 use crate::{SharedMidiEventQueue, SharedSynth, SharedTimeState};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::*;
@@ -20,6 +21,7 @@ impl Player {
         midi_event_queue: SharedMidiEventQueue,
         time_state: SharedTimeState,
         synth: SharedSynth,
+        sample: SharedSample
     ) -> Option<Self> {
         // Get the host.
         let host = default_host();
@@ -50,6 +52,7 @@ impl Player {
                         midi_event_queue,
                         time_state,
                         synth,
+                        sample
                     );
                     Some(Self {
                         _host: host,
@@ -69,6 +72,7 @@ impl Player {
         midi_event_queue: SharedMidiEventQueue,
         time_state: SharedTimeState,
         synth: SharedSynth,
+        sample: SharedSample
     ) -> Option<Stream> {
         // Define the error callback.
         let err_callback = |err| println!("Stream error: {}", err);
@@ -95,9 +99,10 @@ impl Player {
                 let mut synth = synth.lock();
                 synth.write((&mut audio_buffers[0][0..len], &mut audio_buffers[1][0..len]));
 
-                // Advance time.
+                // Stop time.
                 if let Some(time) = time_state.time {
-                    time_state.time = Some(time + len as u64);
+                    time_state.music = false;
+                    time_state.time = None;
                 }
             } else {
                 // Iterate through the number of samples.
@@ -136,6 +141,10 @@ impl Player {
                     }
                 }
             }
+            // Share the first sample.
+            let mut sample = sample.lock();
+            sample.0 = output[0];
+            sample.1 = output[1]
         };
 
         // Build the cpal output stream from the stream config info and the callbacks.
