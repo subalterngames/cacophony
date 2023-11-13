@@ -83,7 +83,6 @@ impl Player {
             let mut midi_event_queue = midi_event_queue.lock();
             // There are no more events. Fill the buffer and advance time.
             if midi_event_queue.is_empty() {
-                let mut synth = synth.lock();
                 let len = output.len();
 
                 // Resize the buffers.
@@ -93,6 +92,7 @@ impl Player {
                 }
 
                 // Write the samples.
+                let mut synth = synth.lock();
                 synth.write((&mut audio_buffers[0][0..len], &mut audio_buffers[1][0..len]));
 
                 // Advance time.
