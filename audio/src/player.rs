@@ -68,6 +68,7 @@ impl Player {
     }
 
     /// Start running the stream.
+    #[allow(clippy::too_many_arguments)]
     fn run(
         channels: usize,
         device: Device,

@@ -114,20 +114,17 @@ impl Conn {
     /// Do all note-on events created by user input on this app frame.
     pub fn note_ons(&mut self, state: &State, note_ons: &[[u8; 3]]) {
         if let Some(track) = state.music.get_selected_track() {
-            let mut synth = self.synth.lock();
-            synth.set_sample_rate(self.framerate);
-            let gain = track.gain as f32 / MAX_VOLUME as f32;
-            for note_on in note_ons.iter() {
-                if synth
-                    .send_event(MidiEvent::NoteOn {
+            if !note_ons.is_empty() {
+                let mut synth = self.synth.lock();
+                synth.set_sample_rate(self.framerate);
+                let gain = track.gain as f32 / MAX_VOLUME as f32;
+                for note_on in note_ons.iter() {
+                    let _ = synth.send_event(MidiEvent::NoteOn {
                         channel: track.channel,
                         key: note_on[1],
                         vel: (note_on[2] as f32 * gain) as u8,
-                    })
-                    .is_ok()
-                {}
-            }
-            if !note_ons.is_empty() {
+                    });
+                }
                 // Play music.
                 let mut play_state = self.play_state.lock();
                 *play_state = PlayState::Decaying;
@@ -138,18 +135,18 @@ impl Conn {
     /// Do all note-off events created by user input on this app frame.
     pub fn note_offs(&mut self, state: &State, note_offs: &[u8]) {
         if let Some(track) = state.music.get_selected_track() {
-            let mut synth = self.synth.lock();
-            synth.set_sample_rate(self.framerate);
-            for note_off in note_offs.iter() {
-                if synth
-                    .send_event(MidiEvent::NoteOff {
-                        channel: track.channel,
-                        key: *note_off,
-                    })
-                    .is_ok()
-                {}
-            }
             if !note_offs.is_empty() {
+                let mut synth = self.synth.lock();
+                synth.set_sample_rate(self.framerate);
+                for note_off in note_offs.iter() {
+                    if synth
+                        .send_event(MidiEvent::NoteOff {
+                            channel: track.channel,
+                            key: *note_off,
+                        })
+                        .is_ok()
+                    {}
+                }
                 // Play music.
                 let mut play_state = self.play_state.lock();
                 *play_state = PlayState::Decaying;
@@ -163,7 +160,9 @@ impl Conn {
                 Command::LoadSoundFont { channel, path } => {
                     match &self.soundfonts.get(path) {
                         // We already loaded this font.
-                        Some(_) => self.set_program_default(*channel, path),
+                        Some(_) => {
+                            self.set_program_default(*channel, path);
+                        }
                         // Load the font.
                         None => match SoundFont::load(&mut File::open(path).unwrap()) {
                             Ok(font) => {
@@ -173,8 +172,8 @@ impl Conn {
                                 self.set_program_default(*channel, path);
                                 // Restore the other programs.
                                 let programs = self.state.programs.clone();
-                                let mut synth = self.synth.lock();
                                 for program in programs.iter().filter(|p| p.0 != channel) {
+                                    let mut synth = self.synth.lock();
                                     synth
                                         .program_select(
                                             *program.0,
@@ -326,7 +325,6 @@ impl Conn {
                 .iter()
                 .position(|&p| p == preset)
                 .unwrap();
-            let synth = self.synth.lock();
             let preset_name = synth.channel_preset(channel).unwrap().name().to_string();
             let num_banks = soundfont.banks.len();
             let num_presets = soundfont.banks[&bank].len();
