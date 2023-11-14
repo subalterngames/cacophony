@@ -71,7 +71,9 @@ impl Default for Conn {
 
         // Create other shared data.
         let time_state = Arc::new(Mutex::new(TimeState::default()));
-        let midi_event_queue: Arc<parking_lot::lock_api::Mutex<parking_lot::RawMutex, MidiEventQueue>> = Arc::new(Mutex::new(MidiEventQueue::default()));
+        let midi_event_queue: Arc<
+            parking_lot::lock_api::Mutex<parking_lot::RawMutex, MidiEventQueue>,
+        > = Arc::new(Mutex::new(MidiEventQueue::default()));
         let sample = Arc::new(Mutex::new((0.0, 0.0)));
         let play_state = Arc::new(Mutex::new(PlayState::NotPlaying));
 
@@ -139,11 +141,10 @@ impl Conn {
                 let mut synth = self.synth.lock();
                 synth.set_sample_rate(self.framerate);
                 for note_off in note_offs.iter() {
-                    let _ = synth
-                        .send_event(MidiEvent::NoteOff {
-                            channel: track.channel,
-                            key: *note_off,
-                        });
+                    let _ = synth.send_event(MidiEvent::NoteOff {
+                        channel: track.channel,
+                        key: *note_off,
+                    });
                 }
             }
         }
