@@ -28,7 +28,7 @@ impl Decayer {
         // Write to the decay chunks.
         synth.write((self.left[0..len].as_mut(), self.right[0..len].as_mut()));
         // If the decay chunks are totally silent then we're not decaying anymore.
-        self.decaying = self.left.iter().any(|s| s.abs() > SILENCE)
-            || self.right.iter().any(|s| s.abs() > SILENCE);
+        self.decaying = self.left[0..len].iter().any(|s| s.abs() > SILENCE)
+            || self.right[0..len].iter().any(|s| s.abs() > SILENCE);
     }
 }
