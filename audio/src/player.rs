@@ -95,10 +95,9 @@ impl Player {
                 PlayState::NotPlaying => (),
                 // Add decay.
                 PlayState::Decaying => {
-                    let mut synth = synth.lock();
                     // Write the decay block.
                     let len = output.len() / channels;
-                    decayer.decay(&mut synth, len);
+                    decayer.decay_shared(&synth, len);
                     // Set the decay block.
                     if decayer.decaying {
                         for (frame, (left, right)) in output

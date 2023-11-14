@@ -1,4 +1,5 @@
 use oxisynth::Synth;
+use crate::SharedSynth;
 
 /// Export this many bytes per decay chunk.
 pub(crate) const DECAY_CHUNK_SIZE: usize = 2048;
@@ -27,8 +28,19 @@ impl Decayer {
     pub fn decay(&mut self, synth: &mut Synth, len: usize) {
         // Write to the decay chunks.
         synth.write((self.left[0..len].as_mut(), self.right[0..len].as_mut()));
-        // If the decay chunks are totally silent then we're not decaying anymore.
+        self.set_decaying(len);
+    }
+
+    pub fn decay_shared(&mut self, synth: &SharedSynth, len: usize) {
+        for (left, right) in self.left[0..len].iter_mut().zip(self.right[0..len].as_mut()) {
+            let mut synth = synth.lock();
+            (*left, *right) = synth.read_next();
+        }
+        self.set_decaying(len);
+    }
+
+    fn set_decaying(&mut self, len: usize) {
         self.decaying = self.left[0..len].iter().any(|s| s.abs() > SILENCE)
-            || self.right[0..len].iter().any(|s| s.abs() > SILENCE);
+        || self.right[0..len].iter().any(|s| s.abs() > SILENCE);
     }
 }
