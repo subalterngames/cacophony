@@ -125,7 +125,7 @@ impl Conn {
                         vel: (note_on[2] as f32 * gain) as u8,
                     });
                 }
-                // Play music.
+                // Play audio.
                 let mut play_state = self.play_state.lock();
                 *play_state = PlayState::Decaying;
             }
@@ -139,15 +139,13 @@ impl Conn {
                 let mut synth = self.synth.lock();
                 synth.set_sample_rate(self.framerate);
                 for note_off in note_offs.iter() {
-                    if synth
+                    let _ = synth
                         .send_event(MidiEvent::NoteOff {
                             channel: track.channel,
                             key: *note_off,
-                        })
-                        .is_ok()
-                    {}
+                        });
                 }
-                // Play music.
+                // Let audio decay.
                 let mut play_state = self.play_state.lock();
                 *play_state = PlayState::Decaying;
             }

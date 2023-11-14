@@ -97,22 +97,23 @@ impl Player {
                 PlayState::Decaying => {
                     let mut synth = synth.lock();
                     // Write the decay block.
-                    decayer.decay(&mut synth, output.len() / channels);
+                    let len = output.len() / channels;
+                    decayer.decay(&mut synth, len);
                     // Set the decay block.
                     if decayer.decaying {
                         for (frame, (left, right)) in output
                             .chunks_mut(channels)
-                            .zip(decayer.left.iter().zip(decayer.right))
+                            .zip(decayer.left[0..len].iter().zip(&decayer.right[0..len]))
                         {
                             // Add the sample.
                             // This is almost certainly more performant than the code in the `else` block.
                             if two_channels {
                                 frame[0] = *left;
-                                frame[1] = right;
+                                frame[1] = *right;
                             }
                             // Add for more than one channel. This is slower.
                             else {
-                                let channels = [*left, right];
+                                let channels = [*left, *right];
                                 for (id, sample) in frame.iter_mut().enumerate() {
                                     *sample = channels[id % 2];
                                 }
@@ -121,6 +122,8 @@ impl Player {
                     }
                     // Done decaying.
                     else {
+                        // Fill the output with silence.
+                        output.iter_mut().for_each(|o| *o = 0.0);
                         let mut play_state = play_state.lock();
                         *play_state = PlayState::NotPlaying;
                     }
