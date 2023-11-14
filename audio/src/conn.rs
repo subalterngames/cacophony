@@ -66,12 +66,12 @@ impl Default for Conn {
     fn default() -> Self {
         // Set the synthesizer.
         let mut synth = Synth::default();
-        synth.set_gain(MAX_VOLUME as f32);
+        synth.set_gain(1.0);
         let synth = Arc::new(Mutex::new(synth));
 
         // Create other shared data.
         let time_state = Arc::new(Mutex::new(TimeState::default()));
-        let midi_event_queue = Arc::new(Mutex::new(MidiEventQueue::default()));
+        let midi_event_queue: Arc<parking_lot::lock_api::Mutex<parking_lot::RawMutex, MidiEventQueue>> = Arc::new(Mutex::new(MidiEventQueue::default()));
         let sample = Arc::new(Mutex::new((0.0, 0.0)));
         let play_state = Arc::new(Mutex::new(PlayState::NotPlaying));
 
