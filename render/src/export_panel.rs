@@ -71,7 +71,7 @@ impl Drawable for ExportPanel {
                 };
                 renderer.text(&label, &ColorKey::FocusDefault);
             }
-            ExportState::AppendingSilence => {
+            ExportState::AppendingDecay => {
                 renderer.text(&self.decaying_label, &ColorKey::FocusDefault);
             }
             ExportState::WritingToDisk => {

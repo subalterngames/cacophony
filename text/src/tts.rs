@@ -32,12 +32,9 @@ impl TTS {
                 let callbacks =
                     tts.supported_features().utterance_callbacks && !cfg!(target_os = "macos");
                 if callbacks {
-                    let _ = tts
-                        .on_utterance_begin(Some(Box::new(on_utterance_begin)));
-                    let _ = tts
-                        .on_utterance_end(Some(Box::new(on_utterance_end)));
-                    let _ = tts
-                        .on_utterance_stop(Some(Box::new(on_utterance_end)));
+                    let _ = tts.on_utterance_begin(Some(Box::new(on_utterance_begin)));
+                    let _ = tts.on_utterance_end(Some(Box::new(on_utterance_end)));
+                    let _ = tts.on_utterance_stop(Some(Box::new(on_utterance_end)));
                 }
                 // Try to set the voice.
                 if let Ok(voices) = tts.voices() {

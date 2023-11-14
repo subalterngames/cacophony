@@ -1,5 +1,7 @@
+use crate::decayer::Decayer;
+use crate::play_state::PlayState;
 use crate::types::SharedSample;
-use crate::{SharedMidiEventQueue, SharedSynth, SharedTimeState};
+use crate::{SharedMidiEventQueue, SharedPlayState, SharedSynth, SharedTimeState};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::*;
 
@@ -22,6 +24,7 @@ impl Player {
         time_state: SharedTimeState,
         synth: SharedSynth,
         sample: SharedSample,
+        play_state: SharedPlayState,
     ) -> Option<Self> {
         // Get the host.
         let host = default_host();
@@ -52,6 +55,7 @@ impl Player {
                         time_state,
                         synth,
                         sample,
+                        play_state,
                     );
                     Some(Self {
                         _host: host,
@@ -72,6 +76,7 @@ impl Player {
         time_state: SharedTimeState,
         synth: SharedSynth,
         sample: SharedSample,
+        play_state: SharedPlayState,
     ) -> Option<Stream> {
         // Define the error callback.
         let err_callback = |err| println!("Stream error: {}", err);
@@ -79,63 +84,107 @@ impl Player {
         let two_channels = channels == 2;
         let mut left = vec![0.0; 1];
         let mut right = vec![0.0; 1];
+        let mut decayer = Decayer::default();
 
         // Define the data callback used by cpal. Move `stream_send` into the closure.
         let data_callback = move |output: &mut [f32], _: &OutputCallbackInfo| {
-            let mut time_state = time_state.lock();
-            let mut midi_event_queue = midi_event_queue.lock();
-            // There are no more events. Fill the buffer and advance time.
-            if midi_event_queue.is_empty() {
-                let len = output.len();
-
-                // Resize the buffers.
-                if len > left.len() {
-                    left.resize(len, 0.0);
-                    right.resize(len, 0.0);
-                }
-
-                // Write the samples.
-                let mut synth = synth.lock();
-                synth.write((left[0..len].as_mut(), right[0..len].as_mut()));
-
-                // Stop time.
-                if time_state.time.is_some() {
-                    time_state.music = false;
-                    time_state.time = None;
-                }
-            } else {
-                // Iterate through the number of samples.
-                for frame in output.chunks_mut(channels) {
-                    // We're playing music. Advance to the next events.
-                    if let Some(time) = time_state.time {
-                        // Dequeue events.
-                        let events = midi_event_queue.dequeue(time);
-                        // Send the MIDI events to the synth.
-                        if !events.is_empty() {
-                            let mut synth = synth.lock();
-                            for event in events {
-                                if synth.send_event(event).is_ok() {}
+            let ps = *play_state.lock();
+            match ps {
+                // Assume that there is no audio and do nothing.
+                PlayState::NotPlaying => (),
+                // Add decay.
+                PlayState::Decaying => {
+                    let mut synth = synth.lock();
+                    // Write the decay block.
+                    decayer.decay(&mut synth, output.len() / channels);
+                    // Set the decay block.
+                    if decayer.decaying {
+                        for (frame, (left, right)) in output
+                            .chunks_mut(channels)
+                            .zip(decayer.left.iter().zip(decayer.right))
+                        {
+                            // Add the sample.
+                            // This is almost certainly more performant than the code in the `else` block.
+                            if two_channels {
+                                frame[0] = *left;
+                                frame[1] = right;
+                            }
+                            // Add for more than one channel. This is slower.
+                            else {
+                                let channels = [*left, right];
+                                for (id, sample) in frame.iter_mut().enumerate() {
+                                    *sample = channels[id % 2];
+                                }
                             }
                         }
-                        // Advance time by one sample.
-                        time_state.time = Some(time + 1)
                     }
-                    // Get the next sample.
-                    let mut synth = synth.lock();
-                    // Get the sample.
-                    let (left, right) = synth.read_next();
-
-                    // Add the sample.
-                    // This is almost certainly more performant than the code in the `else` block.
-                    if two_channels {
-                        frame[0] = left;
-                        frame[1] = right;
-                    }
-                    // Add for more than one channel. This is slower.
+                    // Done decaying.
                     else {
-                        let channels = [left, right];
-                        for (id, sample) in frame.iter_mut().enumerate() {
-                            *sample = channels[id % 2];
+                        let mut play_state = play_state.lock();
+                        *play_state = PlayState::NotPlaying;
+                    }
+                }
+                // Playing music.
+                PlayState::Playing => {
+                    let len = output.len();
+                    let mut time_state = time_state.lock();
+                    let mut midi_event_queue = midi_event_queue.lock();
+                    // There are no more events. Fill the buffer and advance time.
+                    if midi_event_queue.is_empty() {
+                        // Resize the buffers.
+                        if len > left.len() {
+                            left.resize(len, 0.0);
+                            right.resize(len, 0.0);
+                        }
+
+                        // Write the samples.
+                        let mut synth = synth.lock();
+                        synth.write((left[0..len].as_mut(), right[0..len].as_mut()));
+
+                        // Stop time.
+                        if time_state.time.is_some() {
+                            time_state.music = false;
+                            time_state.time = None;
+                            let mut play_state = play_state.lock();
+                            *play_state = PlayState::Decaying;
+                        }
+                    }
+                    // There are MIDI events.
+                    else {
+                        // Iterate through the number of samples.
+                        for frame in output.chunks_mut(channels) {
+                            // We're playing music. Advance to the next events.
+                            if let Some(time) = time_state.time {
+                                // Dequeue events.
+                                let events = midi_event_queue.dequeue(time);
+                                // Send the MIDI events to the synth.
+                                if !events.is_empty() {
+                                    let mut synth = synth.lock();
+                                    for event in events {
+                                        if synth.send_event(event).is_ok() {}
+                                    }
+                                }
+                                // Advance time by one sample.
+                                time_state.time = Some(time + 1)
+                            }
+                            // Get the next sample.
+                            let mut synth = synth.lock();
+                            // Get the sample.
+                            let (left, right) = synth.read_next();
+
+                            // Add the sample.
+                            // This is almost certainly more performant than the code in the `else` block.
+                            if two_channels {
+                                frame[0] = left;
+                                frame[1] = right;
+                            }
+                            // Add for more than one channel. This is slower.
+                            else {
+                                let channels = [left, right];
+                                for (id, sample) in frame.iter_mut().enumerate() {
+                                    *sample = channels[id % 2];
+                                }
+                            }
                         }
                     }
                 }

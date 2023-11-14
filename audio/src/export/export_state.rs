@@ -6,8 +6,8 @@ pub enum ExportState {
         total_samples: u64,
         exported_samples: u64,
     },
-    /// Writing silence to a wav buffer while the audio decays.
-    AppendingSilence,
+    /// Writing decay to a wav buffer while the audio decays.
+    AppendingDecay,
     /// Converting the wav buffer to another file type and write to disk.
     WritingToDisk,
     /// Done exporting.

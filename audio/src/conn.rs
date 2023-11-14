@@ -1,8 +1,11 @@
 use std::sync::Arc;
 use std::thread::spawn;
 
+use crate::decayer::{Decayer, DECAY_CHUNK_SIZE};
 use crate::export::{ExportState, ExportType, Exportable, MultiFileSuffix};
 use crate::exporter::Exporter;
+use crate::play_state::PlayState;
+use crate::types::SharedPlayState;
 use crate::SharedExportState;
 use crate::{
     midi_event_queue::MidiEventQueue, types::SharedSample, Command, Player, Program,
@@ -15,12 +18,6 @@ use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use parking_lot::Mutex;
 use std::fs::File;
 use std::path::{Path, PathBuf};
-
-/// Export this many bytes per decay chunk.
-const DECAY_CHUNK_SIZE: usize = 2048;
-///  Oxisynth usually doesn't zero out its audio. This is essentially an epsilon.
-/// This is used to detect if the export is done.
-const SILENCE: f32 = 1e-7;
 
 /// A convenient wrapper for a SoundFont.
 struct SoundFontBanks {
@@ -62,6 +59,7 @@ pub struct Conn {
     soundfonts: HashMap<PathBuf, SoundFontBanks>,
     pub state: SynthState,
     pub exporter: Exporter,
+    play_state: SharedPlayState,
 }
 
 impl Default for Conn {
@@ -75,17 +73,20 @@ impl Default for Conn {
         let time_state = Arc::new(Mutex::new(TimeState::default()));
         let midi_event_queue = Arc::new(Mutex::new(MidiEventQueue::default()));
         let sample = Arc::new(Mutex::new((0.0, 0.0)));
+        let play_state = Arc::new(Mutex::new(PlayState::NotPlaying));
 
         // Create the player.
         let player_synth = Arc::clone(&synth);
         let player_time_state = Arc::clone(&time_state);
         let player_midi_event_queue = Arc::clone(&midi_event_queue);
         let player_sample = Arc::clone(&sample);
+        let player_play_state = Arc::clone(&play_state);
         let player = Player::new(
             player_midi_event_queue,
             player_time_state,
             player_synth,
             player_sample,
+            player_play_state,
         );
 
         // Get the framerate.
@@ -104,6 +105,7 @@ impl Default for Conn {
             soundfonts: HashMap::default(),
             state: SynthState::default(),
             exporter: Exporter::default(),
+            play_state,
         }
     }
 }
@@ -125,6 +127,11 @@ impl Conn {
                     .is_ok()
                 {}
             }
+            if !note_ons.is_empty() {
+                // Play music.
+                let mut play_state = self.play_state.lock();
+                *play_state = PlayState::Decaying;
+            }
         }
     }
 
@@ -141,6 +148,11 @@ impl Conn {
                     })
                     .is_ok()
                 {}
+            }
+            if !note_offs.is_empty() {
+                // Play music.
+                let mut play_state = self.play_state.lock();
+                *play_state = PlayState::Decaying;
             }
         }
     }
@@ -260,6 +272,9 @@ impl Conn {
         let mut time_state = self.time_state.lock();
         time_state.music = true;
         time_state.time = Some(start);
+        // Play music.
+        let mut play_state = self.play_state.lock();
+        *play_state = PlayState::Playing;
     }
 
     /// Stop ongoing music.
@@ -270,16 +285,20 @@ impl Conn {
                 .send_event(MidiEvent::AllNotesOff {
                     channel: track.channel,
                 })
-                .is_ok() && synth
-                .send_event(MidiEvent::AllSoundOff {
-                    channel: track.channel,
-                })
                 .is_ok()
+                && synth
+                    .send_event(MidiEvent::AllSoundOff {
+                        channel: track.channel,
+                    })
+                    .is_ok()
             {}
         }
         let mut time_state = self.time_state.lock();
         time_state.music = false;
         time_state.time = None;
+        // Let the audio decay.
+        let mut play_state = self.play_state.lock();
+        *play_state = PlayState::Decaying;
     }
 
     /// Set the synthesizer program to a default program.
@@ -418,8 +437,7 @@ impl Conn {
         exporter: Exporter,
         path: PathBuf,
     ) {
-        let mut decay_left = [0.0f32; DECAY_CHUNK_SIZE];
-        let mut decay_right = [0.0f32; DECAY_CHUNK_SIZE];
+        let mut decayer = Decayer::default();
         let extension: Extension = exporter.export_type.get().into();
         for exportable in exportables.iter_mut() {
             let total_samples = exportable.total_samples;
@@ -455,18 +473,13 @@ impl Conn {
                 t0 = t;
             }
             // Append decaying silence.
-            Self::set_export_state(&export_state, ExportState::AppendingSilence);
-            let mut decaying = true;
-            while decaying {
-                // Write to the decay chunks.
-                synth.write((decay_left.as_mut_slice(), decay_right.as_mut_slice()));
-                // If the decay chunks are totally silent then we're not decaying anymore.
-                decaying = decay_left.iter().any(|s| s.abs() > SILENCE)
-                    || decay_right.iter().any(|s| s.abs() > SILENCE);
-                // Add the silence.
-                if decaying {
-                    left.extend_from_slice(&decay_left);
-                    right.extend_from_slice(&decay_right);
+            Self::set_export_state(&export_state, ExportState::AppendingDecay);
+            while decayer.decaying {
+                decayer.decay(&mut synth, DECAY_CHUNK_SIZE);
+                // Add the decay.
+                if decayer.decaying {
+                    left.extend_from_slice(&decayer.left);
+                    right.extend_from_slice(&decayer.right);
                 }
             }
             // Convert.

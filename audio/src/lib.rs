@@ -25,9 +25,11 @@
 
 mod command;
 mod conn;
+mod decayer;
 pub mod export;
 pub mod exporter;
 pub(crate) mod midi_event_queue;
+mod play_state;
 mod player;
 mod program;
 mod synth_state;
@@ -39,6 +41,8 @@ pub use crate::conn::Conn;
 use crate::program::Program;
 pub use crate::synth_state::SynthState;
 use crate::time_state::TimeState;
-pub(crate) use crate::types::{AudioBuffer, SharedMidiEventQueue, SharedTimeState};
+pub(crate) use crate::types::{
+    AudioBuffer, SharedMidiEventQueue, SharedPlayState, SharedTimeState,
+};
 pub use crate::types::{AudioMessage, CommandsMessage, SharedExportState, SharedSynth};
 use player::Player;
