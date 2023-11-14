@@ -145,9 +145,6 @@ impl Conn {
                             key: *note_off,
                         });
                 }
-                // Let audio decay.
-                let mut play_state = self.play_state.lock();
-                *play_state = PlayState::Decaying;
             }
         }
     }
