@@ -242,7 +242,7 @@ impl Conn {
         let mut midi_event_queue = self.midi_event_queue.lock();
         for track in state.music.midi_tracks.iter() {
             let gain = track.gain as f32 / MAX_VOLUME as f32;
-            for note in track.get_playback_notes(start) {
+            for note in track.get_playback_notes(state.time.playback) {
                 // Note-on event.
                 midi_event_queue.enqueue(
                     state.time.ppq_to_samples(note.start, self.framerate),
