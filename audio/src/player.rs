@@ -133,23 +133,24 @@ impl Player {
                     if len > buffer.len() {
                         buffer.resize(len, 0.0);
                     }
-                    let mut time_state = time_state.lock();
                     // Get the next sample.
                     let mut synth = synth.lock();
-                    match time_state.time {
+                    let time = Self::get_time(&time_state);
+                    match time {
                         // We are playing music.
                         Some(time) => {
                             let mut midi_event_queue = midi_event_queue.lock();
                             // Iterate through the output buffer's frames.
                             let mut begin_decay = false;
                             let buffer_len = len / channels;
+                            let mut t = time;
                             for frame in output.chunks_mut(channels) {
                                 match midi_event_queue.get_next_time() {
                                     Some(next_time) => {
                                         // There are events on this frame.
-                                        if time == next_time {
+                                        if t == next_time {
                                             // Dequeue events.
-                                            let events = midi_event_queue.dequeue(time);
+                                            let events = midi_event_queue.dequeue(t);
                                             // Send the MIDI events to the synth.
                                             if !events.is_empty() {
                                                 for event in events {
@@ -157,8 +158,6 @@ impl Player {
                                                 }
                                             }
                                         }
-                                        
-
                                         // Add the sample.
                                         // This is almost certainly more performant than the code in the `else` block.
                                         if two_channels {
@@ -173,10 +172,12 @@ impl Player {
                                             }
                                         }
                                         // Advance time.
-                                        time_state.time = Some(time + 1);
+                                        t += 1;
+                                        *time_state.lock().time.as_mut().unwrap() += 1;
                                     }
                                     // There are no more events.
                                     None => {
+                                        let mut time_state = time_state.lock();
                                         time_state.music = false;
                                         time_state.time = None;
                                         begin_decay = true;
@@ -224,6 +225,10 @@ impl Player {
             },
             Err(_) => None,
         }
+    }
+
+    fn get_time(time_state: &SharedTimeState) -> Option<u64> {
+        time_state.lock().time.clone()
     }
 
     fn begin_decay(
