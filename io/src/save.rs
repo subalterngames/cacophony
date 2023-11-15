@@ -22,6 +22,7 @@ pub(crate) struct Save {
     /// The exporter state.
     exporter: Exporter,
     /// The version string.
+    #[serde(default = "default_version")]
     version: String,
 }
 
@@ -131,4 +132,10 @@ impl Save {
             Err(error) => panic!("{} {}", READ_ERROR, error),
         }
     }
+}
+
+/// Returns the default version string.
+/// For compatibility with pre-0.2.0.
+fn default_version() -> String {
+    common::VERSION.to_string()
 }

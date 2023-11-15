@@ -169,15 +169,17 @@ impl Conn {
                                 // Restore the other programs.
                                 let programs = self.state.programs.clone();
                                 for program in programs.iter().filter(|p| p.0 != channel) {
-                                    let mut synth = self.synth.lock();
-                                    synth
-                                        .program_select(
-                                            *program.0,
-                                            self.soundfonts[&program.1.path].id,
-                                            program.1.bank,
-                                            program.1.preset,
-                                        )
-                                        .unwrap();
+                                    if self.soundfonts.contains_key(&program.1.path) {
+                                        let mut synth = self.synth.lock();
+                                        synth
+                                            .program_select(
+                                                *program.0,
+                                                self.soundfonts[&program.1.path].id,
+                                                program.1.bank,
+                                                program.1.preset,
+                                            )
+                                            .unwrap();
+                                    }
                                 }
                             }
                             Err(error) => {

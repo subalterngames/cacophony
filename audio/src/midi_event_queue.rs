@@ -44,8 +44,4 @@ impl MidiEventQueue {
         }
         midi_events
     }
-
-    pub(crate) fn is_empty(&self) -> bool {
-        self.events.is_empty()
-    }
 }
