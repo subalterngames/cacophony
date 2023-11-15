@@ -173,18 +173,16 @@ impl Player {
                                         }
                                         // Advance time.
                                         t += 1;
-                                        *time_state.lock().time.as_mut().unwrap() += 1;
                                     }
                                     // There are no more events.
                                     None => {
-                                        let mut time_state = time_state.lock();
-                                        time_state.music = false;
-                                        time_state.time = None;
+                                        Self::stop_time(&time_state);
                                         begin_decay = true;
                                         break;
                                     }
                                 }
                             }
+                            Self::set_time(&time_state, t);
                             if begin_decay {
                                 Self::begin_decay(
                                     buffer[0..buffer_len].as_mut(),
@@ -229,6 +227,19 @@ impl Player {
 
     fn get_time(time_state: &SharedTimeState) -> Option<u64> {
         time_state.lock().time.clone()
+    }
+
+    fn set_time(time_state: &SharedTimeState, time: u64) {
+        let mut time_state = time_state.lock();
+        if let Some(t0) = time_state.time.as_mut() {
+            *t0 = time
+        }
+    }
+
+    fn stop_time(time_state: &SharedTimeState) {
+        let mut time_state = time_state.lock();
+        time_state.music = false;
+        time_state.time = None;
     }
 
     fn begin_decay(
