@@ -1,4 +1,5 @@
 use crate::panel::*;
+use audio::{SharedTimeState, TimeState};
 mod piano_roll_rows;
 use piano_roll_rows::PianoRollRows;
 mod multi_track;
@@ -166,8 +167,9 @@ impl PianoRollPanel {
     /// Otherwise, this returns a view delta that has been moved to include the current playback time.
     fn get_view_dt(state: &State, conn: &Conn) -> [u64; 2] {
         let dt = [state.view.dt[0], state.view.dt[1]];
-        if conn.state.time.music {
-            match conn.state.time.time {
+        let time_state = conn.time_state.lock();
+        if time_state.music {
+            match time_state.time {
                 Some(time) => {
                     let time_ppq = state.time.samples_to_ppq(time, conn.framerate);
                     // The time is in range
@@ -188,6 +190,10 @@ impl PianoRollPanel {
         else {
             dt
         }
+    }
+
+    fn get_time_state(time_state: &SharedTimeState) -> TimeState {
+        *time_state.lock()
     }
 }
 
@@ -213,6 +219,7 @@ impl Drawable for PianoRollPanel {
         self.top_bar.update(state, renderer, text, focus);
 
         let dt = Self::get_view_dt(state, conn).map(U64orF32::from);
+        let time_state = Self::get_time_state(&conn.time_state);
 
         if state.view.single_track {
             // Piano roll rows.
@@ -225,6 +232,7 @@ impl Drawable for PianoRollPanel {
                 conn,
                 focus,
                 dt,
+                &time_state,
             );
             // Draw the selection background.
             let selected = notes
@@ -373,8 +381,8 @@ impl Drawable for PianoRollPanel {
             position: [selection_x, self.time_y],
         };
         // Current playback time.
-        if conn.state.time.music {
-            if let Some(music_time) = conn.state.time.time {
+        if time_state.music {
+            if let Some(music_time) = time_state.time {
                 let music_time_string =
                     ppq_to_string(state.time.samples_to_ppq(music_time, conn.framerate));
                 let music_time_x =
@@ -412,11 +420,9 @@ impl Drawable for PianoRollPanel {
         };
         renderer.text(&dt_label, &Renderer::get_key_color(focus));
 
-        if state.view.single_track {
-        }
-        // Multi-track.
-        else {
-            self.multi_track.update(dt, renderer, state, conn);
+        if !state.view.single_track {
+            self.multi_track
+                .update(dt, renderer, state, conn, &time_state);
         }
 
         // Draw time lines.
@@ -437,8 +443,8 @@ impl Drawable for PianoRollPanel {
             &dt,
         );
         // Show where we are in the music.
-        if conn.state.time.music {
-            if let Some(music_time) = conn.state.time.time {
+        if time_state.music {
+            if let Some(music_time) = time_state.time {
                 let music_time = state.time.samples_to_ppq(music_time, conn.framerate);
                 if music_time >= dt[0].get_u() && music_time <= dt[1].get_u() {
                     let x = ViewableNotes::get_note_x(

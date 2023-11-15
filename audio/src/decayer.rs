@@ -24,15 +24,20 @@ impl Default for Decayer {
 
 impl Decayer {
     pub fn decay_shared(&mut self, synth: &SharedSynth, len: usize) {
-        for sample in self.buffer[0..len].chunks_mut(2)
-        {
+        for sample in self.buffer[0..len].chunks_mut(2) {
             let mut synth = synth.lock();
             synth.write(sample);
         }
         self.set_decaying(len);
     }
 
-    pub fn decay_two_channels(&mut self, left: &mut Vec<f32>, right: &mut Vec<f32>, synth: &mut Synth, len: usize) {
+    pub fn decay_two_channels(
+        &mut self,
+        left: &mut Vec<f32>,
+        right: &mut Vec<f32>,
+        synth: &mut Synth,
+        len: usize,
+    ) {
         let i = left.len();
         // Resize the output vectors.
         let new_len = i + len;
@@ -40,7 +45,8 @@ impl Decayer {
         right.resize(new_len, 0.0);
         // Write samples.
         synth.write((left[i..new_len].as_mut(), right[i..new_len].as_mut()));
-        self.decaying = left[i..len].iter().any(|s| s.abs() > SILENCE) || right[i..len].iter().any(|s| s.abs() > SILENCE);
+        self.decaying = left[i..len].iter().any(|s| s.abs() > SILENCE)
+            || right[i..len].iter().any(|s| s.abs() > SILENCE);
     }
 
     fn set_decaying(&mut self, len: usize) {

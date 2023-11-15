@@ -226,7 +226,7 @@ impl Player {
     }
 
     fn get_time(time_state: &SharedTimeState) -> Option<u64> {
-        time_state.lock().time.clone()
+        time_state.lock().time
     }
 
     fn set_time(time_state: &SharedTimeState, time: u64) {

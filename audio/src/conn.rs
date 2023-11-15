@@ -55,7 +55,7 @@ pub struct Conn {
     pub sample: SharedSample,
     synth: SharedSynth,
     midi_event_queue: SharedMidiEventQueue,
-    time_state: SharedTimeState,
+    pub time_state: SharedTimeState,
     soundfonts: HashMap<PathBuf, SoundFontBanks>,
     pub state: SynthState,
     pub exporter: Exporter,

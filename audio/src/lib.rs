@@ -40,9 +40,9 @@ pub use crate::command::Command;
 pub use crate::conn::Conn;
 use crate::program::Program;
 pub use crate::synth_state::SynthState;
-use crate::time_state::TimeState;
-pub(crate) use crate::types::{
-    AudioBuffer, SharedMidiEventQueue, SharedPlayState, SharedTimeState,
+pub use crate::time_state::TimeState;
+pub(crate) use crate::types::{AudioBuffer, SharedMidiEventQueue, SharedPlayState};
+pub use crate::types::{
+    AudioMessage, CommandsMessage, SharedExportState, SharedSynth, SharedTimeState,
 };
-pub use crate::types::{AudioMessage, CommandsMessage, SharedExportState, SharedSynth};
 use player::Player;

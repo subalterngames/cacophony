@@ -16,5 +16,5 @@ pub type SharedSynth = Arc<Mutex<Synth>>;
 pub type SharedExportState = Arc<Mutex<ExportState>>;
 pub(crate) type SharedMidiEventQueue = Arc<Mutex<MidiEventQueue>>;
 pub(crate) type SharedPlayState = Arc<Mutex<PlayState>>;
-pub(crate) type SharedTimeState = Arc<Mutex<TimeState>>;
+pub type SharedTimeState = Arc<Mutex<TimeState>>;
 pub(crate) type SharedSample = Arc<Mutex<AudioMessage>>;

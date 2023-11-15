@@ -1,6 +1,7 @@
 use super::viewable_notes::{ViewableNote, ViewableNotes};
 use crate::panel::*;
 use crate::{get_track_heights, Page};
+use audio::TimeState;
 use common::config::parse;
 use common::{U64orF32, MAX_NOTE, MIN_NOTE};
 
@@ -79,6 +80,7 @@ impl MultiTrack {
         renderer: &Renderer,
         state: &State,
         conn: &Conn,
+        time_state: &TimeState,
     ) {
         let focus = state.panels[state.focus.get()] == PanelType::PianoRoll;
         // Get the page.
@@ -123,6 +125,7 @@ impl MultiTrack {
                 focus,
                 dt,
                 DN,
+                time_state,
             );
             // Draw the selection background.
             let selected = notes
