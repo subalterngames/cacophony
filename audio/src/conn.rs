@@ -471,12 +471,7 @@ impl Conn {
             // Append decaying silence.
             Self::set_export_state(&export_state, ExportState::AppendingDecay);
             while decayer.decaying {
-                decayer.decay(&mut synth, DECAY_CHUNK_SIZE);
-                // Add the decay.
-                if decayer.decaying {
-                    left.extend_from_slice(&decayer.left);
-                    right.extend_from_slice(&decayer.right);
-                }
+                decayer.decay_two_channels(&mut left, &mut right, &mut synth, DECAY_CHUNK_SIZE);
             }
             // Convert.
             Self::set_export_state(&export_state, ExportState::WritingToDisk);

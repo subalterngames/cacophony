@@ -85,6 +85,7 @@ impl Player {
 
         let two_channels = channels == 2;
         let mut buffer = vec![0.0; 2];
+        let mut sample_buffer = [0.0; 2];
         let mut decayer = Decayer::default();
 
         // Define the data callback used by cpal. Move `stream_send` into the closure.
@@ -100,21 +101,19 @@ impl Player {
                     decayer.decay_shared(&synth, len);
                     // Set the decay block.
                     if decayer.decaying {
-                        for (frame, (left, right)) in output
+                        for (out_frame, in_frame) in output
                             .chunks_mut(channels)
-                            .zip(decayer.left[0..len].iter().zip(&decayer.right[0..len]))
+                            .zip(decayer.buffer[0..len].chunks_mut(2))
                         {
                             // Add the sample.
                             // This is almost certainly more performant than the code in the `else` block.
                             if two_channels {
-                                frame[0] = *left;
-                                frame[1] = *right;
+                                out_frame.copy_from_slice(in_frame);
                             }
                             // Add for more than one channel. This is slower.
                             else {
-                                let channels = [*left, *right];
-                                for (id, sample) in frame.iter_mut().enumerate() {
-                                    *sample = channels[id % 2];
+                                for (id, sample) in out_frame.iter_mut().enumerate() {
+                                    *sample = in_frame[id % 2];
                                 }
                             }
                         }
@@ -158,20 +157,19 @@ impl Player {
                                                 }
                                             }
                                         }
-                                        // Get the sample.
-                                        let (left, right) = synth.read_next();
+                                        
 
                                         // Add the sample.
                                         // This is almost certainly more performant than the code in the `else` block.
                                         if two_channels {
-                                            frame[0] = left;
-                                            frame[1] = right;
+                                            // Get the sample.
+                                            synth.write(frame);
                                         }
                                         // Add for more than one channel. This is slower.
                                         else {
-                                            let channels = [left, right];
+                                            synth.write(sample_buffer.as_mut_slice());
                                             for (id, sample) in frame.iter_mut().enumerate() {
-                                                *sample = channels[id % 2];
+                                                *sample = sample_buffer[id % 2];
                                             }
                                         }
                                         // Advance time.
