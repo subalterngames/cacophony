@@ -52,13 +52,28 @@ pub struct Conn {
     /// The audio player. This is here so we don't drop it.
     _player: Option<Player>,
     /// The most recent sample.
+    /// `render::MainMenu` uses this to for its power bars.
     pub sample: SharedSample,
+    /// A shared Oxisynth synthesizer.
+    /// The `Conn` uses this to send MIDI events and export.
+    /// The `Player` uses this to write samples to the output buffer.
     synth: SharedSynth,
+    /// A queue of scheduled MIDI events.
+    /// The `Conn` can add to this.
+    /// The `Player` can read this and remove events.
     midi_event_queue: SharedMidiEventQueue,
+    /// The time state.
+    /// The `Conn` sets the initial time.
+    /// The `Player` advances time while playing.
+    /// Other crates can read the time state.
     pub time_state: SharedTimeState,
+    /// A HasHmap of loaded SoundFonts. Key = The path to a .sf2 file.
     soundfonts: HashMap<PathBuf, SoundFontBanks>,
+    /// Metadata for all SoundFont programs.
     pub state: SynthState,
+    /// Export settings.
     pub exporter: Exporter,
+    /// A flag that `Player` uses to decide how to write samples to the output buffer.
     play_state: SharedPlayState,
 }
 
@@ -71,9 +86,7 @@ impl Default for Conn {
 
         // Create other shared data.
         let time_state = Arc::new(Mutex::new(TimeState::default()));
-        let midi_event_queue: Arc<
-            parking_lot::lock_api::Mutex<parking_lot::RawMutex, MidiEventQueue>,
-        > = Arc::new(Mutex::new(MidiEventQueue::default()));
+        let midi_event_queue = Arc::new(Mutex::new(MidiEventQueue::default()));
         let sample = Arc::new(Mutex::new((0.0, 0.0)));
         let play_state = Arc::new(Mutex::new(PlayState::NotPlaying));
 
