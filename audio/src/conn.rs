@@ -163,6 +163,7 @@ impl Conn {
         }
     }
 
+    /// Execute a slice of commands sent from `io`.
     pub fn do_commands(&mut self, commands: &[Command]) {
         for command in commands.iter() {
             match command {
