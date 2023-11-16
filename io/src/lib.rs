@@ -62,8 +62,7 @@ const MAX_UNDOS: usize = 100;
 /// - Play ad-hoc notes.
 /// - Modify the `State` and push the old version to the undo stack.
 /// - Modify the `PathsState`.
-/// - Modify the `SynthState` and send commands through the `Conn`.
-/// - Modify the `Exporter` and send a copy via a command to the `Conn`.
+/// - Modify the `Conn`.
 pub struct IO {
     /// A stack of snapshots that can be popped to undo an action.
     undo: Vec<Snapshot>,
