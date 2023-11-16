@@ -5,11 +5,11 @@
 //! Per frame, `IO` listens for user input via an `Input` (see the `input` crate), and then does any of the following:
 //!
 //! - Update `State` (see the `common` crate), for example add a new track.
-//! - Send a list of `Command` to the `Conn` (see the `audio` crate).
+//! - Update `Conn` (see the `audio` crate), for example to play notes.
 //! - Send an internal `IOCommand` to itself.
 //! - Play text-to-speech audio (see the `text` crate).
 //!
-//! The first two options (state and command) will create a copy of the current `State` which will be added to an undo stack.
+//! Certain operations will create a copy of the current `State` which will be added to an undo stack.
 //! Undoing an action reverts the app to that state, pops it from the undo stack, and pushes it to the redo stack.
 //!
 //! `IO` divides input listening into discrete panels, e.g. the music panel and the tracks panel.
