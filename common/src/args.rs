@@ -18,7 +18,7 @@ pub struct Args {
     ///
     /// Uses 'fullscreen' under '[RENDER]' in 'config.ini' if not set.
     ///
-    /// Applied after displaying the splash-screen
+    /// Applied after displaying the splash-screen.
     #[arg(short, long, env = "CACOPHONY_FULLSCREEN")]
     pub fullscreen: bool,
     /// A path to a file of events that will be executed sequentially when the simulation starts.
