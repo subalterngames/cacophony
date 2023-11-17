@@ -1,9 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::path::PathBuf;
-
 use audio::Conn;
 use clap::Parser;
+use common::args::Args;
 use common::config::{load, parse_bool};
 use common::sizes::get_window_pixel_size;
 use common::{get_bytes, Paths, PathsState, State, VERSION};
@@ -13,36 +12,15 @@ use io::IO;
 use macroquad::prelude::*;
 use regex::Regex;
 use render::{draw_subtitles, Panels, Renderer};
-use std::env::current_dir;
 use text::{Text, TTS};
 use ureq::get;
 
 const CLEAR_COLOR: macroquad::color::Color = macroquad::color::BLACK;
 
-#[derive(Parser)]
-#[command(author, version, about)]
-struct Cli {
-    /// Open the project from disk
-    #[arg(value_name = "FILE")]
-    file: Option<PathBuf>,
-    /// Directory where Cacophony data files reside
-    ///
-    /// Uses './data' if not set
-    #[arg(short, long, value_name = "DIR", env = "CACOPHONY_DATA_DIR", default_value = default_data_folder().into_os_string())]
-    data_directory: PathBuf,
-    /// Make the window fullscreen
-    ///
-    /// Uses 'fullscreen' under '[RENDER]' in 'config.ini' if not set
-    ///
-    /// Applied after displaying the splash-screen
-    #[arg(short, long, env = "CACOPHONY_FULLSCREEN")]
-    fullscreen: bool,
-}
-
 #[macroquad::main(window_conf)]
 async fn main() {
     // Parse and load the command line arguments.
-    let cli = Cli::parse();
+    let args = Args::parse();
 
     // Get the paths, initialized in loading the window configuration.
     let paths = Paths::get();
@@ -82,7 +60,7 @@ async fn main() {
     let mut tts = TTS::new(&config);
 
     // Get the input object.
-    let mut input = Input::new(&config);
+    let mut input = Input::new(&config, &args);
 
     // Create the audio connection.
     let mut conn = Conn::default();
@@ -114,7 +92,7 @@ async fn main() {
     request_new_screen_size(window_size[0], window_size[1]);
 
     // Fullscreen.
-    let fullscreen = if cli.fullscreen {
+    let fullscreen = if args.fullscreen {
         // Use the CLI or env argument first if set
         true
     } else {
@@ -127,7 +105,7 @@ async fn main() {
     }
 
     // Open the initial save file if set.
-    if let Some(save_path) = cli.file {
+    if let Some(save_path) = args.file {
         io.load_save(&save_path, &mut state, &mut conn, &mut paths_state);
     }
 
@@ -175,10 +153,10 @@ async fn main() {
 /// Configure the window.
 fn window_conf() -> Conf {
     // Parse and load the command line arguments.
-    let cli = Cli::parse();
+    let args = Args::parse();
 
     // Initialize the paths.
-    Paths::init(&cli.data_directory);
+    Paths::init(&args.data_directory);
 
     let icon = if cfg!(windows) {
         let icon_bytes = get_bytes(&Paths::get().data_directory.join("icon"));
@@ -236,9 +214,4 @@ fn get_remote_version(config: &Ini) -> Option<String> {
     } else {
         None
     }
-}
-
-/// Default directory for looking at the 'data/' folder.
-fn default_data_folder() -> PathBuf {
-    current_dir().unwrap().join("data")
 }

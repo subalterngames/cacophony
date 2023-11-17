@@ -16,6 +16,7 @@ macroquad = { workspace = true }
 rust-ini = { workspace = true }
 midir = { workspace = true }
 parking_lot = { workspace = true }
+clap = { workspace = true }
 
 [dependencies.common]
 path = "../common"
