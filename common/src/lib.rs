@@ -12,6 +12,7 @@
 //!
 //! `common` is designed such that any Cacophony crate can use it, but itself does not depend on any Cacophony crates.
 
+pub mod args;
 pub mod config;
 mod index;
 mod input_state;
@@ -42,9 +43,10 @@ mod select_mode;
 pub use select_mode::SelectMode;
 mod piano_roll_mode;
 pub use piano_roll_mode::PianoRollMode;
+use std::env::current_dir;
 use std::fs::{metadata, File};
 use std::io::Read;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 pub mod font;
 pub mod open_file;
 pub mod sizes;
@@ -66,4 +68,9 @@ pub fn get_bytes(path: &Path) -> Vec<u8> {
     let mut buffer = vec![0; metadata.len() as usize];
     f.read_exact(&mut buffer).unwrap();
     buffer
+}
+
+/// Default directory for looking at the 'data/' folder.
+pub fn get_default_data_folder() -> PathBuf {
+    current_dir().unwrap().join("data")
 }

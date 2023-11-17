@@ -1,5 +1,9 @@
 # 0.1.x
 
+## 0.1.3
+
+- Fixed: `--events [PATH]` argument doesn't work.
+
 ## 0.1.2
 
 - Added environment variables and command line arguments:
