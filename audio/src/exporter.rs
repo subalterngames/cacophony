@@ -1,6 +1,6 @@
 mod export_type;
 use common::IndexedValues;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 mod metadata;
 mod multi_file_suffix;
 use crate::{AudioBuffer, SharedExporter, SynthState};
@@ -8,8 +8,8 @@ use chrono::Datelike;
 use chrono::Local;
 use common::{Index, Music, Time, U64orF32, DEFAULT_FRAMERATE, PPQ_F, PPQ_U};
 pub use export_type::*;
-use hound::*;
-use id3::*;
+use hound::{WavSpec, WavReader, WavWriter, SampleFormat};
+use id3::{Tag, TagLike, Version};
 pub use metadata::*;
 use midly::num::{u15, u24, u28, u4};
 use midly::{
@@ -95,7 +95,9 @@ pub struct Exporter {
     pub multi_file_suffix: IndexedValues<MultiFileSuffix, 3>,
     /// The .ogg file quality index.
     pub ogg_quality: Index<usize>,
-    /// The export type.
+    /// The export type. 
+    /// Use a default if the save file is pre-0.1.3
+    #[serde(deserialize_with = "deserialize_export_type")]
     pub export_type: IndexedValues<ExportType, 5>,
     /// Export settings for .mid files.
     pub mid_settings: IndexedValues<ExportSetting, 3>,
@@ -106,21 +108,14 @@ pub struct Exporter {
     /// Export settings for .ogg files.
     pub ogg_settings: IndexedValues<ExportSetting, 11>,
     /// Export settings for .flac files.
+    /// Use a default if the save file is pre-0.1.3
+    #[serde(default = "default_flac_settings")]
     pub flac_settings: IndexedValues<ExportSetting, 10>,
 }
 
 impl Default for Exporter {
     fn default() -> Self {
-        let export_type = IndexedValues::new(
-            0,
-            [
-                ExportType::Wav,
-                ExportType::Mid,
-                ExportType::MP3,
-                ExportType::Ogg,
-                ExportType::Flac,
-            ],
-        );
+        let export_type = default_export_type();
         let mid_settings = IndexedValues::new(
             0,
             [
@@ -170,21 +165,7 @@ impl Default for Exporter {
                 ExportSetting::MultiFileSuffix,
             ],
         );
-        let flac_settings = IndexedValues::new(
-            0,
-            [
-                ExportSetting::Framerate,
-                ExportSetting::Title,
-                ExportSetting::Artist,
-                ExportSetting::Copyright,
-                ExportSetting::Album,
-                ExportSetting::TrackNumber,
-                ExportSetting::Genre,
-                ExportSetting::Comment,
-                ExportSetting::MultiFile,
-                ExportSetting::MultiFileSuffix,
-            ],
-        );
+        let flac_settings = default_flac_settings();
         let multi_file_suffix = IndexedValues::new(
             0,
             [
@@ -647,4 +628,42 @@ impl Exporter {
     fn get_copyright(&self, artist: &str) -> String {
         format!("Copyright {} {}", Local::now().year(), artist)
     }
+}
+
+fn deserialize_export_type<'de, D>(deserializer: D) -> Result<IndexedValues<ExportType, 5>, D::Error> where D: Deserializer<'de> {
+    match <IndexedValues<ExportType, 5>>::deserialize::<D>(deserializer) {
+        Ok(e) => Ok(e),
+        Err(_) => Ok(default_export_type())
+    }
+}
+
+fn default_export_type() -> IndexedValues<ExportType, 5> {
+    IndexedValues::new(
+        0,
+        [
+            ExportType::Wav,
+            ExportType::Mid,
+            ExportType::MP3,
+            ExportType::Ogg,
+            ExportType::Flac,
+        ],
+    )
+}
+
+fn default_flac_settings() -> IndexedValues<ExportSetting, 10>{
+    IndexedValues::new(
+        0,
+        [
+            ExportSetting::Framerate,
+            ExportSetting::Title,
+            ExportSetting::Artist,
+            ExportSetting::Copyright,
+            ExportSetting::Album,
+            ExportSetting::TrackNumber,
+            ExportSetting::Genre,
+            ExportSetting::Comment,
+            ExportSetting::MultiFile,
+            ExportSetting::MultiFileSuffix,
+        ],
+    )
 }
