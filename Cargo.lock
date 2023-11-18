@@ -400,6 +400,7 @@ dependencies = [
 name = "common"
 version = "0.1.3"
 dependencies = [
+ "clap",
  "directories",
  "hashbrown 0.13.2",
  "macroquad",
@@ -1011,6 +1012,7 @@ dependencies = [
 name = "input"
 version = "0.1.3"
 dependencies = [
+ "clap",
  "common",
  "hashbrown 0.13.2",
  "macroquad",
