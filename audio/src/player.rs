@@ -96,22 +96,19 @@ impl Player {
                 PlayState::NotPlaying => (),
                 // Add decay.
                 PlayState::Decaying => {
+                    let len = output.len();
                     // Write the decay block.
-                    let len = output.len() / channels;
                     decayer.decay_shared(&synth, len);
                     // Set the decay block.
                     if decayer.decaying {
-                        for (out_frame, in_frame) in output
-                            .chunks_mut(channels)
-                            .zip(decayer.buffer[0..len].chunks_mut(2))
-                        {
-                            // Add the sample.
-                            // This is almost certainly more performant than the code in the `else` block.
-                            if two_channels {
-                                out_frame.copy_from_slice(in_frame);
-                            }
-                            // Add for more than one channel. This is slower.
-                            else {
+                        // Copy into output.
+                        if two_channels {
+                            output.copy_from_slice(decayer.buffer[0..len].as_mut());
+                        } else {
+                            for (out_frame, in_frame) in output
+                                .chunks_mut(channels)
+                                .zip(decayer.buffer[0..len].chunks_mut(2))
+                            {
                                 for (id, sample) in out_frame.iter_mut().enumerate() {
                                     *sample = in_frame[id % 2];
                                 }
