@@ -7,13 +7,13 @@ use std::str::FromStr;
 
 /// Load the config file.
 pub fn load() -> Ini {
-    let paths = Paths::default();
+    let paths = Paths::get();
     let path = if paths.user_ini_path.exists() {
-        paths.user_ini_path
+        &paths.user_ini_path
     } else {
-        paths.default_ini_path
+        &paths.default_ini_path
     };
-    match Ini::load_from_file(&path) {
+    match Ini::load_from_file(path) {
         Ok(ini) => ini,
         Err(error) => panic!("Error loading confi.ini from {:?}: {}", path, error),
     }

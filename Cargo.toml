@@ -2,7 +2,7 @@
 members = ["audio", "common", "input", "io", "render", "text"]
 
 [workspace.package]
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Esther Alter <subalterngames@gmail.com>"]
 description = "A minimalist and ergonomic MIDI sequencer"
 documentation = "https://github.com/subalterngames/cacophony"
@@ -32,6 +32,11 @@ midly = "0.5.3"
 flacenc = "0.3.0"
 metaflac = "0.2.5"
 mp3lame-encoder = "0.1.4"
+
+[workspace.dependencies.clap]
+version = "4.4.7"
+default-features = false
+features = ["derive", "string", "env", "error-context", "help", "std", "suggestions", "usage"]
 
 [workspace.dependencies.colorgrad]
 version = "0.6.2"
@@ -75,12 +80,12 @@ git = "https://github.com/subalterngames/tts-rs.git"
 branch = "speech_dispatcher_voices_panic"
 
 [features]
-ubuntu_22 = ["text/ubuntu_22"]
-ubuntu_18_20 = ["text/ubuntu_18_20"]
+speech_dispatcher_0_11 = ["text/speech_dispatcher_0_11"]
+speech_dispatcher_0_9 = ["text/speech_dispatcher_0_9"]
 
 [package]
 name = "cacophony"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Esther Alter <subalterngames@gmail.com>"]
 description = "A minimalist and ergonomic MIDI sequencer"
 documentation = "https://github.com/subalterngames/cacophony"
@@ -92,6 +97,7 @@ parking_lot = { workspace = true }
 ureq = { workspace = true }
 regex = { workspace = true }
 rust-ini = { workspace = true }
+clap = { workspace = true }
 
 [dependencies.audio]
 path = "audio"
@@ -115,7 +121,7 @@ path = "text"
 name = "Cacophony"
 identifier = "com.subalterngames.cacophony"
 icon = ["icon/32.png", "icon/64.png", "icon/128.png", "icon/256.png"]
-version = "0.1.2"
+version = "0.1.3"
 resources = ["data/*"]
 copyright = "Copyright (c) Subaltern Games LLC 2023. All rights reserved."
 short_description = "A minimalist and ergonomic MIDI sequencer."

@@ -19,7 +19,7 @@ mod midi_track;
 mod music;
 mod note;
 mod panel_type;
-mod paths;
+pub mod paths;
 mod paths_state;
 mod state;
 pub mod time;
@@ -44,6 +44,7 @@ mod piano_roll_mode;
 pub use piano_roll_mode::PianoRollMode;
 use std::fs::{metadata, File};
 use std::io::Read;
+use std::path::Path;
 pub mod font;
 pub mod open_file;
 pub mod sizes;
@@ -59,7 +60,7 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const MAX_VOLUME: u8 = 127;
 
 /// Read bytes from a file.
-pub fn get_bytes(path: &str) -> Vec<u8> {
+pub fn get_bytes(path: &Path) -> Vec<u8> {
     let metadata = metadata(path).unwrap();
     let mut f = File::open(path).unwrap();
     let mut buffer = vec![0; metadata.len() as usize];

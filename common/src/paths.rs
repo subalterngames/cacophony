@@ -1,11 +1,16 @@
 use directories::UserDirs;
-use std::env::{current_dir, current_exe};
+use std::env::current_exe;
 use std::fs::{copy, create_dir_all};
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 
 const CONFIG_FILENAME: &str = "config.ini";
 
+/// Global reference to paths.
+static PATHS: OnceLock<Paths> = OnceLock::new();
+
 /// Cached file paths. Unlike `PathsState`, this is meant to only include static data.
+#[derive(Debug)]
 pub struct Paths {
     /// The path to the default .ini file.
     pub default_ini_path: PathBuf,
@@ -25,10 +30,14 @@ pub struct Paths {
     pub splash_path: PathBuf,
     /// The path to the default soundfont in data/
     pub default_soundfont_path: PathBuf,
+    /// The path to the data/ directory itself.
+    pub data_directory: PathBuf,
 }
 
 impl Paths {
-    pub fn new(data_directory: &Path) -> Self {
+    /// Setup the paths, needs to be be called at least once.
+    pub fn init(data_directory_from_cli: &Path) {
+        let data_directory = get_data_directory(data_directory_from_cli);
         let user_directory = match UserDirs::new() {
             Some(user_dirs) => match user_dirs.document_dir() {
                 Some(documents) => documents.join("cacophony"),
@@ -51,17 +60,25 @@ impl Paths {
         let export_directory = get_directory("exports", &user_directory);
         let splash_path = data_directory.join("splash.png");
         let default_soundfont_path = data_directory.join("CT1MBGMRSV1.06.sf2");
-        Self {
-            default_ini_path,
-            user_directory,
-            user_ini_path,
-            text_path,
-            soundfonts_directory,
-            saves_directory,
-            export_directory,
-            splash_path,
-            default_soundfont_path,
-        }
+        PATHS
+            .set(Self {
+                default_ini_path,
+                user_directory,
+                user_ini_path,
+                text_path,
+                soundfonts_directory,
+                saves_directory,
+                export_directory,
+                splash_path,
+                default_soundfont_path,
+                data_directory,
+            })
+            .unwrap();
+    }
+
+    /// Get a reference to the paths, panics when not initialized.
+    pub fn get() -> &'static Self {
+        PATHS.get().expect("Paths need to be initialzed first")
     }
 
     /// Create the user .ini file by copying the default .ini file.
@@ -75,27 +92,15 @@ impl Paths {
     }
 }
 
-impl Default for Paths {
-    fn default() -> Self {
-        Self::new(&get_data_directory())
-    }
-}
-
 /// Returns the path to the data directory.
-pub fn get_data_directory() -> PathBuf {
-    // Try to get the directory from an environment variable first.
-    let mut data_directory = if let Some(dir_from_env) = std::env::var_os("CACOPHONY_DATA_DIR") {
-        dir_from_env.into()
-    } else {
-        // If that doesn't succeed or the variable is not set use the current directory.
-        current_dir().unwrap().join("data")
-    };
+pub fn get_data_directory(data_directory: &Path) -> PathBuf {
+    // Try to get the directory that's passed first.
     if data_directory.exists() {
-        data_directory
+        data_directory.to_path_buf()
     }
     // Maybe we're in a .app bundle.
     else if cfg!(target_os = "macos") {
-        data_directory = current_exe()
+        let data_directory = current_exe()
             .unwrap()
             .parent()
             .unwrap()

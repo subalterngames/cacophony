@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 const READ_ERROR: &str = "Error reading file: ";
 const WRITE_ERROR: &str = "Error writing file: ";
@@ -22,6 +22,8 @@ pub(crate) struct Save {
     paths_state: PathsState,
     /// The exporter state.
     exporter: Exporter,
+    #[serde(default = "default_version")]
+    version: String
 }
 
 impl Save {
@@ -45,6 +47,7 @@ impl Save {
             synth_state: conn.state.clone(),
             paths_state: paths_state.clone(),
             exporter: exporter.lock().clone(),
+            version: common::VERSION.to_string()
         };
         // Try to open the file.
         match OpenOptions::new()
@@ -75,7 +78,7 @@ impl Save {
     /// - `paths_state` The paths state, which will be set to a deserialized version.
     /// - `exporter` The exporter.
     pub fn read(
-        path: &PathBuf,
+        path: &Path,
         state: &mut State,
         conn: &mut Conn,
         paths_state: &mut PathsState,
@@ -144,4 +147,9 @@ impl Save {
             Err(error) => panic!("{} {}", READ_ERROR, error),
         }
     }
+}
+
+
+fn default_version() -> String {
+    format!("0.1.2")
 }
