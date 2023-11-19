@@ -278,11 +278,6 @@ impl Synthesizer {
                                 }
                                 // Send the export state.
                                 Command::SendExportState => s.send_export_state = true,
-                                // Append silence to the end of exported audio.
-                                Command::AppendSilences { paths } => {
-                                    let exporter = s.exporter.lock();
-                                    exporter.append_silences(paths);
-                                }
                             }
                         }
                         // Try to send the state.

@@ -8,7 +8,7 @@ use chrono::Datelike;
 use chrono::Local;
 use common::{Index, Music, Time, U64orF32, DEFAULT_FRAMERATE, PPQ_F, PPQ_U};
 pub use export_type::*;
-use hound::{SampleFormat, WavReader, WavSpec, WavWriter};
+use hound::{SampleFormat, WavSpec, WavWriter};
 use id3::{Tag, TagLike, Version};
 pub use metadata::*;
 use midly::num::{u15, u24, u28, u4};
@@ -21,7 +21,7 @@ use oggvorbismeta::*;
 use std::fs::OpenOptions;
 use std::io::Read;
 use std::io::{Cursor, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::Arc;
 use vorbis_encoder::Encoder;
 mod export_setting;
@@ -531,76 +531,6 @@ impl Exporter {
             .expect("Error opening file {:?}");
         file.write_all(samples)
             .expect("Failed to write samples to file.");
-    }
-
-    /// Open a bunch of wav files. Get the longest one. Export to the correct export type, appending silence to the shorter waveforms.
-    pub(crate) fn append_silences(&self, paths: &[PathBuf]) {
-        // Get the longest file.
-        let max_time = paths
-            .iter()
-            .map(|p| WavReader::open(p).unwrap().duration())
-            .max()
-            .unwrap();
-        let export_type = self.export_type.get();
-        // Open the files.
-        for path in paths.iter() {
-            let time = WavReader::open(path).unwrap().duration();
-            let silence = max_time - time;
-            if silence == 0 {
-                continue;
-            }
-            match export_type {
-                ExportType::Wav => {
-                    // Write silence.
-                    let mut writer = WavWriter::append(path).unwrap();
-                    let mut i16_writer = writer.get_i16_writer(silence * NUM_CHANNELS as u32);
-                    for _ in 0..silence {
-                        i16_writer.write_sample(0);
-                        i16_writer.write_sample(0);
-                    }
-                    i16_writer.flush().unwrap();
-                    writer.finalize().unwrap();
-                }
-                ExportType::Mid => (),
-                // Encode to mp3.
-                ExportType::MP3 => {
-                    self.mp3(
-                        path,
-                        &Self::samples_and_silence_to_i16_buffer(path, silence),
-                    );
-                }
-                ExportType::Ogg => {
-                    let mut buffer = Self::samples_and_silence_to_i16_buffer(path, silence);
-                    let mut samples = buffer[0].clone();
-                    samples.append(&mut buffer[1]);
-                    self.ogg_i16(path, &samples);
-                }
-                ExportType::Flac => {
-                    // Get i16 samples.
-                    let buffer16 = Self::samples_and_silence_to_i16_buffer(path, silence);
-                    // Convert to interleaved i32.
-                    let mut buffer32 = vec![];
-                    for (left, right) in buffer16[0].iter().zip(buffer16[1].iter()) {
-                        buffer32.push(*left as i32);
-                        buffer32.push(*right as i32);
-                    }
-                    self.flac_i32(path, &buffer32)
-                }
-            }
-        }
-    }
-
-    /// Read a .wav file into a samples buffer. Append some silence.
-    fn samples_and_silence_to_i16_buffer(path: &Path, silence: u32) -> [Vec<i16>; NUM_CHANNELS] {
-        let reader = WavReader::open(path).unwrap();
-        let samples = reader.into_samples::<i16>();
-        let mut buffer: [Vec<i16>; NUM_CHANNELS] = [vec![], vec![]];
-        for sample in samples.filter_map(|s| s.ok()).enumerate() {
-            buffer[usize::from(sample.0 % 2 != 0)].push(sample.1);
-        }
-        buffer[0].append(&mut vec![0; silence as usize]);
-        buffer[1].append(&mut vec![0; silence as usize]);
-        buffer
     }
 
     /// Converts a PPQ value into a MIDI time delta and resets `ppq` to zero.
