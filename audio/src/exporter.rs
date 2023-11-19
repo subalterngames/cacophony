@@ -430,11 +430,6 @@ impl Exporter {
             samples.push(Self::to_i16(l));
             samples.push(Self::to_i16(r));
         }
-        self.ogg_i16(path, &samples);
-    }
-
-    /// Export an i16 samples buffer to an .ogg file.
-    fn ogg_i16(&self, path: &Path, samples: &Vec<i16>) {
         let mut encoder = Encoder::new(
             NUM_CHANNELS as u32,
             self.framerate.get_u(),
@@ -442,7 +437,7 @@ impl Exporter {
         )
         .expect("Error creating .ogg file encoder.");
         let samples = encoder
-            .encode(samples)
+            .encode(&samples)
             .expect("Error encoding .ogg samples.");
         // Get a cursor.
         let cursor = Cursor::new(&samples);
@@ -486,14 +481,9 @@ impl Exporter {
             samples.push(Self::to_i32(left));
             samples.push(Self::to_i32(right));
         }
-        self.flac_i32(path, &samples);
-    }
-
-    /// Encode interleaved i32 samples to flac.
-    fn flac_i32(&self, path: &Path, samples: &[i32]) {
         let config = FlacEncoder::default();
         let source =
-            MemSource::from_samples(samples, NUM_CHANNELS, 16, self.framerate.get_u() as usize);
+            MemSource::from_samples(&samples, NUM_CHANNELS, 16, self.framerate.get_u() as usize);
         match encode_with_fixed_block_size(&config, source, config.block_sizes[0]) {
             Ok(flac_stream) => {
                 let mut sink = ByteSink::new();
