@@ -2,6 +2,8 @@
 
 ## 0.1.3
 
+- Added .flac exporting
+- Fixed: Crash when attempting to add silence to the end of a non-wav multi-track export. I don't remember why I wanted to add silence in the first place, so I've removed it.
 - Fixed: `--events [PATH]` argument doesn't work.
 
 ## 0.1.2

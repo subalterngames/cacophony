@@ -278,11 +278,6 @@ impl Synthesizer {
                                 }
                                 // Send the export state.
                                 Command::SendExportState => s.send_export_state = true,
-                                // Append silence to the end of exported audio.
-                                Command::AppendSilences { paths } => {
-                                    let exporter = s.exporter.lock();
-                                    exporter.append_silences(paths);
-                                }
                             }
                         }
                         // Try to send the state.
@@ -352,6 +347,9 @@ impl Synthesizer {
                                 ExportType::Ogg => {
                                     exporter.ogg(s.export_path.as_ref().unwrap(), &s.export_buffer)
                                 }
+                                ExportType::Flac => {
+                                    exporter.flac(s.export_path.as_ref().unwrap(), &s.export_buffer)
+                                }
                             }
                             // Stop exporting.
                             s.export_state = None;
@@ -401,9 +399,9 @@ impl Synthesizer {
                         Err(_) => continue,
                     }
                     // Send the sample.
-                    if send_sample.try_send(sample).is_ok() {}
+                    let _ = send_sample.try_send(sample);
                     // Send the time state.
-                    if send_time.try_send(s.state.time).is_ok() {}
+                    let _ = send_time.try_send(s.state.time);
                 }
             }
             // Stop exporting.

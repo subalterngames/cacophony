@@ -32,18 +32,9 @@ impl TTS {
                 let callbacks =
                     tts.supported_features().utterance_callbacks && !cfg!(target_os = "macos");
                 if callbacks {
-                    if tts
-                        .on_utterance_begin(Some(Box::new(on_utterance_begin)))
-                        .is_ok()
-                    {}
-                    if tts
-                        .on_utterance_end(Some(Box::new(on_utterance_end)))
-                        .is_ok()
-                    {}
-                    if tts
-                        .on_utterance_stop(Some(Box::new(on_utterance_end)))
-                        .is_ok()
-                    {}
+                    let _ = tts.on_utterance_begin(Some(Box::new(on_utterance_begin)));
+                    let _ = tts.on_utterance_end(Some(Box::new(on_utterance_end)));
+                    let _ = tts.on_utterance_stop(Some(Box::new(on_utterance_end)));
                 }
                 // Try to set the voice.
                 if let Ok(voices) = tts.voices() {
@@ -103,7 +94,7 @@ impl TTS {
                 } else {
                     "rate_linux"
                 };
-                if tts.set_rate(parse(section, rate_key)).is_ok() {}
+                let _ = tts.set_rate(parse(section, rate_key));
                 (Some(tts), callbacks)
             }
             Err(_) => (None, false),

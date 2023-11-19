@@ -29,6 +29,8 @@ num-traits = "0.2.16"
 webbrowser = "0.8.10"
 lazy_static = "1.4.0"
 midly = "0.5.3"
+flacenc = "0.3.0"
+metaflac = "0.2.5"
 mp3lame-encoder = "0.1.4"
 
 [workspace.dependencies.clap]
