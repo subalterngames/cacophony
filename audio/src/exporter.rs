@@ -113,7 +113,16 @@ pub struct Exporter {
 
 impl Default for Exporter {
     fn default() -> Self {
-        let export_type = default_export_type();
+        let export_type = IndexedValues::new(
+            0,
+            [
+                ExportType::Wav,
+                ExportType::Mid,
+                ExportType::MP3,
+                ExportType::Ogg,
+                ExportType::Flac,
+            ],
+        );
         let mid_settings = IndexedValues::new(
             0,
             [
@@ -556,19 +565,6 @@ impl Exporter {
     fn get_copyright(&self, artist: &str) -> String {
         format!("Copyright {} {}", Local::now().year(), artist)
     }
-}
-
-fn default_export_type() -> IndexedValues<ExportType, 5> {
-    IndexedValues::new(
-        0,
-        [
-            ExportType::Wav,
-            ExportType::Mid,
-            ExportType::MP3,
-            ExportType::Ogg,
-            ExportType::Flac,
-        ],
-    )
 }
 
 fn default_flac_settings() -> IndexedValues<ExportSetting, 10> {
