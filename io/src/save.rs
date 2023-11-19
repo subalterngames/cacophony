@@ -2,6 +2,7 @@ use audio::exporter::Exporter;
 use audio::SharedExporter;
 use audio::*;
 use common::{PathsState, State};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string, Error};
 use std::fs::{File, OpenOptions};
@@ -23,7 +24,7 @@ pub(crate) struct Save {
     /// The exporter state.
     exporter: Exporter,
     #[serde(default = "default_version")]
-    version: String
+    version: String,
 }
 
 impl Save {
@@ -47,7 +48,7 @@ impl Save {
             synth_state: conn.state.clone(),
             paths_state: paths_state.clone(),
             exporter: exporter.lock().clone(),
-            version: common::VERSION.to_string()
+            version: common::VERSION.to_string(),
         };
         // Try to open the file.
         match OpenOptions::new()
@@ -89,6 +90,8 @@ impl Save {
                 let mut string = String::new();
                 match file.read_to_string(&mut string) {
                     Ok(_) => {
+                        // Repair the save file if needed.
+                        let string = Self::fix_no_flac(&string);
                         let q: Result<Save, Error> = from_str(&string);
                         match q {
                             Ok(s) => {
@@ -147,9 +150,16 @@ impl Save {
             Err(error) => panic!("{} {}", READ_ERROR, error),
         }
     }
+
+    /// Fix the export types if this is pre-0.1.3, which didn't have Flac exporting.
+    /// This apparently isn't possible to fix in Exporter via serde.
+    fn fix_no_flac(string: &str) -> String {
+        let re = Regex::new(r#"(("export_type":\{"values":\["Wav","Mid","MP3","Ogg"\],"index":\{"index":)([0-9]),"length":4\}\})"#).unwrap();
+        re.replace(string, r#""export_type":{"values":["Wav","Mid","MP3","Ogg","Flac"],"index":{"index":0,"length":5}}"#).into()
+    }
 }
 
-
+/// Pre-0.1.3, the version isn't in the save file. This is the default version.
 fn default_version() -> String {
-    format!("0.1.2")
+    "0.1.2".to_string()
 }

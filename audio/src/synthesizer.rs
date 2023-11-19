@@ -404,9 +404,9 @@ impl Synthesizer {
                         Err(_) => continue,
                     }
                     // Send the sample.
-                    if send_sample.try_send(sample).is_ok() {}
+                    let _ = send_sample.try_send(sample);
                     // Send the time state.
-                    if send_time.try_send(s.state.time).is_ok() {}
+                    let _ = send_time.try_send(s.state.time);
                 }
             }
             // Stop exporting.

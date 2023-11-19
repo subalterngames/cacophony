@@ -122,7 +122,6 @@ dependencies = [
  "oxisynth",
  "parking_lot 0.12.1",
  "serde",
- "serde_json",
  "vorbis-encoder",
 ]
 
@@ -1044,6 +1043,7 @@ dependencies = [
  "hashbrown 0.13.2",
  "input",
  "midly",
+ "regex",
  "rust-ini",
  "serde",
  "serde_json",

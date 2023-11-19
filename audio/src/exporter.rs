@@ -1,6 +1,6 @@
 mod export_type;
 use common::IndexedValues;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 mod metadata;
 mod multi_file_suffix;
 use crate::{AudioBuffer, SharedExporter, SynthState};
@@ -8,7 +8,7 @@ use chrono::Datelike;
 use chrono::Local;
 use common::{Index, Music, Time, U64orF32, DEFAULT_FRAMERATE, PPQ_F, PPQ_U};
 pub use export_type::*;
-use hound::{WavSpec, WavReader, WavWriter, SampleFormat};
+use hound::{SampleFormat, WavReader, WavSpec, WavWriter};
 use id3::{Tag, TagLike, Version};
 pub use metadata::*;
 use midly::num::{u15, u24, u28, u4};
@@ -22,6 +22,7 @@ use std::fs::OpenOptions;
 use std::io::Read;
 use std::io::{Cursor, Write};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use vorbis_encoder::Encoder;
 mod export_setting;
 pub use export_setting::ExportSetting;
@@ -32,7 +33,6 @@ use flacenc::encode_with_fixed_block_size;
 use flacenc::source::MemSource;
 use metaflac::Tag as FlacTag;
 use parking_lot::Mutex;
-use std::sync::Arc;
 
 /// The number of channels.
 const NUM_CHANNELS: usize = 2;
@@ -95,9 +95,7 @@ pub struct Exporter {
     pub multi_file_suffix: IndexedValues<MultiFileSuffix, 3>,
     /// The .ogg file quality index.
     pub ogg_quality: Index<usize>,
-    /// The export type. 
-    /// Use a default if the save file is pre-0.1.3
-    #[serde(deserialize_with = "deserialize_export_type")]
+    /// The export type.
     pub export_type: IndexedValues<ExportType, 5>,
     /// Export settings for .mid files.
     pub mid_settings: IndexedValues<ExportSetting, 3>,
@@ -630,13 +628,6 @@ impl Exporter {
     }
 }
 
-fn deserialize_export_type<'de, D>(deserializer: D) -> Result<IndexedValues<ExportType, 5>, D::Error> where D: Deserializer<'de> {
-    match <IndexedValues<ExportType, 5>>::deserialize::<D>(deserializer) {
-        Ok(e) => Ok(e),
-        Err(_) => Ok(default_export_type())
-    }
-}
-
 fn default_export_type() -> IndexedValues<ExportType, 5> {
     IndexedValues::new(
         0,
@@ -650,7 +641,7 @@ fn default_export_type() -> IndexedValues<ExportType, 5> {
     )
 }
 
-fn default_flac_settings() -> IndexedValues<ExportSetting, 10>{
+fn default_flac_settings() -> IndexedValues<ExportSetting, 10> {
     IndexedValues::new(
         0,
         [
