@@ -414,7 +414,7 @@ impl Conn {
                     vel: (note.velocity as f32 * gain) as u8,
                 },
             );
-            let end = time.ppq_to_samples(note.start, self.framerate);
+            let end = time.ppq_to_samples(note.end, self.framerate);
             // This is the last known event.
             if *t1 < end {
                 *t1 = end;
