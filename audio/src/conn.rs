@@ -348,7 +348,6 @@ impl Conn {
                 let mut events = MidiEventQueue::default();
                 let mut t1 = 0;
                 self.enqueue_track_events(track, &state.time, &mut events, &mut t1, gain);
-                events.sort();
                 let suffix = Some(self.get_export_file_suffix(track));
                 // Add an exportable.
                 exportables.push(Exportable {
@@ -364,7 +363,6 @@ impl Conn {
                 let mut events = MidiEventQueue::default();
                 let mut t1 = 0;
                 self.enqueue_track_events(track, &state.time, &mut events, &mut t1, gain);
-                events.sort();
                 // Add an exportable.
                 exportables.push(Exportable {
                     events,
@@ -416,7 +414,7 @@ impl Conn {
                     vel: (note.velocity as f32 * gain) as u8,
                 },
             );
-            let end = time.ppq_to_samples(note.end, self.framerate);
+            let end = time.ppq_to_samples(note.start, self.framerate);
             // This is the last known event.
             if *t1 < end {
                 *t1 = end;
@@ -429,6 +427,7 @@ impl Conn {
                 },
             );
         }
+        events.sort();
     }
 
     fn export(
