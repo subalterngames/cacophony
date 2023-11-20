@@ -242,7 +242,7 @@ impl Conn {
 
         // Enqueue note events.
         let mut midi_event_queue = self.midi_event_queue.lock();
-        for track in state.music.midi_tracks.iter() {
+        for track in state.music.get_playable_tracks().iter() {
             let gain = track.gain as f32 / MAX_VOLUME as f32;
             for note in track.get_playback_notes(state.time.playback) {
                 // Note-on event.
@@ -400,13 +400,6 @@ impl Conn {
         t1: &mut u64,
         gain: f32,
     ) {
-        // Turn off the sound.
-        events.enqueue(
-            0,
-            MidiEvent::AllSoundOff {
-                channel: track.channel,
-            },
-        );
         let framerate = self.exporter.framerate.get_f();
         for note in track.notes.iter() {
             // Note-on.
@@ -451,22 +444,15 @@ impl Conn {
             // Set the initial wav export state.
             Self::set_export_state_wav(exportable, &export_state, 0);
             let mut synth = synth.lock();
-            let mut t0 = 0;
-            // Process each event.
-            while let Some(t) = exportable.events.get_next_time() {
+            for t in 0..total_samples {
                 // Get and send each event at this time.
                 for event in exportable.events.dequeue(t).iter() {
-                    if synth.send_event(*event).is_ok() {}
-                }
-                let t0u = t0 as usize;
-                let t1u = t as usize;
-                if t0 < t {
-                    synth.write((left[t0u..t1u].as_mut(), right[t0u..t1u].as_mut()));
+                    let _ = synth.send_event(*event);
                 }
                 // Set the export state.
                 Self::set_export_state_wav(exportable, &export_state, t);
-                // Set the start time.
-                t0 = t;
+                let t = t as usize;
+                (left[t], right[t]) = synth.read_next();
             }
             // Append decaying silence.
             Self::set_export_state(&export_state, ExportState::AppendingDecay);

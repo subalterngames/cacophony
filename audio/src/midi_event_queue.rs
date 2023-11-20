@@ -33,14 +33,9 @@ impl MidiEventQueue {
 
     /// Dequeue any events that start at `time`.
     pub(crate) fn dequeue(&mut self, time: u64) -> Vec<MidiEvent> {
-        let midi_events = self
-            .events
-            .iter()
-            .filter(|e| e.time == time)
-            .map(|e| e.event)
-            .collect::<Vec<MidiEvent>>();
-        if !midi_events.is_empty() {
-            self.events.retain(|e| e.time != time);
+        let mut midi_events = vec![];
+        while !self.events.is_empty() && self.events[0].time == time {
+            midi_events.push(self.events.remove(0).event);
         }
         midi_events
     }
