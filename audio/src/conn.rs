@@ -404,17 +404,18 @@ impl Conn {
                 channel: track.channel,
             },
         );
+        let framerate = self.exporter.framerate.get_f();
         for note in track.notes.iter() {
             // Note-on.
             events.enqueue(
-                time.ppq_to_samples(note.start, self.framerate),
+                time.ppq_to_samples(note.start, framerate),
                 MidiEvent::NoteOn {
                     channel: track.channel,
                     key: note.note,
                     vel: (note.velocity as f32 * gain) as u8,
                 },
             );
-            let end = time.ppq_to_samples(note.end, self.framerate);
+            let end = time.ppq_to_samples(note.end, framerate);
             // This is the last known event.
             if *t1 < end {
                 *t1 = end;
@@ -480,9 +481,9 @@ impl Conn {
             }
             // Convert.
             Self::set_export_state(&export_state, ExportState::WritingToDisk);
-            let suffix = exportable.suffix.clone().unwrap();
-            let path = if exporter.multi_file {
-                path.parent()
+            let path = match &exportable.suffix {
+                Some(suffix) => {
+                    path.parent()
                     .unwrap()
                     .join(format!(
                         "{}_{}{}",
@@ -491,8 +492,8 @@ impl Conn {
                         extension.to_str(true)
                     ))
                     .to_path_buf()
-            } else {
-                path.clone()
+                }
+                None => path.clone()
             };
             let audio = [left, right];
             match &exporter.export_type.get() {
