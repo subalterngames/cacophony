@@ -122,7 +122,6 @@ impl Conn {
         if let Some(track) = state.music.get_selected_track() {
             if !note_ons.is_empty() {
                 let mut synth = self.synth.lock();
-                synth.set_sample_rate(self.framerate);
                 let gain = track.gain as f32 / MAX_VOLUME as f32;
                 for note_on in note_ons.iter() {
                     let _ = synth.send_event(MidiEvent::NoteOn {
@@ -143,7 +142,6 @@ impl Conn {
         if let Some(track) = state.music.get_selected_track() {
             if !note_offs.is_empty() {
                 let mut synth = self.synth.lock();
-                synth.set_sample_rate(self.framerate);
                 for note_off in note_offs.iter() {
                     let _ = synth.send_event(MidiEvent::NoteOff {
                         channel: track.channel,
@@ -380,7 +378,17 @@ impl Conn {
         let synth = Arc::clone(&self.synth);
         let exporter = self.exporter.clone();
         let path = paths_state.exports.get_path();
-        spawn(move || Self::export(exportables, export_state, synth, exporter, path));
+        let player_framerate = self.framerate;
+        spawn(move || {
+            Self::export(
+                exportables,
+                export_state,
+                synth,
+                exporter,
+                path,
+                player_framerate,
+            )
+        });
     }
 
     fn enqueue_track_events(
@@ -429,6 +437,7 @@ impl Conn {
         synth: SharedSynth,
         exporter: Exporter,
         path: PathBuf,
+        player_framerate: f32,
     ) {
         let mut decayer = Decayer::default();
         let extension: Extension = exporter.export_type.get().into();
@@ -506,6 +515,7 @@ impl Conn {
             Self::set_export_state(&export_state, ExportState::Done);
         }
         Self::set_export_state(&export_state, ExportState::NotExporting);
+        synth.lock().set_sample_rate(player_framerate);
     }
 
     /// Set the exporter's framerate.
