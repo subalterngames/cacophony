@@ -107,6 +107,9 @@ impl ExportSettingsPanel {
         // Get the start positions.
         let x = self.position[0] + 1;
         let mut y = self.position[1] + 1;
+        if export_type == ExportType::Flac {
+            y += 1;
+        }
         let (settings, values) = f(exporter).get_values();
         for (setting, value) in settings.iter().zip(values) {
             let setting_focus = [focus, value];
@@ -117,8 +120,8 @@ impl ExportSettingsPanel {
                         &self.framerate,
                         setting_focus,
                     );
-                    // For .wav files, draw a separator here.
-                    if export_type == ExportType::Wav {
+                    // For .wav and .flac files, draw a separator here.
+                    if export_type == ExportType::Wav || export_type == ExportType::Flac {
                         y = self.framerate.key_list.key.position[1] + 1;
                         self.draw_separator((x, &mut y), renderer, &line_color);
                     }
@@ -319,6 +322,7 @@ impl Drawable for ExportSettingsPanel {
             ExportType::Mid => conn.exporter.mid_settings.index.get_length() + 1,
             ExportType::MP3 => conn.exporter.mp3_settings.index.get_length() + 3,
             ExportType::Ogg => conn.exporter.ogg_settings.index.get_length() + 3,
+            ExportType::Flac => conn.exporter.flac_settings.index.get_length() + 3,
         } as u32
             + 1;
 
@@ -362,6 +366,14 @@ impl Drawable for ExportSettingsPanel {
             ),
             ExportType::Ogg => self.update_settings(
                 |e| &e.ogg_settings,
+                renderer,
+                state,
+                text,
+                &conn.exporter,
+                focus,
+            ),
+            ExportType::Flac => self.update_settings(
+                |e| &e.flac_settings,
                 renderer,
                 state,
                 text,

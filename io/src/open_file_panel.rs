@@ -337,27 +337,18 @@ impl Panel for OpenFilePanel {
                             <ExportType as Into<Extension>>::into(conn.exporter.export_type.get())
                                 .to_str(true),
                         );
-                        match &conn.exporter.export_type.get() {
-                            // Export to a .wav file.
-                            ExportType::Wav => {
-                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export]));
-                            }
-                            // Export to a .mp3 file.
-                            ExportType::MP3 => {
-                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export]));
-                            }
-                            ExportType::Ogg => {
-                                return Some(Snapshot::from_io_commands(vec![IOCommand::Export]));
-                            }
-                            // Export to a .mid file.
-                            ExportType::Mid => {
-                                conn.exporter.mid(
-                                    &paths_state.exports.directory.path.join(filename),
-                                    &state.music,
-                                    &state.time,
-                                    &conn.state,
-                                );
-                            }
+                        // Export to a .mid file.
+                        if conn.exporter.export_type.get() == ExportType::Mid {
+                            conn.exporter.mid(
+                                &paths_state.exports.directory.path.join(filename),
+                                &state.music,
+                                &state.time,
+                                &conn.state,
+                            );
+                        }
+                        // Export an audio file.
+                        else {
+                            return Some(Snapshot::from_io_commands(vec![IOCommand::Export]));
                         }
                     }
                 }

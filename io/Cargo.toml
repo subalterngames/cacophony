@@ -14,6 +14,7 @@ hashbrown = { workspace = true }
 rust-ini = { workspace = true }
 webbrowser = { workspace = true }
 midly = { workspace = true }
+regex = { workspace = true }
 
 [dependencies.audio]
 path = "../audio"

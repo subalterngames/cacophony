@@ -510,6 +510,7 @@ impl Conn {
                 ExportType::Ogg => {
                     exporter.ogg(&path, &audio);
                 }
+                ExportType::Flac => exporter.flac(&path, &audio),
             }
             // Done.
             Self::set_export_state(&export_state, ExportState::Done);
