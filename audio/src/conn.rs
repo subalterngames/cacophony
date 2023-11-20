@@ -337,7 +337,6 @@ impl Conn {
     }
 
     pub fn start_export(&mut self, state: &State, paths_state: &PathsState) {
-        let gain = self.state.gain as f32 / MAX_VOLUME as f32;
         let mut exportables = vec![];
         let tracks = state.music.get_playable_tracks();
         self.set_export_framerate();
@@ -347,7 +346,9 @@ impl Conn {
             for track in tracks {
                 let mut events = MidiEventQueue::default();
                 let mut t1 = 0;
+                let gain = track.gain as f32 / MAX_VOLUME as f32;
                 self.enqueue_track_events(track, &state.time, &mut events, &mut t1, gain);
+                events.sort();
                 let suffix = Some(self.get_export_file_suffix(track));
                 // Add an exportable.
                 exportables.push(Exportable {
@@ -362,8 +363,10 @@ impl Conn {
             let mut t1 = 0;
             let mut events = MidiEventQueue::default();
             for track in tracks {
+                let gain = track.gain as f32 / MAX_VOLUME as f32;
                 self.enqueue_track_events(track, &state.time, &mut events, &mut t1, gain);
             }
+            events.sort();
             // Add an exportable.
             exportables.push(Exportable {
                 events,
@@ -428,7 +431,6 @@ impl Conn {
                 },
             );
         }
-        events.sort();
     }
 
     fn export(
@@ -456,17 +458,9 @@ impl Conn {
                 for event in exportable.events.dequeue(t).iter() {
                     if synth.send_event(*event).is_ok() {}
                 }
-                // Write a sample.
-                if t0 == t {
-                    let sample = synth.read_next();
-                    let t = t as usize;
-                    left[t] = sample.0;
-                    right[t] = sample.1;
-                }
-                // Write a block of samples.
-                else {
-                    let t0u = t0 as usize;
-                    let t1u = t as usize;
+                let t0u = t0 as usize;
+                let t1u = t as usize;
+                if t0 < t {
                     synth.write((left[t0u..t1u].as_mut(), right[t0u..t1u].as_mut()));
                 }
                 // Set the export state.
