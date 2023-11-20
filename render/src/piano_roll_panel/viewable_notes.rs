@@ -1,5 +1,5 @@
 use crate::panel::*;
-use audio::TimeState;
+use audio::play_state::PlayState;
 use common::*;
 
 /// A viewable note.
@@ -37,7 +37,6 @@ impl<'a> ViewableNotes<'a> {
     /// - `conn` The audio conn.
     /// - `focus` If true, the piano roll panel has focus.
     /// - `dt` The time delta.
-    /// - `time_state` The audio time state.
     pub fn new(
         x: f32,
         w: f32,
@@ -45,20 +44,9 @@ impl<'a> ViewableNotes<'a> {
         conn: &Conn,
         focus: bool,
         dt: [U64orF32; 2],
-        time_state: &TimeState,
     ) -> Self {
         match state.music.get_selected_track() {
-            Some(track) => Self::new_from_track(
-                x,
-                w,
-                track,
-                state,
-                conn,
-                focus,
-                dt,
-                state.view.dn,
-                time_state,
-            ),
+            Some(track) => Self::new_from_track(x, w, track, state, conn, focus, dt, state.view.dn),
             None => Self {
                 pulses_per_pixel: Self::get_pulses_per_pixel(&dt, w),
                 notes: vec![],
@@ -76,7 +64,6 @@ impl<'a> ViewableNotes<'a> {
     /// - `focus` If true, the piano roll panel has focus.
     /// - `dt` The time delta.
     /// - `dn` The range of viewable note pitches.
-    /// - `time_state` The audio time state.
     #[allow(clippy::too_many_arguments)]
     pub fn new_from_track(
         x: f32,
@@ -87,15 +74,12 @@ impl<'a> ViewableNotes<'a> {
         focus: bool,
         dt: [U64orF32; 2],
         dn: [u8; 2],
-        time_state: &TimeState,
     ) -> Self {
         let pulses_per_pixel = Self::get_pulses_per_pixel(&dt, w);
         // Get any notes being played.
-        let playtime = match time_state.music {
-            true => time_state
-                .time
-                .map(|time| state.time.samples_to_ppq(time, conn.framerate)),
-            false => None,
+        let playtime = match *conn.play_state.lock() {
+            PlayState::Playing(time) => Some(state.time.samples_to_ppq(time, conn.framerate)),
+            _ => None,
         };
 
         // Get the selected notes.

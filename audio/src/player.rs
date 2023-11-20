@@ -1,7 +1,7 @@
 use crate::decayer::Decayer;
 use crate::play_state::PlayState;
 use crate::types::SharedSample;
-use crate::{SharedMidiEventQueue, SharedPlayState, SharedSynth, SharedTimeState};
+use crate::{SharedMidiEventQueue, SharedPlayState, SharedSynth};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::*;
 use oxisynth::Synth;
@@ -22,7 +22,6 @@ pub(crate) struct Player {
 impl Player {
     pub(crate) fn new(
         midi_event_queue: SharedMidiEventQueue,
-        time_state: SharedTimeState,
         synth: SharedSynth,
         sample: SharedSample,
         play_state: SharedPlayState,
@@ -53,7 +52,6 @@ impl Player {
                         device,
                         stream_config,
                         midi_event_queue,
-                        time_state,
                         synth,
                         sample,
                         play_state,
@@ -69,13 +67,11 @@ impl Player {
     }
 
     /// Start running the stream.
-    #[allow(clippy::too_many_arguments)]
     fn run(
         channels: usize,
         device: Device,
         stream_config: StreamConfig,
         midi_event_queue: SharedMidiEventQueue,
-        time_state: SharedTimeState,
         synth: SharedSynth,
         sample: SharedSample,
         play_state: SharedPlayState,
@@ -124,7 +120,7 @@ impl Player {
                     }
                 }
                 // Playing music.
-                PlayState::Playing => {
+                PlayState::Playing(time) => {
                     let len = output.len();
                     // Resize the buffers.
                     if len > buffer.len() {
@@ -132,76 +128,60 @@ impl Player {
                     }
                     // Get the next sample.
                     let mut synth = synth.lock();
-                    let time = Self::get_time(&time_state);
-                    match time {
-                        // We are playing music.
-                        Some(time) => {
-                            let mut midi_event_queue = midi_event_queue.lock();
-                            // Iterate through the output buffer's frames.
-                            let mut begin_decay = false;
-                            let buffer_len = len / channels;
-                            let mut t = time;
-                            for frame in output.chunks_mut(channels) {
-                                match midi_event_queue.get_next_time() {
-                                    Some(next_time) => {
-                                        // There are events on this frame.
-                                        if t == next_time {
-                                            // Dequeue events.
-                                            let events = midi_event_queue.dequeue(t);
-                                            // Send the MIDI events to the synth.
-                                            if !events.is_empty() {
-                                                for event in events {
-                                                    if synth.send_event(event).is_ok() {}
-                                                }
-                                            }
+                    let mut midi_event_queue = midi_event_queue.lock();
+                    // Iterate through the output buffer's frames.
+                    let mut begin_decay = false;
+                    let buffer_len = len / channels;
+                    let mut t = time;
+                    for frame in output.chunks_mut(channels) {
+                        match midi_event_queue.get_next_time() {
+                            Some(next_time) => {
+                                // There are events on this frame.
+                                if t == next_time {
+                                    // Dequeue events.
+                                    let events = midi_event_queue.dequeue(t);
+                                    // Send the MIDI events to the synth.
+                                    if !events.is_empty() {
+                                        for event in events {
+                                            if synth.send_event(event).is_ok() {}
                                         }
-                                        // Add the sample.
-                                        // This is almost certainly more performant than the code in the `else` block.
-                                        if two_channels {
-                                            // Get the sample.
-                                            synth.write(frame);
-                                        }
-                                        // Add for more than one channel. This is slower.
-                                        else {
-                                            synth.write(sample_buffer.as_mut_slice());
-                                            for (id, sample) in frame.iter_mut().enumerate() {
-                                                *sample = sample_buffer[id % 2];
-                                            }
-                                        }
-                                        // Advance time.
-                                        t += 1;
-                                    }
-                                    // There are no more events.
-                                    None => {
-                                        Self::stop_time(&time_state);
-                                        begin_decay = true;
-                                        break;
                                     }
                                 }
+                                // Add the sample.
+                                // This is almost certainly more performant than the code in the `else` block.
+                                if two_channels {
+                                    // Get the sample.
+                                    synth.write(frame);
+                                }
+                                // Add for more than one channel. This is slower.
+                                else {
+                                    synth.write(sample_buffer.as_mut_slice());
+                                    for (id, sample) in frame.iter_mut().enumerate() {
+                                        *sample = sample_buffer[id % 2];
+                                    }
+                                }
+                                // Advance time.
+                                t += 1;
                             }
-                            Self::set_time(&time_state, t);
-                            if begin_decay {
-                                Self::begin_decay(
-                                    buffer[0..buffer_len].as_mut(),
-                                    output,
-                                    channels,
-                                    two_channels,
-                                    &play_state,
-                                    &mut synth,
-                                );
+                            // There are no more events.
+                            None => {
+                                begin_decay = true;
+                                break;
                             }
                         }
-                        None => {
-                            let buffer_len = len / channels;
-                            Self::begin_decay(
-                                buffer[0..buffer_len].as_mut(),
-                                output,
-                                channels,
-                                two_channels,
-                                &play_state,
-                                &mut synth,
-                            );
-                        }
+                    }
+                    if begin_decay {
+                        *play_state.lock() = PlayState::Decaying;
+                        Self::begin_decay(
+                            buffer[0..buffer_len].as_mut(),
+                            output,
+                            channels,
+                            two_channels,
+                            &play_state,
+                            &mut synth,
+                        );
+                    } else {
+                        *play_state.lock() = PlayState::Playing(t);
                     }
                 }
             }
@@ -220,23 +200,6 @@ impl Player {
             },
             Err(_) => None,
         }
-    }
-
-    fn get_time(time_state: &SharedTimeState) -> Option<u64> {
-        time_state.lock().time
-    }
-
-    fn set_time(time_state: &SharedTimeState, time: u64) {
-        let mut time_state = time_state.lock();
-        if let Some(t0) = time_state.time.as_mut() {
-            *t0 = time
-        }
-    }
-
-    fn stop_time(time_state: &SharedTimeState) {
-        let mut time_state = time_state.lock();
-        time_state.music = false;
-        time_state.time = None;
     }
 
     fn begin_decay(

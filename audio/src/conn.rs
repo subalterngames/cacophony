@@ -9,7 +9,7 @@ use crate::types::SharedPlayState;
 use crate::SharedExportState;
 use crate::{
     midi_event_queue::MidiEventQueue, types::SharedSample, Command, Player, Program,
-    SharedMidiEventQueue, SharedSynth, SharedTimeState, SynthState, TimeState,
+    SharedMidiEventQueue, SharedSynth, SynthState,
 };
 use common::open_file::Extension;
 use common::{MidiTrack, Music, PathsState, State, Time, MAX_VOLUME};
@@ -62,19 +62,14 @@ pub struct Conn {
     /// The `Conn` can add to this.
     /// The `Player` can read this and remove events.
     midi_event_queue: SharedMidiEventQueue,
-    /// The time state.
-    /// The `Conn` sets the initial time.
-    /// The `Player` advances time while playing.
-    /// Other crates can read the time state.
-    pub time_state: SharedTimeState,
-    /// A HasHmap of loaded SoundFonts. Key = The path to a .sf2 file.
+    /// A HashMap of loaded SoundFonts. Key = The path to a .sf2 file.
     soundfonts: HashMap<PathBuf, SoundFontBanks>,
     /// Metadata for all SoundFont programs.
     pub state: SynthState,
     /// Export settings.
     pub exporter: Exporter,
     /// A flag that `Player` uses to decide how to write samples to the output buffer.
-    play_state: SharedPlayState,
+    pub play_state: SharedPlayState,
 }
 
 impl Default for Conn {
@@ -85,20 +80,17 @@ impl Default for Conn {
         let synth = Arc::new(Mutex::new(synth));
 
         // Create other shared data.
-        let time_state = Arc::new(Mutex::new(TimeState::default()));
         let midi_event_queue = Arc::new(Mutex::new(MidiEventQueue::default()));
         let sample = Arc::new(Mutex::new((0.0, 0.0)));
         let play_state = Arc::new(Mutex::new(PlayState::NotPlaying));
 
         // Create the player.
         let player_synth = Arc::clone(&synth);
-        let player_time_state = Arc::clone(&time_state);
         let player_midi_event_queue = Arc::clone(&midi_event_queue);
         let player_sample = Arc::clone(&sample);
         let player_play_state = Arc::clone(&play_state);
         let player = Player::new(
             player_midi_event_queue,
-            player_time_state,
             player_synth,
             player_sample,
             player_play_state,
@@ -116,7 +108,6 @@ impl Default for Conn {
             sample,
             synth,
             midi_event_queue,
-            time_state,
             soundfonts: HashMap::default(),
             state: SynthState::default(),
             exporter: Exporter::default(),
@@ -229,11 +220,10 @@ impl Conn {
 
     /// Start to play music if music isn't playing. Stop music if music is playing.
     pub fn set_music(&mut self, state: &State) {
-        let music = self.time_state.lock().music;
-        if music {
-            self.stop_music(&state.music)
-        } else {
-            self.start_music(state)
+        let play_state = *self.play_state.lock();
+        match play_state {
+            PlayState::NotPlaying => self.start_music(state),
+            _ => self.stop_music(&state.music),
         }
     }
 
@@ -279,13 +269,9 @@ impl Conn {
         // Sort the events by start time.
         midi_event_queue.sort();
 
-        // Set time itself.
-        let mut time_state = self.time_state.lock();
-        time_state.music = true;
-        time_state.time = Some(start);
         // Play music.
         let mut play_state = self.play_state.lock();
-        *play_state = PlayState::Playing;
+        *play_state = PlayState::Playing(start);
     }
 
     /// Stop ongoing music.
@@ -304,9 +290,6 @@ impl Conn {
                     .is_ok()
             {}
         }
-        let mut time_state = self.time_state.lock();
-        time_state.music = false;
-        time_state.time = None;
         // Let the audio decay.
         let mut play_state = self.play_state.lock();
         *play_state = PlayState::Decaying;
