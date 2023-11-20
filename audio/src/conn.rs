@@ -359,17 +359,17 @@ impl Conn {
         }
         // Export all tracks combined.
         else {
+            let mut t1 = 0;
+            let mut events = MidiEventQueue::default();
             for track in tracks {
-                let mut events = MidiEventQueue::default();
-                let mut t1 = 0;
                 self.enqueue_track_events(track, &state.time, &mut events, &mut t1, gain);
-                // Add an exportable.
-                exportables.push(Exportable {
-                    events,
-                    total_samples: t1,
-                    suffix: None,
-                });
             }
+            // Add an exportable.
+            exportables.push(Exportable {
+                events,
+                total_samples: t1,
+                suffix: None,
+            });
         }
 
         let export_state = Arc::clone(&self.export_state);
@@ -481,19 +481,19 @@ impl Conn {
             }
             // Convert.
             Self::set_export_state(&export_state, ExportState::WritingToDisk);
+            let filename = path.file_stem().unwrap().to_str().unwrap();
+            let extension = extension.to_str(true);
             let path = match &exportable.suffix {
-                Some(suffix) => {
-                    path.parent()
+                Some(suffix) => path
+                    .parent()
                     .unwrap()
-                    .join(format!(
-                        "{}_{}{}",
-                        path.file_stem().unwrap().to_str().unwrap(),
-                        suffix,
-                        extension.to_str(true)
-                    ))
-                    .to_path_buf()
-                }
-                None => path.clone()
+                    .join(format!("{}_{}{}", filename, suffix, extension))
+                    .to_path_buf(),
+                None => path
+                    .parent()
+                    .unwrap()
+                    .join(format!("{}{}", filename, extension))
+                    .to_path_buf(),
             };
             let audio = [left, right];
             match &exporter.export_type.get() {
