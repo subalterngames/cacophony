@@ -1,7 +1,4 @@
-use std::sync::Arc;
-use std::thread::spawn;
-
-use crate::decayer::{Decayer, DECAY_CHUNK_SIZE};
+use crate::decayer::Decayer;
 use crate::export::{ExportState, ExportType, Exportable, MultiFileSuffix};
 use crate::exporter::Exporter;
 use crate::play_state::PlayState;
@@ -18,6 +15,8 @@ use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use parking_lot::Mutex;
 use std::fs::File;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use std::thread::spawn;
 
 /// A convenient wrapper for a SoundFont.
 struct SoundFontBanks {
@@ -456,8 +455,9 @@ impl Conn {
             }
             // Append decaying silence.
             Self::set_export_state(&export_state, ExportState::AppendingDecay);
+            decayer.decaying = true;
             while decayer.decaying {
-                decayer.decay_two_channels(&mut left, &mut right, &mut synth, DECAY_CHUNK_SIZE);
+                decayer.decay_two_channels(&mut left, &mut right, &mut synth);
             }
             // Convert.
             Self::set_export_state(&export_state, ExportState::WritingToDisk);
