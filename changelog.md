@@ -1,5 +1,9 @@
 # 0.1.x
 
+## 0.1.4
+
+- Fixed: Crash when setting the input beat to less than 1/8
+
 ## 0.1.3
 
 - Added .flac exporting

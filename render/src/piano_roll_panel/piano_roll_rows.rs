@@ -133,7 +133,7 @@ impl PianoRollRows {
         let clear = [0u8; 4];
         // Copy the color into the sub-row.
         let mut draw_color = false;
-        let lsw = line_segment_width * 4;
+        let lsw = usize::max(line_segment_width * 4, 1);
         for i in (0..sub_row.len()).step_by(4) {
             if i % lsw == 0 {
                 draw_color = !draw_color;
