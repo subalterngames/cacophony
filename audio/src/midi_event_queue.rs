@@ -28,7 +28,7 @@ impl MidiEventQueue {
 
     /// Sort the list of events by start time.
     pub(crate) fn sort(&mut self) {
-        self.events.sort_by(|a, b| a.time.cmp(&b.time))
+        self.events.sort()
     }
 
     /// Dequeue any events that start at `time`.
