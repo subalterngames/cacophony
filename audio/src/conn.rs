@@ -242,7 +242,6 @@ impl Conn {
         // Enqueue note events.
         let mut midi_event_queue = self.midi_event_queue.lock();
         for track in state.music.get_playable_tracks().iter() {
-            let gain = track.gain as f32 / MAX_VOLUME as f32;
             for note in track.get_playback_notes(state.time.playback) {
                 // Note-on event.
                 midi_event_queue.enqueue(
@@ -250,7 +249,7 @@ impl Conn {
                     MidiEvent::NoteOn {
                         channel: track.channel,
                         key: note.note,
-                        vel: (note.velocity as f32 * gain) as u8,
+                        vel: note.velocity,
                     },
                 );
                 // Note-off event.
@@ -345,7 +344,7 @@ impl Conn {
             for track in tracks {
                 let mut events = MidiEventQueue::default();
                 let mut t1 = 0;
-                let gain = track.gain as f32 / MAX_VOLUME as f32;
+                let gain = track.get_gain_f();
                 self.enqueue_track_events(track, &state.time, &mut events, &mut t1, gain);
                 events.sort();
                 let suffix = Some(self.get_export_file_suffix(track));
@@ -362,7 +361,7 @@ impl Conn {
             let mut t1 = 0;
             let mut events = MidiEventQueue::default();
             for track in tracks {
-                let gain = track.gain as f32 / MAX_VOLUME as f32;
+                let gain = track.get_gain_f();
                 self.enqueue_track_events(track, &state.time, &mut events, &mut t1, gain);
             }
             events.sort();
