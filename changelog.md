@@ -2,9 +2,11 @@
 
 ## 0.2.0
 
-Reduced idle CPU usage by around 50% and CPU usage while playing music by around 16%. I think I sped up export time too but I haven't properly benchmarked it. 
+Cacophony uses a lot of CPU resources even when it's idle. It shouldn't do that! I reduced Cacophony's idle CPU usage by around 20-50% and by 15-50% while playing music; the exact percentage varies depending on the CPU and the OS. This update is the first big CPU optimization, and probably the most significant; I think all other subsequent optimizations will chip away at the problem.
 
-*(Backend notes)* The problem was that the `Synthesizer` struct (which no longer exists) ran a very fast infinite loop to send samples to `Player`. I replaced this loop with a bunch of `Arc<Mutex<T>>` values that are shared between `Conn` and `Player`. As a result of removing `Synthesizer` I had to reorganize all of the exporter code. There are a lot of small changes but the most noticeable one is that `Exporter` is no longer shared (there is no `Arc<Mutex<Exporter>>` anywhere in the code) and can instead by called like this: `conn.exporter`. A lot of code through Cacophony referenced an `Arc<Mutex<Exporter>>`, so there's a bit of refactoring pretty much everywhere in the codebase.
+This update doesn't have any new features or bug fixes. In the future, I'm going to reserve major releases (0.x.0) for big new features, but I had to rewrite so much of Cacophony's code, and the results are such a big improvement, that I'm making this a major release anyway.
+
+*(Backend notes)* The problem was that the `Synthesizer` struct (which no longer exists) ran a very fast infinite loop to send samples to `Player`, and the loop needlessly consumed CPU resources. I replaced this loop with a bunch of `Arc<Mutex<T>>` values that are shared between `Conn` and `Player`. As a result of removing `Synthesizer` I had to reorganize all of the exporter code. There are a lot of small changes that I'm not going to list here because let's be real, no one reads verbose changelogs, but the most noticeable change is that `Exporter` is a field in `Conn` and is no longer shared (there is no `Arc<Mutex<Exporter>>` anywhere in the code). This change affects a *lot* of the codebase, but it's mostly just refactoring with zero functional differences. 
 
 # 0.1.x
 
