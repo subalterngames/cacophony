@@ -1,3 +1,11 @@
+# 0.2.x
+
+## 0.2.0
+
+Reduced idle CPU usage by around 50% and CPU usage while playing music by around 16%. I think I sped up export time too but I haven't properly benchmarked it. 
+
+*(Backend notes)* The problem was that the `Synthesizer` struct (which no longer exists) ran a very fast infinite loop to send samples to `Player`. I replaced this loop with a bunch of `Arc<Mutex<T>>` values that are shared between `Conn` and `Player`. As a result of removing `Synthesizer` I had to reorganize all of the exporter code. There are a lot of small changes but the most noticeable one is that `Exporter` is no longer shared (there is no `Arc<Mutex<Exporter>>` anywhere in the code) and can instead by called like this: `conn.exporter`. A lot of code through Cacophony referenced an `Arc<Mutex<Exporter>>`, so there's a bit of refactoring pretty much everywhere in the codebase.
+
 # 0.1.x
 
 ## 0.1.4
