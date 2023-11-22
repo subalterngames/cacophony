@@ -1,5 +1,5 @@
-use crate::export::ExportState;
 use crate::event_queue::EventQueue;
+use crate::export::ExportState;
 use crate::play_state::PlayState;
 use crate::Command;
 use oxisynth::Synth;

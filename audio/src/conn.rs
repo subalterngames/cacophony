@@ -5,8 +5,8 @@ use crate::play_state::PlayState;
 use crate::types::SharedPlayState;
 use crate::SharedExportState;
 use crate::{
-    event_queue::EventQueue, types::SharedSample, Command, Player, Program,
-    SharedEventQueue, SharedSynth, SynthState,
+    event_queue::EventQueue, types::SharedSample, Command, Player, Program, SharedEventQueue,
+    SharedSynth, SynthState,
 };
 use common::effect::Effect;
 use common::open_file::Extension;
@@ -246,8 +246,20 @@ impl Conn {
         let mut end_time = 0;
         for track in state.music.get_playable_tracks().iter() {
             let notes = track.get_playback_notes(state.time.playback);
-            let effects = track.effects.iter().filter(|e| e.time >= state.time.playback).map(|e| *e).collect::<Vec<Effect>>();
-            event_queue.enqueue(track.channel, &notes, &effects, &state.time, self.framerate, &mut end_time);
+            let effects = track
+                .effects
+                .iter()
+                .filter(|e| e.time >= state.time.playback)
+                .copied()
+                .collect::<Vec<Effect>>();
+            event_queue.enqueue(
+                track.channel,
+                &notes,
+                &effects,
+                &state.time,
+                self.framerate,
+                &mut end_time,
+            );
         }
         // Sort the events by start time.
         event_queue.sort();
@@ -334,7 +346,14 @@ impl Conn {
                 let mut events = EventQueue::default();
                 let mut t1 = 0;
                 let notes = Self::get_exportable_notes(track);
-                events.enqueue(track.channel, &notes, &track.effects, &state.time, self.framerate, &mut t1);
+                events.enqueue(
+                    track.channel,
+                    &notes,
+                    &track.effects,
+                    &state.time,
+                    self.framerate,
+                    &mut t1,
+                );
                 events.sort();
                 let suffix = Some(self.get_export_file_suffix(track));
                 // Add an exportable.
@@ -351,7 +370,14 @@ impl Conn {
             let mut events = EventQueue::default();
             for track in tracks {
                 let notes = Self::get_exportable_notes(track);
-                events.enqueue(track.channel, &notes, &track.effects, &state.time, self.framerate, &mut t1);
+                events.enqueue(
+                    track.channel,
+                    &notes,
+                    &track.effects,
+                    &state.time,
+                    self.framerate,
+                    &mut t1,
+                );
             }
             events.sort();
             // Add an exportable.

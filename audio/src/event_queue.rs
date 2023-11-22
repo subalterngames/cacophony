@@ -1,6 +1,6 @@
-use crate::event_type::EventType;
 use super::timed_event::TimedEvent;
-use common::{Note, effect::Effect, Time};
+use crate::event_type::EventType;
+use common::{effect::Effect, Note, Time};
 
 /// A queue of timed events.
 #[derive(Default)]
@@ -11,7 +11,15 @@ pub(crate) struct EventQueue {
 
 impl EventQueue {
     /// Enqueue notes and events.
-    pub(crate) fn enqueue(&mut self, channel: u8, notes: &[Note], effects: &[Effect], time: &Time, framerate: f32, end_time: &mut u64) {
+    pub(crate) fn enqueue(
+        &mut self,
+        channel: u8,
+        notes: &[Note],
+        effects: &[Effect],
+        time: &Time,
+        framerate: f32,
+        end_time: &mut u64,
+    ) {
         // Enqueue notes.
         for note in notes.iter() {
             // Note-on event.
@@ -38,7 +46,13 @@ impl EventQueue {
         }
         // Enqueue effects.
         for effect in effects.iter() {
-            self.enqueue_event(time.ppq_to_samples(effect.time, framerate), EventType::Effect { channel, effect: effect.effect});
+            self.enqueue_event(
+                time.ppq_to_samples(effect.time, framerate),
+                EventType::Effect {
+                    channel,
+                    effect: effect.effect,
+                },
+            );
         }
     }
 

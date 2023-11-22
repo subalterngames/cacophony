@@ -1,5 +1,5 @@
-use crate::{Note, MAX_VOLUME};
 use crate::effect::Effect;
+use crate::{Note, MAX_VOLUME};
 use serde::{Deserialize, Serialize};
 
 /// A MIDI track has some notes.

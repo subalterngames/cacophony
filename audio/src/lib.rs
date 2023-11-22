@@ -11,10 +11,10 @@
 mod command;
 mod conn;
 mod decayer;
+pub(crate) mod event_queue;
 pub(crate) mod event_type;
 pub mod export;
 pub mod exporter;
-pub(crate) mod event_queue;
 pub mod play_state;
 mod player;
 mod program;
