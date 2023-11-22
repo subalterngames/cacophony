@@ -28,7 +28,7 @@ struct SoundFontBanks {
 impl SoundFontBanks {
     pub fn new(font: SoundFont, synth: &mut SharedSynth) -> Self {
         let mut banks: HashMap<u32, Vec<u8>> = HashMap::new();
-        (0u32..129u32).for_each(|b| {
+        (0u32..=128u32).for_each(|b| {
             let presets: Vec<u8> = (0u8..128)
                 .filter(|p| font.preset(b, *p).is_some())
                 .collect();
