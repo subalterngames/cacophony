@@ -45,7 +45,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all-targets --all-features
+          args: --all-targets --features speech_dispatcher_0_11
 
   # Run test check on Linux, macOS, and Windows
   test:
