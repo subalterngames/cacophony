@@ -695,10 +695,6 @@ impl IO {
             self.export_queue.push((commands, Some(export_state)));
         }
         *exporter = e0;
-        self.export_queue.push((
-            vec![Command::StopMusic, Command::AppendSilences { paths }],
-            None,
-        ));
     }
 }
 

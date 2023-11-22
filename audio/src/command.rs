@@ -43,6 +43,4 @@ pub enum Command {
     Export { path: PathBuf, state: ExportState },
     /// Ask for the export state.
     SendExportState,
-    /// Append silence to all but the longest audio.
-    AppendSilences { paths: Vec<PathBuf> },
 }

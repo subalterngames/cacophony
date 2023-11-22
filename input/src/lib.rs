@@ -9,6 +9,7 @@ mod midi_binding;
 mod midi_conn;
 mod note_on;
 mod qwerty_binding;
+use common::args::Args;
 use common::{State, MAX_NOTE, MIN_NOTE};
 use hashbrown::HashMap;
 use ini::Ini;
@@ -21,7 +22,6 @@ use midi_conn::MidiConn;
 use note_on::NoteOn;
 pub use qwerty_binding::QwertyBinding;
 use serde_json::from_str;
-use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::str::FromStr;
@@ -95,7 +95,7 @@ pub struct Input {
 }
 
 impl Input {
-    pub fn new(config: &Ini) -> Self {
+    pub fn new(config: &Ini, args: &Args) -> Self {
         // Get the audio connections.
         let midi_conn = MidiConn::new();
 
@@ -118,23 +118,20 @@ impl Input {
         }
 
         let mut debug_inputs = vec![];
-        if cfg!(debug_assertions) {
-            let args: Vec<String> = env::args().collect();
-            if args.len() >= 3 && args[1] == "--events" {
-                match File::open(&args[2]) {
-                    Ok(mut file) => {
-                        let mut s = String::new();
-                        file.read_to_string(&mut s).unwrap();
-                        let lines = s.split('\n');
-                        for line in lines {
-                            match line.trim().parse::<InputEvent>() {
-                                Ok(e) => debug_inputs.push(e),
-                                Err(_) => panic!("Failed to parse {}", line),
-                            }
+        if let Some(events) = &args.events {
+            match File::open(events) {
+                Ok(mut file) => {
+                    let mut s = String::new();
+                    file.read_to_string(&mut s).unwrap();
+                    let lines = s.split('\n');
+                    for line in lines {
+                        match line.trim().parse::<InputEvent>() {
+                            Ok(e) => debug_inputs.push(e),
+                            Err(_) => panic!("Failed to parse {}", line),
                         }
                     }
-                    Err(error) => panic!("Failed to open file {}: {}", &args[2], error),
                 }
+                Err(error) => panic!("Failed to open file {:?}: {}", &events, error),
             }
         }
 

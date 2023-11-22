@@ -9,6 +9,7 @@ pub enum Extension {
     Mid,
     MP3,
     Ogg,
+    Flac,
 }
 
 impl Extension {
@@ -57,6 +58,13 @@ impl Extension {
                     ".ogg"
                 } else {
                     "ogg"
+                }
+            }
+            Self::Flac => {
+                if period {
+                    ".flac"
+                } else {
+                    "flac"
                 }
             }
         }

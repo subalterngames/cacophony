@@ -20,6 +20,8 @@ oxisynth = { workspace = true }
 serde = { workspace = true }
 hashbrown = { workspace = true }
 parking_lot = { workspace = true }
+flacenc = { workspace = true }
+metaflac = { workspace = true }
 
 [dependencies.common]
 path = "../common"
