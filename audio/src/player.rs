@@ -1,7 +1,7 @@
 use crate::decayer::Decayer;
 use crate::play_state::PlayState;
 use crate::types::SharedSample;
-use crate::{SharedMidiEventQueue, SharedPlayState, SharedSynth};
+use crate::{SharedEventQueue, SharedPlayState, SharedSynth};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::*;
 use oxisynth::Synth;
@@ -21,7 +21,7 @@ pub(crate) struct Player {
 
 impl Player {
     pub(crate) fn new(
-        midi_event_queue: SharedMidiEventQueue,
+        event_queue: SharedEventQueue,
         synth: SharedSynth,
         sample: SharedSample,
         play_state: SharedPlayState,
@@ -51,7 +51,7 @@ impl Player {
                         channels,
                         device,
                         stream_config,
-                        midi_event_queue,
+                        event_queue,
                         synth,
                         sample,
                         play_state,
@@ -71,7 +71,7 @@ impl Player {
         channels: usize,
         device: Device,
         stream_config: StreamConfig,
-        midi_event_queue: SharedMidiEventQueue,
+        event_queue: SharedEventQueue,
         synth: SharedSynth,
         sample: SharedSample,
         play_state: SharedPlayState,
@@ -128,22 +128,22 @@ impl Player {
                     }
                     // Get the next sample.
                     let mut synth = synth.lock();
-                    let mut midi_event_queue = midi_event_queue.lock();
+                    let mut event_queue = event_queue.lock();
                     // Iterate through the output buffer's frames.
                     let mut begin_decay = false;
                     let buffer_len = len / channels;
                     let mut t = time;
                     for frame in output.chunks_mut(channels) {
-                        match midi_event_queue.get_next_time() {
+                        match event_queue.get_next_time() {
                             Some(next_time) => {
                                 // There are events on this frame.
                                 if t == next_time {
                                     // Dequeue events.
-                                    let events = midi_event_queue.dequeue(t);
+                                    let events = event_queue.dequeue(t);
                                     // Send the MIDI events to the synth.
                                     if !events.is_empty() {
                                         for event in events {
-                                            if synth.send_event(event).is_ok() {}
+                                            event.occur(&mut synth);
                                         }
                                     }
                                 }

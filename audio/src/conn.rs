@@ -5,11 +5,12 @@ use crate::play_state::PlayState;
 use crate::types::SharedPlayState;
 use crate::SharedExportState;
 use crate::{
-    midi_event_queue::MidiEventQueue, types::SharedSample, Command, Player, Program,
-    SharedMidiEventQueue, SharedSynth, SynthState,
+    event_queue::EventQueue, types::SharedSample, Command, Player, Program,
+    SharedEventQueue, SharedSynth, SynthState,
 };
+use common::effect::Effect;
 use common::open_file::Extension;
-use common::{MidiTrack, Music, PathsState, State, Time, MAX_VOLUME};
+use common::{MidiTrack, Music, Note, PathsState, State, MAX_VOLUME};
 use hashbrown::HashMap;
 use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
 use parking_lot::Mutex;
@@ -57,10 +58,10 @@ pub struct Conn {
     /// The `Conn` uses this to send MIDI events and export.
     /// The `Player` uses this to write samples to the output buffer.
     synth: SharedSynth,
-    /// A queue of scheduled MIDI events.
+    /// A queue of scheduled events.
     /// The `Conn` can add to this.
     /// The `Player` can read this and remove events.
-    midi_event_queue: SharedMidiEventQueue,
+    event_queue: SharedEventQueue,
     /// A HashMap of loaded SoundFonts. Key = The path to a .sf2 file.
     soundfonts: HashMap<PathBuf, SoundFontBanks>,
     /// Metadata for all SoundFont programs.
@@ -79,17 +80,17 @@ impl Default for Conn {
         let synth = Arc::new(Mutex::new(synth));
 
         // Create other shared data.
-        let midi_event_queue = Arc::new(Mutex::new(MidiEventQueue::default()));
+        let event_queue = Arc::new(Mutex::new(EventQueue::default()));
         let sample = Arc::new(Mutex::new((0.0, 0.0)));
         let play_state = Arc::new(Mutex::new(PlayState::NotPlaying));
 
         // Create the player.
         let player_synth = Arc::clone(&synth);
-        let player_midi_event_queue = Arc::clone(&midi_event_queue);
+        let player_event_queue = Arc::clone(&event_queue);
         let player_sample = Arc::clone(&sample);
         let player_play_state = Arc::clone(&play_state);
         let player = Player::new(
-            player_midi_event_queue,
+            player_event_queue,
             player_synth,
             player_sample,
             player_play_state,
@@ -106,7 +107,7 @@ impl Default for Conn {
             framerate,
             sample,
             synth,
-            midi_event_queue,
+            event_queue,
             soundfonts: HashMap::default(),
             state: SynthState::default(),
             exporter: Exporter::default(),
@@ -241,31 +242,16 @@ impl Conn {
         drop(synth);
 
         // Enqueue note events.
-        let mut midi_event_queue = self.midi_event_queue.lock();
+        let mut event_queue = self.event_queue.lock();
+        let mut end_time = 0;
         for track in state.music.get_playable_tracks().iter() {
-            for note in track.get_playback_notes(state.time.playback) {
-                // Note-on event.
-                midi_event_queue.enqueue(
-                    state.time.ppq_to_samples(note.start, self.framerate),
-                    MidiEvent::NoteOn {
-                        channel: track.channel,
-                        key: note.note,
-                        vel: note.velocity,
-                    },
-                );
-                // Note-off event.
-                midi_event_queue.enqueue(
-                    state.time.ppq_to_samples(note.end, self.framerate),
-                    MidiEvent::NoteOff {
-                        channel: track.channel,
-                        key: note.note,
-                    },
-                );
-            }
+            let notes = track.get_playback_notes(state.time.playback);
+            let effects = track.effects.iter().filter(|e| e.time >= state.time.playback).map(|e| *e).collect::<Vec<Effect>>();
+            event_queue.enqueue(track.channel, &notes, &effects, &state.time, self.framerate, &mut end_time);
         }
         // Sort the events by start time.
-        midi_event_queue.sort();
-        drop(midi_event_queue);
+        event_queue.sort();
+        drop(event_queue);
 
         // Play music.
         let mut play_state = self.play_state.lock();
@@ -345,10 +331,10 @@ impl Conn {
         // Export each track as a separate file.
         if self.exporter.multi_file {
             for track in tracks {
-                let mut events = MidiEventQueue::default();
+                let mut events = EventQueue::default();
                 let mut t1 = 0;
-                let gain = track.get_gain_f();
-                self.enqueue_track_events(track, &state.time, &mut events, &mut t1, gain);
+                let notes = Self::get_exportable_notes(track);
+                events.enqueue(track.channel, &notes, &track.effects, &state.time, self.framerate, &mut t1);
                 events.sort();
                 let suffix = Some(self.get_export_file_suffix(track));
                 // Add an exportable.
@@ -362,10 +348,10 @@ impl Conn {
         // Export all tracks combined.
         else {
             let mut t1 = 0;
-            let mut events = MidiEventQueue::default();
+            let mut events = EventQueue::default();
             for track in tracks {
-                let gain = track.get_gain_f();
-                self.enqueue_track_events(track, &state.time, &mut events, &mut t1, gain);
+                let notes = Self::get_exportable_notes(track);
+                events.enqueue(track.channel, &notes, &track.effects, &state.time, self.framerate, &mut t1);
             }
             events.sort();
             // Add an exportable.
@@ -393,40 +379,6 @@ impl Conn {
         });
     }
 
-    fn enqueue_track_events(
-        &self,
-        track: &MidiTrack,
-        time: &Time,
-        events: &mut MidiEventQueue,
-        t1: &mut u64,
-        gain: f32,
-    ) {
-        let framerate = self.exporter.framerate.get_f();
-        for note in track.notes.iter() {
-            // Note-on.
-            events.enqueue(
-                time.ppq_to_samples(note.start, framerate),
-                MidiEvent::NoteOn {
-                    channel: track.channel,
-                    key: note.note,
-                    vel: (note.velocity as f32 * gain) as u8,
-                },
-            );
-            let end = time.ppq_to_samples(note.end, framerate);
-            // This is the last known event.
-            if *t1 < end {
-                *t1 = end;
-            }
-            events.enqueue(
-                end,
-                MidiEvent::NoteOff {
-                    channel: track.channel,
-                    key: note.note,
-                },
-            );
-        }
-    }
-
     fn export(
         mut exportables: Vec<Exportable>,
         export_state: SharedExportState,
@@ -448,7 +400,7 @@ impl Conn {
             for t in 0..total_samples {
                 // Get and send each event at this time.
                 for event in exportable.events.dequeue(t).iter() {
-                    let _ = synth.send_event(*event);
+                    event.occur(&mut synth);
                 }
                 // Set the export state.
                 Self::set_export_state_wav(exportable, &export_state, t);
@@ -544,5 +496,16 @@ impl Conn {
                 self.state.programs.get(&track.channel).unwrap().preset_name
             ),
         }
+    }
+
+    fn get_exportable_notes(track: &MidiTrack) -> Vec<Note> {
+        let gain = track.get_gain_f();
+        let mut notes = vec![];
+        for note in track.notes.iter() {
+            let mut n1 = *note;
+            n1.velocity = (n1.velocity as f32 * gain) as u8;
+            notes.push(n1);
+        }
+        notes
     }
 }

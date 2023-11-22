@@ -1,5 +1,5 @@
 use crate::export::ExportState;
-use crate::midi_event_queue::MidiEventQueue;
+use crate::event_queue::EventQueue;
 use crate::play_state::PlayState;
 use crate::Command;
 use oxisynth::Synth;
@@ -14,6 +14,6 @@ pub type CommandsMessage = Vec<Command>;
 pub(crate) type AudioBuffer = [Vec<f32>; 2];
 pub(crate) type SharedSynth = Arc<Mutex<Synth>>;
 pub type SharedExportState = Arc<Mutex<ExportState>>;
-pub(crate) type SharedMidiEventQueue = Arc<Mutex<MidiEventQueue>>;
+pub(crate) type SharedEventQueue = Arc<Mutex<EventQueue>>;
 pub type SharedPlayState = Arc<Mutex<PlayState>>;
 pub(crate) type SharedSample = Arc<Mutex<AudioMessage>>;

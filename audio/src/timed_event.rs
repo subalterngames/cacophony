@@ -1,16 +1,16 @@
-use oxisynth::MidiEvent;
+use crate::event_type::EventType;
 use std::cmp::Ordering;
 
-/// A MIDI event with a start time.
+/// An event with a start time.
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub(crate) struct TimedMidiEvent {
+pub(crate) struct TimedEvent {
     /// The event time in number of samples.
     pub(crate) time: u64,
     /// The event.
-    pub(crate) event: MidiEvent,
+    pub(crate) event: EventType,
 }
 
-impl Ord for TimedMidiEvent {
+impl Ord for TimedEvent {
     fn cmp(&self, other: &Self) -> Ordering {
         match self.time.cmp(&other.time) {
             Ordering::Less => Ordering::Less,
@@ -18,12 +18,12 @@ impl Ord for TimedMidiEvent {
             Ordering::Equal => match (&self.event, &other.event) {
                 // Two note-on events are equal.
                 (
-                    MidiEvent::NoteOn {
+                    EventType::NoteOn {
                         channel: _,
                         key: _,
                         vel: _,
                     },
-                    MidiEvent::NoteOn {
+                    EventType::NoteOn {
                         channel: _,
                         key: _,
                         vel: _,
@@ -31,23 +31,23 @@ impl Ord for TimedMidiEvent {
                 ) => Ordering::Equal,
                 // Two note-off events are equal.
                 (
-                    MidiEvent::NoteOff { channel: _, key: _ },
-                    MidiEvent::NoteOff { channel: _, key: _ },
+                    EventType::NoteOff { channel: _, key: _ },
+                    EventType::NoteOff { channel: _, key: _ },
                 ) => Ordering::Equal,
                 // Note-off events are always before all other events.
-                (MidiEvent::NoteOff { channel: _, key: _ }, _) => Ordering::Less,
+                (EventType::NoteOff { channel: _, key: _ }, _) => Ordering::Less,
                 // Note-on events are always after note-offs.
                 (
-                    MidiEvent::NoteOn {
+                    EventType::NoteOn {
                         channel: _,
                         key: _,
                         vel: _,
                     },
-                    MidiEvent::NoteOff { channel: _, key: _ },
+                    EventType::NoteOff { channel: _, key: _ },
                 ) => Ordering::Greater,
                 // Note-on events are always before all other events except note-offs.
                 (
-                    MidiEvent::NoteOn {
+                    EventType::NoteOn {
                         channel: _,
                         key: _,
                         vel: _,
@@ -61,7 +61,7 @@ impl Ord for TimedMidiEvent {
     }
 }
 
-impl PartialOrd for TimedMidiEvent {
+impl PartialOrd for TimedEvent {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
