@@ -287,6 +287,7 @@ impl Conn {
                     .is_ok()
             {}
         }
+        drop(synth);
         // Let the audio decay.
         let mut play_state = self.play_state.lock();
         *play_state = PlayState::Decaying;
