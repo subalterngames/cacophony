@@ -14,6 +14,7 @@
 
 pub mod args;
 pub mod config;
+pub mod effect;
 mod index;
 mod input_state;
 mod midi_track;
