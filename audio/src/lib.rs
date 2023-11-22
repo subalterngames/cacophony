@@ -24,6 +24,7 @@ mod types;
 pub use crate::command::Command;
 pub use crate::conn::Conn;
 use crate::program::Program;
+pub(crate) mod soundfont_banks;
 pub use crate::synth_state::SynthState;
 pub(crate) use crate::types::{AudioBuffer, SharedEventQueue, SharedSynth};
 pub use crate::types::{AudioMessage, CommandsMessage, SharedExportState, SharedPlayState};

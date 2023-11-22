@@ -1,5 +1,8 @@
+use oxisynth::{GeneratorType, Synth};
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+use crate::soundfont_banks::SoundFontBanks;
 
 /// A channel's program.
 #[derive(Serialize, Deserialize)]
@@ -20,6 +23,12 @@ pub struct Program {
     pub preset_index: usize,
     /// The name of the preset.
     pub preset_name: String,
+    #[serde(skip_serializing, skip_deserializing)]
+    pub(crate) chorus: f32,
+    #[serde(skip_serializing, skip_deserializing)]
+    pub(crate) pan: f32,
+    #[serde(skip_serializing, skip_deserializing)]
+    pub(crate) reverb: f32,
 }
 
 impl Clone for Program {
@@ -33,6 +42,38 @@ impl Clone for Program {
             preset: self.preset,
             preset_index: self.preset_index,
             preset_name: self.preset_name.clone(),
+            chorus: self.chorus,
+            pan: self.pan,
+            reverb: self.reverb,
+        }
+    }
+}
+
+impl Program {
+    pub(crate) fn new(channel: u8, synth: &Synth, path: &Path, soundfont: &SoundFontBanks) -> Self {
+        let chorus = synth.gen(channel, GeneratorType::ChorusSend).unwrap();
+        let pan = synth.gen(channel, GeneratorType::Pan).unwrap();
+        let reverb = synth.gen(channel, GeneratorType::ReverbSend).unwrap();
+
+        // Get the bank info.
+        let mut banks: Vec<u32> = soundfont.banks.keys().copied().collect();
+        banks.sort();
+        let bank = banks[0];
+        let preset = soundfont.banks[&bank][0];
+        // Select the default program.
+        let preset_name = synth.channel_preset(channel).unwrap().name().to_string();
+        Self {
+            path: path.to_path_buf(),
+            num_banks: banks.len(),
+            bank_index: 0,
+            bank,
+            num_presets: soundfont.banks[&bank].len(),
+            preset_index: 0,
+            preset_name,
+            preset,
+            chorus,
+            pan,
+            reverb,
         }
     }
 }

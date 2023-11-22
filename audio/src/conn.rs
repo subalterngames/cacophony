@@ -2,6 +2,7 @@ use crate::decayer::Decayer;
 use crate::export::{ExportState, ExportType, Exportable, MultiFileSuffix};
 use crate::exporter::Exporter;
 use crate::play_state::PlayState;
+use crate::soundfont_banks::SoundFontBanks;
 use crate::types::SharedPlayState;
 use crate::SharedExportState;
 use crate::{
@@ -18,30 +19,6 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::thread::spawn;
-
-/// A convenient wrapper for a SoundFont.
-struct SoundFontBanks {
-    id: SoundFontId,
-    /// The banks and their presets.
-    banks: HashMap<u32, Vec<u8>>,
-}
-
-impl SoundFontBanks {
-    pub fn new(font: SoundFont, synth: &mut SharedSynth) -> Self {
-        let mut banks: HashMap<u32, Vec<u8>> = HashMap::new();
-        (0u32..=128u32).for_each(|b| {
-            let presets: Vec<u8> = (0u8..128)
-                .filter(|p| font.preset(b, *p).is_some())
-                .collect();
-            if !presets.is_empty() {
-                banks.insert(b, presets);
-            }
-        });
-        let mut synth = synth.lock();
-        let id = synth.add_font(font, true);
-        Self { id, banks }
-    }
-}
 
 /// The connects used by an external function.
 pub struct Conn {
@@ -254,6 +231,7 @@ impl Conn {
                 .collect::<Vec<Effect>>();
             event_queue.enqueue(
                 track.channel,
+                &self.state.programs[&track.channel],
                 &notes,
                 &effects,
                 &state.time,
@@ -294,45 +272,38 @@ impl Conn {
 
     /// Set the synthesizer program to a default program.
     fn set_program_default(&mut self, channel: u8, path: &Path) {
+        let mut synth = self.synth.lock();
+        // Create a new program.
         let soundfont = &self.soundfonts[path];
-        // Get the bank info.
-        let mut banks: Vec<u32> = soundfont.banks.keys().copied().collect();
-        banks.sort();
-        let bank = banks[0];
-        let preset = soundfont.banks[&bank][0];
-        // Select the default program.
-        let id = self.soundfonts[path].id;
-        self.set_program(channel, path, bank, preset, id);
+        let program = Program::new(channel, &synth, path, soundfont);
+        // Set the program.
+        let _ = synth
+            .program_select(channel, soundfont.id, program.bank, program.preset)
+            .is_ok();
+        // Store the program.
+        self.state.programs.insert(channel, program);
     }
 
     /// Set the synthesizer program to a program.
     fn set_program(&mut self, channel: u8, path: &Path, bank: u32, preset: u8, id: SoundFontId) {
         let mut synth = self.synth.lock();
-        if synth.program_select(channel, id, bank, preset).is_ok() {
-            let soundfont = &self.soundfonts[path];
-            // Get the bank info.
-            let bank_index = soundfont.banks.keys().position(|&b| b == bank).unwrap();
-            // Get the preset info.
-            let preset_index = soundfont.banks[&bank]
-                .iter()
-                .position(|&p| p == preset)
-                .unwrap();
-            let preset_name = synth.channel_preset(channel).unwrap().name().to_string();
-            let num_banks = soundfont.banks.len();
-            let num_presets = soundfont.banks[&bank].len();
-            let program = Program {
-                path: path.to_path_buf(),
-                num_banks,
-                bank_index,
-                bank,
-                num_presets,
-                preset_index,
-                preset_name,
-                preset,
-            };
-            // Remember the program.
-            self.state.programs.insert(channel, program);
+        let _ = synth.program_select(channel, id, bank, preset).is_ok();
+        let soundfont = &self.soundfonts[path];
+        let program = self.state.programs.get_mut(&channel).unwrap();
+        // Set the program to a new SoundFont.
+        if program.path != path {
+            *program = Program::new(channel, &synth, path, soundfont);
         }
+        // Set the bank.
+        program.bank_index = soundfont.banks.keys().position(|&b| b == bank).unwrap();
+        program.bank = bank;
+        // Set the preset.
+        program.preset = preset;
+        program.preset_name = synth.channel_preset(channel).unwrap().name().to_string();
+        program.preset_index = soundfont.banks[&bank]
+            .iter()
+            .position(|&p| p == preset)
+            .unwrap();
     }
 
     pub fn start_export(&mut self, state: &State, paths_state: &PathsState) {
@@ -348,6 +319,7 @@ impl Conn {
                 let notes = Self::get_exportable_notes(track);
                 events.enqueue(
                     track.channel,
+                    &self.state.programs[&track.channel],
                     &notes,
                     &track.effects,
                     &state.time,
@@ -372,6 +344,7 @@ impl Conn {
                 let notes = Self::get_exportable_notes(track);
                 events.enqueue(
                     track.channel,
+                    &self.state.programs[&track.channel],
                     &notes,
                     &track.effects,
                     &state.time,

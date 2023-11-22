@@ -1,6 +1,9 @@
 use super::timed_event::TimedEvent;
-use crate::event_type::EventType;
-use common::{effect::Effect, Note, Time};
+use crate::{event_type::EventType, program::Program};
+use common::{
+    effect::{Effect, EffectType},
+    Note, Time,
+};
 
 /// A queue of timed events.
 #[derive(Default)]
@@ -11,15 +14,39 @@ pub(crate) struct EventQueue {
 
 impl EventQueue {
     /// Enqueue notes and events.
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn enqueue(
         &mut self,
         channel: u8,
+        program: &Program,
         notes: &[Note],
         effects: &[Effect],
         time: &Time,
         framerate: f32,
         end_time: &mut u64,
     ) {
+        // Enqueue default program values.
+        self.enqueue_event(
+            0,
+            EventType::Effect {
+                channel,
+                effect: EffectType::Chorus(program.chorus as u16),
+            },
+        );
+        self.enqueue_event(
+            0,
+            EventType::Effect {
+                channel,
+                effect: EffectType::Pan(program.pan as i16),
+            },
+        );
+        self.enqueue_event(
+            0,
+            EventType::Effect {
+                channel,
+                effect: EffectType::Reverb(program.reverb as u16),
+            },
+        );
         // Enqueue notes.
         for note in notes.iter() {
             // Note-on event.
