@@ -265,6 +265,7 @@ impl Conn {
         }
         // Sort the events by start time.
         midi_event_queue.sort();
+        drop(midi_event_queue);
 
         // Play music.
         let mut play_state = self.play_state.lock();
