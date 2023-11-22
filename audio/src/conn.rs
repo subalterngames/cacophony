@@ -238,6 +238,7 @@ impl Conn {
         // Set the playback framerate.
         let mut synth = self.synth.lock();
         synth.set_sample_rate(self.framerate);
+        drop(synth);
 
         // Enqueue note events.
         let mut midi_event_queue = self.midi_event_queue.lock();
