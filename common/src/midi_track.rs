@@ -1,4 +1,5 @@
 use crate::{Note, MAX_VOLUME};
+use crate::effect::Effect;
 use serde::{Deserialize, Serialize};
 
 /// A MIDI track has some notes.
@@ -10,6 +11,9 @@ pub struct MidiTrack {
     pub gain: u8,
     /// The notes in the track.
     pub notes: Vec<Note>,
+    /// Synthesizer and MIDI effects.
+    #[serde(default = "Vec::new")]
+    pub effects: Vec<Effect>,
     /// True if the track is muted.
     pub mute: bool,
     /// True if the track is soloed.
@@ -22,6 +26,7 @@ impl MidiTrack {
             channel,
             gain: MAX_VOLUME,
             notes: vec![],
+            effects: vec![],
             mute: false,
             solo: false,
         }
@@ -57,6 +62,7 @@ impl Clone for MidiTrack {
             channel: self.channel,
             gain: self.gain,
             notes: self.notes.clone(),
+            effects: self.effects.clone(),
             mute: self.mute,
             solo: self.solo,
         }

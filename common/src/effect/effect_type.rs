@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Types of synthesizer effects.
-#[derive(Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
 pub enum EffectType {
     /// The degree, in 0.1% units, to which the audio output of the note is sent to the chorus effects processor.
     /// Must be between 0 and 1000.
