@@ -175,13 +175,9 @@ impl Input {
             self.pressed_chars.push(c);
         }
         // Get all pressed keys.
-        let pressed: Vec<KeyCode> = KEYS
-            .iter()
-            .filter(|&k| is_key_pressed(*k))
-            .copied()
-            .collect();
+        let pressed = get_keys_pressed().iter().copied().collect::<Vec<KeyCode>>();
         // Get all held keys.
-        let down: Vec<KeyCode> = KEYS.iter().filter(|&k| is_key_down(*k)).copied().collect();
+        let down = get_keys_down().iter().copied().collect::<Vec<KeyCode>>();
 
         // Update the qwerty key bindings.
         self.qwerty_events

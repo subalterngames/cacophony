@@ -65,6 +65,8 @@ features = ["derive"]
 version = "0.4.2"
 default-features = false
 features = []
+git = "https://github.com/subalterngames/macroquad.git"
+branch = "get_keys"
 
 [workspace.dependencies.oxisynth]
 version = "0.0.3"
