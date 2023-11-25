@@ -175,9 +175,9 @@ impl Input {
             self.pressed_chars.push(c);
         }
         // Get all pressed keys.
-        let pressed = get_keys_pressed().iter().copied().collect::<Vec<KeyCode>>();
+        let pressed = get_keys_pressed();
         // Get all held keys.
-        let down = get_keys_down().iter().copied().collect::<Vec<KeyCode>>();
+        let down = get_keys_down();
 
         // Update the qwerty key bindings.
         self.qwerty_events
