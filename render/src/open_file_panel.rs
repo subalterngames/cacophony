@@ -13,7 +13,7 @@ pub(crate) struct OpenFilePanel {
     /// The titles for each open-file type.
     titles: HashMap<OpenFileType, LabelRectangle>,
     /// The background of the filename prompt.
-    prompt: Rectangle,
+    prompt: PanelBackground,
     /// The filename extension.
     extension: Width,
     /// The filename input.
@@ -27,28 +27,23 @@ pub(crate) struct OpenFilePanel {
 }
 
 impl OpenFilePanel {
-    pub fn new(config: &Ini, text: &Text) -> Self {
+    pub fn new(config: &Ini, renderer: &Renderer, text: &Text) -> Self {
         let (position, size) = get_open_file_rect(config);
-        let panel = Panel::new(PanelType::OpenFile, position, size, text);
-
-        let prompt = Rectangle::new(
-            [
-                panel.rect.position[0],
-                panel.rect.position[1] + panel.rect.size[1],
-            ],
-            [panel.rect.size[0], OPEN_FILE_PANEL_PROMPT_HEIGHT],
-        );
+        let panel = Panel::new(PanelType::OpenFile, position, size, renderer, text);
+        let prompt_position = [position[0], position[1] + size[1]];
+        let prompt_size = [size[0], OPEN_FILE_PANEL_PROMPT_HEIGHT];
+        let prompt = PanelBackground::new(prompt_position, prompt_size, renderer);
         let extension = Width::new(
             [
-                prompt.position[0] + prompt.size[0] - EXTENSION_WIDTH - 1,
-                prompt.position[1] + 1,
+                prompt_position[0] + prompt_size[0] - EXTENSION_WIDTH - 1,
+                prompt_position[1] + 1,
             ],
             EXTENSION_WIDTH as usize,
         );
 
         let input = Width::new(
-            [prompt.position[0] + 1, prompt.position[1] + 1],
-            (prompt.size[0] - EXTENSION_WIDTH - 3) as usize,
+            [prompt_position[0] + 1, prompt_position[1] + 1],
+            (prompt_size[0] - EXTENSION_WIDTH - 3) as usize,
         );
         let input_rect = Rectangle::new(input.position, [input.width_u32, 1]);
 
@@ -94,9 +89,9 @@ impl OpenFilePanel {
 
         // Get the scroll labels.
         let mut scroll_labels = HashMap::new();
-        let panel_x = panel.rect.position[0];
-        let panel_w = panel.rect.size[0];
-        let label_y = panel.rect.position[1] + panel.rect.size[1] - 2;
+        let panel_x = position[0];
+        let panel_w = size[0];
+        let label_y = position[1] + size[1] - 2;
         scroll_labels.insert(
             PagePosition::First,
             Self::get_scroll_label("OPEN_FILE_PANEL_DOWN", text, panel_x, panel_w, label_y),
@@ -109,7 +104,6 @@ impl OpenFilePanel {
             PagePosition::Last,
             Self::get_scroll_label("OPEN_FILE_PANEL_UP", text, panel_x, panel_w, label_y),
         );
-
         Self {
             panel,
             prompt,
@@ -153,16 +147,20 @@ impl Drawable for OpenFilePanel {
             ColorKey::NoFocus
         };
         // Draw the panel background.
-        renderer.rectangle(&self.panel.rect, &ColorKey::Background);
-        renderer.border(&self.panel.rect, &focus_color);
+        renderer.rectangle_pixel(
+            self.panel.background.background.position,
+            self.panel.background.background.size,
+            &ColorKey::Background,
+        );
+        renderer.rectangle_lines(&self.panel.background.border, &focus_color);
         // Draw the title.
         let title = &self.titles[&paths_state.open_file_type];
         renderer.rectangle(&title.rect, &ColorKey::Background);
         renderer.text(&title.label, &focus_color);
         // Draw the working directory.
-        let mut x = self.panel.rect.position[0] + 1;
-        let mut y = self.panel.rect.position[1] + 1;
-        let mut length = (self.panel.rect.size[0] - 2) as usize;
+        let mut x = self.panel.background.grid_rect.position[0] + 1;
+        let mut y = self.panel.background.grid_rect.position[1] + 1;
+        let mut length = (self.panel.background.grid_rect.size[0] - 2) as usize;
 
         // Show the current directory.
         let cwd = Label {
@@ -178,7 +176,7 @@ impl Drawable for OpenFilePanel {
 
         // Prepare to show the children.
         x += 1;
-        let height: u32 = self.panel.rect.size[1] - 4;
+        let height: u32 = self.panel.background.grid_rect.size[1] - 4;
         y += 1;
         length -= 1;
         let width = length as u32;
@@ -230,9 +228,13 @@ impl Drawable for OpenFilePanel {
         // Possibly show the input dialogue.
         if let Some(filename) = &paths_state.get_filename() {
             // Draw the background of the prompt.
-            renderer.rectangle(&self.prompt, &ColorKey::Background);
-            renderer.border(
-                &self.prompt,
+            renderer.rectangle_pixel(
+                self.prompt.background.position,
+                self.prompt.background.size,
+                &ColorKey::Background,
+            );
+            renderer.rectangle_lines(
+                &self.prompt.border,
                 &if focus {
                     ColorKey::FocusDefault
                 } else {

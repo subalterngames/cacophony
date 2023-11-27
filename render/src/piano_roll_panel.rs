@@ -46,19 +46,20 @@ pub struct PianoRollPanel {
 }
 
 impl PianoRollPanel {
-    pub fn new(config: &Ini, state: &State, text: &Text, renderer: &Renderer) -> Self {
+    pub fn new(config: &Ini, renderer: &Renderer, state: &State, text: &Text) -> Self {
         let piano_roll_panel_position = get_piano_roll_panel_position(config);
         let piano_roll_panel_size = get_piano_roll_panel_size(config);
         let panel_single_track = Panel::new(
             PanelType::PianoRoll,
             piano_roll_panel_position,
             piano_roll_panel_size,
+            renderer,
             text,
         );
         let top_bar = TopBar::new(config, text);
         let note_names_position = [
-            panel_single_track.rect.position[0] + 1,
-            panel_single_track.rect.position[1] + PIANO_ROLL_PANEL_TOP_BAR_HEIGHT + 1,
+            piano_roll_panel_position[0] + 1,
+            piano_roll_panel_position[1] + PIANO_ROLL_PANEL_TOP_BAR_HEIGHT + 1,
         ];
         let piano_roll_rows_size = get_viewport_size(config);
         let note_name_positions: Vec<[u32; 2]> = (note_names_position[1]
@@ -85,7 +86,9 @@ impl PianoRollPanel {
         let volume = Volume::new(config, text, renderer);
         let multi_track = MultiTrack::new(config, renderer);
         let mut panel_multi_track = panel_single_track.clone();
-        panel_multi_track.rect.size[1] += volume.rect.size[1];
+        panel_multi_track
+            .background
+            .resize_by([0, volume.rect.size[1]], renderer);
         let volume_size_f = renderer.grid_to_pixel(volume.rect.size);
         let time_line_bottom_single_track = piano_roll_rows_rect[1] + piano_roll_rows_rect[3];
         let time_line_bottoms = [
@@ -306,7 +309,8 @@ impl Drawable for PianoRollPanel {
         } else {
             ColorKey::NoFocus
         };
-        let cursor_x = panel.rect.position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH + 1;
+        let cursor_x =
+            panel.background.grid_rect.position[0] + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH + 1;
         let cursor_string = text.get_with_values(
             "PIANO_ROLL_PANEL_CURSOR_TIME",
             &[&ppq_to_string(state.time.cursor)],
@@ -406,8 +410,9 @@ impl Drawable for PianoRollPanel {
             "PIANO_ROLL_PANEL_VIEW_DT",
             &[&ppq_to_string(dt[0].get_u()), &ppq_to_string(dt[1].get_u())],
         );
-        let dt_x =
-            panel.rect.position[0] + panel.rect.size[0] - dt_string.chars().count() as u32 - 1;
+        let dt_x = panel.background.grid_rect.position[0] + panel.background.grid_rect.size[0]
+            - dt_string.chars().count() as u32
+            - 1;
         let dt_label = Label {
             text: dt_string,
             position: [dt_x, self.time_y],

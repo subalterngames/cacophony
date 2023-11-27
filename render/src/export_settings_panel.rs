@@ -3,6 +3,7 @@ use crate::Focus;
 use audio::export::{ExportSetting, ExportType, MultiFileSuffix};
 use audio::exporter::{Exporter, MP3_BIT_RATES};
 use common::IndexedValues;
+use hashbrown::HashMap;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use text::ValueMap;
@@ -10,9 +11,9 @@ use util::KV_PADDING;
 
 /// Export settings panel.
 pub(crate) struct ExportSettingsPanel {
-    /// The position of the panel.
+    /// The panel position.
     position: [u32; 2],
-    /// The width of the panel.
+    /// The panel width.
     width: u32,
     /// The title label for the panel.
     title: Label,
@@ -26,10 +27,12 @@ pub(crate) struct ExportSettingsPanel {
     quality: KeyListCorners,
     /// String values of multi-file suffixes.
     multi_file_suffixes: ValueMap<MultiFileSuffix>,
+    /// Panel background sizes per export type.
+    backgrounds: HashMap<ExportType, PanelBackground>,
 }
 
 impl ExportSettingsPanel {
-    pub fn new(config: &Ini, text: &Text) -> Self {
+    pub fn new(config: &Ini, renderer: &Renderer, exporter: &Exporter, text: &Text) -> Self {
         let (open_file_position, open_file_size) = get_open_file_rect(config);
         let position = [
             open_file_position[0],
@@ -72,6 +75,49 @@ impl ExportSettingsPanel {
             text,
         );
 
+        // Calculate the background sizes per export type.
+        let mut backgrounds = HashMap::new();
+        backgrounds.insert(
+            ExportType::Wav,
+            PanelBackground::new(
+                position,
+                [width, exporter.wav_settings.index.get_length() as u32 + 3],
+                renderer,
+            ),
+        );
+        backgrounds.insert(
+            ExportType::Mid,
+            PanelBackground::new(
+                position,
+                [width, exporter.mid_settings.index.get_length() as u32 + 2],
+                renderer,
+            ),
+        );
+        backgrounds.insert(
+            ExportType::MP3,
+            PanelBackground::new(
+                position,
+                [width, exporter.mp3_settings.index.get_length() as u32 + 4],
+                renderer,
+            ),
+        );
+        backgrounds.insert(
+            ExportType::Ogg,
+            PanelBackground::new(
+                position,
+                [width, exporter.ogg_settings.index.get_length() as u32 + 4],
+                renderer,
+            ),
+        );
+        backgrounds.insert(
+            ExportType::Flac,
+            PanelBackground::new(
+                position,
+                [width, exporter.flac_settings.index.get_length() as u32 + 4],
+                renderer,
+            ),
+        );
+
         Self {
             position,
             width,
@@ -81,6 +127,7 @@ impl ExportSettingsPanel {
             mp3_bit_rate,
             quality,
             multi_file_suffixes,
+            backgrounds,
         }
     }
 
@@ -315,26 +362,19 @@ impl Drawable for ExportSettingsPanel {
     fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, text: &Text, _: &PathsState) {
         // Get the focus.
         let focus = state.panels[state.focus.get()] == PanelType::ExportSettings;
-        // Get the height of the panel.
-        let e = conn.exporter.export_type.get();
-        let h = match &e {
-            ExportType::Wav => conn.exporter.wav_settings.index.get_length() + 2,
-            ExportType::Mid => conn.exporter.mid_settings.index.get_length() + 1,
-            ExportType::MP3 => conn.exporter.mp3_settings.index.get_length() + 3,
-            ExportType::Ogg => conn.exporter.ogg_settings.index.get_length() + 3,
-            ExportType::Flac => conn.exporter.flac_settings.index.get_length() + 3,
-        } as u32
-            + 1;
-
         // Draw the panel.
         let color: ColorKey = if focus {
             ColorKey::FocusDefault
         } else {
             ColorKey::NoFocus
         };
-        let rect = Rectangle::new(self.position, [self.width, h]);
-        renderer.rectangle(&rect, &ColorKey::Background);
-        renderer.border(&rect, &color);
+        let background = &self.backgrounds[&conn.exporter.export_type.get()];
+        renderer.rectangle_pixel(
+            background.background.position,
+            background.background.size,
+            &color,
+        );
+        renderer.rectangle_lines(&background.border, &color);
         renderer.rectangle(&self.title_rect, &ColorKey::Background);
         renderer.text(&self.title, &color);
 

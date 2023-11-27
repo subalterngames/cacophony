@@ -17,7 +17,7 @@ pub(crate) struct LinksPanel {
 }
 
 impl LinksPanel {
-    pub fn new(config: &Ini, text: &Text, input: &Input) -> Self {
+    pub fn new(config: &Ini, renderer: &Renderer, text: &Text, input: &Input) -> Self {
         // Get each label. The x coordinate is right now at 0.
         let mut y = MAIN_MENU_HEIGHT + 1;
         let mut tooltips = Tooltips::default();
@@ -70,7 +70,7 @@ impl LinksPanel {
         discord.position[0] = label_x;
         github.position[0] = label_x;
         // Define the panel.
-        let panel = Panel::new(PanelType::Links, [x, y], [w, h], text);
+        let panel = Panel::new(PanelType::Links, [x, y], [w, h], renderer, text);
         let labels = [website, discord, github];
         let popup = Popup::new(PanelType::Links);
         Self {

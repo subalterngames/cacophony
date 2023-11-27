@@ -37,19 +37,21 @@ impl Panels {
         config: &Ini,
         input: &Input,
         state: &State,
+        conn: &Conn,
         text: &mut Text,
         renderer: &Renderer,
         remote_version: Option<String>,
     ) -> Self {
-        let music_panel = MusicPanel::new(config, text);
-        let main_menu = MainMenu::new(config, input, text, renderer, remote_version);
-        let tracks_panel = TracksPanel::new(config, text);
-        let open_file_panel = OpenFilePanel::new(config, text);
-        let piano_roll_panel = PianoRollPanel::new(config, state, text, renderer);
-        let export_panel = ExportPanel::new(config, text);
-        let export_settings_panel = ExportSettingsPanel::new(config, text);
-        let quit_panel = QuitPanel::new(config, text, input);
-        let links_panel = LinksPanel::new(config, text, input);
+        let music_panel = MusicPanel::new(config, renderer, text);
+        let main_menu = MainMenu::new(config, renderer, input, text, remote_version);
+        let tracks_panel = TracksPanel::new(config, renderer, text);
+        let open_file_panel = OpenFilePanel::new(config, renderer, text);
+        let piano_roll_panel = PianoRollPanel::new(config, renderer, state, text);
+        let export_panel = ExportPanel::new(config, renderer, text);
+        let export_settings_panel =
+            ExportSettingsPanel::new(config, renderer, &conn.exporter, text);
+        let quit_panel = QuitPanel::new(config, renderer, text, input);
+        let links_panel = LinksPanel::new(config, renderer, text, input);
         Self {
             music_panel,
             main_menu,
