@@ -27,14 +27,21 @@ pub struct TracksPanel {
 }
 
 impl TracksPanel {
-    pub fn new(config: &Ini, text: &Text) -> Self {
+    pub fn new(config: &Ini, renderer: &Renderer, text: &Text) -> Self {
         // Get the panel.
         let width = get_tracks_panel_width(config);
         let grid_size = get_window_grid_size(config);
         let height = grid_size[1] - MUSIC_PANEL_HEIGHT;
         let x = MUSIC_PANEL_POSITION[0];
         let y = MUSIC_PANEL_POSITION[1] + MUSIC_PANEL_HEIGHT;
-        let panel = Panel::new(PanelType::Tracks, [x, y], [width, height], text);
+        let panel_position = [x, y];
+        let panel = Panel::new(
+            PanelType::Tracks,
+            panel_position,
+            [width, height],
+            renderer,
+            text,
+        );
         // Get the sizes.
         let track_width = width - 2;
         let track_size_sf = [track_width, TRACK_HEIGHT_SOUNDFONT];
@@ -82,8 +89,8 @@ impl Drawable for TracksPanel {
         };
 
         // Draw the tracks.
-        let x = self.panel.rect.position[0] + 1;
-        let mut y = self.panel.rect.position[1] + 1;
+        let x = self.panel.background.grid_rect.position[0] + 1;
+        let mut y = self.panel.background.grid_rect.position[1] + 1;
         for i in track_page {
             let track = &state.music.midi_tracks[i];
             let channel = track.channel;

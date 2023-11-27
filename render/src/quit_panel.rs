@@ -16,7 +16,7 @@ pub(crate) struct QuitPanel {
 }
 
 impl QuitPanel {
-    pub fn new(config: &Ini, text: &Text, input: &Input) -> Self {
+    pub fn new(config: &Ini, renderer: &Renderer, text: &Text, input: &Input) -> Self {
         let mut tooltips = Tooltips::default();
         // Get the width of the panel.
         let yes = tooltips
@@ -33,7 +33,7 @@ impl QuitPanel {
         let x = window_grid_size[0] / 2 - w / 2;
         let y = window_grid_size[1] / 2 - h / 2;
         // Define the panel.
-        let panel = Panel::new(PanelType::Quit, [x, y], [w, h], text);
+        let panel = Panel::new(PanelType::Quit, [x, y], [w, h], renderer, text);
         // Define the labels.
         let yes = Label::new([x + 2, y + 1], yes);
         let no = Label::new([yes.position[0] + yes_w, yes.position[1]], no);

@@ -20,7 +20,7 @@ pub(crate) struct MusicPanel {
 }
 
 impl MusicPanel {
-    pub fn new(config: &Ini, text: &Text) -> Self {
+    pub fn new(config: &Ini, renderer: &Renderer, text: &Text) -> Self {
         // Get the width of the panel.
         let mut width = get_tracks_panel_width(config);
         // Get the panel.
@@ -28,12 +28,13 @@ impl MusicPanel {
             PanelType::Music,
             MUSIC_PANEL_POSITION,
             [width, MUSIC_PANEL_HEIGHT],
+            renderer,
             text,
         );
 
         // Move the (x, y) coordinates inward by 1.
-        let x = panel.rect.position[0] + 1;
-        let mut y = panel.rect.position[1] + 1;
+        let x = MUSIC_PANEL_POSITION[0] + 1;
+        let mut y = MUSIC_PANEL_POSITION[1] + 1;
         // Shorten the width for the fields.
         width -= 2;
         let w_usize = width as usize;

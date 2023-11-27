@@ -82,6 +82,7 @@ async fn main() {
         &config,
         &input,
         &state,
+        &conn,
         &mut text,
         &renderer,
         remote_version,
