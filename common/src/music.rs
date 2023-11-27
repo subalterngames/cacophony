@@ -26,4 +26,16 @@ impl Music {
             None => None,
         }
     }
+
+    /// Returns all tracks that can be played.
+    pub fn get_playable_tracks(&self) -> Vec<&MidiTrack> {
+        // Get all tracks that can play music.
+        let tracks = match self.midi_tracks.iter().find(|t| t.solo) {
+            // Only include the solo track.
+            Some(solo) => vec![solo],
+            // Only include unmuted tracks.
+            None => self.midi_tracks.iter().filter(|t| !t.mute).collect(),
+        };
+        tracks
+    }
 }

@@ -63,15 +63,7 @@ impl MusicPanel {
 }
 
 impl Drawable for MusicPanel {
-    fn update(
-        &self,
-        renderer: &Renderer,
-        state: &State,
-        conn: &Conn,
-        _: &Text,
-        _: &PathsState,
-        exporter: &SharedExporter,
-    ) {
+    fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, _: &Text, _: &PathsState) {
         // Get the focus,
         let focus = self.panel.has_focus(state);
         // Draw the rect.
@@ -92,9 +84,8 @@ impl Drawable for MusicPanel {
             }
         }
         // Draw the name.
-        let ex = exporter.lock();
         renderer.text_ref(
-            &self.name.to_label(&ex.metadata.title),
+            &self.name.to_label(&conn.exporter.metadata.title),
             &Renderer::get_value_color([focus, name_focus]),
         );
 

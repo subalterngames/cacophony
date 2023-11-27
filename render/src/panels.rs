@@ -70,7 +70,6 @@ impl Panels {
     /// - `conn` The synthesizer-player connection.
     /// - `text` The text.
     /// - `paths_state` The state of the file paths.
-    /// - `exporter` The exporter.
     pub fn update(
         &self,
         renderer: &Renderer,
@@ -78,11 +77,10 @@ impl Panels {
         conn: &Conn,
         text: &Text,
         paths_state: &PathsState,
-        exporter: &SharedExporter,
     ) {
         // Draw the main panel.
         self.main_menu
-            .update(renderer, state, conn, text, paths_state, exporter);
+            .update(renderer, state, conn, text, paths_state);
         for panel_type in &state.panels {
             // Get the panel.
             let panel: &dyn Drawable = match panel_type {
@@ -97,7 +95,7 @@ impl Panels {
                 PanelType::Links => &self.links_panel,
             };
             // Draw the panel.
-            panel.update(renderer, state, conn, text, paths_state, exporter);
+            panel.update(renderer, state, conn, text, paths_state);
         }
     }
 

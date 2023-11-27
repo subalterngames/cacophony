@@ -1,38 +1,29 @@
-mod export_type;
-use common::IndexedValues;
-use serde::{Deserialize, Serialize};
-mod metadata;
-mod multi_file_suffix;
-use crate::{AudioBuffer, SharedExporter, SynthState};
+use crate::export::{ExportSetting, ExportType, Metadata, MultiFileSuffix};
+use crate::{AudioBuffer, SynthState};
 use chrono::Datelike;
 use chrono::Local;
+use common::IndexedValues;
 use common::{Index, Music, Time, U64orF32, DEFAULT_FRAMERATE, PPQ_F, PPQ_U};
-pub use export_type::*;
-use hound::{SampleFormat, WavSpec, WavWriter};
-use id3::{Tag, TagLike, Version};
-pub use metadata::*;
-use midly::num::{u15, u24, u28, u4};
-use midly::{
-    write_std, Format, Header, MetaMessage, MidiMessage, Timing, Track, TrackEvent, TrackEventKind,
-};
-use mp3lame_encoder::*;
-pub use multi_file_suffix::*;
-use oggvorbismeta::*;
-use std::fs::OpenOptions;
-use std::io::Read;
-use std::io::{Cursor, Write};
-use std::path::Path;
-use std::sync::Arc;
-use vorbis_encoder::Encoder;
-mod export_setting;
-pub use export_setting::ExportSetting;
 use flacenc::bitsink::ByteSink;
 use flacenc::component::BitRepr;
 use flacenc::config::Encoder as FlacEncoder;
 use flacenc::encode_with_fixed_block_size;
 use flacenc::source::MemSource;
+use hound::{SampleFormat, WavSpec, WavWriter};
+use id3::{Tag, TagLike, Version};
 use metaflac::Tag as FlacTag;
-use parking_lot::Mutex;
+use midly::num::{u15, u24, u28, u4};
+use midly::{
+    write_std, Format, Header, MetaMessage, MidiMessage, Timing, Track, TrackEvent, TrackEventKind,
+};
+use mp3lame_encoder::*;
+use oggvorbismeta::*;
+use serde::{Deserialize, Serialize};
+use std::fs::OpenOptions;
+use std::io::Read;
+use std::io::{Cursor, Write};
+use std::path::Path;
+use vorbis_encoder::Encoder;
 
 /// The number of channels.
 const NUM_CHANNELS: usize = 2;
@@ -201,11 +192,6 @@ impl Default for Exporter {
 }
 
 impl Exporter {
-    /// Returns a new shareable Exporter.
-    pub fn new_shared() -> SharedExporter {
-        Arc::new(Mutex::new(Exporter::default()))
-    }
-
     /// Export to a .mid file.
     /// - `path` Output to this path.
     /// - `music` This is what we're saving.

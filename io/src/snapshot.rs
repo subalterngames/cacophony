@@ -71,7 +71,7 @@ impl Snapshot {
             to_commands: Some(to_commands.clone()),
             ..Default::default()
         };
-        conn.send(to_commands);
+        conn.do_commands(&to_commands);
         snapshot
     }
 
@@ -96,7 +96,7 @@ impl Snapshot {
             to_commands: Some(to_commands.clone()),
             io_commands: None,
         };
-        conn.send(to_commands);
+        conn.do_commands(&to_commands);
         snapshot
     }
 

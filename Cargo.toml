@@ -2,7 +2,7 @@
 members = ["audio", "common", "input", "io", "render", "text"]
 
 [workspace.package]
-version = "0.1.4"
+version = "0.2.0"
 authors = ["Esther Alter <subalterngames@gmail.com>"]
 description = "A minimalist and ergonomic MIDI sequencer"
 documentation = "https://github.com/subalterngames/cacophony"
@@ -13,7 +13,6 @@ serde_json = "1.0"
 rust-ini = "0.18"
 directories = "5.0.1"
 midir = "0.9.1"
-crossbeam-channel = "0.5.8"
 csv = "1.2.1"
 cpal = "0.13.1"
 hound = "3.5.0"
@@ -70,8 +69,8 @@ features = []
 [workspace.dependencies.oxisynth]
 version = "0.0.3"
 features = []
-git = "https://github.com/PolyMeilex/OxiSynth.git"
-branch = "master"
+git = "https://github.com/subalterngames/OxiSynth.git"
+branch = "midi_event_copy_clone"
 
 [workspace.dependencies.tts]
 version = "0.25.6"
@@ -85,7 +84,7 @@ speech_dispatcher_0_9 = ["text/speech_dispatcher_0_9"]
 
 [package]
 name = "cacophony"
-version = "0.1.4"
+version = "0.2.0"
 authors = ["Esther Alter <subalterngames@gmail.com>"]
 description = "A minimalist and ergonomic MIDI sequencer"
 documentation = "https://github.com/subalterngames/cacophony"
@@ -121,7 +120,7 @@ path = "text"
 name = "Cacophony"
 identifier = "com.subalterngames.cacophony"
 icon = ["icon/32.png", "icon/64.png", "icon/128.png", "icon/256.png"]
-version = "0.1.4"
+version = "0.2.0"
 resources = ["data/*"]
 copyright = "Copyright (c) Subaltern Games LLC 2023. All rights reserved."
 short_description = "A minimalist and ergonomic MIDI sequencer."

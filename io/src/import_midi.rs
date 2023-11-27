@@ -1,16 +1,11 @@
-use audio::{Command, Conn, SharedExporter};
+use audio::{Command, Conn};
 use common::{MidiTrack, Music, Note, Paths, State, U64orF32};
 use midly::{MetaMessage, MidiMessage, Smf, Timing, TrackEventKind};
 use std::fs::read;
 use std::path::Path;
 use std::str::from_utf8;
 
-pub(crate) fn import(
-    path: &Path,
-    state: &mut State,
-    conn: &mut Conn,
-    exporter: &mut SharedExporter,
-) {
+pub(crate) fn import(path: &Path, state: &mut State, conn: &mut Conn) {
     let bytes = read(path).unwrap();
     let smf = Smf::parse(&bytes).unwrap();
     let timing = match smf.header.timing {
@@ -24,7 +19,7 @@ pub(crate) fn import(
         let c = i as u8;
         let mut track = MidiTrack::new(c);
         // Load the default SoundFont.
-        conn.send(vec![Command::LoadSoundFont {
+        conn.do_commands(&[Command::LoadSoundFont {
             channel: c,
             path: paths.default_soundfont_path.clone(),
         }]);
@@ -40,9 +35,8 @@ pub(crate) fn import(
                 TrackEventKind::Meta(message) => match message {
                     MetaMessage::Copyright(data) => {
                         if let Ok(copyright) = from_utf8(data) {
-                            let mut exporter = exporter.lock();
-                            exporter.copyright = true;
-                            exporter.metadata.artist = Some(copyright.to_string());
+                            conn.exporter.copyright = true;
+                            conn.exporter.metadata.artist = Some(copyright.to_string());
                         }
                     }
                     MetaMessage::Tempo(data) => {
@@ -55,8 +49,7 @@ pub(crate) fn import(
                     }
                     MetaMessage::Text(data) => {
                         if let Ok(text) = from_utf8(data) {
-                            let mut exporter = exporter.lock();
-                            exporter.metadata.comment = Some(text.to_string())
+                            conn.exporter.metadata.comment = Some(text.to_string())
                         }
                     }
                     _ => (),
@@ -87,7 +80,7 @@ pub(crate) fn import(
                         }
                         // Set the preset.
                         MidiMessage::ProgramChange { program } => {
-                            conn.send(vec![Command::SetProgram {
+                            conn.do_commands(&[Command::SetProgram {
                                 channel: track.channel,
                                 path: paths.default_soundfont_path.clone(),
                                 bank_index: conn

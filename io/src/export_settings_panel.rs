@@ -1,6 +1,7 @@
 use crate::abc123::{on_disable_exporter, update_exporter};
 use crate::panel::*;
-use audio::exporter::*;
+use audio::export::{ExportSetting, ExportType, MultiFileSuffix};
+use audio::exporter::{Exporter, MP3_BIT_RATES};
 use audio::Conn;
 use common::{IndexedValues, U64orF32};
 use serde::de::DeserializeOwned;
@@ -218,7 +219,7 @@ impl ExportSettingsPanel {
         input: &Input,
         tts: &mut TTS,
         text: &Text,
-        exporter: &mut SharedExporter,
+        exporter: &mut Exporter,
     ) -> Option<Snapshot>
     where
         F: FnMut(&mut Exporter) -> &mut IndexedValues<ExportSetting, N>,
@@ -226,8 +227,7 @@ impl ExportSettingsPanel {
     {
         // Status TTS.
         if input.happened(&InputEvent::StatusTTS) {
-            let mut ex = exporter.lock();
-            let s = match &f(&mut ex).get() {
+            let s = match &f(exporter).get() {
                 ExportSetting::Framerate => {
                     TtsString::from(text.get("EXPORT_SETTINGS_PANEL_STATUS_TTS_FRAMERATE"))
                 }
@@ -235,7 +235,7 @@ impl ExportSettingsPanel {
                     tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TITLE_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TITLE_NO_ABC123",
-                    &Some(ex.metadata.title.clone()),
+                    &Some(exporter.metadata.title.clone()),
                     state,
                     input,
                     text,
@@ -244,7 +244,7 @@ impl ExportSettingsPanel {
                     tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ARTIST",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ARTIST_NO_ABC123",
-                    &ex.metadata.artist,
+                    &exporter.metadata.artist,
                     state,
                     input,
                     text,
@@ -253,7 +253,7 @@ impl ExportSettingsPanel {
                     tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COPYRIGHT_ENABLED",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COPYRIGHT_DISABLED",
-                    ex.copyright,
+                    exporter.copyright,
                     input,
                     text,
                 ),
@@ -261,7 +261,7 @@ impl ExportSettingsPanel {
                     tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ALBUM_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_ALBUM_NO_ABC123",
-                    &ex.metadata.album,
+                    &exporter.metadata.album,
                     state,
                     input,
                     text,
@@ -270,7 +270,7 @@ impl ExportSettingsPanel {
                     tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_GENRE_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_GENRE_NO_ABC123",
-                    &ex.metadata.genre,
+                    &exporter.metadata.genre,
                     state,
                     input,
                     text,
@@ -279,26 +279,31 @@ impl ExportSettingsPanel {
                     tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COMMENT_ABC123",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_COMMENT_NO_ABC123",
-                    &ex.metadata.comment,
+                    &exporter.metadata.comment,
                     state,
                     input,
                     text,
                 ),
-                ExportSetting::Mp3BitRate => TtsString::from(text.get_with_values(
-                    "EXPORT_SETTINGS_PANEL_STATUS_TTS_BIT_RATE",
-                    &[&((MP3_BIT_RATES[ex.mp3_bit_rate.get()] as u16) as u32 * 1000).to_string()],
-                )),
+                ExportSetting::Mp3BitRate => TtsString::from(
+                    text.get_with_values(
+                        "EXPORT_SETTINGS_PANEL_STATUS_TTS_BIT_RATE",
+                        &[
+                            &((MP3_BIT_RATES[exporter.mp3_bit_rate.get()] as u16) as u32 * 1000)
+                                .to_string(),
+                        ],
+                    ),
+                ),
                 ExportSetting::Mp3Quality => TtsString::from(text.get_with_values(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_QUALITY",
-                    &[&ex.mp3_quality.get().to_string()],
+                    &[&exporter.mp3_quality.get().to_string()],
                 )),
                 ExportSetting::OggQuality => TtsString::from(text.get_with_values(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_QUALITY",
-                    &[&exporter.lock().ogg_quality.get().to_string()],
+                    &[&exporter.ogg_quality.get().to_string()],
                 )),
                 ExportSetting::TrackNumber => TtsString::from(text.get_with_values(
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_TRACK_NUMBER",
-                    &[&match ex.metadata.track_number {
+                    &[&match exporter.metadata.track_number {
                         Some(track_number) => track_number.to_string(),
                         None => text.get("NONE"),
                     }],
@@ -307,12 +312,12 @@ impl ExportSettingsPanel {
                     tooltips,
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_ENABLED",
                     "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_DISABLED",
-                    ex.multi_file,
+                    exporter.multi_file,
                     input,
                     text,
                 ),
                 ExportSetting::MultiFileSuffix => {
-                    let key = match &ex.multi_file_suffix.get() {
+                    let key = match &exporter.multi_file_suffix.get() {
                         MultiFileSuffix::Preset => {
                             "EXPORT_SETTINGS_PANEL_STATUS_TTS_MULTI_FILE_PRESET"
                         }
@@ -330,8 +335,7 @@ impl ExportSettingsPanel {
         }
         // Input TTS.
         else if input.happened(&InputEvent::InputTTS) {
-            let mut ex = exporter.lock();
-            let s = match &f(&mut ex).get() {
+            let s = match &f(exporter).get() {
                 ExportSetting::Framerate => Self::get_input_lr_tts(
                     tooltips,
                     "EXPORT_SETTINGS_PANEL_INPUT_TTS_FRAMERATE",
@@ -429,57 +433,54 @@ impl ExportSettingsPanel {
         }
         // Previous setting.
         else if input.happened(&InputEvent::PreviousExportSetting) {
-            let mut ex = exporter.lock();
-            let s = f(&mut ex);
+            let s = f(exporter);
             s.index.increment(false);
         }
         // Next setting.
         else if input.happened(&InputEvent::NextExportSetting) {
-            let mut ex = exporter.lock();
-            let s = f(&mut ex);
+            let s = f(exporter);
             s.index.increment(true);
         } else {
-            let mut ex = exporter.lock();
-            match &f(&mut ex).get() {
+            match &f(exporter).get() {
                 // Framerate.
                 ExportSetting::Framerate => {
                     if input.happened(&InputEvent::PreviousExportSettingValue) {
-                        Self::set_framerate(&mut ex, false);
+                        Self::set_framerate(exporter, false);
                     } else if input.happened(&InputEvent::NextExportSettingValue) {
-                        Self::set_framerate(&mut ex, true);
+                        Self::set_framerate(exporter, true);
                     }
                 }
                 ExportSetting::Copyright => {
                     if input.happened(&InputEvent::ToggleExportSettingBoolean) {
-                        ex.copyright = !ex.copyright;
+                        exporter.copyright = !exporter.copyright;
                     }
                 }
                 ExportSetting::TrackNumber => {
                     if input.happened(&InputEvent::PreviousExportSettingValue) {
-                        Self::set_track_number(&mut ex, false);
+                        Self::set_track_number(exporter, false);
                     } else if input.happened(&InputEvent::NextExportSettingValue) {
-                        Self::set_track_number(&mut ex, true);
+                        Self::set_track_number(exporter, true);
                     }
                 }
                 ExportSetting::Mp3BitRate => {
-                    Self::set_index(|e| &mut e.mp3_bit_rate, input, &mut ex);
+                    Self::set_index(|e| &mut e.mp3_bit_rate, input, exporter);
                 }
                 ExportSetting::Mp3Quality => {
-                    Self::set_index(|e| &mut e.mp3_quality, input, &mut ex);
+                    Self::set_index(|e| &mut e.mp3_quality, input, exporter);
                 }
                 ExportSetting::OggQuality => {
-                    Self::set_index(|e| &mut e.ogg_quality, input, &mut ex);
+                    Self::set_index(|e| &mut e.ogg_quality, input, exporter);
                 }
                 ExportSetting::MultiFile => {
                     if input.happened(&InputEvent::ToggleExportSettingBoolean) {
-                        ex.multi_file = !ex.multi_file;
+                        exporter.multi_file = !exporter.multi_file;
                     }
                 }
                 ExportSetting::MultiFileSuffix => {
                     Self::set_index(
                         |e: &mut Exporter| &mut e.multi_file_suffix.index,
                         input,
-                        &mut ex,
+                        exporter,
                     );
                 }
                 _ => (),
@@ -496,19 +497,18 @@ impl ExportSettingsPanel {
     fn update_settings_abc123<F, const N: usize>(
         mut f: F,
         input: &Input,
-        exporter: &mut SharedExporter,
+        exporter: &mut Exporter,
     ) -> bool
     where
         F: FnMut(&mut Exporter) -> &mut IndexedValues<ExportSetting, N>,
         [ExportSetting; N]: Serialize + DeserializeOwned,
     {
-        let mut ex = exporter.lock();
-        match &f(&mut ex).get() {
-            ExportSetting::Title => update_exporter(|e| &mut e.metadata.title, input, &mut ex),
-            ExportSetting::Artist => update_exporter(|e| &mut e.metadata.artist, input, &mut ex),
-            ExportSetting::Album => update_exporter(|e| &mut e.metadata.album, input, &mut ex),
-            ExportSetting::Genre => update_exporter(|e| &mut e.metadata.genre, input, &mut ex),
-            ExportSetting::Comment => update_exporter(|e| &mut e.metadata.comment, input, &mut ex),
+        match &f(exporter).get() {
+            ExportSetting::Title => update_exporter(|e| &mut e.metadata.title, input, exporter),
+            ExportSetting::Artist => update_exporter(|e| &mut e.metadata.artist, input, exporter),
+            ExportSetting::Album => update_exporter(|e| &mut e.metadata.album, input, exporter),
+            ExportSetting::Genre => update_exporter(|e| &mut e.metadata.genre, input, exporter),
+            ExportSetting::Comment => update_exporter(|e| &mut e.metadata.comment, input, exporter),
             _ => false,
         }
     }
@@ -517,21 +517,22 @@ impl ExportSettingsPanel {
     ///
     /// - `f` A closure that returns a mutable reference to an `IndexValues` of export settings (corresponding to the export type).
     /// - `exporter` The exporter. This will have its framerate set.
-    fn disable_abc123<F, const N: usize>(mut f: F, exporter: &mut SharedExporter)
+    fn disable_abc123<F, const N: usize>(mut f: F, exporter: &mut Exporter)
     where
         F: FnMut(&mut Exporter) -> &mut IndexedValues<ExportSetting, N>,
         [ExportSetting; N]: Serialize + DeserializeOwned,
     {
-        let mut ex = exporter.lock();
-        match &f(&mut ex).get() {
+        match &f(exporter).get() {
             ExportSetting::Title => {
-                on_disable_exporter(|e| &mut e.metadata.title, &mut ex, "My Music".to_string())
+                on_disable_exporter(|e| &mut e.metadata.title, exporter, "My Music".to_string())
             }
-            ExportSetting::Artist => on_disable_exporter(|e| &mut e.metadata.artist, &mut ex, None),
-            ExportSetting::Album => on_disable_exporter(|e| &mut e.metadata.album, &mut ex, None),
-            ExportSetting::Genre => on_disable_exporter(|e| &mut e.metadata.genre, &mut ex, None),
+            ExportSetting::Artist => {
+                on_disable_exporter(|e| &mut e.metadata.artist, exporter, None)
+            }
+            ExportSetting::Album => on_disable_exporter(|e| &mut e.metadata.album, exporter, None),
+            ExportSetting::Genre => on_disable_exporter(|e| &mut e.metadata.genre, exporter, None),
             ExportSetting::Comment => {
-                on_disable_exporter(|e| &mut e.metadata.comment, &mut ex, None)
+                on_disable_exporter(|e| &mut e.metadata.comment, exporter, None)
             }
             _ => (),
         }
@@ -541,14 +542,13 @@ impl ExportSettingsPanel {
     ///
     /// - `f` A closure that returns a mutable reference to an `IndexValues` of export settings (corresponding to the export type).
     /// - `exporter` The exporter. This will have its framerate set.
-    fn allow_abc123<F, const N: usize>(f: F, exporter: &SharedExporter) -> bool
+    fn allow_abc123<F, const N: usize>(f: F, exporter: &Exporter) -> bool
     where
         F: Fn(&Exporter) -> &IndexedValues<ExportSetting, N>,
         [ExportSetting; N]: Serialize + DeserializeOwned,
     {
-        let ex = exporter.lock();
         matches!(
-            &f(&ex).get(),
+            &f(exporter).get(),
             ExportSetting::Title
                 | ExportSetting::Artist
                 | ExportSetting::Album
@@ -562,18 +562,17 @@ impl Panel for ExportSettingsPanel {
     fn update(
         &mut self,
         state: &mut State,
-        _: &mut Conn,
+        conn: &mut Conn,
         input: &Input,
         tts: &mut TTS,
         text: &Text,
         _: &mut PathsState,
-        exporter: &mut SharedExporter,
     ) -> Option<Snapshot> {
         // Close this.
         if input.happened(&InputEvent::CloseOpenFile) {
             return Some(Snapshot::from_io_commands(vec![IOCommand::CloseOpenFile]));
         }
-        let export_type = exporter.lock().export_type.get();
+        let export_type = conn.exporter.export_type.get();
         match export_type {
             ExportType::Mid => Self::update_settings(
                 |e| &mut e.mid_settings,
@@ -582,7 +581,7 @@ impl Panel for ExportSettingsPanel {
                 input,
                 tts,
                 text,
-                exporter,
+                &mut conn.exporter,
             ),
             ExportType::MP3 => Self::update_settings(
                 |e| &mut e.mp3_settings,
@@ -591,7 +590,7 @@ impl Panel for ExportSettingsPanel {
                 input,
                 tts,
                 text,
-                exporter,
+                &mut conn.exporter,
             ),
             ExportType::Ogg => Self::update_settings(
                 |e| &mut e.ogg_settings,
@@ -600,7 +599,7 @@ impl Panel for ExportSettingsPanel {
                 input,
                 tts,
                 text,
-                exporter,
+                &mut conn.exporter,
             ),
             ExportType::Flac => Self::update_settings(
                 |e| &mut e.flac_settings,
@@ -609,7 +608,7 @@ impl Panel for ExportSettingsPanel {
                 input,
                 tts,
                 text,
-                exporter,
+                &mut conn.exporter,
             ),
             ExportType::Wav => Self::update_settings(
                 |e| &mut e.wav_settings,
@@ -618,7 +617,7 @@ impl Panel for ExportSettingsPanel {
                 input,
                 tts,
                 text,
-                exporter,
+                &mut conn.exporter,
             ),
         }
     }
@@ -627,48 +626,45 @@ impl Panel for ExportSettingsPanel {
         &mut self,
         _: &mut State,
         input: &Input,
-        exporter: &mut SharedExporter,
+        conn: &mut Conn,
     ) -> (Option<Snapshot>, bool) {
-        let export_type = exporter.lock().export_type.get();
-        let updated = match export_type {
+        let updated = match conn.exporter.export_type.get() {
             ExportType::Mid => {
-                Self::update_settings_abc123(|e| &mut e.mid_settings, input, exporter)
+                Self::update_settings_abc123(|e| &mut e.mid_settings, input, &mut conn.exporter)
             }
             ExportType::MP3 => {
-                Self::update_settings_abc123(|e| &mut e.mp3_settings, input, exporter)
+                Self::update_settings_abc123(|e| &mut e.mp3_settings, input, &mut conn.exporter)
             }
             ExportType::Ogg => {
-                Self::update_settings_abc123(|e| &mut e.ogg_settings, input, exporter)
+                Self::update_settings_abc123(|e| &mut e.ogg_settings, input, &mut conn.exporter)
             }
             ExportType::Flac => {
-                Self::update_settings_abc123(|e| &mut e.flac_settings, input, exporter)
+                Self::update_settings_abc123(|e| &mut e.flac_settings, input, &mut conn.exporter)
             }
             ExportType::Wav => {
-                Self::update_settings_abc123(|e| &mut e.wav_settings, input, exporter)
+                Self::update_settings_abc123(|e| &mut e.wav_settings, input, &mut conn.exporter)
             }
         };
         (None, updated)
     }
 
-    fn on_disable_abc123(&mut self, _: &mut State, exporter: &mut SharedExporter) {
-        let export_type = exporter.lock().export_type.get();
-        match export_type {
-            ExportType::Mid => Self::disable_abc123(|e| &mut e.mid_settings, exporter),
-            ExportType::MP3 => Self::disable_abc123(|e| &mut e.mp3_settings, exporter),
-            ExportType::Ogg => Self::disable_abc123(|e| &mut e.ogg_settings, exporter),
-            ExportType::Flac => Self::disable_abc123(|e| &mut e.flac_settings, exporter),
-            ExportType::Wav => Self::disable_abc123(|e| &mut e.wav_settings, exporter),
+    fn on_disable_abc123(&mut self, _: &mut State, conn: &mut Conn) {
+        match conn.exporter.export_type.get() {
+            ExportType::Mid => Self::disable_abc123(|e| &mut e.mid_settings, &mut conn.exporter),
+            ExportType::MP3 => Self::disable_abc123(|e| &mut e.mp3_settings, &mut conn.exporter),
+            ExportType::Ogg => Self::disable_abc123(|e| &mut e.ogg_settings, &mut conn.exporter),
+            ExportType::Wav => Self::disable_abc123(|e| &mut e.wav_settings, &mut conn.exporter),
+            ExportType::Flac => Self::disable_abc123(|e| &mut e.flac_settings, &mut conn.exporter),
         };
     }
 
-    fn allow_alphanumeric_input(&self, _: &State, exporter: &SharedExporter) -> bool {
-        let export_type = exporter.lock().export_type.get();
-        match export_type {
-            ExportType::Mid => Self::allow_abc123(|e| &e.mid_settings, exporter),
-            ExportType::MP3 => Self::allow_abc123(|e| &e.mp3_settings, exporter),
-            ExportType::Ogg => Self::allow_abc123(|e| &e.ogg_settings, exporter),
-            ExportType::Flac => Self::allow_abc123(|e| &e.flac_settings, exporter),
-            ExportType::Wav => Self::allow_abc123(|e: &Exporter| &e.wav_settings, exporter),
+    fn allow_alphanumeric_input(&self, _: &State, conn: &Conn) -> bool {
+        match conn.exporter.export_type.get() {
+            ExportType::Mid => Self::allow_abc123(|e| &e.mid_settings, &conn.exporter),
+            ExportType::MP3 => Self::allow_abc123(|e| &e.mp3_settings, &conn.exporter),
+            ExportType::Ogg => Self::allow_abc123(|e| &e.ogg_settings, &conn.exporter),
+            ExportType::Wav => Self::allow_abc123(|e| &e.wav_settings, &conn.exporter),
+            ExportType::Flac => Self::allow_abc123(|e| &e.flac_settings, &conn.exporter),
         }
     }
 

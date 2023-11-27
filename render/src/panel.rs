@@ -1,7 +1,6 @@
 pub(crate) use crate::drawable::*;
 pub(crate) use crate::field_params::*;
 pub(crate) use crate::ColorKey;
-pub(crate) use audio::SharedExporter;
 pub(crate) use common::sizes::*;
 pub(crate) use common::PanelType;
 use common::VERSION;

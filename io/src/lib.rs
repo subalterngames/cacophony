@@ -5,21 +5,19 @@
 //! Per frame, `IO` listens for user input via an `Input` (see the `input` crate), and then does any of the following:
 //!
 //! - Update `State` (see the `common` crate), for example add a new track.
-//! - Send a list of `Command` to the `Conn` (see the `audio` crate).
+//! - Update `Conn` (see the `audio` crate), for example to play notes.
 //! - Send an internal `IOCommand` to itself.
 //! - Play text-to-speech audio (see the `text` crate).
 //!
-//! The first two options (state and command) will create a copy of the current `State` which will be added to an undo stack.
+//! Certain operations will create a copy of the current `State` which will be added to an undo stack.
 //! Undoing an action reverts the app to that state, pops it from the undo stack, and pushes it to the redo stack.
 //!
 //! `IO` divides input listening into discrete panels, e.g. the music panel and the tracks panel.
 //! Each panel implements the `Panel` trait.
 
-use audio::exporter::{Exporter, MultiFileSuffix};
-use audio::{Command, CommandsMessage, Conn, ExportState, SharedExporter};
-use common::{
-    InputState, MidiTrack, Music, Note, PanelType, Paths, PathsState, SelectMode, State, MAX_VOLUME,
-};
+use audio::export::ExportState;
+use audio::Conn;
+use common::{InputState, Music, PanelType, Paths, PathsState, SelectMode, State};
 use edit::edit_file;
 use hashbrown::HashMap;
 use ini::Ini;
@@ -58,16 +56,13 @@ use links_panel::LinksPanel;
 
 /// The maximum size of the undo stack.
 const MAX_UNDOS: usize = 100;
-/// Commands that are queued for export.
-type QueuedExportCommands = (CommandsMessage, Option<ExportState>);
 
 /// Parse user input and apply it to the application's various states as needed:
 ///
 /// - Play ad-hoc notes.
 /// - Modify the `State` and push the old version to the undo stack.
 /// - Modify the `PathsState`.
-/// - Modify the `SynthState` and send commands through the `Conn`.
-/// - Modify the `Exporter` and send a copy via a command to the `Conn`.
+/// - Modify the `Conn`.
 pub struct IO {
     /// A stack of snapshots that can be popped to undo an action.
     undo: Vec<Snapshot>,
@@ -91,8 +86,6 @@ pub struct IO {
     quit_panel: QuitPanel,
     /// The links panel.
     links_panel: LinksPanel,
-    /// Queued commands that will be used to export audio to multiple files.
-    export_queue: Vec<QueuedExportCommands>,
     /// The active panels prior to exporting audio.
     pre_export_panels: Vec<PanelType>,
     /// The index of the focused panel prior to exporting audio.
@@ -192,7 +185,6 @@ impl IO {
             links_panel,
             redo: vec![],
             undo: vec![],
-            export_queue: vec![],
             pre_export_panels: vec![],
             pre_export_focus: 0,
         }
@@ -206,10 +198,8 @@ impl IO {
     /// - `tts` Text-to-speech.
     /// - `text` The text.
     /// - `paths_state` Dynamic path data.
-    /// - `exporter` Export settings.
     ///
     /// Returns: An `Snapshot`.
-    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         state: &mut State,
@@ -218,7 +208,6 @@ impl IO {
         tts: &mut TTS,
         text: &mut Text,
         paths_state: &mut PathsState,
-        exporter: &mut SharedExporter,
     ) -> bool {
         if input.happened(&InputEvent::Quit) {
             // Enable the quit panel.
@@ -231,21 +220,8 @@ impl IO {
             }
         }
 
-        // Export multiple files.
-        if conn.export_state.is_none() && !self.export_queue.is_empty() {
-            // Enable the panel.
-            self.export_panel
-                .enable(state, &self.pre_export_panels, self.pre_export_focus);
-            // Get the commands and state.
-            let export_commands = self.export_queue.remove(0);
-            // Set the state.
-            conn.export_state = export_commands.1;
-            // Send the commands.
-            conn.send(export_commands.0);
-        }
-
         // Don't do anything while exporting.
-        if conn.export_state.is_some() {
+        if conn.exporting() {
             return false;
         }
 
@@ -255,24 +231,24 @@ impl IO {
             let panel = self.get_panel(&state.panels[state.focus.get()]);
 
             // Toggle off alphanumeric input.
-            if panel.allow_alphanumeric_input(state, exporter) {
+            if panel.allow_alphanumeric_input(state, conn) {
                 if input.happened(&InputEvent::ToggleAlphanumericInput) {
                     let s0 = state.clone();
                     state.input.alphanumeric_input = false;
                     // Do something on disable.
-                    panel.on_disable_abc123(state, exporter);
+                    panel.on_disable_abc123(state, conn);
                     // There is always a snapshot (because we toggled off alphanumeric input).
                     let snapshot = Some(Snapshot::from_states(s0, state));
                     // Apply the snapshot.
-                    self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
+                    self.apply_snapshot(snapshot, state, conn, paths_state);
                     return false;
                 }
                 // Try to do alphanumeric input.
                 else {
-                    let (snapshot, updated) = panel.update_abc123(state, input, exporter);
+                    let (snapshot, updated) = panel.update_abc123(state, input, conn);
                     // We applied alphanumeric input.
                     if updated {
-                        self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
+                        self.apply_snapshot(snapshot, state, conn, paths_state);
                         return false;
                     }
                 }
@@ -281,7 +257,7 @@ impl IO {
         // Apply alphanumeric input.
         else {
             let panel = self.get_panel(&state.panels[state.focus.get()]);
-            if panel.allow_alphanumeric_input(state, exporter)
+            if panel.allow_alphanumeric_input(state, conn)
                 && input.happened(&InputEvent::ToggleAlphanumericInput)
             {
                 let snapshot = Some(Snapshot::from_state_value(
@@ -289,40 +265,18 @@ impl IO {
                     true,
                     state,
                 ));
-                self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
+                self.apply_snapshot(snapshot, state, conn, paths_state);
                 return false;
             } else if let Some(track) = state.music.get_selected_track() {
-                let mut commands = vec![];
                 // Play notes.
                 if !&input.note_on_messages.is_empty()
                     && panel.allow_play_music()
                     && conn.state.programs.get(&track.channel).is_some()
                 {
-                    let gain = track.gain as f64 / 127.0;
-                    // Set the framerate for playback.
-                    commands.push(Command::SetFramerate {
-                        framerate: conn.framerate as u32,
-                    });
-                    // Play the notes.
-                    for note in input.note_on_messages.iter() {
-                        // Set the volume.
-                        let volume = (note[2] as f64 * gain) as u8;
-                        commands.push(Command::NoteOn {
-                            channel: track.channel,
-                            key: note[1],
-                            velocity: volume,
-                        });
-                    }
+                    conn.note_ons(state, &input.note_on_messages);
                 }
-                // Note-offs.
-                for note_off in input.note_off_keys.iter() {
-                    commands.push(Command::NoteOff {
-                        channel: track.channel,
-                        key: *note_off,
-                    });
-                }
-                if !commands.is_empty() {
-                    conn.send(commands);
+                if !&input.note_off_keys.is_empty() {
+                    conn.note_offs(state, &input.note_off_keys)
                 }
             }
         }
@@ -340,13 +294,7 @@ impl IO {
             match &paths_state.saves.try_get_path() {
                 // Save to the existing path,
                 Some(path) => {
-                    Save::write(
-                        &path.with_extension("cac"),
-                        state,
-                        conn,
-                        paths_state,
-                        exporter,
-                    );
+                    Save::write(&path.with_extension("cac"), state, conn, paths_state);
                     state.unsaved_changes = false;
                 }
                 // Set a new path.
@@ -359,9 +307,12 @@ impl IO {
         }
         // Export.
         else if input.happened(&InputEvent::ExportFile) {
+            let export_state = *conn.export_state.lock();
             // We aren't exporting already.
-            if conn.export_state.is_none() {
-                self.open_file_panel.export(state, paths_state, exporter)
+            if export_state == ExportState::NotExporting {
+                self.pre_export_focus = state.focus.get();
+                self.pre_export_panels = state.panels.clone();
+                self.open_file_panel.export(state, paths_state, conn)
             }
         } else if input.happened(&InputEvent::ImportMidi) {
             self.open_file_panel.import_midi(state, paths_state);
@@ -387,7 +338,7 @@ impl IO {
                 }
                 // Send the commands.
                 if let Some(commands) = undo.from_commands {
-                    conn.send(commands);
+                    conn.do_commands(&commands);
                 }
                 // Push to the redo stack.
                 self.redo.push(redo);
@@ -403,7 +354,7 @@ impl IO {
                 }
                 // Send the commands.
                 if let Some(commands) = redo.from_commands {
-                    conn.send(commands);
+                    conn.do_commands(&commands);
                 }
                 // Push to the undo stack.
                 self.undo.push(undo);
@@ -445,9 +396,8 @@ impl IO {
         // Get the focused panel.
         let panel = self.get_panel(&state.panels[state.focus.get()]);
         // Update the focuses panel and potentially get a screenshot.
-        let snapshot = panel.update(state, conn, input, tts, text, paths_state, exporter);
-        let (applied, need_to_quit) =
-            self.apply_snapshot(snapshot, state, conn, paths_state, exporter);
+        let snapshot = panel.update(state, conn, input, tts, text, paths_state);
+        let (applied, need_to_quit) = self.apply_snapshot(snapshot, state, conn, paths_state);
         // Quit while we're ahead.
         if need_to_quit {
             return true;
@@ -460,15 +410,7 @@ impl IO {
         let panel = self.get_panel(&state.panels[state.focus.get()]);
         // Play music.
         if panel.allow_play_music() && input.happened(&InputEvent::PlayStop) {
-            match conn.state.time.music {
-                // Stop playing.
-                true => conn.send(vec![Command::StopMusic]),
-                false => {
-                    conn.send(
-                        combine_tracks_to_commands(state, conn.framerate, state.time.playback).0,
-                    );
-                }
-            }
+            conn.set_music(state);
         }
         // We're not done yet.
         false
@@ -481,9 +423,8 @@ impl IO {
         state: &mut State,
         conn: &mut Conn,
         paths_state: &mut PathsState,
-        exporter: &mut SharedExporter,
     ) {
-        Save::read(save_path, state, conn, paths_state, exporter);
+        Save::read(save_path, state, conn, paths_state);
         // Set the saves directory.
         paths_state.saves = FileAndDirectory::new_path(save_path.to_path_buf());
     }
@@ -513,7 +454,6 @@ impl IO {
         state: &mut State,
         conn: &mut Conn,
         paths_state: &mut PathsState,
-        exporter: &mut SharedExporter,
     ) -> (bool, bool) {
         // Push an undo state generated by the focused panel.
         if let Some(snapshot) = snapshot {
@@ -538,8 +478,13 @@ impl IO {
                             }
                         },
                         // Export.
-                        IOCommand::Export(path) => {
-                            self.export(path, state, conn, &mut exporter.lock())
+                        IOCommand::Export => {
+                            self.export_panel.enable(
+                                state,
+                                &self.pre_export_panels,
+                                self.pre_export_focus,
+                            );
+                            conn.start_export(state, paths_state);
                         }
                         // Close the open-file panel.
                         IOCommand::CloseOpenFile => self.open_file_panel.disable(state),
@@ -568,202 +513,6 @@ impl IO {
             self.undo.remove(0);
         }
     }
-
-    /// Begin to export audio.
-    ///
-    /// - `path` The output path.
-    /// - `state` The state.
-    /// - `conn` The audio conn.
-    /// - `exporter` The exporter.
-    fn export(&mut self, path: &Path, state: &mut State, conn: &mut Conn, exporter: &mut Exporter) {
-        self.pre_export_panels = state.panels.clone();
-        self.pre_export_focus = state.focus.get();
-        // Enable the export panel.
-        self.export_panel
-            .enable(state, &self.pre_export_panels, self.pre_export_focus);
-        // Export multiple files.
-        if exporter.multi_file {
-            self.queue_multi_file_export(path, state, conn, exporter);
-        } else {
-            // Get commands and an end time.
-            let (track_commands, t1) =
-                combine_tracks_to_commands(state, exporter.framerate.get_f(), 0);
-            // Define the export state.
-            let export_state: ExportState = ExportState::new(t1);
-            conn.export_state = Some(export_state);
-            // Set the framerate.
-            // Sound-off. Set the framerate. Export.
-            let mut commands = vec![
-                Command::SoundOff,
-                Command::Export {
-                    path: path.to_path_buf(),
-                    state: export_state,
-                },
-            ];
-            commands.extend(track_commands);
-            // Send the commands.
-            conn.send(commands);
-        }
-    }
-
-    /// Enqueue multi-file export commands.
-    ///
-    /// - `path` The root path, without tracks-specific suffixes.
-    /// - `state` The state.
-    /// - `conn` The audio connection.
-    /// - `exporter` The exporter.
-    fn queue_multi_file_export(
-        &mut self,
-        path: &Path,
-        state: &State,
-        conn: &Conn,
-        exporter: &mut Exporter,
-    ) {
-        self.export_queue.clear();
-        let e0 = exporter.clone();
-        // Get base path information.
-        let extension = path.extension().unwrap().to_str().unwrap();
-        let filename_base = path.file_stem().unwrap().to_str().unwrap();
-        let directory = path.parent().unwrap();
-        // Get the framerate.
-        let framerate_f = exporter.framerate.get_f();
-        let framerate_u = exporter.framerate.get_u() as u32;
-        // Start playing music.
-        let t0 = state.time.ppq_to_samples(0, framerate_f);
-        let mut paths = vec![];
-        // Get playable tracks.
-        for track in get_playable_tracks(&state.music) {
-            let mut t1 = t0;
-            // Export to wav.
-            exporter.export_type.index.set(0);
-            // Start to play music.
-            let mut commands = vec![
-                Command::SetFramerate {
-                    framerate: framerate_u,
-                },
-                Command::PlayMusic { time: t0 },
-            ];
-            let notes = get_playback_notes(track);
-            for note in notes.iter() {
-                // Convert the start and duration to sample lengths.
-                let start = state.time.ppq_to_samples(note.start, framerate_f);
-                if start < t0 {
-                    continue;
-                }
-                let end = state.time.ppq_to_samples(note.end, framerate_f);
-                if end > t1 {
-                    t1 = end;
-                }
-                // Add the command.
-                commands.push(Command::NoteOnAt {
-                    channel: track.channel,
-                    key: note.note,
-                    velocity: note.velocity,
-                    start,
-                    end,
-                })
-            }
-            // Get the path for this track.
-            let suffix = match exporter.multi_file_suffix.get() {
-                MultiFileSuffix::Channel => track.channel.to_string(),
-                MultiFileSuffix::Preset => conn
-                    .state
-                    .programs
-                    .get(&track.channel)
-                    .unwrap()
-                    .preset_name
-                    .clone(),
-                MultiFileSuffix::ChannelAndPreset => format!(
-                    "{}_{}",
-                    track.channel,
-                    conn.state.programs.get(&track.channel).unwrap().preset_name
-                ),
-            };
-            // Get the path.
-            let track_path = directory.join(format!("{}_{}.{}", filename_base, suffix, extension));
-            paths.push(track_path.clone());
-            // Get the export state.
-            let export_state = ExportState::new(t1);
-            // Export.
-            commands.extend([
-                Command::SoundOff,
-                Command::Export {
-                    path: track_path,
-                    state: export_state,
-                },
-            ]);
-            self.export_queue.push((commands, Some(export_state)));
-        }
-        *exporter = e0;
-    }
-}
-
-/// Returns all tracks that can be played.
-fn get_playable_tracks(music: &Music) -> Vec<&MidiTrack> {
-    // Get all tracks that can play music.
-    let tracks = match music.midi_tracks.iter().find(|t| t.solo) {
-        // Only include the solo track.
-        Some(solo) => vec![solo],
-        // Only include unmuted tracks.
-        None => music.midi_tracks.iter().filter(|t| !t.mute).collect(),
-    };
-    tracks
-}
-
-/// Returns all notes in the track that can be played (they are after t0).
-fn get_playback_notes(track: &MidiTrack) -> Vec<Note> {
-    let gain = track.gain as f64 / MAX_VOLUME as f64;
-    let mut notes = vec![];
-    for note in track.notes.iter() {
-        let mut n1 = *note;
-        n1.velocity = (n1.velocity as f64 * gain) as u8;
-        notes.push(n1);
-    }
-    notes.sort();
-    notes
-}
-
-/// Converts all playable tracks to note-on commands.
-fn combine_tracks_to_commands(
-    state: &State,
-    framerate: f32,
-    start_time: u64,
-) -> (CommandsMessage, u64) {
-    // Start playing music.
-    let t0 = state.time.ppq_to_samples(start_time, framerate);
-    let mut t1 = t0;
-    let mut commands = vec![
-        Command::PlayMusic { time: t0 },
-        Command::SetFramerate {
-            framerate: framerate as u32,
-        },
-    ];
-    // Get playable tracks.
-    for track in get_playable_tracks(&state.music) {
-        let notes = get_playback_notes(track);
-        for note in notes.iter() {
-            // Convert the start and duration to sample lengths.
-            let start = state.time.ppq_to_samples(note.start, framerate);
-            if start < t0 {
-                continue;
-            }
-            let end = state.time.ppq_to_samples(note.end, framerate);
-            if end > t1 {
-                t1 = end;
-            }
-            // Add the command.
-            commands.push(Command::NoteOnAt {
-                channel: track.channel,
-                key: note.note,
-                velocity: note.velocity,
-                start,
-                end,
-            })
-        }
-    }
-    // All-off.
-    commands.push(Command::StopMusicAt { time: t1 });
-    (commands, t1)
 }
 
 /// Try to select a track, given user input.

@@ -1,6 +1,7 @@
 use crate::panel::*;
 use crate::Focus;
-use audio::exporter::*;
+use audio::export::{ExportSetting, ExportType, MultiFileSuffix};
+use audio::exporter::{Exporter, MP3_BIT_RATES};
 use common::IndexedValues;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -311,26 +312,17 @@ impl ExportSettingsPanel {
 }
 
 impl Drawable for ExportSettingsPanel {
-    fn update(
-        &self,
-        renderer: &Renderer,
-        state: &State,
-        _: &Conn,
-        text: &Text,
-        _: &PathsState,
-        exporter: &SharedExporter,
-    ) {
+    fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, text: &Text, _: &PathsState) {
         // Get the focus.
         let focus = state.panels[state.focus.get()] == PanelType::ExportSettings;
-        let ex = exporter.lock();
         // Get the height of the panel.
-        let e = ex.export_type.get();
+        let e = conn.exporter.export_type.get();
         let h = match &e {
-            ExportType::Wav => ex.wav_settings.index.get_length() + 2,
-            ExportType::Mid => ex.mid_settings.index.get_length() + 1,
-            ExportType::MP3 => ex.mp3_settings.index.get_length() + 3,
-            ExportType::Ogg => ex.ogg_settings.index.get_length() + 3,
-            ExportType::Flac => ex.flac_settings.index.get_length() + 3,
+            ExportType::Wav => conn.exporter.wav_settings.index.get_length() + 2,
+            ExportType::Mid => conn.exporter.mid_settings.index.get_length() + 1,
+            ExportType::MP3 => conn.exporter.mp3_settings.index.get_length() + 3,
+            ExportType::Ogg => conn.exporter.ogg_settings.index.get_length() + 3,
+            ExportType::Flac => conn.exporter.flac_settings.index.get_length() + 3,
         } as u32
             + 1;
 
@@ -347,22 +339,47 @@ impl Drawable for ExportSettingsPanel {
         renderer.text(&self.title, &color);
 
         // Draw the fields.
-        match &ex.export_type.get() {
-            ExportType::Wav => {
-                self.update_settings(|e| &e.wav_settings, renderer, state, text, &ex, focus)
-            }
-            ExportType::Mid => {
-                self.update_settings(|e| &e.mid_settings, renderer, state, text, &ex, focus)
-            }
-            ExportType::MP3 => {
-                self.update_settings(|e| &e.mp3_settings, renderer, state, text, &ex, focus)
-            }
-            ExportType::Ogg => {
-                self.update_settings(|e| &e.ogg_settings, renderer, state, text, &ex, focus)
-            }
-            ExportType::Flac => {
-                self.update_settings(|e| &e.flac_settings, renderer, state, text, &ex, focus)
-            }
+        match &conn.exporter.export_type.get() {
+            ExportType::Wav => self.update_settings(
+                |e| &e.wav_settings,
+                renderer,
+                state,
+                text,
+                &conn.exporter,
+                focus,
+            ),
+            ExportType::Mid => self.update_settings(
+                |e| &e.mid_settings,
+                renderer,
+                state,
+                text,
+                &conn.exporter,
+                focus,
+            ),
+            ExportType::MP3 => self.update_settings(
+                |e| &e.mp3_settings,
+                renderer,
+                state,
+                text,
+                &conn.exporter,
+                focus,
+            ),
+            ExportType::Ogg => self.update_settings(
+                |e| &e.ogg_settings,
+                renderer,
+                state,
+                text,
+                &conn.exporter,
+                focus,
+            ),
+            ExportType::Flac => self.update_settings(
+                |e| &e.flac_settings,
+                renderer,
+                state,
+                text,
+                &conn.exporter,
+                focus,
+            ),
         }
     }
 }

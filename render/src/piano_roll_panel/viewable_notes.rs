@@ -1,4 +1,5 @@
 use crate::panel::*;
+use audio::play_state::PlayState;
 use common::*;
 
 /// A viewable note.
@@ -76,13 +77,9 @@ impl<'a> ViewableNotes<'a> {
     ) -> Self {
         let pulses_per_pixel = Self::get_pulses_per_pixel(&dt, w);
         // Get any notes being played.
-        let playtime = match conn.state.time.music {
-            true => conn
-                .state
-                .time
-                .time
-                .map(|time| state.time.samples_to_ppq(time, conn.framerate)),
-            false => None,
+        let playtime = match *conn.play_state.lock() {
+            PlayState::Playing(time) => Some(state.time.samples_to_ppq(time, conn.framerate)),
+            _ => None,
         };
 
         // Get the selected notes.

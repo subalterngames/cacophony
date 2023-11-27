@@ -105,12 +105,11 @@ dependencies = [
 
 [[package]]
 name = "audio"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "common",
  "cpal",
- "crossbeam-channel",
  "flacenc",
  "hashbrown 0.13.2",
  "hound",
@@ -239,7 +238,7 @@ checksum = "89b2fd2a0dcf38d7971e2194b6b6eebab45ae01067456a7fd93d5547a61b70be"
 
 [[package]]
 name = "cacophony"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "audio",
  "clap",
@@ -397,7 +396,7 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "clap",
  "directories",
@@ -1009,7 +1008,7 @@ dependencies = [
 
 [[package]]
 name = "input"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "clap",
  "common",
@@ -1035,7 +1034,7 @@ dependencies = [
 
 [[package]]
 name = "io"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "audio",
  "common",
@@ -1658,7 +1657,7 @@ checksum = "8d91edf4fbb970279443471345a4e8c491bf05bb283b3e6c88e4e606fd8c181b"
 [[package]]
 name = "oxisynth"
 version = "0.0.3"
-source = "git+https://github.com/PolyMeilex/OxiSynth.git?branch=master#7b56c47bac2d96952b803100d4ec04f8f7dd839b"
+source = "git+https://github.com/subalterngames/OxiSynth.git?branch=midi_event_copy_clone#547d62343119c0bdea24ce8b65e63ae7162f1e6d"
 dependencies = [
  "bitflags 1.3.2",
  "byte-slice-cast",
@@ -1883,7 +1882,7 @@ checksum = "e5ea92a5b6195c6ef2a0295ea818b312502c6fc94dde986c5553242e18fd4ce2"
 
 [[package]]
 name = "render"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "audio",
  "colorgrad",
@@ -2100,7 +2099,7 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 [[package]]
 name = "soundfont"
 version = "0.0.2"
-source = "git+https://github.com/PolyMeilex/OxiSynth.git?branch=master#7b56c47bac2d96952b803100d4ec04f8f7dd839b"
+source = "git+https://github.com/subalterngames/OxiSynth.git?branch=midi_event_copy_clone#547d62343119c0bdea24ce8b65e63ae7162f1e6d"
 dependencies = [
  "riff",
 ]
@@ -2214,7 +2213,7 @@ dependencies = [
 
 [[package]]
 name = "text"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "common",
  "csv",

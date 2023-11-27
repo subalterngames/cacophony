@@ -1,4 +1,6 @@
 use crate::panel::*;
+use audio::play_state::PlayState;
+use audio::SharedPlayState;
 mod piano_roll_rows;
 use piano_roll_rows::PianoRollRows;
 mod multi_track;
@@ -166,41 +168,34 @@ impl PianoRollPanel {
     /// Otherwise, this returns a view delta that has been moved to include the current playback time.
     fn get_view_dt(state: &State, conn: &Conn) -> [u64; 2] {
         let dt = [state.view.dt[0], state.view.dt[1]];
-        if conn.state.time.music {
-            match conn.state.time.time {
-                Some(time) => {
-                    let time_ppq = state.time.samples_to_ppq(time, conn.framerate);
-                    // The time is in range
-                    if time_ppq >= dt[0] && time_ppq <= dt[1] {
-                        dt
-                    } else {
-                        let delta = dt[1] - dt[0];
-                        // This is maybe not the best way to round, but it gets the job done!
-                        let t0 = (time_ppq / delta) * delta;
-                        let t1 = t0 + delta;
-                        [t0, t1]
-                    }
+        let play_state = Self::get_play_state(&conn.play_state);
+        match play_state {
+            // We are playing music.
+            PlayState::Playing(samples) => {
+                let time_ppq = state.time.samples_to_ppq(samples, conn.framerate);
+                // The time is in range
+                if time_ppq >= dt[0] && time_ppq <= dt[1] {
+                    dt
+                } else {
+                    let delta = dt[1] - dt[0];
+                    // This is maybe not the best way to round, but it gets the job done!
+                    let t0 = (time_ppq / delta) * delta;
+                    let t1 = t0 + delta;
+                    [t0, t1]
                 }
-                None => dt,
             }
+            // If there is no music playing, just use the "actual" view.
+            _ => dt,
         }
-        // If there is no music playing, just use the "actual" view.
-        else {
-            dt
-        }
+    }
+
+    fn get_play_state(play_state: &SharedPlayState) -> PlayState {
+        *play_state.lock()
     }
 }
 
 impl Drawable for PianoRollPanel {
-    fn update(
-        &self,
-        renderer: &Renderer,
-        state: &State,
-        conn: &Conn,
-        text: &Text,
-        _: &PathsState,
-        _: &SharedExporter,
-    ) {
+    fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, text: &Text, _: &PathsState) {
         let panel = if state.view.single_track {
             &self.panel_single_track
         } else {
@@ -381,18 +376,17 @@ impl Drawable for PianoRollPanel {
             position: [selection_x, self.time_y],
         };
         // Current playback time.
-        if conn.state.time.music {
-            if let Some(music_time) = conn.state.time.time {
-                let music_time_string =
-                    ppq_to_string(state.time.samples_to_ppq(music_time, conn.framerate));
-                let music_time_x =
-                    selection_x + selection_label.text.chars().count() as u32 + TIME_PADDING;
-                let music_time_label = Label {
-                    text: music_time_string,
-                    position: [music_time_x, self.time_y],
-                };
-                renderer.text(&music_time_label, &Renderer::get_key_color(focus));
-            }
+        let play_state = Self::get_play_state(&conn.play_state);
+        if let PlayState::Playing(samples) = play_state {
+            let music_time_string =
+                ppq_to_string(state.time.samples_to_ppq(samples, conn.framerate));
+            let music_time_x =
+                selection_x + selection_label.text.chars().count() as u32 + TIME_PADDING;
+            let music_time_label = Label {
+                text: music_time_string,
+                position: [music_time_x, self.time_y],
+            };
+            renderer.text(&music_time_label, &Renderer::get_key_color(focus));
         }
         renderer.text(
             &selection_label,
@@ -420,10 +414,7 @@ impl Drawable for PianoRollPanel {
         };
         renderer.text(&dt_label, &Renderer::get_key_color(focus));
 
-        if state.view.single_track {
-        }
-        // Multi-track.
-        else {
+        if !state.view.single_track {
             self.multi_track.update(dt, renderer, state, conn);
         }
 
@@ -445,32 +436,30 @@ impl Drawable for PianoRollPanel {
             &dt,
         );
         // Show where we are in the music.
-        if conn.state.time.music {
-            if let Some(music_time) = conn.state.time.time {
-                let music_time = state.time.samples_to_ppq(music_time, conn.framerate);
-                if music_time >= dt[0].get_u() && music_time <= dt[1].get_u() {
-                    let x = ViewableNotes::get_note_x(
-                        music_time,
-                        ViewableNotes::get_pulses_per_pixel(&dt, self.piano_roll_rows_rect[2]),
-                        self.piano_roll_rows_rect[0],
-                        &dt,
-                    );
-                    let music_color = if focus {
-                        ColorKey::FocusDefault
+        if let PlayState::Playing(samples) = play_state {
+            let music_time = state.time.samples_to_ppq(samples, conn.framerate);
+            if music_time >= dt[0].get_u() && music_time <= dt[1].get_u() {
+                let x = ViewableNotes::get_note_x(
+                    music_time,
+                    ViewableNotes::get_pulses_per_pixel(&dt, self.piano_roll_rows_rect[2]),
+                    self.piano_roll_rows_rect[0],
+                    &dt,
+                );
+                let music_color = if focus {
+                    ColorKey::FocusDefault
+                } else {
+                    ColorKey::NoFocus
+                };
+                renderer.vertical_line_pixel(
+                    x,
+                    self.piano_roll_rows_rect[1],
+                    if state.view.single_track {
+                        self.time_line_bottoms[0]
                     } else {
-                        ColorKey::NoFocus
-                    };
-                    renderer.vertical_line_pixel(
-                        x,
-                        self.piano_roll_rows_rect[1],
-                        if state.view.single_track {
-                            self.time_line_bottoms[0]
-                        } else {
-                            self.time_line_bottoms[1]
-                        },
-                        &music_color,
-                    );
-                }
+                        self.time_line_bottoms[1]
+                    },
+                    &music_color,
+                );
             }
         }
     }

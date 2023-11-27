@@ -1,7 +1,10 @@
-use crate::AudioMessage;
+use crate::decayer::Decayer;
+use crate::play_state::PlayState;
+use crate::types::SharedSample;
+use crate::{SharedMidiEventQueue, SharedPlayState, SharedSynth};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::*;
-use crossbeam_channel::Receiver;
+use oxisynth::Synth;
 
 const ERROR_MESSAGE: &str = "Failed to create an audio output stream: ";
 
@@ -17,7 +20,12 @@ pub(crate) struct Player {
 }
 
 impl Player {
-    pub(crate) fn new(recv: Receiver<AudioMessage>) -> Option<Self> {
+    pub(crate) fn new(
+        midi_event_queue: SharedMidiEventQueue,
+        synth: SharedSynth,
+        sample: SharedSample,
+        play_state: SharedPlayState,
+    ) -> Option<Self> {
         // Get the host.
         let host = default_host();
         // Try to get an output device.
@@ -34,23 +42,20 @@ impl Player {
                 }
                 // We have a device and a config!
                 Ok(config) => {
-                    let sample_format = config.sample_format();
                     let framerate = config.sample_rate().0;
                     let stream_config: StreamConfig = config.into();
                     let channels = stream_config.channels as usize;
 
                     // Try to get a stream.
-                    let stream = match sample_format {
-                        SampleFormat::F32 => {
-                            Player::run::<f32>(recv, channels, device, stream_config)
-                        }
-                        SampleFormat::I16 => {
-                            Player::run::<i16>(recv, channels, device, stream_config)
-                        }
-                        SampleFormat::U16 => {
-                            Player::run::<u16>(recv, channels, device, stream_config)
-                        }
-                    };
+                    let stream = Player::run(
+                        channels,
+                        device,
+                        stream_config,
+                        midi_event_queue,
+                        synth,
+                        sample,
+                        play_state,
+                    );
                     Some(Self {
                         _host: host,
                         _stream: stream,
@@ -62,40 +67,128 @@ impl Player {
     }
 
     /// Start running the stream.
-    fn run<T>(
-        recv: Receiver<AudioMessage>,
+    fn run(
         channels: usize,
         device: Device,
         stream_config: StreamConfig,
-    ) -> Option<Stream>
-    where
-        T: Sample,
-    {
+        midi_event_queue: SharedMidiEventQueue,
+        synth: SharedSynth,
+        sample: SharedSample,
+        play_state: SharedPlayState,
+    ) -> Option<Stream> {
         // Define the error callback.
         let err_callback = |err| println!("Stream error: {}", err);
 
-        // Move `recv` into a closure.
-        let next_sample = move || recv.recv();
-
         let two_channels = channels == 2;
+        let mut buffer = vec![0.0; 2];
+        let mut sample_buffer = [0.0; 2];
+        let mut decayer = Decayer::default();
 
         // Define the data callback used by cpal. Move `stream_send` into the closure.
-        let data_callback = move |output: &mut [T], _: &OutputCallbackInfo| {
-            for frame in output.chunks_mut(channels) {
-                // Try to receive a new sample.
-                if let Ok((l, r)) = next_sample() {
-                    // This is almost certainly more performant than the code in the `else` block.
-                    if two_channels {
-                        frame[0] = Sample::from::<f32>(&l);
-                        frame[1] = Sample::from::<f32>(&r);
-                    } else {
-                        let channels = [Sample::from::<f32>(&l), Sample::from::<f32>(&r)];
-                        for (id, sample) in frame.iter_mut().enumerate() {
-                            *sample = channels[id % 2];
+        let data_callback = move |output: &mut [f32], _: &OutputCallbackInfo| {
+            let ps = *play_state.lock();
+            match ps {
+                // Assume that there is no audio and do nothing.
+                PlayState::NotPlaying => (),
+                // Add decay.
+                PlayState::Decaying => {
+                    let len = output.len();
+                    // Write the decay block.
+                    decayer.decay_shared(&synth, len);
+                    // Set the decay block.
+                    if decayer.decaying {
+                        // Copy into output.
+                        if two_channels {
+                            output.copy_from_slice(decayer.buffer[0..len].as_mut());
+                        } else {
+                            for (out_frame, in_frame) in output
+                                .chunks_mut(channels)
+                                .zip(decayer.buffer[0..len].chunks_mut(2))
+                            {
+                                for (id, sample) in out_frame.iter_mut().enumerate() {
+                                    *sample = in_frame[id % 2];
+                                }
+                            }
                         }
+                    }
+                    // Done decaying.
+                    else {
+                        // Fill the output with silence.
+                        output.iter_mut().for_each(|o| *o = 0.0);
+                        let mut play_state = play_state.lock();
+                        *play_state = PlayState::NotPlaying;
+                    }
+                }
+                // Playing music.
+                PlayState::Playing(time) => {
+                    let len = output.len();
+                    // Resize the buffers.
+                    if len > buffer.len() {
+                        buffer.resize(len, 0.0);
+                    }
+                    // Get the next sample.
+                    let mut synth = synth.lock();
+                    let mut midi_event_queue = midi_event_queue.lock();
+                    // Iterate through the output buffer's frames.
+                    let mut begin_decay = false;
+                    let buffer_len = len / channels;
+                    let mut t = time;
+                    for frame in output.chunks_mut(channels) {
+                        match midi_event_queue.get_next_time() {
+                            Some(next_time) => {
+                                // There are events on this frame.
+                                if t == next_time {
+                                    // Dequeue events.
+                                    let events = midi_event_queue.dequeue(t);
+                                    // Send the MIDI events to the synth.
+                                    if !events.is_empty() {
+                                        for event in events {
+                                            if synth.send_event(event).is_ok() {}
+                                        }
+                                    }
+                                }
+                                // Add the sample.
+                                // This is almost certainly more performant than the code in the `else` block.
+                                if two_channels {
+                                    // Get the sample.
+                                    synth.write(frame);
+                                }
+                                // Add for more than one channel. This is slower.
+                                else {
+                                    synth.write(sample_buffer.as_mut_slice());
+                                    for (id, sample) in frame.iter_mut().enumerate() {
+                                        *sample = sample_buffer[id % 2];
+                                    }
+                                }
+                                // Advance time.
+                                t += 1;
+                            }
+                            // There are no more events.
+                            None => {
+                                begin_decay = true;
+                                break;
+                            }
+                        }
+                    }
+                    if begin_decay {
+                        *play_state.lock() = PlayState::Decaying;
+                        Self::begin_decay(
+                            buffer[0..buffer_len].as_mut(),
+                            output,
+                            channels,
+                            two_channels,
+                            &play_state,
+                            &mut synth,
+                        );
+                    } else {
+                        *play_state.lock() = PlayState::Playing(t);
                     }
                 }
             }
+            // Share the first sample.
+            let mut sample = sample.lock();
+            sample.0 = output[0];
+            sample.1 = output[1]
         };
 
         // Build the cpal output stream from the stream config info and the callbacks.
@@ -107,5 +200,27 @@ impl Player {
             },
             Err(_) => None,
         }
+    }
+
+    fn begin_decay(
+        buffer: &mut [f32],
+        output: &mut [f32],
+        channels: usize,
+        two_channels: bool,
+        play_state: &SharedPlayState,
+        synth: &mut Synth,
+    ) {
+        if two_channels {
+            synth.write(output);
+        } else {
+            // Write decay samples.
+            synth.write(buffer.as_mut());
+            for (out_frame, in_frame) in output.chunks_mut(channels).zip(buffer.chunks(2)) {
+                for (id, sample) in out_frame.iter_mut().enumerate() {
+                    *sample = in_frame[id % 2];
+                }
+            }
+        }
+        *play_state.lock() = PlayState::Decaying;
     }
 }

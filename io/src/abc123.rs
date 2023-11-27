@@ -66,44 +66,6 @@ impl AlphanumericModifiable for U64orF32 {
     }
 }
 
-/// Handle alphanumeric input for a shared exporter.
-///
-/// - `f` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
-/// - `input` The input state. This is used to check if alphanumeric input is allowed.
-/// - `exporter` The exporter state.
-pub(crate) fn update_shared_exporter<F, T>(
-    f: F,
-    input: &Input,
-    exporter: &mut SharedExporter,
-) -> bool
-where
-    F: FnMut(&mut Exporter) -> &mut T,
-    T: Clone + AlphanumericModifiable,
-{
-    let mut ex = exporter.lock();
-    update_exporter(f, input, &mut ex)
-}
-
-/// Do something with a shared exporter when alphanumeric input is disabled.
-///
-/// - `f` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
-/// - `exporter` The exporter state.
-pub(crate) fn on_disable_shared_exporter<F, T>(
-    mut f: F,
-    exporter: &mut SharedExporter,
-    default_value: T,
-) where
-    F: FnMut(&mut Exporter) -> &mut T,
-    T: Clone + AlphanumericModifiable,
-{
-    let mut ex = exporter.lock();
-    let v = f(&mut ex);
-    // If the value is empty, set a default value.
-    if !v.is_valid() {
-        *v = default_value;
-    }
-}
-
 /// Handle alphanumeric input for the exporter.
 ///
 /// - `f` A closure to modify a string, e.g. `|e| &mut e.metadata.title`.
