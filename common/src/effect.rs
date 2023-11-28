@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use std::cmp::Ordering;
 
-/// A Synthesizer effect.
+/// A timed synthesizer effect.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Effect {
     /// The time of the event in PPQ.

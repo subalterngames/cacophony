@@ -9,11 +9,11 @@ use crate::{
     event_queue::EventQueue, types::SharedSample, Command, Player, Program, SharedEventQueue,
     SharedSynth, SynthState,
 };
-use common::effect::Effect;
+use common::effect::{Effect, EffectType};
 use common::open_file::Extension;
 use common::{MidiTrack, Music, Note, PathsState, State, MAX_VOLUME};
 use hashbrown::HashMap;
-use oxisynth::{MidiEvent, SoundFont, SoundFontId, Synth};
+use oxisynth::{GeneratorType, MidiEvent, SoundFont, SoundFontId, Synth};
 use parking_lot::Mutex;
 use std::fs::File;
 use std::path::{Path, PathBuf};
@@ -218,10 +218,13 @@ impl Conn {
         synth.set_sample_rate(self.framerate);
         drop(synth);
 
+        // Get the tracks that can be played.
+        let tracks = state.music.get_playable_tracks();
+
         // Enqueue note events.
         let mut event_queue = self.event_queue.lock();
         let mut end_time = 0;
-        for track in state.music.get_playable_tracks().iter() {
+        for track in tracks.iter() {
             let notes = track.get_playback_notes(state.time.playback);
             let effects = track
                 .effects
@@ -229,6 +232,33 @@ impl Conn {
                 .filter(|e| e.time >= state.time.playback)
                 .copied()
                 .collect::<Vec<Effect>>();
+            // Set the track's effect values to the last values up until playback time.
+            let program = &self.state.programs[&track.channel];
+            let mut chorus = program.chorus;
+            let mut pan = program.pan;
+            let mut reverb = program.reverb;
+            let mut prior_effects = track
+                .effects
+                .iter()
+                .filter(|e| e.time < state.time.playback)
+                .copied()
+                .collect::<Vec<Effect>>();
+            prior_effects.sort_by(|a, b| a.time.cmp(&b.time));
+            for effect in prior_effects {
+                match effect.effect {
+                    EffectType::Chorus(value) => chorus = value as f32,
+                    EffectType::Pan(value) => pan = value as f32,
+                    EffectType::Reverb(value) => reverb = value as f32,
+                    _ => (),
+                }
+            }
+            let chan = track.channel as usize;
+            let mut synth = self.synth.lock();
+            let _ = synth.set_gen(chan, GeneratorType::ChorusSend, chorus);
+            let _ = synth.set_gen(chan, GeneratorType::Pan, pan);
+            let _ = synth.set_gen(chan, GeneratorType::ReverbSend, reverb);
+            drop(synth);
+
             event_queue.enqueue(
                 track.channel,
                 &self.state.programs[&track.channel],
@@ -311,6 +341,16 @@ impl Conn {
         let tracks = state.music.get_playable_tracks();
         self.set_export_framerate();
 
+        // Set default effect values.
+        let mut synth = self.synth.lock();
+        for track in tracks.iter() {
+            let program = &self.state.programs[&track.channel];
+            let chan = track.channel as usize;
+            let _ = synth.set_gen(chan, GeneratorType::ChorusSend, program.chorus);
+            let _ = synth.set_gen(chan, GeneratorType::Pan, program.pan);
+            let _ = synth.set_gen(chan, GeneratorType::ReverbSend, program.reverb);
+        }
+
         // Export each track as a separate file.
         if self.exporter.multi_file {
             for track in tracks {
@@ -340,7 +380,7 @@ impl Conn {
         else {
             let mut t1 = 0;
             let mut events = EventQueue::default();
-            for track in tracks {
+            for track in tracks.iter() {
                 let notes = Self::get_exportable_notes(track);
                 events.enqueue(
                     track.channel,

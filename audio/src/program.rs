@@ -1,8 +1,7 @@
+use crate::soundfont_banks::SoundFontBanks;
 use oxisynth::{GeneratorType, Synth};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-
-use crate::soundfont_banks::SoundFontBanks;
 
 /// A channel's program.
 #[derive(Serialize, Deserialize)]
@@ -23,11 +22,11 @@ pub struct Program {
     pub preset_index: usize,
     /// The name of the preset.
     pub preset_name: String,
-    #[serde(skip_serializing, skip_deserializing)]
+    #[serde(skip)]
     pub(crate) chorus: f32,
-    #[serde(skip_serializing, skip_deserializing)]
+    #[serde(skip)]
     pub(crate) pan: f32,
-    #[serde(skip_serializing, skip_deserializing)]
+    #[serde(skip)]
     pub(crate) reverb: f32,
 }
 
