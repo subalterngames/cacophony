@@ -65,9 +65,9 @@ pub(crate) struct MainMenu {
 impl MainMenu {
     pub fn new(
         config: &Ini,
+        renderer: &Renderer,
         input: &Input,
         text: &mut Text,
-        renderer: &Renderer,
         remote_version: Option<String>,
     ) -> Self {
         // Get the width of the panel.
@@ -80,6 +80,7 @@ impl MainMenu {
             PanelType::MainMenu,
             position,
             [width, MAIN_MENU_HEIGHT],
+            renderer,
             text,
         );
         // Add an update notice to the title.
@@ -95,8 +96,8 @@ impl MainMenu {
         );
 
         // Get the fields.
-        let mut x = panel.rect.position[0] + 2;
-        let y = panel.rect.position[1] + 1;
+        let mut x = position[0] + 2;
+        let y = position[1] + 1;
         let help = Self::label_from_key("MAIN_MENU_HELP", &mut x, y, text);
         x += 4;
         let mut tooltips = Tooltips::default();
@@ -280,8 +281,8 @@ impl MainMenu {
     /// Get a sample, set lerp targets, and draw bars.
     pub fn late_update(&mut self, renderer: &Renderer, conn: &Conn) {
         // Set the power bar lerp targets from the sample.
-        let sample = *conn.sample.lock();
         if self.time % POWER_BAR_DELTA == 0 {
+            let sample = *conn.sample.lock();
             self.set_lerp_target(0, sample.0);
             self.set_lerp_target(1, sample.1);
         }

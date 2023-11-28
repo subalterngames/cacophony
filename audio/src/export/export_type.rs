@@ -2,7 +2,7 @@ use common::open_file::Extension;
 use serde::{Deserialize, Serialize};
 
 /// This determines what we're exporting to.
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Deserialize, Serialize, Default)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Deserialize, Serialize, Default, Hash)]
 pub enum ExportType {
     #[default]
     Wav,

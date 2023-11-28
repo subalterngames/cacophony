@@ -2,6 +2,7 @@ use crate::{ALPHANUMERIC_INPUT_MODS, MODS};
 use macroquad::input::KeyCode;
 use serde::Deserialize;
 use serde_json::{from_str, Error};
+use std::collections::HashSet;
 
 /// A list of qwerty keys plus mods that define a qwerty key binding.
 #[derive(Clone)]
@@ -86,7 +87,12 @@ impl QwertyBinding {
     /// - `pressed` The keys that were pressed on this frame.
     /// - `down` The keys that were held down on this frame.
     /// - `alphanumeric` If true, we're in alphanumeric input mode, which can affect whether we can listen for certain qwerty bindings.
-    pub(crate) fn update(&mut self, pressed: &[KeyCode], down: &[KeyCode], alphanumeric: bool) {
+    pub(crate) fn update(
+        &mut self,
+        pressed: &HashSet<KeyCode>,
+        down: &HashSet<KeyCode>,
+        alphanumeric: bool,
+    ) {
         self.pressed = false;
         // Mods.
         if self.mods.iter().all(|m| down.contains(m))

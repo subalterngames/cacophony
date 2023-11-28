@@ -2,11 +2,15 @@
 
 ## 0.2.0
 
-Cacophony uses a lot of CPU resources even when it's idle. It shouldn't do that! I reduced Cacophony's idle CPU usage by around 20-50% and by 15-50% while playing music; the exact percentage varies depending on the CPU and the OS. This update is the first big CPU optimization, and probably the most significant; I think all other subsequent optimizations will chip away at the problem.
+Cacophony uses a lot of CPU resources even when it's idle. It shouldn't do that! I reduced Cacophony's CPU usage by around 50%; the exact percentage varies depending on the CPU and the OS. This update is the first big CPU optimization, and probably the most significant.
+
+These are the optimizations:
+
+- In `audio`, `Synthesizer` (which no longer exists) ran a very fast infinite loop to send samples to `Player`, and the loop needlessly consumed CPU resources. I replaced this loop with a bunch of `Arc<Mutex<T>>` values that are shared between `Conn` and `Player`. As a result of removing `Synthesizer` I had to reorganize all of the exporter code. There are a lot of small changes that I'm not going to list here because let's be real, no one reads verbose changelogs, but the most noticeable change is that `Exporter` is a field in `Conn` and is no longer shared (there is no `Arc<Mutex<Exporter>>` anywhere in the code). This change affects a *lot* of the codebase, but it's mostly just refactoring with zero functional differences.
+- In `input`, `Input` checked for key downs and presses very inefficently. I only had to change two lines of code to make it much faster. This optimizes CPU usage by roughly 10%.
+- A tiny optimization to drawing panel backgrounds. This required refactoring throughout `render`. I think that there are more tiny optimizations that could be made in `render` that cumulatively might make more of a difference.
 
 This update doesn't have any new features or bug fixes. In the future, I'm going to reserve major releases (0.x.0) for big new features, but I had to rewrite so much of Cacophony's code, and the results are such a big improvement, that I'm making this a major release anyway.
-
-*(Backend notes)* The problem was that the `Synthesizer` struct (which no longer exists) ran a very fast infinite loop to send samples to `Player`, and the loop needlessly consumed CPU resources. I replaced this loop with a bunch of `Arc<Mutex<T>>` values that are shared between `Conn` and `Player`. As a result of removing `Synthesizer` I had to reorganize all of the exporter code. There are a lot of small changes that I'm not going to list here because let's be real, no one reads verbose changelogs, but the most noticeable change is that `Exporter` is a field in `Conn` and is no longer shared (there is no `Arc<Mutex<Exporter>>` anywhere in the code). This change affects a *lot* of the codebase, but it's mostly just refactoring with zero functional differences. 
 
 # 0.1.x
 

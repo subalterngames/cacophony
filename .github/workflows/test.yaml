@@ -1,0 +1,90 @@
+name: test
+
+on:
+  push:
+    paths-ignore:
+      - "doc/**"
+      - ".vscode/**"
+      - "html/**"
+      - "data/**"
+      - "promo/**"
+      - "py/**"
+      - "**.md"
+
+# Make sure CI fails on all warnings, including Clippy lints
+env:
+  RUSTFLAGS: "-Dwarnings"
+
+jobs:
+  # Check for formatting and clippy
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setup Rust toolchain
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: rustfmt
+          override: true
+
+      # Install the required dependencies
+      - name: Install test dependencies
+        run: sudo apt-get install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
+
+      # Cargo fmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      # Cargo clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-targets --features speech_dispatcher_0_11
+
+  # Run test check on Linux, macOS, and Windows
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04, macOS-13, macOS-12, macOS-11, windows-latest]
+    steps:
+      # Checkout the branch being tested
+      - uses: actions/checkout@v4
+
+      # Install rust stable
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      # Cache the built dependencies
+      - uses: Swatinem/rust-cache@v2.7.1
+        with:
+          save-if: ${{ github.event_name == 'push' }}
+
+      # Install the required dependencies on Ubuntu
+      - name: Install test dependencies
+        run: sudo apt-get install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
+        if: ${{ contains(matrix.os, 'ubuntu') }}
+
+      # Test for Ubuntu 20.04
+      - name: Test
+        run: cargo test --all --features speech_dispatcher_0_9
+        if: matrix.os == 'ubuntu-20.04'
+
+      # Test for Ubuntu 22.04
+      - name: Test
+        run: cargo test --all --features speech_dispatcher_0_11
+        if: matrix.os == 'ubuntu-22.04'
+
+      # Test for windows and mac
+      - name: Test
+        run: cargo test --all
+        if: ${{ !contains(matrix.os, 'ubuntu') }}

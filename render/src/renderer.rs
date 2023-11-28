@@ -144,14 +144,22 @@ impl Renderer {
     /// - `rectangle` The position and size of the bordered area.
     /// - `color` A `ColorKey` for the rectangle.
     pub(crate) fn border(&self, rect: &Rectangle, color: &ColorKey) {
-        let mut xy = self.grid_to_pixel(rect.position);
-        xy[0] += self.border_offsets[0];
-        xy[1] += self.border_offsets[1];
-        let mut wh = self.grid_to_pixel(rect.size);
-        wh[0] += self.border_offsets[2];
-        wh[1] += self.border_offsets[3];
-        let color = self.colors[color];
-        draw_rectangle_lines(xy[0], xy[1], wh[0], wh[1], self.line_width, color);
+        self.rectangle_lines(&self.get_border_rect(rect.position, rect.size), color);
+    }
+
+    /// Draw a border that is slightly offset from the edges of the cells.
+    ///
+    /// - `rectangle` The position and size of the bordered area.
+    /// - `color` A `ColorKey` for the rectangle.
+    pub(crate) fn rectangle_lines(&self, rect: &RectanglePixel, color: &ColorKey) {
+        draw_rectangle_lines(
+            rect.position[0],
+            rect.position[1],
+            rect.size[0],
+            rect.size[1],
+            self.line_width,
+            self.colors[color],
+        );
     }
 
     /// Draw text.
@@ -614,6 +622,17 @@ impl Renderer {
             point[0] as f32 * self.cell_size[0],
             point[1] as f32 * self.cell_size[1],
         ]
+    }
+
+    /// Returns the position of the size of a border rectangle in pixels.
+    pub(crate) fn get_border_rect(&self, position: [u32; 2], size: [u32; 2]) -> RectanglePixel {
+        let mut position = self.grid_to_pixel(position);
+        position[0] += self.border_offsets[0];
+        position[1] += self.border_offsets[1];
+        let mut size = self.grid_to_pixel(size);
+        size[0] += self.border_offsets[2];
+        size[1] += self.border_offsets[3];
+        RectanglePixel::new(position, size)
     }
 
     /// Parse a serialized 3-element array as an RGBA color.
