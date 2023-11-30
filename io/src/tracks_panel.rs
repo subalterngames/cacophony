@@ -1,7 +1,7 @@
 use crate::panel::*;
 use crate::select_track;
 use common::open_file::OpenFileType;
-use common::{MidiTrack, Paths, SelectMode, MAX_VOLUME};
+use common::{MidiTrack, Paths, MAX_VOLUME};
 use std::path::PathBuf;
 use text::get_file_name_no_ex;
 
@@ -226,10 +226,7 @@ impl Panel for TracksPanel {
             match (0u8..255u8).filter(|c| !track_channels.contains(c)).min() {
                 Some(channel) => {
                     // Deselect.
-                    state.select_mode = match &state.select_mode {
-                        SelectMode::Single(_) => SelectMode::Single(None),
-                        SelectMode::Many(_) => SelectMode::Many(None),
-                    };
+                    state.selection.deselect();
                     // Set the selection.
                     state.music.selected = Some(state.music.midi_tracks.len());
                     // Add a track.
@@ -262,10 +259,7 @@ impl Panel for TracksPanel {
                     },
                 };
                 // Deselect.
-                state.select_mode = match &state.select_mode {
-                    SelectMode::Single(_) => SelectMode::Single(None),
-                    SelectMode::Many(_) => SelectMode::Many(None),
-                };
+                state.selection.deselect();
                 // Remove the track.
                 state.music.midi_tracks.retain(|t| t.channel != channel);
                 // This track has a program that needs to be unset.

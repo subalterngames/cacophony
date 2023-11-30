@@ -9,9 +9,8 @@ use crate::{
     event_queue::EventQueue, types::SharedSample, Command, Player, Program, SharedEventQueue,
     SharedSynth, SynthState,
 };
-use common::effect::{Effect, EffectType};
 use common::open_file::Extension;
-use common::{MidiTrack, Music, Note, PathsState, State, MAX_VOLUME};
+use common::{Effect, EffectType, MidiTrack, Music, Note, PathsState, State, MAX_VOLUME};
 use hashbrown::HashMap;
 use oxisynth::{GeneratorType, MidiEvent, SoundFont, SoundFontId, Synth};
 use parking_lot::Mutex;

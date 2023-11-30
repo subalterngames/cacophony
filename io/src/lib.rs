@@ -17,7 +17,7 @@
 
 use audio::export::ExportState;
 use audio::Conn;
-use common::{InputState, Music, PanelType, Paths, PathsState, SelectMode, State};
+use common::{InputState, Music, PanelType, Paths, PathsState, State};
 use edit::edit_file;
 use hashbrown::HashMap;
 use ini::Ini;
@@ -527,12 +527,12 @@ pub(crate) fn select_track(
         if input.happened(&events[0]) && selected > 0 {
             let s0 = state.clone();
             state.music.selected = Some(selected - 1);
-            deselect(state);
+            state.selection.deselect();
             Some(Snapshot::from_states(s0, state))
         } else if input.happened(&events[1]) && selected < state.music.midi_tracks.len() - 1 {
             let s0 = state.clone();
             state.music.selected = Some(selected + 1);
-            deselect(state);
+            state.selection.deselect();
             Some(Snapshot::from_states(s0, state))
         } else {
             None
@@ -540,11 +540,4 @@ pub(crate) fn select_track(
     } else {
         None
     }
-}
-
-fn deselect(state: &mut State) {
-    state.select_mode = match &state.select_mode {
-        SelectMode::Single(_) => SelectMode::Single(None),
-        SelectMode::Many(_) => SelectMode::Many(None),
-    };
 }

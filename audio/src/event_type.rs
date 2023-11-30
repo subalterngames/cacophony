@@ -1,4 +1,4 @@
-use common::effect::EffectType;
+use common::EffectType;
 use oxisynth::{GeneratorType, MidiEvent, Synth};
 
 /// A type of MIDI or synthesizer event.

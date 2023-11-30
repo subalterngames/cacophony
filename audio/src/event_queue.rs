@@ -1,9 +1,6 @@
 use super::timed_event::TimedEvent;
 use crate::{event_type::EventType, program::Program};
-use common::{
-    effect::{Effect, EffectType},
-    Note, Time,
-};
+use common::{Effect, EffectType, Note, Time};
 
 /// A queue of timed events.
 #[derive(Default)]

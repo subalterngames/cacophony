@@ -1,7 +1,7 @@
 use super::{get_no_selection_status_tts, PianoRollSubPanel};
 use crate::panel::*;
 use common::time::Time;
-use common::{MidiTrack, Note, SelectMode};
+use common::{MidiTrack, Note, Selection};
 
 /// Select notes.
 #[derive(Default)]
@@ -73,20 +73,15 @@ impl Panel for Select {
                 // Cycle the select mode.
                 if input.happened(&InputEvent::PianoRollCycleMode) {
                     let s0 = state.clone();
-                    let mode = state.select_mode.clone();
-                    state.select_mode = match mode {
-                        SelectMode::Single(index) => match index {
-                            Some(index) => SelectMode::Many(Some(vec![index])),
-                            None => SelectMode::Many(None),
-                        },
-                        SelectMode::Many(indices) => match indices {
-                            Some(indices) => match indices.is_empty() {
-                                true => SelectMode::Single(None),
-                                false => SelectMode::Single(Some(indices[0])),
-                            },
-                            None => SelectMode::Single(None),
-                        },
-                    };
+                    state.selection.single = !state.selection.single;
+                    if state.selection.single {
+                        if state.selection.notes.len() > 1 {
+                            state.selection.notes.drain(1..state.selection.notes.len());
+                        }
+                        if state.selection.effects.len() > 1 {
+                            state.selection.effects.drain(1..state.selection.notes.len());
+                        }
+                    }
                     Some(Snapshot::from_states(s0, state))
                 }
                 // Move the selection start leftwards.

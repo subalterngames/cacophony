@@ -45,24 +45,34 @@ impl Panel for Edit {
         } else {
             let mode = state.edit_mode.get_ref();
             let s0 = state.clone();
-            // Are there notes we can edit?
-            match state.select_mode.get_notes_mut(&mut state.music) {
-                Some(mut notes) => {
-                    // Move the notes left.
+            // Is anything selected?
+            match state.selection.get_selection_mut(&mut state.music) {
+                Some((mut notes, mut effects)) => {
+                    // Move the selection left.
                     if input.happened(&InputEvent::EditStartLeft) {
                         let dt = self.deltas.get_dt(mode, &state.input);
-                        // Don't let any notes go to t=0.
+                        let mut snapshot = false;
+                        // Don't let any notes or events go to t=0.
                         if !notes.iter().any(|n| n.start.checked_sub(dt).is_none()) {
                             notes.iter_mut().for_each(|n| n.set_t0_by(dt, false));
+                            snapshot = true;
+                        }
+                        if !effects.iter().any(|e| e.time.checked_sub(dt).is_none()) {
+                            effects.iter_mut().for_each(|e| e.time -= dt);
+                            snapshot = true;
+                        }
+                        if snapshot {
                             Some(Snapshot::from_states(s0, state))
-                        } else {
+                        }
+                        else {
                             None
                         }
                     }
-                    // Move the notes right.
+                    // Move the selection right.
                     else if input.happened(&InputEvent::EditStartRight) {
                         let dt = self.deltas.get_dt(mode, &state.input);
                         notes.iter_mut().for_each(|n| n.set_t0_by(dt, true));
+                        effects.iter_mut().for_each(|e| e.time += dt);
                         Some(Snapshot::from_states(s0, state))
                     }
                     // Shorten the duration.
