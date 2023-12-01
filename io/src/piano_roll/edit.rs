@@ -63,8 +63,7 @@ impl Panel for Edit {
                         }
                         if snapshot {
                             Some(Snapshot::from_states(s0, state))
-                        }
-                        else {
+                        } else {
                             None
                         }
                     }
