@@ -64,11 +64,6 @@ jobs:
         with:
           toolchain: stable
 
-      # Cache the built dependencies
-      - uses: Swatinem/rust-cache@v2.7.1
-        with:
-          save-if: ${{ github.event_name == 'push' }}
-
       # Install the required dependencies on Ubuntu
       - name: Install test dependencies
         run: sudo apt-get install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
