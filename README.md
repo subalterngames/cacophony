@@ -12,7 +12,7 @@
 
 ## How to compile
 
-I compile Cacophony with Rust 1.71.0 for Linux, MacOS, or Windows. Below is a list of operating systems I've tested:
+I compile Cacophony with Rust 1.74.0 for Linux, MacOS, or Windows. Below is a list of operating systems I've tested:
 
 Linux:
 
