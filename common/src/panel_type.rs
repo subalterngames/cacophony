@@ -12,4 +12,5 @@ pub enum PanelType {
     ExportSettings,
     Quit,
     Links,
+    Effects,
 }

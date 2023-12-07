@@ -1,5 +1,5 @@
-mod effect_type;
-pub use effect_type::EffectType;
+pub(crate) mod effect_type;
+pub(crate) mod valueless_effect_type;
 use serde::{Deserialize, Serialize};
 
 use std::cmp::Ordering;
@@ -10,7 +10,7 @@ pub struct Effect {
     /// The time of the event in PPQ.
     pub time: u64,
     /// The type of effect.
-    pub effect: EffectType,
+    pub effect: effect_type::EffectType,
 }
 
 impl Ord for Effect {

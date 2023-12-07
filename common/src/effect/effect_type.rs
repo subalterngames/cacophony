@@ -27,14 +27,57 @@ pub enum EffectType {
 }
 
 impl EffectType {
-    /// Returns true if the effect values are valid.
-    pub fn valid(&self) -> bool {
+    pub fn increment(&mut self) -> bool {
         match self {
-            Self::Reverb(value) | Self::Chorus(value) => *value < 1000,
-            Self::Pan(value) => *value >= -500 && *value <= 500,
-            Self::PitchBend(value) => *value <= 16383,
-            Self::ChannelPressure(value) => *value <= 127,
-            Self::PolyphonicKeyPressure { key, value } => *key <= 127 && *value <= 127,
-        }
+            Self::Reverb(value) | Self::Chorus(value) | Self::PitchBend(value) => {
+                if *value > 0 {
+                    *value -= 1;
+                    return true
+                }
+            },
+            Self::Pan(value) => {
+                if *value > -500 {
+                    *value -= 1;
+                    return true
+                }
+            }
+            Self::ChannelPressure(value) | Self::PolyphonicKeyPressure { key: _, value } => {
+                if *value > 0 {
+                    *value -= 1;
+                    return true
+                }
+            }
+        } 
+        false
+    }
+
+    pub fn decrement(&mut self) -> bool {
+        match self {
+            Self::Reverb(value) | Self::Chorus(value) => {
+                if *value < 1000 {
+                    *value += 1;
+                    return true
+                }
+            },
+            Self::Pan(value) => {
+                if *value < 500 {
+                    *value += 1;
+                    return true
+                }
+            }
+            Self::PitchBend(value) => {
+                if *value < 16383 {
+                    *value += 1;
+                    return true
+                }
+            }
+            Self::ChannelPressure(value) | Self::PolyphonicKeyPressure { key: _, value } => {
+                if *value < 127 {
+                    *value += 1;
+                    return true
+                }
+            }
+        } 
+        false
     }
 }

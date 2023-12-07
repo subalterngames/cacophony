@@ -50,6 +50,7 @@ mod abc123;
 mod export_settings_panel;
 mod quit_panel;
 use quit_panel::QuitPanel;
+mod effects_panel;
 mod links_panel;
 mod popup;
 use links_panel::LinksPanel;

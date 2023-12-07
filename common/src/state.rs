@@ -1,3 +1,4 @@
+use crate::ValuelessEffectType;
 use crate::music_panel_field::MusicPanelField;
 use crate::{
     EditMode, Index, IndexedEditModes, IndexedValues, InputState, Music, PanelType, PianoRollMode,
@@ -30,6 +31,7 @@ pub struct State {
     pub edit_mode: IndexedEditModes,
     /// The current selection.
     pub selection: Selection,
+    pub effect_types: IndexedValues<ValuelessEffectType, 6>,
     /// If true, there are unsaved changes.
     #[serde(skip_serializing, skip_deserializing)]
     pub unsaved_changes: bool,
@@ -54,6 +56,17 @@ impl State {
         let piano_roll_mode = PianoRollMode::Time;
         let edit_mode = EditMode::indexed();
         let selection = Selection::default();
+        let effect_types = IndexedValues::new(
+            0,
+            [
+                ValuelessEffectType::Chorus,
+                ValuelessEffectType::Pan,
+                ValuelessEffectType::Reverb,
+                ValuelessEffectType::PitchBend,
+                ValuelessEffectType::ChannelPressure,
+                ValuelessEffectType::PolyphonicKeyPressure,
+            ],
+        );
         Self {
             music,
             view,
@@ -65,6 +78,7 @@ impl State {
             piano_roll_mode,
             edit_mode,
             selection,
+            effect_types,
             unsaved_changes: false,
         }
     }

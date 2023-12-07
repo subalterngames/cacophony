@@ -12,7 +12,9 @@ use std::path::Path;
 pub use value_map::ValueMap;
 mod tts_string;
 use common::config::parse;
-use common::{EditMode, EffectType, Event, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U};
+use common::{
+    EditMode, Effect, EffectType, Event, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U,
+};
 use csv::Reader;
 use hashbrown::HashMap;
 use ini::Ini;
@@ -146,6 +148,15 @@ const KEYCODE_LOOKUPS: [&str; 121] = [
     "RightSuper",
     "Menu",
     "Unknown",
+];
+/// The lookup keys of the name of each effect type.
+pub const EFFECT_NAME_KEYS: [&str; 6] = [
+    "EFFECT_TYPE_CHORUS",
+    "EFFECT_TYPE_PAN",
+    "EFFECT_TYPE_REVERB",
+    "EFFECT_TYPE_PITCH_BEND",
+    "EFFECT_TYPE_CHANNEL_PRESSURE",
+    "EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE",
 ];
 
 type TextMap = HashMap<String, String>;
@@ -337,20 +348,35 @@ impl Text {
         self.get_with_values("ERROR", &[error])
     }
 
+    /// Returns the name of a note or event.
     pub fn get_event_name(&self, event: &Event<'_>) -> String {
         match event {
-            Event::Effect { effect, index: _ } => self.get(match effect.effect {
-                EffectType::Chorus(_) => "EFFECT_TYPE_CHORUS",
-                EffectType::Pan(_) => "EFFECT_TYPE_PAN",
-                EffectType::Reverb(_) => "EFFECT_TYPE_REVERB",
-                EffectType::PitchBend(_) => "EFFECT_TYPE_PITCH_BEND",
-                EffectType::ChannelPressure(_) => "EFFECT_TYPE_CHANNEL_PRESSURE",
-                EffectType::PolyphonicKeyPressure { key: _, value: _ } => {
-                    "EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE"
-                }
-            }),
+            Event::Effect { effect, index: _ } => self.get_effect_name(effect).to_string(),
             Event::Note { note, index: _ } => note.get_name().to_string(),
         }
+    }
+
+    /// Returns the name of an effect type.
+    pub fn get_effect_name(&self, effect: &Effect) -> &str {
+        self.get_ref(match effect.effect {
+            EffectType::Chorus(_) => "EFFECT_TYPE_CHORUS",
+            EffectType::Pan(_) => "EFFECT_TYPE_PAN",
+            EffectType::Reverb(_) => "EFFECT_TYPE_REVERB",
+            EffectType::PitchBend(_) => "EFFECT_TYPE_PITCH_BEND",
+            EffectType::ChannelPressure(_) => "EFFECT_TYPE_CHANNEL_PRESSURE",
+            EffectType::PolyphonicKeyPressure { key: _, value: _ } => {
+                "EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE"
+            }
+        })
+    }
+
+    /// Returns the width of the longest effect name.
+    pub fn get_effect_name_max_width(&self) -> usize {
+        *EFFECT_NAME_KEYS
+            .map(|s| self.text[s].len())
+            .iter()
+            .max()
+            .unwrap()
     }
 
     /// Returns the name of the note.

@@ -23,11 +23,11 @@ pub struct Program {
     /// The name of the preset.
     pub preset_name: String,
     #[serde(skip)]
-    pub(crate) chorus: f32,
+    pub chorus: f32,
     #[serde(skip)]
-    pub(crate) pan: f32,
+    pub pan: f32,
     #[serde(skip)]
-    pub(crate) reverb: f32,
+    pub reverb: f32,
 }
 
 impl Clone for Program {

@@ -130,6 +130,12 @@ pub enum InputEvent {
     DiscordUrl,
     GitHubUrl,
     CloseLinksPanel,
+    // Effects panel.
+    NextEffect,
+    PreviousEffect,
+    IncrementEffectValue,
+    DecrementEffectValue,
+    DeleteEffect,
     // Qwerty note input.
     C,
     CSharp,
