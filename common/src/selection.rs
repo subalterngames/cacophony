@@ -21,13 +21,12 @@ impl Selection {
 
     /// Returns the selected notes and effects.
     pub fn get_selection<'a>(&self, music: &'a Music) -> Option<(Vec<&'a Note>, Vec<&'a Effect>)> {
-        match music.get_selected_track() {
-            None => None,
-            Some(track) => Some((
+        music.get_selected_track().map(|track| {
+            (
                 self.notes.iter().map(|i| &track.notes[*i]).collect(),
                 self.effects.iter().map(|i| &track.effects[*i]).collect(),
-            )),
-        }
+            )
+        })
     }
 
     /// Returns mutable selected notes and effects.
@@ -187,10 +186,11 @@ impl Selection {
     pub fn get_dt(&self, music: &Music) -> Option<(u64, u64)> {
         match self.get_events(music) {
             Some(events) => match events.iter().map(|s| s.get_start_time()).min() {
-                Some(min) => match events.iter().map(|s| s.get_end_time()).max() {
-                    Some(max) => Some((min, max)),
-                    None => None,
-                },
+                Some(min) => events
+                    .iter()
+                    .map(|s| s.get_end_time())
+                    .max()
+                    .map(|max| (min, max)),
                 None => None,
             },
             None => None,
@@ -213,7 +213,7 @@ impl Selection {
                         .map(|(index, effect)| Event::Effect { effect, index }),
                 );
                 // Sort the selectables by start time.
-                events.sort_by(|a, b| a.get_start_time().cmp(&b.get_start_time()));
+                events.sort_by_key(|e| e.get_start_time());
                 Some(events)
             }
             None => None,
@@ -237,7 +237,7 @@ impl Selection {
                         .enumerate()
                         .map(|(index, effect)| Event::Effect { effect, index }),
                 );
-                events.sort_by(|a, b| a.get_start_time().cmp(&b.get_start_time()));
+                events.sort_by_key(|e| e.get_start_time());
                 Some(events)
             }
             None => None,

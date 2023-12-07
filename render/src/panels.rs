@@ -108,6 +108,6 @@ impl Panels {
         self.quit_panel.popup.late_update(state, renderer);
         self.links_panel.popup.late_update(state, renderer);
         self.main_menu.late_update(renderer, conn);
-        self.piano_roll_panel.late_update(state, renderer);
+        self.piano_roll_panel.late_update(state, conn, renderer);
     }
 }

@@ -8,6 +8,9 @@ pub struct Music {
     pub midi_tracks: Vec<MidiTrack>,
     /// The index of the selected track.
     pub selected: Option<usize>,
+    /// If true, at least one note or effect has been changed.
+    #[serde(skip_serializing, skip_deserializing)]
+    pub dirty: bool,
 }
 
 impl Music {

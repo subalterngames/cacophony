@@ -158,9 +158,9 @@ impl MultiTrack {
             // Draw some notes.
             for note in notes.notes.iter() {
                 let note_y = note_y + (1.0 - ((note.note.note - MIN_NOTE) as f32) / DN_F) * h;
-                let mut note_w = notes.get_note_w(note);
                 // Clamp the note.
                 let note_x0 = note.x.clamp(self.rect_f[0], x1);
+                let mut note_w = note.w;
                 let note_x1 = note.x + note_w;
                 if note_x1 > x1 {
                     note_w = x1 - note_x0;

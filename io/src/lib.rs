@@ -225,6 +225,9 @@ impl IO {
             return false;
         }
 
+        // Mark the music as not dirty.
+        state.music.dirty = false;
+
         // Alphanumeric input.
         if state.input.alphanumeric_input {
             // Get the focused panel.

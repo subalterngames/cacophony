@@ -12,7 +12,7 @@ use std::path::Path;
 pub use value_map::ValueMap;
 mod tts_string;
 use common::config::parse;
-use common::{EditMode, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U};
+use common::{EditMode, EffectType, Event, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U};
 use csv::Reader;
 use hashbrown::HashMap;
 use ini::Ini;
@@ -164,7 +164,7 @@ pub struct Text {
     piano_roll_modes: HashMap<PianoRollMode, String>,
     /// The name of each MIDI note.
     note_names: Vec<String>,
-    /// Boolean dislay
+    /// Boolean display strings.
     booleans: ValueMap<bool>,
 }
 
@@ -335,6 +335,22 @@ impl Text {
     /// Returns an error text-to-speech string.
     pub fn get_error(&self, error: &str) -> String {
         self.get_with_values("ERROR", &[error])
+    }
+
+    pub fn get_event_name(&self, event: &Event<'_>) -> String {
+        match event {
+            Event::Effect { effect, index: _ } => self.get(match effect.effect {
+                EffectType::Chorus(_) => "EFFECT_TYPE_CHORUS",
+                EffectType::Pan(_) => "EFFECT_TYPE_PAN",
+                EffectType::Reverb(_) => "EFFECT_TYPE_REVERB",
+                EffectType::PitchBend(_) => "EFFECT_TYPE_PITCH_BEND",
+                EffectType::ChannelPressure(_) => "EFFECT_TYPE_CHANNEL_PRESSURE",
+                EffectType::PolyphonicKeyPressure { key: _, value: _ } => {
+                    "EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE"
+                }
+            }),
+            Event::Note { note, index: _ } => note.get_name().to_string(),
+        }
     }
 
     /// Returns the name of the note.

@@ -18,14 +18,16 @@ enum CopiedEvent {
     Note(Note),
 }
 
-impl CopiedEvent {
-    fn from(event: Event<'_>) -> Self {
-        match event {
-            Event::Effect { effect, index: _ } => Self::Effect(effect.clone()),
-            Event::Note { note, index: _ } => Self::Note(note.clone()),
+impl From<Event<'_>> for CopiedEvent {
+    fn from(value: Event) -> Self {
+        match value {
+            Event::Effect { effect, index: _ } => Self::Effect(*effect),
+            Event::Note { note, index: _ } => Self::Note(*note),
         }
     }
+}
 
+impl CopiedEvent {
     fn get_start_time(&self) -> u64 {
         match self {
             Self::Effect(effect) => effect.time,
@@ -458,12 +460,12 @@ impl Panel for PianoRollPanel {
                     for event in self.copy_buffer.iter() {
                         match event {
                             CopiedEvent::Effect(effect) => {
-                                let mut effect = effect.clone();
+                                let mut effect = *effect;
                                 effect.time += state.time.cursor;
                                 track.effects.push(effect);
                             }
                             CopiedEvent::Note(note) => {
-                                let mut note = note.clone();
+                                let mut note = *note;
                                 let dt = note.end - note.start;
                                 note.start = (note.start - min_time) + state.time.cursor;
                                 note.end = note.start + dt;

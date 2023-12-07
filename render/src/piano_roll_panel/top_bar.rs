@@ -1,5 +1,5 @@
 use crate::panel::*;
-use common::{EditMode, IndexedEditModes, PianoRollMode, SelectMode};
+use common::{EditMode, IndexedEditModes, PianoRollMode};
 use hashbrown::HashMap;
 use text::ppq_to_string;
 
@@ -165,10 +165,11 @@ impl TopBar {
         // Edit mode.
         let edit_mode = match state.piano_roll_mode {
             PianoRollMode::Edit => Self::get_edit_mode_text(&state.edit_mode, text),
-            PianoRollMode::Select => match state.select_mode {
-                SelectMode::Single(_) => text.get_ref("PIANO_ROLL_PANEL_EDIT_MODE_SINGLE"),
-                SelectMode::Many(_) => text.get_ref("PIANO_ROLL_PANEL_EDIT_MODE_MANY"),
-            },
+            PianoRollMode::Select => text.get_ref(if state.selection.single {
+                "PIANO_ROLL_PANEL_EDIT_MODE_SINGLE"
+            } else {
+                "PIANO_ROLL_PANEL_EDIT_MODE_MANY"
+            }),
             PianoRollMode::Time => Self::get_edit_mode_text(&state.time.mode, text),
             PianoRollMode::View => Self::get_edit_mode_text(&state.view.mode, text),
         };

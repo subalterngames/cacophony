@@ -49,6 +49,7 @@ impl Snapshot {
     /// - `from_state` The initial state of the delta. This is usually a clone of a `State` prior to modifying the primary `State`.
     /// - `to_state` The final state of the delta. This is a reference to the primary `State`.
     pub fn from_states(from_state: State, to_state: &mut State) -> Self {
+        to_state.music.dirty = true;
         Self {
             from_state: Some(from_state),
             to_state: Some(to_state.clone()),

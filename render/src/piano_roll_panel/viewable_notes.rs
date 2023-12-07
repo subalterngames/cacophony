@@ -3,11 +3,13 @@ use audio::play_state::PlayState;
 use common::*;
 
 /// A viewable note.
-pub(crate) struct ViewableNote<'a> {
+pub(crate) struct ViewableNote {
     /// The note.
-    pub note: &'a Note,
+    pub note: Note,
     /// The x pixel coordinate of the note.
     pub x: f32,
+    /// The pixel width of the note.
+    pub w: f32,
     /// If true, this note is being played.
     pub playing: bool,
     /// If true, this note is selected.
@@ -21,36 +23,27 @@ pub(crate) struct ViewableNote<'a> {
 
 /// Render information for all notes that are in the viewport.
 /// This information is shared between the piano roll and volume sub-panels.
-pub(crate) struct ViewableNotes<'a> {
+#[derive(Default)]
+pub(crate) struct ViewableNotes {
     /// The notes that are in view.
-    pub notes: Vec<ViewableNote<'a>>,
-    /// Cached viewport dt in PPQ.
-    dt: [U64orF32; 2],
+    pub notes: Vec<ViewableNote>,
     /// The number of pulses in 1 pixel.
     pub pulses_per_pixel: u64,
 }
 
-impl<'a> ViewableNotes<'a> {
+impl ViewableNotes {
     /// - `x` The x pixel coordinate of the note's position.
     /// - `w` The pixel width of the note.
     /// - `state` The app state.
     /// - `conn` The audio conn.
     /// - `focus` If true, the piano roll panel has focus.
     /// - `dt` The time delta.
-    pub fn new(
-        x: f32,
-        w: f32,
-        state: &'a State,
-        conn: &Conn,
-        focus: bool,
-        dt: [U64orF32; 2],
-    ) -> Self {
+    pub fn new(x: f32, w: f32, state: &State, conn: &Conn, focus: bool, dt: [U64orF32; 2]) -> Self {
         match state.music.get_selected_track() {
             Some(track) => Self::new_from_track(x, w, track, state, conn, focus, dt, state.view.dn),
             None => Self {
                 pulses_per_pixel: Self::get_pulses_per_pixel(&dt, w),
                 notes: vec![],
-                dt,
             },
         }
     }
@@ -68,8 +61,8 @@ impl<'a> ViewableNotes<'a> {
     pub fn new_from_track(
         x: f32,
         w: f32,
-        track: &'a MidiTrack,
-        state: &'a State,
+        track: &MidiTrack,
+        state: &State,
         conn: &Conn,
         focus: bool,
         dt: [U64orF32; 2],
@@ -83,22 +76,19 @@ impl<'a> ViewableNotes<'a> {
         };
 
         // Get the selected notes.
-        let selected = match state.select_mode.get_notes(&state.music) {
-            Some(selected) => selected,
+        let selected = match state.selection.get_selection(&state.music) {
+            Some((notes, _)) => notes,
             None => vec![],
         };
+        let (t0, t1) = (dt[0].get_u(), dt[1].get_u());
         let mut notes = vec![];
         for note in track.notes.iter() {
             // Is the note in view?
-            if note.end <= dt[0].get_u() || note.start >= dt[1].get_u() {
+            if note.end <= t0 || note.start >= t1 {
                 continue;
             }
             // Get the start time of the note. This could be the start of the viewport.
-            let t = if note.start < dt[0].get_u() {
-                dt[0].get_u()
-            } else {
-                note.start
-            };
+            let t = if note.start < t0 { t1 } else { note.start };
             // Get the x coordinate of the note.
             let x_note = Self::get_note_x(t, pulses_per_pixel, x, &dt);
             // Is this note in the selection?
@@ -121,10 +111,15 @@ impl<'a> ViewableNotes<'a> {
                 ColorKey::NoFocus
             };
             let in_pitch_range = note.note <= dn[0] && note.note > dn[1];
+            // Get the width of the note.
+            let note_t0 = if note.start < t0 { t0 } else { note.start };
+            let note_t1 = if note.end > t1 { t1 } else { note.end };
+            let w_note = ((note_t1 - note_t0) / pulses_per_pixel) as f32;
             // Add the note.
             notes.push(ViewableNote {
-                note,
+                note: *note,
                 x: x_note,
+                w: w_note,
                 color,
                 selected,
                 playing,
@@ -133,24 +128,8 @@ impl<'a> ViewableNotes<'a> {
         }
         Self {
             notes,
-            dt,
             pulses_per_pixel,
         }
-    }
-
-    /// Returns the width of a note.
-    pub fn get_note_w(&self, note: &ViewableNote) -> f32 {
-        let t0 = if note.note.start < self.dt[0].get_u() {
-            self.dt[0].get_u()
-        } else {
-            note.note.start
-        };
-        let t1 = if note.note.end > self.dt[1].get_u() {
-            self.dt[1].get_u()
-        } else {
-            note.note.end
-        };
-        ((t1 - t0) / self.pulses_per_pixel) as f32
     }
 
     /// Returns the x pixel coordinate corresonding with time `t` within the viewport defined by `x`, `w` and `dt`.

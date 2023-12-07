@@ -7,7 +7,7 @@ mod multi_track;
 mod top_bar;
 mod viewable_notes;
 mod volume;
-use common::{SelectMode, State, U64orF32, NOTE_NAMES, PPQ_U};
+use common::{State, U64orF32, NOTE_NAMES, PPQ_U};
 use hashbrown::HashSet;
 use multi_track::MultiTrack;
 use text::ppq_to_string;
@@ -43,6 +43,8 @@ pub struct PianoRollPanel {
     time_horizontal_line_y: f32,
     /// The bottom y coordinates for time lines in single- and multi- track modes.
     time_line_bottoms: [f32; 2],
+    /// The notes currently in the viewport.
+    viewable_notes: ViewableNotes,
 }
 
 impl PianoRollPanel {
@@ -108,10 +110,23 @@ impl PianoRollPanel {
             volume,
             multi_track,
             time_line_bottoms,
+            viewable_notes: ViewableNotes::default(),
         }
     }
 
-    pub fn late_update(&mut self, state: &State, renderer: &Renderer) {
+    pub fn late_update(&mut self, state: &State, conn: &Conn, renderer: &Renderer) {
+        if state.music.dirty {
+            let (_, focus) = self.get_panel_and_focus(state);
+            let dt = Self::get_view_dt(state, conn).map(U64orF32::from);
+            self.viewable_notes = ViewableNotes::new(
+                self.piano_roll_rows_rect[0],
+                self.piano_roll_rows_rect[2],
+                state,
+                conn,
+                focus,
+                dt,
+            );
+        }
         self.piano_roll_rows.late_update(state, renderer);
     }
 
@@ -195,16 +210,21 @@ impl PianoRollPanel {
     fn get_play_state(play_state: &SharedPlayState) -> PlayState {
         *play_state.lock()
     }
-}
 
-impl Drawable for PianoRollPanel {
-    fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, text: &Text, _: &PathsState) {
+    fn get_panel_and_focus(&self, state: &State) -> (&Panel, bool) {
         let panel = if state.view.single_track {
             &self.panel_single_track
         } else {
             &self.panel_multi_track
         };
         let focus = panel.has_focus(state);
+        (panel, focus)
+    }
+}
+
+impl Drawable for PianoRollPanel {
+    fn update(&self, renderer: &Renderer, state: &State, conn: &Conn, text: &Text, _: &PathsState) {
+        let (panel, focus) = self.get_panel_and_focus(state);
 
         // Panel background.
         panel.update(focus, renderer);
@@ -223,17 +243,9 @@ impl Drawable for PianoRollPanel {
         if state.view.single_track {
             // Piano roll rows.
             self.piano_roll_rows.update(renderer);
-            // Get the viewable notes.
-            let notes = ViewableNotes::new(
-                self.piano_roll_rows_rect[0],
-                self.piano_roll_rows_rect[2],
-                state,
-                conn,
-                focus,
-                dt,
-            );
             // Draw the selection background.
-            let selected = notes
+            let selected = self
+                .viewable_notes
                 .notes
                 .iter()
                 .filter(|n| n.selected && n.in_pitch_range)
@@ -251,7 +263,7 @@ impl Drawable for PianoRollPanel {
                     };
                     let x1 = ViewableNotes::get_note_x(
                         select_1.note.end,
-                        notes.pulses_per_pixel,
+                        self.viewable_notes.pulses_per_pixel,
                         self.piano_roll_rows_rect[0],
                         &dt,
                     );
@@ -263,8 +275,12 @@ impl Drawable for PianoRollPanel {
                 }
             }
 
-            let in_pitch_range: Vec<&ViewableNote> =
-                notes.notes.iter().filter(|n| n.in_pitch_range).collect();
+            let in_pitch_range: Vec<&ViewableNote> = self
+                .viewable_notes
+                .notes
+                .iter()
+                .filter(|n| n.in_pitch_range)
+                .collect();
             let selected_pitches: Vec<u8> = selected
                 .iter()
                 .map(|n| n.note.note)
@@ -274,14 +290,13 @@ impl Drawable for PianoRollPanel {
 
             // Draw the notes.
             for note in in_pitch_range.iter() {
-                let w = notes.get_note_w(note);
                 // Get the y value from the pitch.
                 let y = self.piano_roll_rows_rect[1]
                     + ((state.view.dn[0] - note.note.note) as f32) * self.cell_size[1];
-                renderer.rectangle_pixel([note.x, y], [w, self.cell_size[1]], &note.color)
+                renderer.rectangle_pixel([note.x, y], [note.w, self.cell_size[1]], &note.color)
             }
             // Volume.
-            self.volume.update(&notes, renderer, state);
+            self.volume.update(&self.viewable_notes, renderer, state);
             // Note names.
             let note_name_color = if focus {
                 &ColorKey::Separator
@@ -339,36 +354,33 @@ impl Drawable for PianoRollPanel {
         let playback_string_width = playback_string.chars().count() as u32;
         let playback_line_x0 = playback_x + playback_string_width / 2;
         let selection_x = playback_x + playback_string_width + TIME_PADDING;
-        let (selection_string, selected) = match &state.select_mode {
-            SelectMode::Single(index) => match index {
-                Some(index) => {
-                    let note = &state.music.get_selected_track().unwrap().notes[*index];
+        let (selection_string, selected) = match state.selection.get_events(&state.music) {
+            Some(events) => {
+                if state.selection.single {
                     (
                         text.get_with_values(
                             "PIANO_ROLL_PANEL_SELECTED_SINGLE",
-                            &[note.get_name(), &(note.start / PPQ_U).to_string()],
+                            &[
+                                &text.get_event_name(&events[0]),
+                                &(events[0].get_start_time() / PPQ_U).to_string(),
+                            ],
                         ),
                         true,
                     )
-                }
-                None => (text.get("PIANO_ROLL_PANEL_SELECTED_NONE"), false),
-            },
-            SelectMode::Many(indices) => match indices {
-                Some(_) => {
-                    let mut notes = state.select_mode.get_notes(&state.music).unwrap();
-                    notes.sort();
-                    let min = notes[0].start / PPQ_U;
-                    let max = notes.last().unwrap().end / PPQ_U;
-                    (
-                        text.get_with_values(
-                            "PIANO_ROLL_PANEL_SELECTED_MANY",
-                            &[&min.to_string(), &max.to_string()],
+                } else {
+                    match state.selection.get_dt(&state.music) {
+                        Some((min, max)) => (
+                            text.get_with_values(
+                                "PIANO_ROLL_PANEL_SELECTED_MANY",
+                                &[&min.to_string(), &max.to_string()],
+                            ),
+                            true,
                         ),
-                        true,
-                    )
+                        None => (text.get("PIANO_ROLL_PANEL_SELECTED_NONE"), false),
+                    }
                 }
-                None => (text.get("PIANO_ROLL_PANEL_SELECTED_NONE"), false),
-            },
+            }
+            None => (text.get("PIANO_ROLL_PANEL_SELECTED_NONE"), false),
         };
         let playback_label = Label {
             text: playback_string,
