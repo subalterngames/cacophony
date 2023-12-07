@@ -172,8 +172,7 @@ impl Selection {
                         Selectable::Note { note: _, index } => self.notes.remove(index),
                     };
                     true
-                }
-                else {
+                } else {
                     false
                 }
             }
@@ -191,8 +190,7 @@ impl Selection {
                         Selectable::Note { note: _, index } => self.notes.remove(*index),
                     };
                     true
-                }
-                else {
+                } else {
                     false
                 }
             }
@@ -209,6 +207,20 @@ impl Selection {
             for s in music_selectables.iter() {
                 self.add_selectable(s)
             }
+        }
+    }
+
+    /// Returns the start and end time of the selection in PPQ.
+    pub fn get_dt(&self, music: &Music) -> Option<(u64, u64)> {
+        match self.get_selectables(music) {
+            Some(selectables) => match selectables.iter().map(|s| s.get_start_time()).min() {
+                Some(min) => match selectables.iter().map(|s| s.get_end_time()).max() {
+                    Some(max) => Some((min, max)),
+                    None => None,
+                },
+                None => None,
+            },
+            None => None,
         }
     }
 
@@ -266,14 +278,16 @@ impl Selection {
                 if self.effects.is_empty() || !self.single {
                     self.effects.push(*index)
                 } else {
-                    self.effects[0] = *index
+                    self.effects[0] = *index;
+                    self.notes.clear();
                 }
             }
             Selectable::Note { note: _, index } => {
                 if self.notes.is_empty() || !self.single {
                     self.notes.push(*index)
                 } else {
-                    self.notes[0] = *index
+                    self.notes[0] = *index;
+                    self.effects.clear();
                 }
             }
         }

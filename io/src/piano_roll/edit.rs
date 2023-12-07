@@ -172,35 +172,46 @@ impl PianoRollSubPanel for Edit {
     }
 
     fn get_input_tts(&mut self, state: &State, input: &Input, text: &Text) -> Vec<TtsString> {
-        let mut tts_strings = match state.select_mode.get_note_indices() {
-            Some(_) => vec![
-                self.tooltips.get_tooltip(
-                    "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_0",
-                    &[InputEvent::EditPitchUp, InputEvent::EditPitchDown],
-                    input,
-                    text,
-                ),
-                self.tooltips.get_tooltip(
-                    "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_1",
-                    &[InputEvent::EditStartLeft, InputEvent::EditStartRight],
-                    input,
-                    text,
-                ),
-                self.tooltips.get_tooltip(
-                    "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_2",
-                    &[InputEvent::EditDurationLeft, InputEvent::EditDurationRight],
-                    input,
-                    text,
-                ),
-                self.tooltips.get_tooltip(
-                    "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_3",
-                    &[InputEvent::EditVolumeUp, InputEvent::EditVolumeDown],
-                    input,
-                    text,
-                ),
-            ],
-            None => vec![get_no_selection_status_tts(text)],
-        };
+        let mut tts_strings = vec![];
+        match state.selection.get_selection(&state.music) {
+            Some((notes, effects)) => {
+                // Edit pitch.
+                let notes_empty = notes.is_empty();
+                if !notes_empty {
+                    tts_strings.push(self.tooltips.get_tooltip(
+                        "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_0",
+                        &[InputEvent::EditPitchUp, InputEvent::EditPitchDown],
+                        input,
+                        text,
+                    ));
+                }
+                // Set start time.
+                if !notes_empty || !effects.is_empty() {
+                    self.tooltips.get_tooltip(
+                        "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_1",
+                        &[InputEvent::EditStartLeft, InputEvent::EditStartRight],
+                        input,
+                        text,
+                    );
+                }
+                // Set the duration and volume.
+                if !notes_empty {
+                    tts_strings.push(self.tooltips.get_tooltip(
+                        "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_2",
+                        &[InputEvent::EditDurationLeft, InputEvent::EditDurationRight],
+                        input,
+                        text,
+                    ));
+                    tts_strings.push(self.tooltips.get_tooltip(
+                        "PIANO_ROLL_PANEL_INPUT_TTS_EDIT_3",
+                        &[InputEvent::EditVolumeUp, InputEvent::EditVolumeDown],
+                        input,
+                        text,
+                    ));
+                }
+            }
+            None => tts_strings.push(get_no_selection_status_tts(text)),
+        }
         tts_strings.push(get_cycle_edit_mode_input_tts(
             &mut self.tooltips,
             &state.edit_mode,

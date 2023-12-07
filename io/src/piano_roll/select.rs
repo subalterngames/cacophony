@@ -1,7 +1,7 @@
 use super::{get_no_selection_status_tts, PianoRollSubPanel};
 use crate::panel::*;
 use common::time::Time;
-use common::{MidiTrack, Note, Selection};
+use common::{MidiTrack, Note};
 
 /// Select notes.
 #[derive(Default)]
@@ -131,8 +131,7 @@ impl Panel for Select {
                         let s0 = state.clone();
                         if state.selection.deselect_first(&state.music) {
                             Some(Snapshot::from_states(s0, state))
-                        }
-                        else {
+                        } else {
                             None
                         }
                     }
@@ -141,8 +140,7 @@ impl Panel for Select {
                         let s0 = state.clone();
                         if state.selection.deselect_last(&state.music) {
                             Some(Snapshot::from_states(s0, state))
-                        }
-                        else {
+                        } else {
                             None
                         }
                     } else {
@@ -177,66 +175,57 @@ impl Panel for Select {
 
 impl PianoRollSubPanel for Select {
     fn get_status_tts(&mut self, state: &State, text: &Text) -> Vec<TtsString> {
-        let tts_string = if state.selection.single {
-            
-        }
-        let tts_string = match &state.select_mode {
-            SelectMode::Single(index) => match index {
-                Some(index) => match state.select_mode.get_notes(&state.music) {
-                    Some(notes) => {
-                        let note = notes[*index];
+        vec![match state.selection.get_selection(&state.music) {
+            Some((notes, effects)) => {
+                // A single note or effect.
+                if state.selection.single {
+                    if !notes.is_empty() {
+                        let note = notes[0];
                         TtsString::from(text.get_with_values(
-                            "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE",
+                            "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE_NOTE",
                             &[&note.note.to_string(), &text.get_ppq_tts(&note.start)],
                         ))
+                    } else if !effects.is_empty() {
+                        let effect = effects[0];
+                        TtsString::from(text.get_with_values(
+                            "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE_EFFECT",
+                            &[&text.get_ppq_tts(&effect.time)],
+                        ))
+                    } else {
+                        get_no_selection_status_tts(text)
                     }
-                    None => TtsString::from(text.get_error("The selected note doesn't exist.")),
-                },
-                None => get_no_selection_status_tts(text),
-            },
-            SelectMode::Many(_) => match state.select_mode.get_notes(&state.music) {
-                Some(notes) => match notes.iter().map(|n| n.start).min() {
-                    Some(min) => match notes.iter().map(|n| n.end).max() {
-                        Some(max) => TtsString::from(text.get_with_values(
+                }
+                // Multiple notes and effects.
+                else {
+                    match state.selection.get_dt(&state.music) {
+                        Some((min, max)) => TtsString::from(text.get_with_values(
                             "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_MANY",
                             &[&text.get_ppq_tts(&min), &text.get_ppq_tts(&max)],
                         )),
-                        None => TtsString::from(
-                            text.get_error("There is no end time to the selection."),
-                        ),
-                    },
-                    None => {
-                        TtsString::from(text.get_error("There is no start time to the selection."))
+                        None => get_no_selection_status_tts(text),
                     }
-                },
-                None => TtsString::from(text.get_error("The selected notes don't exist.")),
-            },
-        };
-        vec![tts_string]
+                }
+            }
+            None => get_no_selection_status_tts(text),
+        }]
     }
 
     fn get_input_tts(&mut self, state: &State, input: &Input, text: &Text) -> Vec<TtsString> {
-        let (mut tts_strings, selected) = match &state.select_mode {
-            SelectMode::Single(index) => match index {
-                Some(_) => (
-                    vec![self
-                        .tooltips
-                        .get_tooltip(
+        let mut tts_strings = match state.selection.get_selection(&state.music) {
+            Some((notes, effects)) => {
+                let mut tts_strings = vec![];
+                let empty = notes.is_empty() && effects.is_empty();
+                // There is no selection.
+                if !empty {
+                    if state.selection.single {
+                        tts_strings.push(self.tooltips.get_tooltip(
                             "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_SINGLE",
                             &[InputEvent::SelectStartLeft, InputEvent::SelectStartRight],
                             input,
                             text,
-                        )
-                        .clone()],
-                    true,
-                ),
-                None => (vec![get_no_selection_status_tts(text)], false),
-            },
-            SelectMode::Many(indices) => match indices {
-                Some(_) => (
-                    vec![self
-                        .tooltips
-                        .get_tooltip(
+                        ));
+                    } else {
+                        tts_strings.push(self.tooltips.get_tooltip(
                             "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_MANY",
                             &[
                                 InputEvent::SelectStartLeft,
@@ -249,40 +238,33 @@ impl PianoRollSubPanel for Select {
                             ],
                             input,
                             text,
-                        )
-                        .clone()],
-                    true,
-                ),
-                None => (vec![get_no_selection_status_tts(text)], false),
-            },
-        };
-        if state.select_mode.get_note_indices().is_some() {
-            tts_strings.push(
-                self.tooltips
-                    .get_tooltip(
-                        "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_ALL",
-                        &[InputEvent::SelectAll],
-                        input,
-                        text,
-                    )
-                    .clone(),
-            );
-        }
-        if selected {
-            tts_strings.push(
-                self.tooltips
-                    .get_tooltip(
+                        ));
+                    }
+                }
+                // Select all.
+                tts_strings.push(self.tooltips.get_tooltip(
+                    "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_ALL",
+                    &[InputEvent::SelectAll],
+                    input,
+                    text,
+                ));
+                // Deselect.
+                if !empty {
+                    tts_strings.push(self.tooltips.get_tooltip(
                         "PIANO_ROLL_PANEL_INPUT_TTS_DESELECT",
                         &[InputEvent::SelectNone],
                         input,
                         text,
-                    )
-                    .clone(),
-            );
-        }
-        let cycle_key = match state.select_mode {
-            SelectMode::Single(_) => "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_MANY",
-            SelectMode::Many(_) => "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_SINGLE",
+                    ));
+                }
+                tts_strings
+            }
+            None => vec![get_no_selection_status_tts(text)],
+        };
+        let cycle_key = if state.selection.single {
+            "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_MANY"
+        } else {
+            "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_CYCLE_TO_SINGLE"
         };
         tts_strings.push(
             self.tooltips

@@ -321,8 +321,9 @@ PIANO_ROLL_PANEL_STATUS_TTS_NOT_ARMED,"The track is not armed."
 PIANO_ROLL_PANEL_STATUS_TTS_PIANO_ROLL_MODE,The piano roll mode is \0.
 PIANO_ROLL_PANEL_STATUS_TTS_EDIT_MODE,The edit mode is \0.
 PIANO_ROLL_PANEL_STATUS_TTS_NO_SELECTION,No notes are selected.
-PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE,The selected note has a pitch of \0 and starts at beat \1.
-PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_MANY,The selected notes start at beat \0 and end at beat \1.
+PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE_NOTE,The selected note has a pitch of \0 and starts at beat \1.
+PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE_EFFECT,The selected effect is at beat \1.
+PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_MANY,The selected notes and effects start at beat \0 and end at beat \1.
 PIANO_ROLL_PANEL_STATUS_TTS_TIME,"The cursor is at \0. Playback will start at \1."
 PIANO_ROLL_PANEL_STATUS_TTS_VIEW,The view is from beats \0 to \1 and pitches \2 to \3.
 PIANO_ROLL_PANEL_INPUT_TTS_PLAY,\0 to play music.
@@ -339,7 +340,7 @@ PIANO_ROLL_PANEL_INPUT_TTS_COPY_CUT,\0 or \1 to copy or cut the selected notes.
 PIANO_ROLL_PANEL_INPUT_TTS_PASTE,\0 to paste notes.
 PIANO_ROLL_PANEL_INPUT_TTS_DELETE,\0 to delete the selected notes.
 PIANO_ROLL_PANEL_INPUT_TTS_EDIT_MODE,\0 to set the edit mode to %0.
-PIANO_ROLL_PANEL_INPUT_TTS_SELECT_SINGLE,\0 and \1 to select a different note.
+PIANO_ROLL_PANEL_INPUT_TTS_SELECT_SINGLE,\0 and \1 to select a different note or effect.
 PIANO_ROLL_PANEL_INPUT_TTS_SELECT_MANY,\0 and \1 to set the start of the selection. \2 and \3 to set the end of the selection.
 PIANO_ROLL_PANEL_INPUT_TTS_SELECT_ALL,\0 to select all. 
 PIANO_ROLL_PANEL_INPUT_TTS_DESELECT,\0 to deselect.
