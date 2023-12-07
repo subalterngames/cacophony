@@ -15,6 +15,7 @@
 pub mod args;
 pub mod config;
 mod effect;
+mod event;
 mod index;
 mod input_state;
 mod midi_track;
@@ -27,6 +28,7 @@ mod state;
 pub mod time;
 pub mod view;
 pub use effect::{Effect, EffectType};
+pub use event::Event;
 pub use index::Index;
 mod indexed_values;
 pub use indexed_values::IndexedValues;

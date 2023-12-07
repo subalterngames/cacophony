@@ -1,32 +1,5 @@
-use crate::{Effect, Music, Note};
+use crate::{Effect, Event, Music, Note};
 use serde::{Deserialize, Serialize};
-
-enum Selectable<'track> {
-    Effect {
-        effect: &'track Effect,
-        index: usize,
-    },
-    Note {
-        note: &'track Note,
-        index: usize,
-    },
-}
-
-impl<'track> Selectable<'track> {
-    fn get_start_time(&self) -> u64 {
-        match self {
-            Self::Effect { effect, index: _ } => effect.time,
-            Self::Note { note, index: _ } => note.start,
-        }
-    }
-
-    fn get_end_time(&self) -> u64 {
-        match self {
-            Self::Effect { effect, index: _ } => effect.time,
-            Self::Note { note, index: _ } => note.end,
-        }
-    }
-}
 
 /// A selection of notes an effects.
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
@@ -85,13 +58,13 @@ impl Selection {
 
     /// Select the note or event prior to the current selection.
     pub fn select_previous(&mut self, music: &Music, cursor_time: u64) -> bool {
-        match Self::get_music_selectables(music) {
+        match Self::get_music_events(music) {
             Some(music_selectables) => {
                 // The track has a program but no notes or events.
                 if music_selectables.is_empty() {
                     false
                 } else {
-                    match self.get_selectables(music) {
+                    match self.get_events(music) {
                         Some(selectables) => {
                             // The selection is empty.
                             let s = if selectables.is_empty() {
@@ -107,7 +80,7 @@ impl Selection {
                             };
                             match s {
                                 Some(s) => {
-                                    self.add_selectable(s);
+                                    self.add_event(s);
                                     true
                                 }
                                 None => false,
@@ -123,13 +96,13 @@ impl Selection {
 
     /// Select the note or event after to the current selection.
     pub fn select_next(&mut self, music: &Music, cursor_time: u64) -> bool {
-        match Self::get_music_selectables(music) {
+        match Self::get_music_events(music) {
             Some(music_selectables) => {
                 // The track has a program but no notes or events.
                 if music_selectables.is_empty() {
                     false
                 } else {
-                    match self.get_selectables(music) {
+                    match self.get_events(music) {
                         Some(selectables) => {
                             // The selection is empty.
                             let s = if selectables.is_empty() {
@@ -148,7 +121,7 @@ impl Selection {
                             };
                             match s {
                                 Some(s) => {
-                                    self.add_selectable(s);
+                                    self.add_event(s);
                                     true
                                 }
                                 None => false,
@@ -163,13 +136,13 @@ impl Selection {
     }
 
     pub fn deselect_first(&mut self, music: &Music) -> bool {
-        match self.get_selectables(music) {
-            Some(selectables) => {
+        match self.get_events(music) {
+            Some(events) => {
                 // Try to remove the first selected note or event.
-                if !selectables.is_empty() {
-                    match selectables[0] {
-                        Selectable::Effect { effect: _, index } => self.effects.remove(index),
-                        Selectable::Note { note: _, index } => self.notes.remove(index),
+                if !events.is_empty() {
+                    match events[0] {
+                        Event::Effect { effect: _, index } => self.effects.remove(index),
+                        Event::Note { note: _, index } => self.notes.remove(index),
                     };
                     true
                 } else {
@@ -181,13 +154,13 @@ impl Selection {
     }
 
     pub fn deselect_last(&mut self, music: &Music) -> bool {
-        match self.get_selectables(music) {
-            Some(selectables) => {
+        match self.get_events(music) {
+            Some(events) => {
                 // Try to remove the first selected note or event.
-                if !selectables.is_empty() {
-                    match selectables.last().unwrap() {
-                        Selectable::Effect { effect: _, index } => self.effects.remove(*index),
-                        Selectable::Note { note: _, index } => self.notes.remove(*index),
+                if !events.is_empty() {
+                    match events.last().unwrap() {
+                        Event::Effect { effect: _, index } => self.effects.remove(*index),
+                        Event::Note { note: _, index } => self.notes.remove(*index),
                     };
                     true
                 } else {
@@ -200,21 +173,21 @@ impl Selection {
 
     /// Select all notes and effects.
     pub fn select_all(&mut self, music: &Music) {
-        if let Some(music_selectables) = Self::get_music_selectables(music) {
+        if let Some(music_events) = Self::get_music_events(music) {
             self.single = false;
             self.notes.clear();
             self.effects.clear();
-            for s in music_selectables.iter() {
-                self.add_selectable(s)
+            for s in music_events.iter() {
+                self.add_event(s)
             }
         }
     }
 
     /// Returns the start and end time of the selection in PPQ.
     pub fn get_dt(&self, music: &Music) -> Option<(u64, u64)> {
-        match self.get_selectables(music) {
-            Some(selectables) => match selectables.iter().map(|s| s.get_start_time()).min() {
-                Some(min) => match selectables.iter().map(|s| s.get_end_time()).max() {
+        match self.get_events(music) {
+            Some(events) => match events.iter().map(|s| s.get_start_time()).min() {
+                Some(min) => match events.iter().map(|s| s.get_end_time()).max() {
                     Some(max) => Some((min, max)),
                     None => None,
                 },
@@ -225,56 +198,56 @@ impl Selection {
     }
 
     /// Returns a vec of selected notes and effects.
-    fn get_selectables<'track>(&self, music: &'track Music) -> Option<Vec<Selectable<'track>>> {
+    pub fn get_events<'track>(&self, music: &'track Music) -> Option<Vec<Event<'track>>> {
         match self.get_selection(music) {
             Some((notes, effects)) => {
-                let mut selectables = notes
+                let mut events = notes
                     .iter()
                     .enumerate()
-                    .map(|(index, note)| Selectable::Note { note, index })
-                    .collect::<Vec<Selectable>>();
-                selectables.extend(
+                    .map(|(index, note)| Event::Note { note, index })
+                    .collect::<Vec<Event>>();
+                events.extend(
                     effects
                         .iter()
                         .enumerate()
-                        .map(|(index, effect)| Selectable::Effect { effect, index }),
+                        .map(|(index, effect)| Event::Effect { effect, index }),
                 );
                 // Sort the selectables by start time.
-                selectables.sort_by(|a, b| a.get_start_time().cmp(&b.get_start_time()));
-                Some(selectables)
+                events.sort_by(|a, b| a.get_start_time().cmp(&b.get_start_time()));
+                Some(events)
             }
             None => None,
         }
     }
 
     /// Convert the selected track's notes and effects into a vec of selectables.
-    fn get_music_selectables(music: &Music) -> Option<Vec<Selectable<'_>>> {
+    fn get_music_events(music: &Music) -> Option<Vec<Event<'_>>> {
         match music.get_selected_track() {
             Some(track) => {
-                let mut selectables = track
+                let mut events = track
                     .notes
                     .iter()
                     .enumerate()
-                    .map(|(index, note)| Selectable::Note { note, index })
-                    .collect::<Vec<Selectable>>();
-                selectables.extend(
+                    .map(|(index, note)| Event::Note { note, index })
+                    .collect::<Vec<Event>>();
+                events.extend(
                     track
                         .effects
                         .iter()
                         .enumerate()
-                        .map(|(index, effect)| Selectable::Effect { effect, index }),
+                        .map(|(index, effect)| Event::Effect { effect, index }),
                 );
-                selectables.sort_by(|a, b| a.get_start_time().cmp(&b.get_start_time()));
-                Some(selectables)
+                events.sort_by(|a, b| a.get_start_time().cmp(&b.get_start_time()));
+                Some(events)
             }
             None => None,
         }
     }
 
     /// Add a note or effect to the selection.
-    fn add_selectable(&mut self, selectable: &Selectable) {
+    fn add_event(&mut self, selectable: &Event) {
         match selectable {
-            Selectable::Effect { effect: _, index } => {
+            Event::Effect { effect: _, index } => {
                 if self.effects.is_empty() || !self.single {
                     self.effects.push(*index)
                 } else {
@@ -282,7 +255,7 @@ impl Selection {
                     self.notes.clear();
                 }
             }
-            Selectable::Note { note: _, index } => {
+            Event::Note { note: _, index } => {
                 if self.notes.is_empty() || !self.single {
                     self.notes.push(*index)
                 } else {

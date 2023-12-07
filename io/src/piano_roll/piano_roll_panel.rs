@@ -2,13 +2,37 @@ use super::*;
 use crate::panel::*;
 use crate::select_track;
 use common::config::parse_fractions;
-use common::{Index, Note, PianoRollMode, SelectMode, U64orF32, PPQ_F};
+use common::{Effect, Event, Index, Note, PianoRollMode, U64orF32, PPQ_F};
 use ini::Ini;
 
 const TRACK_SCROLL_EVENTS: [InputEvent; 2] = [
     InputEvent::PianoRollPreviousTrack,
     InputEvent::PianoRollNextTrack,
 ];
+
+/// A copied note or an effect.
+/// This is different than common::Event because the effects and notes aren't references.
+#[derive(Clone)]
+enum CopiedEvent {
+    Effect(Effect),
+    Note(Note),
+}
+
+impl CopiedEvent {
+    fn from(event: Event<'_>) -> Self {
+        match event {
+            Event::Effect { effect, index: _ } => Self::Effect(effect.clone()),
+            Event::Note { note, index: _ } => Self::Note(note.clone()),
+        }
+    }
+
+    fn get_start_time(&self) -> u64 {
+        match self {
+            Self::Effect(effect) => effect.time,
+            Self::Note(note) => note.start,
+        }
+    }
+}
 
 /// The piano roll.
 /// This is divided into different "modes" for convenience, where each mode is actually a panel.
@@ -25,8 +49,8 @@ pub struct PianoRollPanel {
     beats: Vec<u64>,
     /// The index of the current beat.
     beat: Index<usize>,
-    /// A buffer of copied notes.
-    copied_notes: Vec<Note>,
+    /// A buffer of copied notes and effects.
+    copy_buffer: Vec<CopiedEvent>,
     /// The tooltips handler.
     tooltips: Tooltips,
 }
@@ -59,7 +83,7 @@ impl PianoRollPanel {
             view,
             beats,
             beat,
-            copied_notes: vec![],
+            copy_buffer: vec![],
             tooltips: Tooltips::default(),
         }
     }
@@ -98,37 +122,54 @@ impl PianoRollPanel {
         }
     }
 
-    /// Copy the selected notes to the copy buffer.
-    fn copy_notes(&mut self, state: &State) {
-        if let Some(notes) = state.select_mode.get_notes(&state.music) {
-            self.copied_notes = notes.iter().map(|&n| *n).collect()
+    /// Copy the selection to the copy buffer.
+    fn copy(&mut self, state: &State) {
+        if let Some(events) = state.selection.get_events(&state.music) {
+            self.copy_buffer = events
+                .iter()
+                .map(|e| CopiedEvent::from(e.clone()))
+                .collect();
         }
     }
 
-    /// Delete notes from the track.
-    fn delete_notes(state: &mut State) -> Option<Snapshot> {
+    /// Delete notes and effects from the track.
+    fn delete(state: &mut State) -> Option<Snapshot> {
         // Clone the state.
         let s0 = state.clone();
-        if let Some(indices) = state.select_mode.get_note_indices() {
-            if let Some(track) = state.music.get_selected_track_mut() {
-                // Remove the notes.
-                track.notes = track
-                    .notes
-                    .iter()
-                    .enumerate()
-                    .filter(|n| !indices.contains(&n.0))
-                    .map(|n| *n.1)
-                    .collect();
-                // Deselect.
-                state.select_mode = match &state.select_mode {
-                    SelectMode::Single(_) => SelectMode::Single(None),
-                    SelectMode::Many(_) => SelectMode::Many(None),
-                };
-                // Return the undo state.
-                return Some(Snapshot::from_states(s0, state));
+        match state.music.get_selected_track_mut() {
+            Some(track) => {
+                let mut deleted = false;
+                // Delete notes.
+                if !state.selection.notes.is_empty() {
+                    // Remove the notes.
+                    track.notes = track
+                        .notes
+                        .iter()
+                        .enumerate()
+                        .filter(|n| !state.selection.notes.contains(&n.0))
+                        .map(|n| *n.1)
+                        .collect();
+                    deleted = true;
+                }
+                if !state.selection.effects.is_empty() {
+                    // Remove the effects.
+                    track.effects = track
+                        .effects
+                        .iter()
+                        .enumerate()
+                        .filter(|n| !state.selection.effects.contains(&n.0))
+                        .map(|n| *n.1)
+                        .collect();
+                    deleted = true;
+                }
+                // Deselect if anything was deleted.
+                if deleted {
+                    state.selection.deselect();
+                }
+                Some(Snapshot::from_states(s0, state))
             }
+            None => None,
         }
-        None
     }
 }
 
@@ -344,7 +385,7 @@ impl Panel for PianoRollPanel {
                             text,
                         ));
                         // Cut, copy.
-                        let selected_some = state.select_mode.get_note_indices().is_some();
+                        let selected_some = state.selection.get_events(&state.music).is_some();
                         if selected_some {
                             tts_strings.push(self.tooltips.get_tooltip(
                                 "PIANO_ROLL_PANEL_INPUT_TTS_COPY_CUT",
@@ -354,7 +395,7 @@ impl Panel for PianoRollPanel {
                             ));
                         }
                         // Paste.
-                        if !self.copied_notes.is_empty() {
+                        if !self.copy_buffer.is_empty() {
                             tts_strings.push(self.tooltips.get_tooltip(
                                 "PIANO_ROLL_PANEL_INPUT_TTS_PASTE",
                                 &[InputEvent::PasteNotes],
@@ -386,42 +427,50 @@ impl Panel for PianoRollPanel {
         }
         // Copy notes.
         else if input.happened(&InputEvent::CopyNotes) {
-            self.copy_notes(state);
+            self.copy(state);
             None
         }
         // Cut notes.
         else if input.happened(&InputEvent::CutNotes) {
             // Copy.
-            self.copy_notes(state);
+            self.copy(state);
             // Delete.
-            PianoRollPanel::delete_notes(state)
+            PianoRollPanel::delete(state)
         }
         // Delete notes.
         else if input.happened(&InputEvent::DeleteNotes) {
-            PianoRollPanel::delete_notes(state)
+            PianoRollPanel::delete(state)
         }
         // Paste notes.
         else if input.happened(&InputEvent::PasteNotes) {
-            if !self.copied_notes.is_empty() {
+            if !self.copy_buffer.is_empty() {
                 // Clone the state.
                 let s0 = state.clone();
                 if let Some(track) = state.music.get_selected_track_mut() {
                     // Get the minimum start time.
                     let min_time = self
-                        .copied_notes
+                        .copy_buffer
                         .iter()
-                        .min_by(|a, b| a.start.cmp(&b.start))
+                        .min_by(|a, b| a.get_start_time().cmp(&b.get_start_time()))
                         .unwrap()
-                        .start;
+                        .get_start_time();
                     // Adjust the start and end time.
-                    let mut notes = self.copied_notes.to_vec();
-                    notes.iter_mut().for_each(|n| {
-                        let dt = n.end - n.start;
-                        n.start = (n.start - min_time) + state.time.cursor;
-                        n.end = n.start + dt;
-                    });
-                    // Add the notes.
-                    track.notes.append(&mut notes);
+                    for event in self.copy_buffer.iter() {
+                        match event {
+                            CopiedEvent::Effect(effect) => {
+                                let mut effect = effect.clone();
+                                effect.time += state.time.cursor;
+                                track.effects.push(effect);
+                            }
+                            CopiedEvent::Note(note) => {
+                                let mut note = note.clone();
+                                let dt = note.end - note.start;
+                                note.start = (note.start - min_time) + state.time.cursor;
+                                note.end = note.start + dt;
+                                track.notes.push(note);
+                            }
+                        }
+                    }
                     // Return the undo state.
                     Some(Snapshot::from_states(s0, state))
                 } else {

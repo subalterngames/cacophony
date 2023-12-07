@@ -175,7 +175,7 @@ impl PianoRollSubPanel for Edit {
         let mut tts_strings = vec![];
         match state.selection.get_selection(&state.music) {
             Some((notes, effects)) => {
-                // Edit pitch.
+                // E1dit pitch.
                 let notes_empty = notes.is_empty();
                 if !notes_empty {
                     tts_strings.push(self.tooltips.get_tooltip(

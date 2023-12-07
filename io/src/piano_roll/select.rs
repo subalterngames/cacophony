@@ -1,60 +1,11 @@
 use super::{get_no_selection_status_tts, PianoRollSubPanel};
 use crate::panel::*;
-use common::time::Time;
-use common::{MidiTrack, Note};
+use common::Event;
 
 /// Select notes.
 #[derive(Default)]
 pub(super) struct Select {
     tooltips: Tooltips,
-}
-
-impl Select {
-    /// Returns the index of the note closest (and before) the cursor.
-    fn get_note_index_closest_to_before_cursor(notes: &[Note], time: &Time) -> Option<usize> {
-        notes
-            .iter()
-            .enumerate()
-            .filter(|n| n.1.start < time.cursor)
-            .max_by(|a, b| a.1.cmp(b.1))
-            .map(|max| max.0)
-    }
-
-    /// Returns the index of the note closest (and after) the cursor.
-    fn get_note_index_closest_to_after_cursor(notes: &[Note], time: &Time) -> Option<usize> {
-        notes
-            .iter()
-            .enumerate()
-            .filter(|n| n.1.start >= time.cursor)
-            .min_by(|a, b| a.1.cmp(b.1))
-            .map(|max| max.0)
-    }
-
-    /// Returns the first note in a selection defined by `indices`.
-    fn get_first_selected_note<'a>(
-        track: &'a MidiTrack,
-        indices: &[usize],
-    ) -> Option<(usize, &'a Note)> {
-        track
-            .notes
-            .iter()
-            .enumerate()
-            .filter(|n| indices.contains(&n.0))
-            .min_by(|a, b| a.1.cmp(b.1))
-    }
-
-    /// Returns the last note in a selection defined by `indices`.
-    fn get_last_selected_note<'a>(
-        track: &'a MidiTrack,
-        indices: &[usize],
-    ) -> Option<(usize, &'a Note)> {
-        track
-            .notes
-            .iter()
-            .enumerate()
-            .filter(|n| indices.contains(&n.0))
-            .max_by(|a, b| a.1.cmp(b.1))
-    }
 }
 
 impl Panel for Select {
@@ -69,7 +20,7 @@ impl Panel for Select {
     ) -> Option<Snapshot> {
         match state.music.get_selected_track() {
             None => None,
-            Some(track) => {
+            Some(_) => {
                 // Cycle the select mode.
                 if input.happened(&InputEvent::PianoRollCycleMode) {
                     let s0 = state.clone();
@@ -175,28 +126,24 @@ impl Panel for Select {
 
 impl PianoRollSubPanel for Select {
     fn get_status_tts(&mut self, state: &State, text: &Text) -> Vec<TtsString> {
-        vec![match state.selection.get_selection(&state.music) {
-            Some((notes, effects)) => {
-                // A single note or effect.
-                if state.selection.single {
-                    if !notes.is_empty() {
-                        let note = notes[0];
-                        TtsString::from(text.get_with_values(
+        vec![match state.selection.get_events(&state.music) {
+            Some(events) => {
+                if events.is_empty() {
+                    get_no_selection_status_tts(text)
+                } else if state.selection.single {
+                    match &events[0] {
+                        Event::Note { note, index: _ } => TtsString::from(text.get_with_values(
                             "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE_NOTE",
                             &[&note.note.to_string(), &text.get_ppq_tts(&note.start)],
-                        ))
-                    } else if !effects.is_empty() {
-                        let effect = effects[0];
-                        TtsString::from(text.get_with_values(
-                            "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE_EFFECT",
-                            &[&text.get_ppq_tts(&effect.time)],
-                        ))
-                    } else {
-                        get_no_selection_status_tts(text)
+                        )),
+                        Event::Effect { effect, index: _ } => {
+                            TtsString::from(text.get_with_values(
+                                "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_SINGLE_EFFECT",
+                                &[&text.get_ppq_tts(&effect.time)],
+                            ))
+                        }
                     }
-                }
-                // Multiple notes and effects.
-                else {
+                } else {
                     match state.selection.get_dt(&state.music) {
                         Some((min, max)) => TtsString::from(text.get_with_values(
                             "PIANO_ROLL_PANEL_STATUS_TTS_SELECTED_MANY",
@@ -211,12 +158,12 @@ impl PianoRollSubPanel for Select {
     }
 
     fn get_input_tts(&mut self, state: &State, input: &Input, text: &Text) -> Vec<TtsString> {
-        let mut tts_strings = match state.selection.get_selection(&state.music) {
-            Some((notes, effects)) => {
+        let mut tts_strings = match state.selection.get_events(&state.music) {
+            Some(events) => {
                 let mut tts_strings = vec![];
-                let empty = notes.is_empty() && effects.is_empty();
+                let empty = events.is_empty();
                 // There is no selection.
-                if !empty {
+                if !events.is_empty() {
                     if state.selection.single {
                         tts_strings.push(self.tooltips.get_tooltip(
                             "PIANO_ROLL_PANEL_INPUT_TTS_SELECT_SINGLE",
