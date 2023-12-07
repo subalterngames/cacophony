@@ -364,8 +364,7 @@ impl Exporter {
             right: &buffer[1],
         };
         // Get the output buffer.
-        let mut mp3_out_buffer = Vec::new();
-        mp3_out_buffer.reserve(max_required_buffer_size(buffer[0].len()));
+        let mut mp3_out_buffer = Vec::with_capacity(max_required_buffer_size(buffer[0].len()));
         // Get the size.
         let encoded_size = mp3_encoder
             .encode(input, mp3_out_buffer.spare_capacity_mut())

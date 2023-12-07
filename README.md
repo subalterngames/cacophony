@@ -12,7 +12,7 @@
 
 ## How to compile
 
-I compile Cacophony with Rust 1.71.0 for Linux, MacOS, or Windows. Below is a list of operating systems I've tested:
+I compile Cacophony with Rust 1.74.0 for Linux, MacOS, or Windows. Below is a list of operating systems I've tested:
 
 Linux:
 
@@ -34,13 +34,6 @@ Windows:
 
 1. Install Rust (stable)
 2. Clone this repo
-
-The instructions below will *compile* the code. To *run* it, do one of the following:
-
-1. Move `data/` to the output directory (`target/release/`)
-2. Replace `cargo build` in the instructions below with `cargo run`
-
-If you want debug messages, remove `--release` The output will be `target/debug/` instead of `release/`
 
 ### Linux
 
@@ -92,6 +85,31 @@ AddTrack
 EnableSoundFontPanel
 SelectFile
 ```
+
+## How to run
+
+You can run Cacophony like any other application or you can use Rust's `cargo run` to compile and execute.
+
+### Linux
+
+There are two ways to run Cacophony:
+
+1. Copy + paste `data/` into the output directory (`target/release/`). Open a terminal in `release/` and run `./Cacophony` .
+2. Instead of `cargo build --release`, run `cargo run --release` Include the `--features` listed above, for example `cargo build --release --features speech_dispatcher_0_11` on Ubuntu 22
+
+### MacOS
+
+There are two ways to run Cacophony:
+
+1. After compiling, double-click `Cacophony.app` (located in `./target/release/`)
+2. `cargo run --release` This will compile and launch the application but it won't create a .app
+
+### Windows
+
+There are two ways to run Cacophony:
+
+1. Copy + paste `data/` into the output directory (`target/release/`) and double-click `Cacophony.exe` (located in `release/`)
+2. Instead of `cargo build --release`, run `cargo run --release`
 
 ## Upload
 
