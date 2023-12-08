@@ -33,27 +33,25 @@ impl EffectType {
                 if up {
                     if *value < 1000 {
                         *value += 1;
-                        return true
+                        return true;
                     }
-                }
-                else {
+                } else {
                     if *value > 0 {
                         *value -= 1;
-                        return true
+                        return true;
                     }
                 }
-            },
+            }
             Self::Pan(value) => {
                 if up {
                     if *value < 500 {
                         *value += 1;
-                        return true
+                        return true;
                     }
-                }
-                else {
+                } else {
                     if *value > -500 {
                         *value -= 1;
-                        return true
+                        return true;
                     }
                 }
             }
@@ -61,13 +59,12 @@ impl EffectType {
                 if up {
                     if *value < 16383 {
                         *value += 1;
-                        return true
+                        return true;
                     }
-                }
-                else {
+                } else {
                     if *value > 0 {
                         *value -= 1;
-                        return true
+                        return true;
                     }
                 }
             }
@@ -75,17 +72,16 @@ impl EffectType {
                 if up {
                     if *value < 127 {
                         *value += 1;
-                        return true
+                        return true;
                     }
-                }
-                else {
+                } else {
                     if *value > 0 {
                         *value -= 1;
-                        return true
+                        return true;
                     }
                 }
             }
-        } 
+        }
         false
     }
 }

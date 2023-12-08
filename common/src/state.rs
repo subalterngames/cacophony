@@ -1,5 +1,5 @@
-use crate::ValuelessEffectType;
 use crate::music_panel_field::MusicPanelField;
+use crate::ValuelessEffectType;
 use crate::{
     EditMode, Index, IndexedEditModes, IndexedValues, InputState, Music, PanelType, PianoRollMode,
     Selection, Time, View,

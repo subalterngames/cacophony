@@ -133,9 +133,14 @@ pub enum InputEvent {
     // Effects panel.
     NextEffect,
     PreviousEffect,
+    EffectTimeLeft,
+    EffectTimeRight,
     IncrementEffectValue,
     DecrementEffectValue,
-    DeleteEffect,
+    IncrementAftertouchNote,
+    DecrementAftertouchNote,
+    AddEffect,
+    RemoveEffect,
     // Qwerty note input.
     C,
     CSharp,

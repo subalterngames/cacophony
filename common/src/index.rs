@@ -4,10 +4,8 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use std::ops::{AddAssign, SubAssign};
 
-
 /// This is used to make const zero and one per type.
-pub trait Indexable<T>
-{
+pub trait Indexable<T> {
     const ZERO: T;
     const ONE: T;
 }

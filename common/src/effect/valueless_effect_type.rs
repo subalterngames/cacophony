@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use super::effect_type::EffectType;
+use serde::{Deserialize, Serialize};
 
 /// A hashable EffectType.
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash, Deserialize, Serialize)]
@@ -34,7 +34,9 @@ impl ValuelessEffectType {
             EffectType::Pan(_) => *self == Self::Pan,
             EffectType::PitchBend(_) => *self == Self::PitchBend,
             EffectType::ChannelPressure(_) => *self == Self::ChannelPressure,
-            EffectType::PolyphonicKeyPressure { key: _, value: _ } => *self == Self::PolyphonicKeyPressure,
+            EffectType::PolyphonicKeyPressure { key: _, value: _ } => {
+                *self == Self::PolyphonicKeyPressure
+            }
         }
     }
 }
