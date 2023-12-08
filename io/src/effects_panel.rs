@@ -1,12 +1,20 @@
 use crate::panel::*;
 use common::{EffectType, Effect, ValuelessEffectType, MIDDLE_C};
+use common::config::parse;
+use ini::Ini;
 use text::EFFECT_NAME_KEYS;
 
-#[derive(Default)]
 pub(crate) struct EffectsPanel {
+    pitch_bend_sensitivity: usize
 }
 
 impl EffectsPanel {
+    pub fn new(config: &Ini) -> Self {
+        let section = config.section(Some("EFFECTS")).unwrap();
+        let pitch_bend_sensitivity = parse(section, "pitch_bend_sensitivity");
+        Self { pitch_bend_sensitivity }
+    }
+
     /// Increment or decrement the effect type index.
     fn cycle_effect_type(state: &mut State, up: bool) -> Option<Snapshot> {
         let s0 = state.clone();
@@ -20,12 +28,34 @@ impl EffectsPanel {
         match state.music.get_selected_track_mut() {
             Some(track) => match track.effects.iter_mut().filter(|e| e.time == state.time.cursor && ve.eq(&e.effect)).next() {
                 Some(effect) => {
-                    if (up && effect.effect.increment()) || (!up && effect.effect.decrement()) {
-                        Some(Snapshot::from_states(s0, state))
+                    // Increment by an extra delta.
+                    if let EffectType::PitchBend(_) = effect.effect {
+                        let mut incremented = false;
+                        for i in 0..10 {
+                            if !effect.effect.increment(up) {
+                                if i > 0 {
+                                    incremented = true;
+                                }
+                                break;
+                            }
+                        }
+                        if incremented {
+                            Some(Snapshot::from_states(s0, state))
+                        }
+                        else {
+                            None
+                        }
                     }
+                    // Increment by one.
                     else {
-                        None
+                        if effect.effect.increment(up) {
+                            Some(Snapshot::from_states(s0, state))
+                        }
+                        else {
+                            None
+                        }
                     }
+
                 }
                 // Add a new effect.
                 None => {

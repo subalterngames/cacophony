@@ -4,13 +4,31 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use std::ops::{AddAssign, SubAssign};
 
+
+/// This is used to make const zero and one per type.
+pub trait Indexable<T>
+{
+    const ZERO: T;
+    const ONE: T;
+}
+
+impl Indexable<u8> for u8 {
+    const ZERO: u8 = 0;
+    const ONE: u8 = 1;
+}
+
+impl Indexable<usize> for usize {
+    const ZERO: usize = 0;
+    const ONE: usize = 1;
+}
+
 /// An `Index` is an index in a known-length array.
 /// The index can be incremented or decremented past the bounds of length, in which case it will loop to the start/end value.
 /// The index can never exceed the length.
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct Index<T>
 where
-    T: PrimInt + Display + One + Zero + AddAssign + SubAssign,
+    T: PrimInt + Display + One + Zero + AddAssign + SubAssign + Indexable<T>,
 {
     /// The index in the array.
     index: T,
@@ -20,7 +38,7 @@ where
 
 impl<T> Index<T>
 where
-    T: PrimInt + Display + One + Zero + AddAssign + SubAssign,
+    T: PrimInt + Display + One + Zero + AddAssign + SubAssign + Indexable<T>,
 {
     /// - `index` The index in the array.
     /// - `length` The size of the array.
@@ -35,21 +53,19 @@ where
     ///
     /// - `up` If true, increment. If false, decrement.
     pub fn increment(&mut self, up: bool) {
-        let zero = T::zero();
-        let one = T::one();
-        if self.length == zero {
+        if self.length == T::ZERO {
             return;
         }
         self.index = if up {
-            if self.index == self.length - one {
-                zero
+            if self.index == self.length - T::ONE {
+                T::ZERO
             } else {
-                self.index + one
+                self.index + T::ONE
             }
-        } else if self.index == zero {
-            self.length - one
+        } else if self.index == T::ZERO {
+            self.length - T::ONE
         } else {
-            self.index - one
+            self.index - T::ONE
         };
     }
 
@@ -59,19 +75,17 @@ where
     ///
     /// Returns true if we incremented.
     pub fn increment_no_loop(&mut self, up: bool) -> bool {
-        let zero = T::zero();
-        let one = T::one();
-        if self.length == zero {
+        if self.length == T::ZERO {
             false
         } else if up {
-            if self.index < self.length - one {
-                self.index += one;
+            if self.index < self.length - T::ONE {
+                self.index += T::ONE;
                 true
             } else {
                 false
             }
-        } else if self.index > zero {
-            self.index -= one;
+        } else if self.index > T::ZERO {
+            self.index -= T::ONE;
             true
         } else {
             false
