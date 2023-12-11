@@ -502,8 +502,6 @@ EFFECT_TYPE_PITCH_BEND,Pitch Bend
 EFFECT_TYPE_CHANNEL_PRESSURE,Channel Pressure
 EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE,Aftertouch
 EFFECTS_PANEL_INPUT_TTS_SCROLL,\0 and \1 to scroll.
-EFFECTS_PANEL_INPUT_TTS_ADD,\0 to add a %0 effect.
-EFFECTS_PANEL_INPUT_TTS_REMOVE,\0 to remove a %0 effect.
 EFFECTS_PANEL_INPUT_TTS_TIME,\0 and \1 to set the time.
 EFFECTS_PANE_INPUT_TTS_VALUE,\0 and \1 to set the effect's value.
 EFFECTS_PANEL_INPUT_TTS_AFTERTOUCH,\0 and \1 to set the aftertouch note.

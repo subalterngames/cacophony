@@ -29,10 +29,10 @@ impl EffectsPanel {
         Some(Snapshot::from_states(s0, state))
     }
 
-    /// Increment the `value` of an effect.
+    /// Increment the `value` of an effect. Add the effect if it doesn't exist.
     /// For `PitchBend`, a delta is applied: `self.pitch_bend_sensitivity`.
     /// For `PolyphonicKeyPressure`, the `value` is incremented.
-    fn increment_effect_value(state: &mut State, up: bool) -> Option<Snapshot> {
+    fn increment_effect_value(&self, state: &mut State, conn: &Conn, up: bool) -> Option<Snapshot> {
         let s0 = state.clone();
         match Self::get_effect(state) {
             Some(effect) => {
@@ -62,12 +62,12 @@ impl EffectsPanel {
                     }
                 }
             }
-            None => None,
+            None => self.add_effect(state, conn),
         }
     }
 
     /// Increment the `key` of a `PolyphonicKeyPressure` effect.
-    fn increment_aftertouch(state: &mut State, up: bool) -> Option<Snapshot> {
+    fn increment_aftertouch(&self, state: &mut State, conn: &Conn, up: bool) -> Option<Snapshot> {
         let s0 = state.clone();
         match Self::get_effect(state) {
             Some(effect) => {
@@ -97,7 +97,7 @@ impl EffectsPanel {
                     None
                 }
             }
-            None => None,
+            None => self.add_effect(state, conn),
         }
     }
 
@@ -112,30 +112,52 @@ impl EffectsPanel {
                 let s0 = state.clone();
                 match state.music.get_selected_track_mut() {
                     Some(track) => {
+                        // Get a sortable copy of the effects.
+                        let mut effects = track.effects.iter().collect::<Vec<&Effect>>();
+                        // Sort by time.
+                        effects.sort();
+                        // Get the last effect.
+                        let last = effects.iter().filter(|e| ve.eq(&e.effect)).last();
                         let program = &conn.state.programs[&track.channel];
                         // Get a new effect type.
+                        // Try to use the value of the last effect of this type, if it exists.
                         let effect_type = match ve {
-                            ValuelessEffectType::Chorus => {
-                                EffectType::Chorus(program.chorus as u16)
-                            }
-                            ValuelessEffectType::Pan => EffectType::Pan(program.pan as i16),
-                            ValuelessEffectType::Reverb => {
-                                EffectType::Reverb(program.reverb as u16)
-                            }
-                            ValuelessEffectType::PitchBend => EffectType::PitchBend(0),
-                            ValuelessEffectType::ChannelPressure => EffectType::ChannelPressure(0),
-                            ValuelessEffectType::PolyphonicKeyPressure => {
-                                EffectType::PolyphonicKeyPressure {
+                            ValuelessEffectType::Chorus => match &last {
+                                Some(effect) => effect.effect,
+                                None => EffectType::Chorus(program.chorus as u16),
+                            },
+                            ValuelessEffectType::Pan => match &last {
+                                Some(effect) => effect.effect,
+                                None => EffectType::Pan(program.pan as i16),
+                            },
+                            ValuelessEffectType::Reverb => match &last {
+                                Some(effect) => effect.effect,
+                                None => EffectType::Reverb(program.reverb as u16),
+                            },
+                            ValuelessEffectType::PitchBend => match &last {
+                                Some(effect) => effect.effect,
+                                None => EffectType::PitchBend(0),
+                            },
+                            ValuelessEffectType::ChannelPressure => match &last {
+                                Some(effect) => effect.effect,
+                                None => EffectType::ChannelPressure(0),
+                            },
+                            ValuelessEffectType::PolyphonicKeyPressure => match &last {
+                                Some(effect) => effect.effect,
+                                None => EffectType::PolyphonicKeyPressure {
                                     key: MIDDLE_C,
                                     value: 0,
-                                }
-                            }
+                                },
+                            },
                         };
                         // Get a new effect.
                         track.effects.push(Effect {
                             time: state.time.cursor,
                             effect: effect_type,
                         });
+                        // Deselect all.
+                        state.selection.deselect();
+                        // Return the snapshot.
                         Some(Snapshot::from_states(s0, state))
                     }
                     None => None,
@@ -156,30 +178,6 @@ impl EffectsPanel {
                     .effects
                     .retain(|e| *e != effect);
                 Some(Snapshot::from_states(s0, state))
-            }
-            None => None,
-        }
-    }
-
-    /// Set the time of an existing effect.
-    fn set_time(state: &mut State, up: bool) -> Option<Snapshot> {
-        let s0 = state.clone();
-        let beat = state.input.beat.get_u();
-        match Self::get_effect(state) {
-            Some(effect) => {
-                // Increase the time.
-                if up {
-                    effect.time += beat;
-                    Some(Snapshot::from_states(s0, state))
-                } else {
-                    match effect.time.checked_sub(beat) {
-                        Some(time) => {
-                            effect.time = time;
-                            Some(Snapshot::from_states(s0, state))
-                        }
-                        None => None,
-                    }
-                }
             }
             None => None,
         }
@@ -224,25 +222,14 @@ impl Panel for EffectsPanel {
         _: &mut PathsState,
     ) -> Option<Snapshot> {
         if input.happened(&InputEvent::InputTTS) {
-            let mut tts_strings = vec![self.tooltips.get_tooltip(
-                "EFFECTS_PANEL_INPUT_TTS_SCROLL",
-                &[InputEvent::PreviousEffect, InputEvent::NextTrack],
-                input,
-                text,
-            )];
-            // Add a new effect.
-            if Self::get_effect(state).is_some() {
-                tts_strings.push(TtsString::from(self.tooltips.get_tooltip_with_values(
-                    "EFFECTS_PANEL_INPUT_TTS_ADD",
-                    &[InputEvent::AddTrack],
-                    &[text.get_ref(EFFECT_NAME_KEYS[state.effect_types.index.get()])],
+            let mut tts_strings = vec![
+                self.tooltips.get_tooltip(
+                    "EFFECTS_PANEL_INPUT_TTS_SCROLL",
+                    &[InputEvent::PreviousEffect, InputEvent::NextTrack],
                     input,
                     text,
-                )))
-            }
-            // Adjust an effect.
-            else {
-                tts_strings.push(TtsString::from(self.tooltips.get_tooltip(
+                ),
+                TtsString::from(self.tooltips.get_tooltip(
                     "EFFECTS_PANE_INPUT_TTS_VALUE",
                     &[
                         InputEvent::IncrementEffectValue,
@@ -250,28 +237,16 @@ impl Panel for EffectsPanel {
                     ],
                     input,
                     text,
-                )));
+                )),
+            ];
+            // Add a new effect.
+            if let ValuelessEffectType::PolyphonicKeyPressure = state.effect_types.get() {
                 tts_strings.push(TtsString::from(self.tooltips.get_tooltip(
-                    "EFFECTS_PANEL_INPUT_TTS_TIME",
-                    &[InputEvent::EffectTimeLeft, InputEvent::EffectTimeRight],
-                    input,
-                    text,
-                )));
-                if let ValuelessEffectType::PolyphonicKeyPressure = state.effect_types.get() {
-                    tts_strings.push(TtsString::from(self.tooltips.get_tooltip(
-                        "EFFECTS_PANEL_INPUT_TTS_AFTERTOUCH",
-                        &[
-                            InputEvent::IncrementAftertouchNote,
-                            InputEvent::DecrementAftertouchNote,
-                        ],
-                        input,
-                        text,
-                    )));
-                }
-                tts_strings.push(TtsString::from(self.tooltips.get_tooltip_with_values(
-                    "EFFECTS_PANEL_INPUT_TTS_REMOVE",
-                    &[InputEvent::RemoveEffect],
-                    &[text.get_ref(EFFECT_NAME_KEYS[state.effect_types.index.get()])],
+                    "EFFECTS_PANEL_INPUT_TTS_AFTERTOUCH",
+                    &[
+                        InputEvent::IncrementAftertouchNote,
+                        InputEvent::DecrementAftertouchNote,
+                    ],
                     input,
                     text,
                 )));
@@ -317,22 +292,14 @@ impl Panel for EffectsPanel {
             Self::cycle_effect_type(state, true)
         } else if input.happened(&InputEvent::PreviousEffect) {
             Self::cycle_effect_type(state, false)
-        } else if input.happened(&InputEvent::EffectTimeRight) {
-            Self::set_time(state, true)
-        } else if input.happened(&InputEvent::EffectTimeLeft) {
-            Self::set_time(state, false)
         } else if input.happened(&InputEvent::IncrementEffectValue) {
-            Self::increment_effect_value(state, true)
+            self.increment_effect_value(state, conn, true)
         } else if input.happened(&InputEvent::DecrementEffectValue) {
-            Self::increment_effect_value(state, false)
+            self.increment_effect_value(state, conn, false)
         } else if input.happened(&InputEvent::IncrementAftertouchNote) {
-            Self::increment_aftertouch(state, true)
+            self.increment_aftertouch(state, conn, true)
         } else if input.happened(&InputEvent::DecrementAftertouchNote) {
-            Self::increment_aftertouch(state, false)
-        } else if input.happened(&InputEvent::AddEffect) {
-            Self::add_effect(&self, state, conn)
-        } else if input.happened(&InputEvent::RemoveEffect) {
-            Self::remove_effect(state)
+            self.increment_aftertouch(state, conn, false)
         } else {
             None
         }
