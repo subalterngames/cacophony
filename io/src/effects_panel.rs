@@ -39,7 +39,7 @@ impl EffectsPanel {
                 // Increment by an extra delta.
                 if let EffectType::PitchBend(_) = effect.effect {
                     let mut incremented = false;
-                    for i in 0..10 {
+                    for i in 0..self.pitch_bend_sensitivity {
                         if !effect.effect.increment(up) {
                             if i > 0 {
                                 incremented = true;
@@ -165,38 +165,7 @@ impl EffectsPanel {
             }
         }
     }
-
-    /// Remove an existing effect.
-    fn remove_effect(state: &mut State) -> Option<Snapshot> {
-        let s0 = state.clone();
-        match Self::get_effect_copy(state) {
-            Some(effect) => {
-                state
-                    .music
-                    .get_selected_track_mut()
-                    .unwrap()
-                    .effects
-                    .retain(|e| *e != effect);
-                Some(Snapshot::from_states(s0, state))
-            }
-            None => None,
-        }
-    }
-
-    /// Get a copied of the selected effect.
-    fn get_effect_copy(state: &State) -> Option<Effect> {
-        let ve = state.effect_types.get();
-        match state.music.get_selected_track() {
-            Some(track) => track
-                .effects
-                .iter()
-                .filter(|e| e.time == state.time.cursor && ve.eq(&e.effect))
-                .copied()
-                .next(),
-            None => None,
-        }
-    }
-
+    
     /// Get the selected effect.
     fn get_effect(state: &mut State) -> Option<&mut Effect> {
         let ve = state.effect_types.get();

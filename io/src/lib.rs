@@ -19,6 +19,7 @@ use audio::export::ExportState;
 use audio::Conn;
 use common::{InputState, Music, PanelType, Paths, PathsState, State};
 use edit::edit_file;
+use effects_panel::EffectsPanel;
 use hashbrown::HashMap;
 use ini::Ini;
 use input::{Input, InputEvent};
@@ -87,6 +88,8 @@ pub struct IO {
     quit_panel: QuitPanel,
     /// The links panel.
     links_panel: LinksPanel,
+    // The effects panel.
+    effects_panel: EffectsPanel,
     /// The active panels prior to exporting audio.
     pre_export_panels: Vec<PanelType>,
     /// The index of the focused panel prior to exporting audio.
@@ -174,6 +177,7 @@ impl IO {
         let export_settings_panel = ExportSettingsPanel::default();
         let quit_panel = QuitPanel::default();
         let links_panel = LinksPanel::default();
+        let effects_panel = EffectsPanel::new(config);
         Self {
             tts,
             music_panel,
@@ -184,6 +188,7 @@ impl IO {
             export_settings_panel,
             quit_panel,
             links_panel,
+            effects_panel,
             redo: vec![],
             undo: vec![],
             pre_export_panels: vec![],
@@ -446,6 +451,7 @@ impl IO {
             PanelType::Tracks => &mut self.tracks_panel,
             PanelType::Quit => &mut self.quit_panel,
             PanelType::Links => &mut self.links_panel,
+            PanelType::Effects => &mut self.effects_panel
         }
     }
 
