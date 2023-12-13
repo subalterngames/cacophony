@@ -165,7 +165,7 @@ impl EffectsPanel {
             }
         }
     }
-    
+
     /// Get the selected effect.
     fn get_effect(state: &mut State) -> Option<&mut Effect> {
         let ve = state.effect_types.get();

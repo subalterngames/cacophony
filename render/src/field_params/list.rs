@@ -5,6 +5,7 @@ const LEFT_ARROW: &str = "<";
 const RIGHT_ARROW: &str = ">";
 
 /// A list has a label and two arrows.
+#[derive(Debug)]
 pub(crate) struct List {
     /// The label at the center of the list. There is no stored text.
     label: Width,

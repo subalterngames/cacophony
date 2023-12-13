@@ -40,6 +40,7 @@ use audio::Conn;
 use common::State;
 pub(crate) use page::Page;
 pub(crate) use page_position::PagePosition;
+mod effects_panel;
 mod links_panel;
 mod quit_panel;
 
@@ -64,4 +65,14 @@ pub(crate) fn get_track_heights(state: &State, conn: &Conn) -> Vec<u32> {
         });
     }
     elements
+}
+
+/// Returns the width of the longest effect name.
+pub(crate) fn get_effects_panel_width(text: &text::Text) -> u32 {
+    (*text::EFFECT_NAME_KEYS
+        .map(|s| text.get_ref(s).chars().count())
+        .iter()
+        .max()
+        .unwrap()
+        + 2) as u32
 }

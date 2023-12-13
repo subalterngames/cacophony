@@ -451,7 +451,7 @@ impl IO {
             PanelType::Tracks => &mut self.tracks_panel,
             PanelType::Quit => &mut self.quit_panel,
             PanelType::Links => &mut self.links_panel,
-            PanelType::Effects => &mut self.effects_panel
+            PanelType::Effects => &mut self.effects_panel,
         }
     }
 

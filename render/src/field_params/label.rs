@@ -1,5 +1,5 @@
 /// A position and a string.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct Label {
     /// The position in grid units.
     pub position: [u32; 2],

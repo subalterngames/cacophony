@@ -370,15 +370,6 @@ impl Text {
         })
     }
 
-    /// Returns the width of the longest effect name.
-    pub fn get_effect_name_max_width(&self) -> usize {
-        *EFFECT_NAME_KEYS
-            .map(|s| self.text[s].len())
-            .iter()
-            .max()
-            .unwrap()
-    }
-
     /// Returns the name of the note.
     pub fn get_note_name(&self, note: u8) -> &str {
         &self.note_names[(note - MIN_NOTE) as usize]

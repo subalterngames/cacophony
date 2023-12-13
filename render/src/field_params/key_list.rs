@@ -1,6 +1,7 @@
 use super::{Label, List};
 
 /// A key `Label` on the left and a `List` on the right.
+#[derive(Debug)]
 pub(crate) struct KeyList {
     /// The key label.
     pub key: Label,
