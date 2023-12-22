@@ -1,48 +1,81 @@
 use std::ops::Index;
-
 use crate::get_effects_panel_width;
 use crate::panel::*;
 use common::Effect;
+use common::IndexedValues;
 use common::ValuelessEffectType;
-use text::EFFECT_NAME_KEYS;
 
 const VALUE_WIDTH: u32 = 5;
-const EFFECT_TYPES: [ValuelessEffectType; 6] = [
-    ValuelessEffectType::Chorus,
-    ValuelessEffectType::Reverb,
-    ValuelessEffectType::Pan,
-    ValuelessEffectType::PitchBend,
-    ValuelessEffectType::ChannelPressure,
-    ValuelessEffectType::PolyphonicKeyPressure,
-];
 
 #[derive(Debug)]
 struct EffectField {
     label: Label,
-    value: List,
+    value: EffectFieldValue,
     rect: Rectangle,
 }
 
 impl EffectField {
-    fn new(x: u32, y: &mut u32, width: u32, i: usize, text: &Text) -> Self {
-        let label = Label::new([x, *y], text.get(EFFECT_NAME_KEYS[i]));
-        let value = List::new([x, *y + 1], VALUE_WIDTH);
-        let rect = Rectangle::new([x, *y], [width, 2]);
-        *y += 2;
+    fn new(x: u32, y: &mut u32, width: u32, effect_types: &mut IndexedValues<ValuelessEffectType, 6>, text: &Text) -> Self {
+        let e = effect_types.get();
+        // Get the title label by getting the effect name.
+        let label = Label::new([x, *y], text.get_valueless_effect_name(&e).to_string());
+        // Get the value field.
+        let (value, dy) = match e {
+            ValuelessEffectType::PitchBend => {
+                (EffectFieldValue::Two([KeyList::new(
+                    text.get("EFFECTS_PANEL_POLYPHONIC_KEY_PITCH_BEND_VALUE"),
+                    [x, *y + 1],
+                    width,
+                    VALUE_WIDTH,
+                ),
+                KeyList::new(
+                    text.get("EFFECTS_PANEL_POLYPHONIC_KEY_PITCH_BEND_DURATION"),
+                    [x, *y + 2],
+                    width,
+                    VALUE_WIDTH,
+                ),]), 4)
+            }
+            ValuelessEffectType::PolyphonicKeyPressure => {
+                (EffectFieldValue::Two([KeyList::new(
+                    text.get("EFFECTS_PANEL_POLYPHONIC_KEY_PRESSURE_NOTE"),
+                    [x, *y + 1],
+                    width,
+                    VALUE_WIDTH,
+                ),
+                KeyList::new(
+                    text.get("EFFECTS_PANEL_POLYPHONIC_KEY_PRESSURE_VALUE"),
+                    [x, *y + 2],
+                    width,
+                    VALUE_WIDTH,
+                ),]), 4)
+            }
+            _ => (EffectFieldValue::One(List::new([x, *y + 1], VALUE_WIDTH)), 3)
+        };
+        // Get the background rectangle.
+        let rect = Rectangle::new([x, *y], [width, dy]);
+        // Increment the y value.
+        *y += dy;
+        // Increment so we can set the next effect.
+        effect_types.index.increment(true);
         Self { label, value, rect }
     }
 }
 
+/// The values of an effect field.
+/// Some effects have one value, some have two.
+#[derive(Debug)]
+enum EffectFieldValue {
+    One(List),
+    Two([KeyList; 2])
+}
+
 pub(crate) struct EffectsPanel {
     panel: Panel,
-    effects: [EffectField; 5],
-    aftertouch_label: Label,
-    aftertouch_rect: Rectangle,
-    aftertouch_values: [KeyList; 2],
+    effects: [EffectField; 6],
 }
 
 impl EffectsPanel {
-    pub fn new(config: &Ini, renderer: &Renderer, text: &Text) -> Self {
+    pub fn new(config: &Ini, state: &State, renderer: &Renderer, text: &Text) -> Self {
         // Get the panel.
         let size = [
             get_effects_panel_width(text),
@@ -59,34 +92,16 @@ impl EffectsPanel {
         let x = position[0] + 1;
         let mut y = position[1] + 1;
         let width = size[0] - 2;
-        let effects: [EffectField; 5] = (0..5)
-            .map(|i| EffectField::new(x, &mut y, width, i, text))
-            .collect::<Vec<EffectField>>()
-            .try_into()
-            .unwrap();
-        let aftertouch_label = Label::new([x, y], text.get(EFFECT_NAME_KEYS[5]));
-        let aftertouch_rect = Rectangle::new([x, y], [width, 2]);
-        y += 1;
-        let aftertouch_values = [
-            KeyList::new(
-                text.get("EFFECTS_PANEL_POLYPHONIC_KEY_PRESSURE_NOTE"),
-                [x, y],
-                width,
-                VALUE_WIDTH,
-            ),
-            KeyList::new(
-                text.get("EFFECTS_PANEL_POLYPHONIC_KEY_PRESSURE_VALUE"),
-                [x, y + 1],
-                width,
-                VALUE_WIDTH,
-            ),
-        ];
+        let mut effect_types = state.effect_types.clone();
+        let mut effects = vec![];
+        effect_types.index.set(0);
+        for i in 0..effect_types.index.get_length() {
+            effects.push(EffectField::new(x, &mut y, width, &mut effect_types, text));
+        }
+        let effects: [EffectField; 6] = effects.try_into().unwrap();
         Self {
             panel,
             effects,
-            aftertouch_label,
-            aftertouch_rect,
-            aftertouch_values,
         }
     }
 }

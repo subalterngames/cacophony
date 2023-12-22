@@ -68,11 +68,7 @@ pub(crate) fn get_track_heights(state: &State, conn: &Conn) -> Vec<u32> {
 }
 
 /// Returns the width of the longest effect name.
-pub(crate) fn get_effects_panel_width(text: &text::Text) -> u32 {
-    (*text::EFFECT_NAME_KEYS
-        .map(|s| text.get_ref(s).chars().count())
-        .iter()
-        .max()
-        .unwrap()
-        + 2) as u32
+pub(crate) fn get_effects_panel_width(state: &common::State, text: &text::Text) -> u32 {
+    let (values, _) = state.effect_types.get_values();
+    values.iter().map(|e| text.get_valueless_effect_name(&e).chars().count()).max().unwrap() as u32 + 2
 }
