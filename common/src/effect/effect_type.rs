@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+pub const MAX_PITCH_BEND: u16 = 16383;
+
 /// Types of synthesizer effects.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
 pub enum EffectType {
@@ -19,7 +21,7 @@ pub enum EffectType {
     /// Documentation source: http://www.synthfont.com/SFSPEC21.PDF
     Pan(i16),
     /// The MIDI pitch bend. Must be between 0 and 16383.
-    PitchBend(u16),
+    PitchBend { value: u16, duration: u64 },
     /// The MIDI channel pressure. Must be between 0 and 127.
     ChannelPressure(u8),
     /// The MIDI key pressure (aftertouch). Both parameters must be between 0 and 127.
@@ -55,9 +57,9 @@ impl EffectType {
                     }
                 }
             }
-            Self::PitchBend(value) => {
+            Self::PitchBend { value, duration: _ } => {
                 if up {
-                    if *value < 16383 {
+                    if *value < MAX_PITCH_BEND {
                         *value += 1;
                         return true;
                     }

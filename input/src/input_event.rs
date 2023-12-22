@@ -137,6 +137,8 @@ pub enum InputEvent {
     DecrementEffectValue,
     IncrementAftertouchNote,
     DecrementAftertouchNote,
+    IncrementPitchBendDuration,
+    DecrementPitchBendDuration,
     // Qwerty note input.
     C,
     CSharp,

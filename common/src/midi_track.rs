@@ -1,5 +1,4 @@
-use crate::effect::Effect;
-use crate::{Note, MAX_VOLUME};
+use crate::{Effect, EffectType, Note, MAX_VOLUME, MAX_PITCH_BEND};
 use serde::{Deserialize, Serialize};
 
 /// A MIDI track has some notes.
@@ -53,6 +52,35 @@ impl MidiTrack {
         }
         notes.sort();
         notes
+    }
+
+    /// Get this track's *audio* effects. This will convert all pitch bends to a lerped sequence of events..
+    pub fn get_audio_effects(&self) -> Vec<Effect> {
+        let mut effects = vec![];
+        for effect in self.effects.iter() {
+            // Lerp the pitch bends.
+            if let EffectType::PitchBend { value, duration} = effect.effect {
+                // Prevent a divide by zero error.
+                if duration == 0 {
+                    continue;
+                }
+                let dv = (value as f64 / duration as f64) as u16;
+                let mut pitch_value = 0;
+                for t in 0..duration {
+                    effects.push(Effect { time: effect.time + t, effect: EffectType::PitchBend { value: pitch_value, duration: 1 }});
+                    pitch_value += dv;
+                    if pitch_value > MAX_PITCH_BEND {
+                        break;
+                    }
+                }
+            }
+            // Add the effect.
+            else {
+                effects.push(effect.clone());
+            }
+        }
+        effects.sort();
+        effects
     }
 }
 

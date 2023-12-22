@@ -26,7 +26,7 @@ impl EventType {
                 });
             }
             EventType::Effect { channel, effect } => match effect {
-                EffectType::PitchBend(value) => {
+                EffectType::PitchBend { value, duration: _ } => {
                     let _ = synth.send_event(MidiEvent::PitchBend {
                         channel: *channel,
                         value: *value,

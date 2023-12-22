@@ -225,24 +225,17 @@ impl Conn {
         let mut end_time = 0;
         for track in tracks.iter() {
             let notes = track.get_playback_notes(state.time.playback);
-            let effects = track
-                .effects
-                .iter()
-                .filter(|e| e.time >= state.time.playback)
-                .copied()
-                .collect::<Vec<Effect>>();
+            let track_effects = track
+                .get_audio_effects();
+            let mut effects = track_effects.iter().filter(|e| e.time >= state.time.playback).copied().collect::<Vec<Effect>>();
+            effects.sort();
             // Set the track's effect values to the last values up until playback time.
             let program = &self.state.programs[&track.channel];
             let mut chorus = program.chorus;
             let mut pan = program.pan;
             let mut reverb = program.reverb;
-            let mut prior_effects = track
-                .effects
-                .iter()
-                .filter(|e| e.time < state.time.playback)
-                .copied()
-                .collect::<Vec<Effect>>();
-            prior_effects.sort_by(|a, b| a.time.cmp(&b.time));
+            let mut prior_effects = track_effects.iter().filter(|e| e.time < state.time.playback).copied().collect::<Vec<Effect>>();
+            prior_effects.sort();
             for effect in prior_effects {
                 match effect.effect {
                     EffectType::Chorus(value) => chorus = value as f32,
@@ -360,7 +353,7 @@ impl Conn {
                     track.channel,
                     &self.state.programs[&track.channel],
                     &notes,
-                    &track.effects,
+                    &track.get_audio_effects(),
                     &state.time,
                     self.framerate,
                     &mut t1,
@@ -385,7 +378,7 @@ impl Conn {
                     track.channel,
                     &self.state.programs[&track.channel],
                     &notes,
-                    &track.effects,
+                    &track.get_audio_effects(),
                     &state.time,
                     self.framerate,
                     &mut t1,

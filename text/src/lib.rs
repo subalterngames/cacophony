@@ -13,7 +13,7 @@ pub use value_map::ValueMap;
 mod tts_string;
 use common::config::parse;
 use common::{
-    EditMode, Effect, EffectType, Event, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U,
+    EditMode, Effect, EffectType, Event, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U, ValuelessEffectType,
 };
 use csv::Reader;
 use hashbrown::HashMap;
@@ -148,15 +148,6 @@ const KEYCODE_LOOKUPS: [&str; 121] = [
     "RightSuper",
     "Menu",
     "Unknown",
-];
-/// The lookup keys of the name of each effect type.
-pub const EFFECT_NAME_KEYS: [&str; 6] = [
-    "EFFECT_TYPE_CHORUS",
-    "EFFECT_TYPE_PAN",
-    "EFFECT_TYPE_REVERB",
-    "EFFECT_TYPE_PITCH_BEND",
-    "EFFECT_TYPE_CHANNEL_PRESSURE",
-    "EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE",
 ];
 
 type TextMap = HashMap<String, String>;
@@ -362,9 +353,22 @@ impl Text {
             EffectType::Chorus(_) => "EFFECT_TYPE_CHORUS",
             EffectType::Pan(_) => "EFFECT_TYPE_PAN",
             EffectType::Reverb(_) => "EFFECT_TYPE_REVERB",
-            EffectType::PitchBend(_) => "EFFECT_TYPE_PITCH_BEND",
+            EffectType::PitchBend { value: _, duration: _ } => "EFFECT_TYPE_PITCH_BEND",
             EffectType::ChannelPressure(_) => "EFFECT_TYPE_CHANNEL_PRESSURE",
             EffectType::PolyphonicKeyPressure { key: _, value: _ } => {
+                "EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE"
+            }
+        })
+    }
+
+    pub fn get_valueless_effect_name(&self, effect: &ValuelessEffectType) -> &str {
+        self.get_ref(match effect {
+            ValuelessEffectType::Chorus => "EFFECT_TYPE_CHORUS",
+            ValuelessEffectType::Pan => "EFFECT_TYPE_PAN",
+            ValuelessEffectType::Reverb => "EFFECT_TYPE_REVERB",
+            ValuelessEffectType::PitchBend => "EFFECT_TYPE_PITCH_BEND",
+            ValuelessEffectType::ChannelPressure => "EFFECT_TYPE_CHANNEL_PRESSURE",
+            ValuelessEffectType::PolyphonicKeyPressure => {
                 "EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE"
             }
         })

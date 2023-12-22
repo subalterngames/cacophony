@@ -1,8 +1,7 @@
 use crate::panel::*;
 use common::config::parse;
-use common::{Effect, EffectType, ValuelessEffectType, MAX_NOTE, MIDDLE_C, MIN_NOTE};
+use common::{Effect, EffectType, ValuelessEffectType, MAX_NOTE, MIDDLE_C, MIN_NOTE, MAX_PITCH_BEND};
 use ini::Ini;
-use text::EFFECT_NAME_KEYS;
 
 /// Add, remove, or adjust effects.
 pub(crate) struct EffectsPanel {
@@ -37,7 +36,7 @@ impl EffectsPanel {
         match Self::get_effect(state) {
             Some(effect) => {
                 // Increment by an extra delta.
-                if let EffectType::PitchBend(_) = effect.effect {
+                if let EffectType::PitchBend { value: _, duration: _ } = effect.effect {
                     let mut incremented = false;
                     for i in 0..self.pitch_bend_sensitivity {
                         if !effect.effect.increment(up) {
@@ -101,6 +100,40 @@ impl EffectsPanel {
         }
     }
 
+    fn increment_pitch_bend(&self, state: &mut State, conn: &Conn, up: bool) -> Option<Snapshot> {
+        let s0 = state.clone();
+        match Self::get_effect(state) {
+            Some(effect) => {
+                if let EffectType::PitchBend { value, duration } = effect.effect {
+                    if up {
+                        if value < MAX_PITCH_BEND {
+                            effect.effect = EffectType::PitchBend {
+                                value,
+                                duration: duration + 1,
+                            };
+                            Some(Snapshot::from_states(s0, state))
+                        } else {
+                            None
+                        }
+                    } else {
+                        if value > 0 {
+                            effect.effect = EffectType::PitchBend {
+                                value,
+                                duration: duration - 1
+                            };
+                            Some(Snapshot::from_states(s0, state))
+                        } else {
+                            None
+                        }
+                    }
+                } else {
+                    None
+                }
+            }
+            None => self.add_effect(state, conn),
+        }
+    }
+
     /// Add a new effect.
     fn add_effect(&self, state: &mut State, conn: &Conn) -> Option<Snapshot> {
         let ve = state.effect_types.get();
@@ -136,7 +169,7 @@ impl EffectsPanel {
                             },
                             ValuelessEffectType::PitchBend => match &last {
                                 Some(effect) => effect.effect,
-                                None => EffectType::PitchBend(0),
+                                None => EffectType::PitchBend { value: 0, duration: 0},
                             },
                             ValuelessEffectType::ChannelPressure => match &last {
                                 Some(effect) => effect.effect,
@@ -220,10 +253,21 @@ impl Panel for EffectsPanel {
                     text,
                 )));
             }
+            else if let ValuelessEffectType::PitchBend = state.effect_types.get() {
+                tts_strings.push(TtsString::from(self.tooltips.get_tooltip(
+                    "EFFECTS_PANEL_STATUS_TTS_PITCH_BEND_DURATION",
+                    &[
+                        InputEvent::IncrementPitchBendDuration,
+                        InputEvent::DecrementPitchBendDuration,
+                    ],
+                    input,
+                    text,
+                )));
+            }
             tts.enqueue(tts_strings);
             None
         } else if input.happened(&InputEvent::StatusTTS) {
-            let effect_name = text.get_ref(EFFECT_NAME_KEYS[state.effect_types.index.get()]);
+            let effect_name = text.get_valueless_effect_name(&state.effect_types.get());
             let mut tts_strings = vec![];
             // The name of the selected effect.
             match Self::get_effect(state) {
@@ -231,7 +275,7 @@ impl Panel for EffectsPanel {
                     let value = match effect.effect {
                         EffectType::Chorus(value)
                         | EffectType::Reverb(value)
-                        | EffectType::PitchBend(value) => value.to_string(),
+                        | EffectType::PitchBend { value, duration: _} => value.to_string(),
                         EffectType::Pan(value) => value.to_string(),
                         EffectType::ChannelPressure(value)
                         | EffectType::PolyphonicKeyPressure { key: _, value } => value.to_string(),
@@ -244,6 +288,12 @@ impl Panel for EffectsPanel {
                         tts_strings.push(TtsString::from(text.get_with_values(
                             "EFFECTS_PANEL_STATUS_TTS_AFTERTOUCH_KEY",
                             &[&key.to_string()],
+                        )));
+                    }
+                    else if let EffectType::PitchBend { value: _, duration } = effect.effect {
+                        tts_strings.push(TtsString::from(text.get_with_values(
+                            "EFFECTS_PANEL_STATUS_TTS_PITCH_BEND_DURATION",
+                            &[&duration.to_string()],
                         )));
                     }
                 }
@@ -265,11 +315,17 @@ impl Panel for EffectsPanel {
             self.increment_effect_value(state, conn, true)
         } else if input.happened(&InputEvent::DecrementEffectValue) {
             self.increment_effect_value(state, conn, false)
-        } else if input.happened(&InputEvent::IncrementAftertouchNote) {
+        }  else if input.happened(&InputEvent::IncrementAftertouchNote) {
             self.increment_aftertouch(state, conn, true)
         } else if input.happened(&InputEvent::DecrementAftertouchNote) {
             self.increment_aftertouch(state, conn, false)
-        } else {
+        }
+        else if input.happened(&InputEvent::IncrementPitchBendDuration) {
+            self.increment_pitch_bend(state, conn, true)
+        } else if input.happened(&InputEvent::DecrementPitchBendDuration) {
+            self.increment_pitch_bend(state, conn, false)
+        }
+        else {
             None
         }
     }
