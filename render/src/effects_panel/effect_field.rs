@@ -46,7 +46,7 @@ impl EffectField {
                         VALUE_WIDTH,
                     ),
                 ]),
-                4,
+                3,
             ),
             EffectType::PolyphonicKeyPressure { key: _, value: _ } => (
                 EffectFieldValues::Two([
@@ -63,17 +63,17 @@ impl EffectField {
                         VALUE_WIDTH,
                     ),
                 ]),
-                4,
+                3,
             ),
             _ => (
                 EffectFieldValues::One(List::new([x, *y + 1], VALUE_WIDTH)),
-                3,
+                2,
             ),
         };
         // Get the background rectangle.
         let rect = Rectangle::new([x, *y], [width, dy]);
         // Increment the y value.
-        *y += dy;
+        *y += dy + 1;
         Self {
             label,
             values,

@@ -17,7 +17,7 @@
 
 use audio::export::ExportState;
 use audio::Conn;
-use common::{InputState, Music, PanelType, Paths, PathsState, State};
+use common::{Index, InputState, Music, PanelType, Paths, PathsState, State};
 use edit::edit_file;
 use effects_panel::EffectsPanel;
 use hashbrown::HashMap;
@@ -139,6 +139,9 @@ impl IO {
                 .clone(),
             tooltips
                 .get_tooltip("APP_TTS_6", &[InputEvent::EnableLinksPanel], input, text)
+                .clone(),
+            tooltips
+                .get_tooltip("APP_TTS_7", &[InputEvent::ToggleEffectsPanel], input, text)
                 .clone(),
         ];
         tts.insert(InputEvent::AppTTS, app_tts);
@@ -400,6 +403,19 @@ impl IO {
         // Links.
         if input.happened(&InputEvent::EnableLinksPanel) {
             self.links_panel.enable(state);
+            return false;
+        }
+        // Show or hide the effects panel.
+        if input.happened(&InputEvent::ToggleEffectsPanel) {
+            let s0 = state.clone();
+            if state.panels.contains(&PanelType::Effects) {
+                state.panels.retain(|p| *p != PanelType::Effects);
+                state.focus = Index::new(state.panels.len() - 1, state.panels.len());
+            } else {
+                state.panels.push(PanelType::Effects);
+                state.focus = Index::new(state.focus.get(), state.panels.len());
+            }
+            self.undo.push(Snapshot::from_states(s0, state));
             return false;
         }
         // Get the focused panel.

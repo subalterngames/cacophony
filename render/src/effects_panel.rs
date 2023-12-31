@@ -19,9 +19,7 @@ impl EffectsPanel {
         // Get the panel.
         let size = [
             get_effects_panel_width(text),
-            get_piano_roll_panel_size(config)[1]
-                - PIANO_ROLL_PANEL_TOP_BAR_HEIGHT
-                - PIANO_ROLL_PANEL_VOLUME_HEIGHT,
+            get_piano_roll_panel_size(config)[1] - PIANO_ROLL_PANEL_VOLUME_HEIGHT,
         ];
         let position = [
             get_window_grid_size(config)[0] - size[0],

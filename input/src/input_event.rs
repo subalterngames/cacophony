@@ -16,6 +16,8 @@ pub enum InputEvent {
     StopTTS,
     // Enable links panel.
     EnableLinksPanel,
+    // Toggle effects panel.
+    ToggleEffectsPanel,
     // Undo-redo.
     Undo,
     Redo,
