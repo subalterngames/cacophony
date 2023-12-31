@@ -1,11 +1,14 @@
 use crate::MIDDLE_C;
 use serde::{Deserialize, Serialize};
+use strum::EnumCount;
+use strum_macros::EnumCount as EnumCountMacro;
 use std::hash::{Hash, Hasher};
+
 
 pub const MAX_PITCH_BEND: u16 = 16383;
 
 /// Types of synthesizer effects.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Deserialize, Serialize, EnumCountMacro)]
 #[repr(u8)]
 pub enum EffectType {
     /// The degree, in 0.1% units, to which the audio output of the note is sent to the chorus effects processor.
@@ -32,12 +35,8 @@ pub enum EffectType {
 }
 
 impl EffectType {
-    pub const fn len() -> usize {
-        6
-    }
-    
     /// Returns an array of each effect type, with each field set to a default value.
-    pub fn get_array() -> [Self; 6] {
+    pub fn get_array() -> [Self; Self::COUNT] {
         [
             EffectType::Chorus(500),
             EffectType::Reverb(500),

@@ -406,6 +406,8 @@ dependencies = [
  "rust-ini",
  "serde",
  "serde_json",
+ "strum",
+ "strum_macros",
 ]
 
 [[package]]
