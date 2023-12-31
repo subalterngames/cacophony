@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 
 use std::cmp::Ordering;
 
+use crate::EffectType;
+
 /// A timed synthesizer effect.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Effect {
@@ -10,6 +12,18 @@ pub struct Effect {
     pub time: u64,
     /// The type of effect.
     pub effect: effect_type::EffectType,
+}
+
+impl Effect {
+    /// Returns true if the effect is at, or is ongoing during, time `time` (in PPQ).
+    pub fn at_time(&self, time: u64) -> bool {
+        match &self.effect {
+            EffectType::PitchBend { value: _, duration } => {
+                self.time == time || (self.time < time && self.time + duration >= time)
+            }
+            _ => self.time == time,
+        }
+    }
 }
 
 impl Ord for Effect {

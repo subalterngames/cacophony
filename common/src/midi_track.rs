@@ -1,4 +1,4 @@
-use crate::{Effect, EffectType, Note, MAX_VOLUME, MAX_PITCH_BEND};
+use crate::{Effect, EffectType, Note, MAX_PITCH_BEND, MAX_VOLUME};
 use serde::{Deserialize, Serialize};
 
 /// A MIDI track has some notes.
@@ -59,7 +59,7 @@ impl MidiTrack {
         let mut effects = vec![];
         for effect in self.effects.iter() {
             // Lerp the pitch bends.
-            if let EffectType::PitchBend { value, duration} = effect.effect {
+            if let EffectType::PitchBend { value, duration } = effect.effect {
                 // Prevent a divide by zero error.
                 if duration == 0 {
                     continue;
@@ -67,7 +67,13 @@ impl MidiTrack {
                 let dv = (value as f64 / duration as f64) as u16;
                 let mut pitch_value = 0;
                 for t in 0..duration {
-                    effects.push(Effect { time: effect.time + t, effect: EffectType::PitchBend { value: pitch_value, duration: 1 }});
+                    effects.push(Effect {
+                        time: effect.time + t,
+                        effect: EffectType::PitchBend {
+                            value: pitch_value,
+                            duration: 1,
+                        },
+                    });
                     pitch_value += dv;
                     if pitch_value > MAX_PITCH_BEND {
                         break;
@@ -76,7 +82,7 @@ impl MidiTrack {
             }
             // Add the effect.
             else {
-                effects.push(effect.clone());
+                effects.push(*effect);
             }
         }
         effects.sort();

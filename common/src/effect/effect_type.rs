@@ -1,9 +1,8 @@
 use crate::MIDDLE_C;
 use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
 use strum::EnumCount;
 use strum_macros::EnumCount as EnumCountMacro;
-use std::hash::{Hash, Hasher};
-
 
 pub const MAX_PITCH_BEND: u16 = 16383;
 
@@ -41,9 +40,15 @@ impl EffectType {
             EffectType::Chorus(500),
             EffectType::Reverb(500),
             EffectType::Pan(0),
-            EffectType::PitchBend { value: 0, duration: 0},
+            EffectType::PitchBend {
+                value: 0,
+                duration: 0,
+            },
             EffectType::ChannelPressure(0),
-            EffectType::PolyphonicKeyPressure { key: MIDDLE_C,value: 0}
+            EffectType::PolyphonicKeyPressure {
+                key: MIDDLE_C,
+                value: 0,
+            },
         ]
     }
 
@@ -55,11 +60,9 @@ impl EffectType {
                         *value += 1;
                         return true;
                     }
-                } else {
-                    if *value > 0 {
-                        *value -= 1;
-                        return true;
-                    }
+                } else if *value > 0 {
+                    *value -= 1;
+                    return true;
                 }
             }
             Self::Pan(value) => {
@@ -68,11 +71,9 @@ impl EffectType {
                         *value += 1;
                         return true;
                     }
-                } else {
-                    if *value > -500 {
-                        *value -= 1;
-                        return true;
-                    }
+                } else if *value > -500 {
+                    *value -= 1;
+                    return true;
                 }
             }
             Self::PitchBend { value, duration: _ } => {
@@ -81,11 +82,9 @@ impl EffectType {
                         *value += 1;
                         return true;
                     }
-                } else {
-                    if *value > 0 {
-                        *value -= 1;
-                        return true;
-                    }
+                } else if *value > 0 {
+                    *value -= 1;
+                    return true;
                 }
             }
             Self::ChannelPressure(value) | Self::PolyphonicKeyPressure { key: _, value } => {
@@ -94,11 +93,9 @@ impl EffectType {
                         *value += 1;
                         return true;
                     }
-                } else {
-                    if *value > 0 {
-                        *value -= 1;
-                        return true;
-                    }
+                } else if *value > 0 {
+                    *value -= 1;
+                    return true;
                 }
             }
         }
@@ -111,10 +108,28 @@ impl EffectType {
     }
 
     /// Source: https://play.rust-lang.org/?version=stable&mode=debug&edition=2015&gist=21e3ab42f76ccbc05b6b61560cbd29ec
-    fn get_ordinal(&self) -> u8 {
+    pub fn get_ordinal(&self) -> u8 {
         let ptr_to_option = (self as *const Self) as *const u8;
-        unsafe {
-            *ptr_to_option
+        unsafe { *ptr_to_option }
+    }
+
+    pub fn get_value_string(&self) -> String {
+        match self {
+            Self::Chorus(value) | Self::Reverb(value) | Self::PitchBend { value, duration: _ } => {
+                value.to_string()
+            }
+            Self::Pan(value) => value.to_string(),
+            Self::ChannelPressure(value) | Self::PolyphonicKeyPressure { key: _, value } => {
+                value.to_string()
+            }
+        }
+    }
+
+    pub fn get_secondary_value(&self) -> Option<String> {
+        match self {
+            Self::PitchBend { value: _, duration } => Some(duration.to_string()),
+            Self::PolyphonicKeyPressure { key, value: _ } => Some(key.to_string()),
+            _ => None,
         }
     }
 }

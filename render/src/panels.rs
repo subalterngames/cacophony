@@ -1,3 +1,4 @@
+use crate::effects_panel::EffectsPanel;
 use crate::export_panel::ExportPanel;
 use crate::export_settings_panel::ExportSettingsPanel;
 use crate::links_panel::LinksPanel;
@@ -30,6 +31,8 @@ pub struct Panels {
     quit_panel: QuitPanel,
     /// The links panel.
     links_panel: LinksPanel,
+    /// The effects panel.
+    effects_panel: EffectsPanel,
 }
 
 impl Panels {
@@ -52,6 +55,7 @@ impl Panels {
             ExportSettingsPanel::new(config, renderer, &conn.exporter, text);
         let quit_panel = QuitPanel::new(config, renderer, text, input);
         let links_panel = LinksPanel::new(config, renderer, text, input);
+        let effects_panel = EffectsPanel::new(config, renderer, text);
         Self {
             music_panel,
             main_menu,
@@ -62,6 +66,7 @@ impl Panels {
             export_settings_panel,
             quit_panel,
             links_panel,
+            effects_panel,
         }
     }
 
@@ -95,6 +100,7 @@ impl Panels {
                 PanelType::ExportSettings => &self.export_settings_panel,
                 PanelType::Quit => &self.quit_panel,
                 PanelType::Links => &self.links_panel,
+                PanelType::Effects => &self.effects_panel,
             };
             // Draw the panel.
             panel.update(renderer, state, conn, text, paths_state);

@@ -1,7 +1,7 @@
 use crate::music_panel_field::MusicPanelField;
 use crate::{
-    EditMode, EffectType, Index, IndexedEditModes, IndexedValues, InputState, Music, PanelType, PianoRollMode,
-    Selection, Time, View,
+    EditMode, EffectType, Index, IndexedEditModes, IndexedValues, InputState, Music, PanelType,
+    PianoRollMode, Selection, Time, View,
 };
 use ini::Ini;
 use serde::{Deserialize, Serialize};
@@ -56,10 +56,7 @@ impl State {
         let piano_roll_mode = PianoRollMode::Time;
         let edit_mode = EditMode::indexed();
         let selection = Selection::default();
-        let effect_types = IndexedValues::new(
-            0,
-            EffectType::get_array()
-        );
+        let effect_types = IndexedValues::new(0, EffectType::get_array());
         Self {
             music,
             view,

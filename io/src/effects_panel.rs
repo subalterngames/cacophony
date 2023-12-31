@@ -1,6 +1,6 @@
 use crate::panel::*;
 use common::config::parse;
-use common::{Effect, EffectType, MAX_NOTE, MIN_NOTE, MAX_PITCH_BEND};
+use common::{Effect, EffectType, MAX_NOTE, MAX_PITCH_BEND, MIN_NOTE};
 use ini::Ini;
 
 /// Add, remove, or adjust effects.
@@ -36,7 +36,11 @@ impl EffectsPanel {
         match Self::get_effect(state) {
             Some(effect) => {
                 // Increment by an extra delta.
-                if let EffectType::PitchBend { value: _, duration: _ } = effect.effect {
+                if let EffectType::PitchBend {
+                    value: _,
+                    duration: _,
+                } = effect.effect
+                {
                     let mut incremented = false;
                     for i in 0..self.pitch_bend_sensitivity {
                         if !effect.effect.increment(up) {
@@ -53,12 +57,10 @@ impl EffectsPanel {
                     }
                 }
                 // Increment by one.
-                else {
-                    if effect.effect.increment(up) {
-                        Some(Snapshot::from_states(s0, state))
-                    } else {
-                        None
-                    }
+                else if effect.effect.increment(up) {
+                    Some(Snapshot::from_states(s0, state))
+                } else {
+                    None
                 }
             }
             None => self.add_effect(state, conn),
@@ -81,16 +83,14 @@ impl EffectsPanel {
                         } else {
                             None
                         }
+                    } else if key > MIN_NOTE {
+                        effect.effect = EffectType::PolyphonicKeyPressure {
+                            key: key - 1,
+                            value,
+                        };
+                        Some(Snapshot::from_states(s0, state))
                     } else {
-                        if key > MIN_NOTE {
-                            effect.effect = EffectType::PolyphonicKeyPressure {
-                                key: key - 1,
-                                value,
-                            };
-                            Some(Snapshot::from_states(s0, state))
-                        } else {
-                            None
-                        }
+                        None
                     }
                 } else {
                     None
@@ -115,16 +115,14 @@ impl EffectsPanel {
                         } else {
                             None
                         }
+                    } else if value > 0 {
+                        effect.effect = EffectType::PitchBend {
+                            value,
+                            duration: duration - 1,
+                        };
+                        Some(Snapshot::from_states(s0, state))
                     } else {
-                        if value > 0 {
-                            effect.effect = EffectType::PitchBend {
-                                value,
-                                duration: duration - 1
-                            };
-                            Some(Snapshot::from_states(s0, state))
-                        } else {
-                            None
-                        }
+                        None
                     }
                 } else {
                     None
@@ -151,7 +149,10 @@ impl EffectsPanel {
                         // Sort by time.
                         effects.sort();
                         // Get the chronologically last effect of this type.
-                        let last = effects.iter().filter(|e| selected_effect.valueless_eq(&e.effect)).last();
+                        let last = effects
+                            .iter()
+                            .filter(|e| selected_effect.valueless_eq(&e.effect))
+                            .last();
                         let program = &conn.state.programs[&track.channel];
                         // Get a new effect type.
                         // Try to use the value of the last effect of this type, if it exists.
@@ -170,8 +171,8 @@ impl EffectsPanel {
                             },
                             _ => match &last {
                                 Some(effect) => effect.effect,
-                                None => selected_effect.clone()
-                            }
+                                None => selected_effect,
+                            },
                         };
                         // Get a new effect.
                         track.effects.push(Effect {
@@ -196,8 +197,7 @@ impl EffectsPanel {
             Some(track) => track
                 .effects
                 .iter_mut()
-                .filter(|e| e.time == state.time.cursor && ve.eq(&e.effect))
-                .next(),
+                .find(|e| e.time == state.time.cursor && ve.eq(&e.effect)),
             None => None,
         }
     }
@@ -221,7 +221,7 @@ impl Panel for EffectsPanel {
                     input,
                     text,
                 ),
-                TtsString::from(self.tooltips.get_tooltip(
+                self.tooltips.get_tooltip(
                     "EFFECTS_PANE_INPUT_TTS_VALUE",
                     &[
                         InputEvent::IncrementEffectValue,
@@ -229,11 +229,12 @@ impl Panel for EffectsPanel {
                     ],
                     input,
                     text,
-                )),
+                ),
             ];
             // Add a new effect.
-            if let EffectType::PolyphonicKeyPressure { value: _, key: _} = state.effect_types.get() {
-                tts_strings.push(TtsString::from(self.tooltips.get_tooltip(
+            if let EffectType::PolyphonicKeyPressure { value: _, key: _ } = state.effect_types.get()
+            {
+                tts_strings.push(self.tooltips.get_tooltip(
                     "EFFECTS_PANEL_INPUT_TTS_AFTERTOUCH",
                     &[
                         InputEvent::IncrementAftertouchNote,
@@ -241,10 +242,13 @@ impl Panel for EffectsPanel {
                     ],
                     input,
                     text,
-                )));
-            }
-            else if let EffectType::PitchBend { value: _, duration: _} = state.effect_types.get() {
-                tts_strings.push(TtsString::from(self.tooltips.get_tooltip(
+                ));
+            } else if let EffectType::PitchBend {
+                value: _,
+                duration: _,
+            } = state.effect_types.get()
+            {
+                tts_strings.push(self.tooltips.get_tooltip(
                     "EFFECTS_PANEL_STATUS_TTS_PITCH_BEND_DURATION",
                     &[
                         InputEvent::IncrementPitchBendDuration,
@@ -252,7 +256,7 @@ impl Panel for EffectsPanel {
                     ],
                     input,
                     text,
-                )));
+                ));
             }
             tts.enqueue(tts_strings);
             None
@@ -265,7 +269,7 @@ impl Panel for EffectsPanel {
                     let value = match effect.effect {
                         EffectType::Chorus(value)
                         | EffectType::Reverb(value)
-                        | EffectType::PitchBend { value, duration: _} => value.to_string(),
+                        | EffectType::PitchBend { value, duration: _ } => value.to_string(),
                         EffectType::Pan(value) => value.to_string(),
                         EffectType::ChannelPressure(value)
                         | EffectType::PolyphonicKeyPressure { key: _, value } => value.to_string(),
@@ -279,8 +283,7 @@ impl Panel for EffectsPanel {
                             "EFFECTS_PANEL_STATUS_TTS_AFTERTOUCH_KEY",
                             &[&key.to_string()],
                         )));
-                    }
-                    else if let EffectType::PitchBend { value: _, duration } = effect.effect {
+                    } else if let EffectType::PitchBend { value: _, duration } = effect.effect {
                         tts_strings.push(TtsString::from(text.get_with_values(
                             "EFFECTS_PANEL_STATUS_TTS_PITCH_BEND_DURATION",
                             &[&duration.to_string()],
@@ -305,17 +308,15 @@ impl Panel for EffectsPanel {
             self.increment_effect_value(state, conn, true)
         } else if input.happened(&InputEvent::DecrementEffectValue) {
             self.increment_effect_value(state, conn, false)
-        }  else if input.happened(&InputEvent::IncrementAftertouchNote) {
+        } else if input.happened(&InputEvent::IncrementAftertouchNote) {
             self.increment_aftertouch(state, conn, true)
         } else if input.happened(&InputEvent::DecrementAftertouchNote) {
             self.increment_aftertouch(state, conn, false)
-        }
-        else if input.happened(&InputEvent::IncrementPitchBendDuration) {
+        } else if input.happened(&InputEvent::IncrementPitchBendDuration) {
             self.increment_pitch_bend(state, conn, true)
         } else if input.happened(&InputEvent::DecrementPitchBendDuration) {
             self.increment_pitch_bend(state, conn, false)
-        }
-        else {
+        } else {
             None
         }
     }
