@@ -1,5 +1,4 @@
 pub(crate) mod effect_type;
-pub(crate) mod valueless_effect_type;
 use serde::{Deserialize, Serialize};
 
 use std::cmp::Ordering;

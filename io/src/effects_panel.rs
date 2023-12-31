@@ -1,6 +1,6 @@
 use crate::panel::*;
 use common::config::parse;
-use common::{Effect, EffectType, ValuelessEffectType, MAX_NOTE, MIDDLE_C, MIN_NOTE, MAX_PITCH_BEND};
+use common::{Effect, EffectType, MAX_NOTE, MIN_NOTE, MAX_PITCH_BEND};
 use ini::Ini;
 
 /// Add, remove, or adjust effects.
@@ -136,7 +136,8 @@ impl EffectsPanel {
 
     /// Add a new effect.
     fn add_effect(&self, state: &mut State, conn: &Conn) -> Option<Snapshot> {
-        let ve = state.effect_types.get();
+        // Get the currently-selected effect.
+        let selected_effect = state.effect_types.get();
         match Self::get_effect(state) {
             // There is already an effect.
             Some(_) => None,
@@ -149,39 +150,28 @@ impl EffectsPanel {
                         let mut effects = track.effects.iter().collect::<Vec<&Effect>>();
                         // Sort by time.
                         effects.sort();
-                        // Get the last effect.
-                        let last = effects.iter().filter(|e| ve.eq(&e.effect)).last();
+                        // Get the chronologically last effect of this type.
+                        let last = effects.iter().filter(|e| selected_effect.valueless_eq(&e.effect)).last();
                         let program = &conn.state.programs[&track.channel];
                         // Get a new effect type.
                         // Try to use the value of the last effect of this type, if it exists.
-                        let effect_type = match ve {
-                            ValuelessEffectType::Chorus => match &last {
+                        let effect_type = match selected_effect {
+                            EffectType::Chorus(_) => match &last {
                                 Some(effect) => effect.effect,
                                 None => EffectType::Chorus(program.chorus as u16),
                             },
-                            ValuelessEffectType::Pan => match &last {
+                            EffectType::Pan(_) => match &last {
                                 Some(effect) => effect.effect,
                                 None => EffectType::Pan(program.pan as i16),
                             },
-                            ValuelessEffectType::Reverb => match &last {
+                            EffectType::Reverb(_) => match &last {
                                 Some(effect) => effect.effect,
                                 None => EffectType::Reverb(program.reverb as u16),
                             },
-                            ValuelessEffectType::PitchBend => match &last {
+                            _ => match &last {
                                 Some(effect) => effect.effect,
-                                None => EffectType::PitchBend { value: 0, duration: 0},
-                            },
-                            ValuelessEffectType::ChannelPressure => match &last {
-                                Some(effect) => effect.effect,
-                                None => EffectType::ChannelPressure(0),
-                            },
-                            ValuelessEffectType::PolyphonicKeyPressure => match &last {
-                                Some(effect) => effect.effect,
-                                None => EffectType::PolyphonicKeyPressure {
-                                    key: MIDDLE_C,
-                                    value: 0,
-                                },
-                            },
+                                None => selected_effect.clone()
+                            }
                         };
                         // Get a new effect.
                         track.effects.push(Effect {
@@ -242,7 +232,7 @@ impl Panel for EffectsPanel {
                 )),
             ];
             // Add a new effect.
-            if let ValuelessEffectType::PolyphonicKeyPressure = state.effect_types.get() {
+            if let EffectType::PolyphonicKeyPressure { value: _, key: _} = state.effect_types.get() {
                 tts_strings.push(TtsString::from(self.tooltips.get_tooltip(
                     "EFFECTS_PANEL_INPUT_TTS_AFTERTOUCH",
                     &[
@@ -253,7 +243,7 @@ impl Panel for EffectsPanel {
                     text,
                 )));
             }
-            else if let ValuelessEffectType::PitchBend = state.effect_types.get() {
+            else if let EffectType::PitchBend { value: _, duration: _} = state.effect_types.get() {
                 tts_strings.push(TtsString::from(self.tooltips.get_tooltip(
                     "EFFECTS_PANEL_STATUS_TTS_PITCH_BEND_DURATION",
                     &[
@@ -267,7 +257,7 @@ impl Panel for EffectsPanel {
             tts.enqueue(tts_strings);
             None
         } else if input.happened(&InputEvent::StatusTTS) {
-            let effect_name = text.get_valueless_effect_name(&state.effect_types.get());
+            let effect_name = text.get_effect_type_name(&state.effect_types.get());
             let mut tts_strings = vec![];
             // The name of the selected effect.
             match Self::get_effect(state) {

@@ -13,7 +13,7 @@ pub use value_map::ValueMap;
 mod tts_string;
 use common::config::parse;
 use common::{
-    EditMode, Effect, EffectType, Event, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U, ValuelessEffectType,
+    EditMode, EffectType, Event, Paths, PianoRollMode, Time, MIN_NOTE, PPQ_F, PPQ_U,
 };
 use csv::Reader;
 use hashbrown::HashMap;
@@ -168,6 +168,7 @@ pub struct Text {
     note_names: Vec<String>,
     /// Boolean display strings.
     booleans: ValueMap<bool>,
+    effect_types: ValueMap<EffectType>
 }
 
 impl Text {
@@ -195,13 +196,17 @@ impl Text {
         let keycodes_seen = Text::get_keycode_map(&text, false);
         let edit_modes = Text::get_edit_mode_map(&text);
         let piano_roll_modes = Text::get_piano_roll_mode_map(&text);
-        let mut booleans = HashMap::new();
-        booleans.insert(true, text["TRUE"].clone());
-        booleans.insert(false, text["FALSE"].clone());
         let booleans = ValueMap::new_from_strings(
             [true, false],
             [text["TRUE"].clone(), text["FALSE"].clone()],
         );
+        let effect_types = ValueMap::new_from_strings(EffectType::get_array(), 
+        [text["EFFECT_TYPE_CHORUS"].clone(), 
+        text["EFFECT_TYPE_PAN"].clone(), 
+        text["EFFECT_TYPE_REVERB"].clone(),
+        text["EFFECT_TYPE_PITCH_BEND"].clone(),
+        text["EFFECT_TYPE_CHANNEL_PRESSURE"].clone(),
+        text["EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE"].clone()]);
         Self {
             text,
             keycodes_spoken,
@@ -210,6 +215,7 @@ impl Text {
             piano_roll_modes,
             note_names,
             booleans,
+            effect_types
         }
     }
 
@@ -342,36 +348,18 @@ impl Text {
     /// Returns the name of a note or event.
     pub fn get_event_name(&self, event: &Event<'_>) -> String {
         match event {
-            Event::Effect { effect, index: _ } => self.get_effect_name(effect).to_string(),
+            Event::Effect { effect, index: _ } => self.get_effect_type_name(&effect.effect).to_string(),
             Event::Note { note, index: _ } => note.get_name().to_string(),
         }
     }
 
     /// Returns the name of an effect type.
-    pub fn get_effect_name(&self, effect: &Effect) -> &str {
-        self.get_ref(match effect.effect {
-            EffectType::Chorus(_) => "EFFECT_TYPE_CHORUS",
-            EffectType::Pan(_) => "EFFECT_TYPE_PAN",
-            EffectType::Reverb(_) => "EFFECT_TYPE_REVERB",
-            EffectType::PitchBend { value: _, duration: _ } => "EFFECT_TYPE_PITCH_BEND",
-            EffectType::ChannelPressure(_) => "EFFECT_TYPE_CHANNEL_PRESSURE",
-            EffectType::PolyphonicKeyPressure { key: _, value: _ } => {
-                "EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE"
-            }
-        })
+    pub fn get_effect_type_name<'a>(&'a self, effect: &EffectType) -> &'a str {
+        &self.effect_types.get(effect)
     }
 
-    pub fn get_valueless_effect_name(&self, effect: &ValuelessEffectType) -> &str {
-        self.get_ref(match effect {
-            ValuelessEffectType::Chorus => "EFFECT_TYPE_CHORUS",
-            ValuelessEffectType::Pan => "EFFECT_TYPE_PAN",
-            ValuelessEffectType::Reverb => "EFFECT_TYPE_REVERB",
-            ValuelessEffectType::PitchBend => "EFFECT_TYPE_PITCH_BEND",
-            ValuelessEffectType::ChannelPressure => "EFFECT_TYPE_CHANNEL_PRESSURE",
-            ValuelessEffectType::PolyphonicKeyPressure => {
-                "EFFECT_TYPE_POLYPHONIC_KEY_PRESSURE"
-            }
-        })
+    pub fn get_max_effect_type_length(&self) -> u32 {
+        self.effect_types.max_length
     }
 
     /// Returns the name of the note.

@@ -27,7 +27,7 @@ mod paths_state;
 mod state;
 pub mod time;
 pub mod view;
-pub use effect::{effect_type::{EffectType, MAX_PITCH_BEND}, valueless_effect_type::ValuelessEffectType, Effect};
+pub use effect::{effect_type::{EffectType, MAX_PITCH_BEND}, Effect};
 pub use event::Event;
 pub use index::Index;
 mod indexed_values;

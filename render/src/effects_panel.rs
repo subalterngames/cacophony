@@ -1,77 +1,18 @@
-use std::ops::Index;
+mod effect_field;
+mod effect_field_values;
+mod effect_field_state;
 use crate::get_effects_panel_width;
 use crate::panel::*;
-use common::Effect;
-use common::IndexedValues;
-use common::ValuelessEffectType;
+use common::EffectType;
+use effect_field::EffectField;
+use effect_field_values::EffectFieldValues;
+use effect_field_state::EffectFieldState;
 
-const VALUE_WIDTH: u32 = 5;
-
-#[derive(Debug)]
-struct EffectField {
-    label: Label,
-    value: EffectFieldValue,
-    rect: Rectangle,
-}
-
-impl EffectField {
-    fn new(x: u32, y: &mut u32, width: u32, effect_types: &mut IndexedValues<ValuelessEffectType, 6>, text: &Text) -> Self {
-        let e = effect_types.get();
-        // Get the title label by getting the effect name.
-        let label = Label::new([x, *y], text.get_valueless_effect_name(&e).to_string());
-        // Get the value field.
-        let (value, dy) = match e {
-            ValuelessEffectType::PitchBend => {
-                (EffectFieldValue::Two([KeyList::new(
-                    text.get("EFFECTS_PANEL_POLYPHONIC_KEY_PITCH_BEND_VALUE"),
-                    [x, *y + 1],
-                    width,
-                    VALUE_WIDTH,
-                ),
-                KeyList::new(
-                    text.get("EFFECTS_PANEL_POLYPHONIC_KEY_PITCH_BEND_DURATION"),
-                    [x, *y + 2],
-                    width,
-                    VALUE_WIDTH,
-                ),]), 4)
-            }
-            ValuelessEffectType::PolyphonicKeyPressure => {
-                (EffectFieldValue::Two([KeyList::new(
-                    text.get("EFFECTS_PANEL_POLYPHONIC_KEY_PRESSURE_NOTE"),
-                    [x, *y + 1],
-                    width,
-                    VALUE_WIDTH,
-                ),
-                KeyList::new(
-                    text.get("EFFECTS_PANEL_POLYPHONIC_KEY_PRESSURE_VALUE"),
-                    [x, *y + 2],
-                    width,
-                    VALUE_WIDTH,
-                ),]), 4)
-            }
-            _ => (EffectFieldValue::One(List::new([x, *y + 1], VALUE_WIDTH)), 3)
-        };
-        // Get the background rectangle.
-        let rect = Rectangle::new([x, *y], [width, dy]);
-        // Increment the y value.
-        *y += dy;
-        // Increment so we can set the next effect.
-        effect_types.index.increment(true);
-        Self { label, value, rect }
-    }
-}
-
-/// The values of an effect field.
-/// Some effects have one value, some have two.
-#[derive(Debug)]
-enum EffectFieldValue {
-    One(List),
-    Two([KeyList; 2])
-}
 
 pub(crate) struct EffectsPanel {
     panel: Panel,
-    effects: [EffectField; 6],
+    effect_fields: [EffectField; 6],
+    effect_types: [EffectType; 6]
 }
 
 impl EffectsPanel {
@@ -98,10 +39,11 @@ impl EffectsPanel {
         for i in 0..effect_types.index.get_length() {
             effects.push(EffectField::new(x, &mut y, width, &mut effect_types, text));
         }
-        let effects: [EffectField; 6] = effects.try_into().unwrap();
+        let effect_fields: [EffectField; 6] = effects.try_into().unwrap();
         Self {
             panel,
-            effects,
+            effect_fields,
+            effect_types: EffectType::get_array()
         }
     }
 }
@@ -122,13 +64,22 @@ impl Drawable for EffectsPanel {
         // Is there a playable track?
         match state.music.get_selected_track() {
             Some(track) => {
-                // Get the selected effects.
-                let mut selected = [false; EFFECT_TYPES.len()];
+                // Generate states for each type of field.
+                let mut field_states = [EffectFieldState::default(); EffectType::len()];
+                // Mark fields as selected and/or current.
                 if let Some((_, effects)) = state.selection.get_selection(&state.music) {
                     for effect in effects {
-                        for (i, e) in EFFECT_TYPES.iter().enumerate() {
-                            if e.eq(&effect.effect) {
-                                selected[i] = true;
+                        for (i, e) in self.effect_types.iter().enumerate() {
+                            // This type of effect is selected.
+                            if e.valueless_eq(&effect.effect) {
+                                field_states[i].selected = true;
+                            }
+                            // This type of effect is at the playback cursor.
+                            match effect.effect {
+                                // Check whether the effect is in range.
+                                EffectType::PitchBend { value: _, duration } {
+                                    if effect.time == state.time.cursor || (effect.time < state.time.cursor && effect.time + duration >= state.time.cursor)
+                                }
                             }
                         }
                     }
