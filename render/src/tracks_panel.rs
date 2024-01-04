@@ -104,7 +104,7 @@ impl Drawable for TracksPanel {
                         Some(_) => self.track_size_sf,
                         None => self.track_size_no_sf,
                     };
-                    let rect = Rectangle::new([x, y], track_size);
+                    let rect = RectanglePixel::new_from_u([x, y], track_size, renderer);
                     // Draw corners.
                     renderer.corners(&rect, focus);
                     // This widget has focus.
@@ -115,35 +115,44 @@ impl Drawable for TracksPanel {
             match conn.state.programs.get(&channel) {
                 // No program. No SoundFont.
                 None => {
-                    let label = Label {
-                        text: text
-                            .get_with_values("TRACKS_PANEL_TRACK_TITLE", &[&channel.to_string()]),
-                        position: [x + 1, y],
-                    };
+                    let label = Label::new(
+                        [x + 1, y],
+                        text.get_with_values("TRACKS_PANEL_TRACK_TITLE", &[&channel.to_string()]),
+                        renderer,
+                    );
                     renderer.text(&label, &Renderer::get_key_color(focus));
                     y += 1;
                 }
                 // There is a program. Draw the properties.
                 Some(program) => {
                     let f = [focus, track_focus];
-                    let list = List::new([x, y], self.field_width - 1);
+                    let list = List::new([x, y], self.field_width - 1, renderer);
                     // Draw the preset.
                     renderer.list(&program.preset_name, &list, f);
                     y += 1;
                     // Draw the bank.
-                    let bank = KeyList::new(self.bank_key.clone(), [x + 1, y], self.field_width, 3);
+                    let bank = KeyList::new(
+                        self.bank_key.clone(),
+                        [x + 1, y],
+                        self.field_width,
+                        3,
+                        renderer,
+                    );
                     renderer.key_list(&program.bank.to_string(), &bank, f);
                     y += 1;
                     // Draw the gain.
-                    let gain = KeyList::new(self.gain_key.clone(), [x + 1, y], self.field_width, 3);
+                    let gain = KeyList::new(
+                        self.gain_key.clone(),
+                        [x + 1, y],
+                        self.field_width,
+                        3,
+                        renderer,
+                    );
                     renderer.key_list(&track.gain.to_string(), &gain, f);
                     // Mute.
                     if track.mute {
                         let mute_position = [x + self.field_width - MUTE_OFFSET, y];
-                        let label = Label {
-                            text: self.mute_text.clone(),
-                            position: mute_position,
-                        };
+                        let label = Label::new(mute_position, self.mute_text.clone(), renderer);
                         renderer.text(
                             &label,
                             &Renderer::get_boolean_color(track_focus && focus, track.mute),
@@ -158,10 +167,7 @@ impl Drawable for TracksPanel {
                                 - 1,
                             y,
                         ];
-                        let label = Label {
-                            text: self.solo_text.clone(),
-                            position: solo_position,
-                        };
+                        let label = Label::new(solo_position, self.solo_text.clone(), renderer);
                         renderer.text(
                             &label,
                             &Renderer::get_boolean_color(track_focus && focus, track.solo),
@@ -179,10 +185,7 @@ impl Drawable for TracksPanel {
                         (true, false) => ColorKey::Key,
                         _ => ColorKey::NoFocus,
                     };
-                    let file_label = LabelRef {
-                        text: file_text,
-                        position: [x + 1, y],
-                    };
+                    let file_label = LabelRef::new([x + 1, y], file_text, renderer);
                     renderer.text_ref(&file_label, &file_color);
                     y += 1;
                     // Draw a line separator.

@@ -1,13 +1,14 @@
-use super::{KeyWidth, Rectangle};
+use super::{KeyWidth, RectanglePixel};
+use crate::Renderer;
 
 /// A key, a value, a rectangle for corners, and a rectangle for input.
 pub(crate) struct KeyInput {
     /// The key and the input.
     pub key_width: KeyWidth,
     /// A rectangle that will be used to render corners when focused.
-    pub corners_rect: Rectangle,
+    pub corners_rect: RectanglePixel,
     /// A rectangle that will appear under the input text when focused and selected.
-    pub input_rect: Rectangle,
+    pub input_rect: RectanglePixel,
 }
 
 impl KeyInput {
@@ -22,11 +23,21 @@ impl KeyInput {
         position: [u32; 2],
         width: u32,
         value_width: u32,
+        renderer: &Renderer,
     ) -> Self {
-        let key_width =
-            KeyWidth::new_from_width(key, [position[0] + 1, position[1]], width - 2, value_width);
-        let corners_rect = Rectangle::new(position, [width, 1]);
-        let input_rect = Rectangle::new(key_width.value.position, [key_width.value.width_u32, 1]);
+        let key_width = KeyWidth::new_from_width(
+            key,
+            [position[0] + 1, position[1]],
+            width - 2,
+            value_width,
+            renderer,
+        );
+        let corners_rect = RectanglePixel::new_from_u(position, [width, 1], renderer);
+        let input_rect = RectanglePixel::new_from_u(
+            key_width.value.position,
+            [key_width.value.width_u32, 1],
+            renderer,
+        );
         Self {
             key_width,
             corners_rect,
@@ -45,6 +56,7 @@ impl KeyInput {
         position: [u32; 2],
         width: u32,
         padding: u32,
+        renderer: &Renderer,
     ) -> Self {
         let key_width_x = position[0] + 1;
         // The input rect can be larger than the value width.
@@ -55,10 +67,16 @@ impl KeyInput {
         if input_width < value_width {
             value_width = input_width;
         }
-        let input_rect = Rectangle::new([input_x, position[1]], [input_width, 1]);
-        let key_width =
-            KeyWidth::new_from_width(key, [position[0] + 1, position[1]], width - 2, value_width);
-        let corners_rect = Rectangle::new(position, [width, 1]);
+        let input_rect =
+            RectanglePixel::new_from_u([input_x, position[1]], [input_width, 1], renderer);
+        let key_width = KeyWidth::new_from_width(
+            key,
+            [position[0] + 1, position[1]],
+            width - 2,
+            value_width,
+            renderer,
+        );
+        let corners_rect = RectanglePixel::new_from_u(position, [width, 1], renderer);
         Self {
             key_width,
             corners_rect,

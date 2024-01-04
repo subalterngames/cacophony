@@ -42,23 +42,31 @@ impl ExportSettingsPanel {
         let title = text.get("TITLE_EXPORT_SETTINGS");
         let title_position = [position[0] + 2, position[1]];
         let title_width = title.chars().count() as u32;
-        let title = Label {
-            position: title_position,
-            text: title,
-        };
+        let title = Label::new(title_position, title, renderer);
         let title_rect = Rectangle::new(title_position, [title_width, 1]);
         let x = position[0] + 1;
         let y = position[1] + 1;
         let w = width - 2;
-        let framerate =
-            KeyListCorners::new(text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"), [x, y], w, 5);
-        let quality =
-            KeyListCorners::new(text.get("EXPORT_SETTINGS_PANEL_QUALITY"), [x, y + 1], w, 1);
+        let framerate = KeyListCorners::new(
+            text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"),
+            [x, y],
+            w,
+            5,
+            renderer,
+        );
+        let quality = KeyListCorners::new(
+            text.get("EXPORT_SETTINGS_PANEL_QUALITY"),
+            [x, y + 1],
+            w,
+            1,
+            renderer,
+        );
         let mp3_bit_rate = KeyListCorners::new(
             text.get("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE"),
             [x, y + 2],
             w,
             6,
+            renderer,
         );
 
         let multi_file_suffixes = ValueMap::new(
@@ -169,7 +177,7 @@ impl ExportSettingsPanel {
                     );
                     // For .wav and .flac files, draw a separator here.
                     if export_type == ExportType::Wav || export_type == ExportType::Flac {
-                        y = self.framerate.key_list.key.position[1] + 1;
+                        y = self.framerate.y + 1;
                         self.draw_separator((x, &mut y), renderer, &line_color);
                     }
                 }
@@ -180,7 +188,7 @@ impl ExportSettingsPanel {
                         &self.mp3_bit_rate,
                         setting_focus,
                     );
-                    y = self.mp3_bit_rate.key_list.key.position[1] + 1;
+                    y = self.mp3_bit_rate.y + 1;
                     self.draw_separator((x, &mut y), renderer, &line_color);
                 }
                 ExportSetting::Mp3Quality => renderer.key_list_corners(
@@ -194,7 +202,7 @@ impl ExportSettingsPanel {
                         &self.quality,
                         setting_focus,
                     );
-                    y = self.quality.key_list.key.position[1] + 1;
+                    y = self.quality.y + 1;
                     self.draw_separator((x, &mut y), renderer, &line_color);
                 }
                 ExportSetting::Title => {
@@ -204,6 +212,7 @@ impl ExportSettingsPanel {
                         [x, y],
                         self.width - 2,
                         KV_PADDING,
+                        renderer,
                     );
                     renderer.key_input(
                         &exporter.metadata.title,
@@ -255,6 +264,7 @@ impl ExportSettingsPanel {
                         [x, y],
                         self.width - 2,
                         value_width,
+                        renderer,
                     );
                     renderer.key_list_corners(&value, &key_list, setting_focus);
                     y += 1;
@@ -296,6 +306,7 @@ impl ExportSettingsPanel {
                         [x, y],
                         self.width - 2,
                         self.multi_file_suffixes.max_length,
+                        renderer,
                     );
                     renderer.key_list_corners(value, &key_list, setting_focus);
                     y += 1;
@@ -337,6 +348,7 @@ impl ExportSettingsPanel {
             [position.0, *position.1],
             self.width - 2,
             KV_PADDING,
+            renderer,
         );
         renderer.key_input(value, &key_input, state.input.alphanumeric_input, focus);
         *position.1 += 1;
@@ -352,7 +364,13 @@ impl ExportSettingsPanel {
         text: &Text,
         focus: Focus,
     ) {
-        let boolean = BooleanCorners::new(key, [position.0, *position.1], self.width - 2, text);
+        let boolean = BooleanCorners::new(
+            key,
+            [position.0, *position.1],
+            self.width - 2,
+            text,
+            renderer,
+        );
         renderer.boolean_corners(value, &boolean, focus);
         *position.1 += 1;
     }

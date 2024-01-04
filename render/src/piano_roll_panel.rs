@@ -56,7 +56,7 @@ impl PianoRollPanel {
             renderer,
             text,
         );
-        let top_bar = TopBar::new(config, text);
+        let top_bar = TopBar::new(config, renderer, text);
         let note_names_position = [
             piano_roll_panel_position[0] + 1,
             piano_roll_panel_position[1] + PIANO_ROLL_PANEL_TOP_BAR_HEIGHT + 1,
@@ -293,7 +293,8 @@ impl Drawable for PianoRollPanel {
                 .iter()
                 .zip((state.view.dn[1] + 1..state.view.dn[0] + 1).rev())
             {
-                let note_name = LabelRef::new(*position, NOTE_NAMES[127 - pitch as usize]);
+                let note_name =
+                    LabelRef::new(*position, NOTE_NAMES[127 - pitch as usize], renderer);
                 let note_name_color = if selected_pitches.contains(&pitch) {
                     &ColorKey::NoteSelected
                 } else {
@@ -317,10 +318,7 @@ impl Drawable for PianoRollPanel {
         );
         let cursor_string_width = cursor_string.chars().count() as u32;
         let playback_x = cursor_x + cursor_string_width + TIME_PADDING;
-        let cursor_label = Label {
-            text: cursor_string,
-            position: [cursor_x, self.time_y],
-        };
+        let cursor_label = Label::new([cursor_x, self.time_y], cursor_string, renderer);
         renderer.text(&cursor_label, &cursor_color);
 
         // Cursor horizontal line.
@@ -370,15 +368,9 @@ impl Drawable for PianoRollPanel {
                 None => (text.get("PIANO_ROLL_PANEL_SELECTED_NONE"), false),
             },
         };
-        let playback_label = Label {
-            text: playback_string,
-            position: [playback_x, self.time_y],
-        };
+        let playback_label = Label::new([playback_x, self.time_y], playback_string, renderer);
         renderer.text(&playback_label, &playback_color);
-        let selection_label = Label {
-            text: selection_string,
-            position: [selection_x, self.time_y],
-        };
+        let selection_label = Label::new([selection_x, self.time_y], selection_string, renderer);
         // Current playback time.
         let play_state = Self::get_play_state(&conn.play_state);
         if let PlayState::Playing(samples) = play_state {
@@ -386,10 +378,8 @@ impl Drawable for PianoRollPanel {
                 ppq_to_string(state.time.samples_to_ppq(samples, conn.framerate));
             let music_time_x =
                 selection_x + selection_label.text.chars().count() as u32 + TIME_PADDING;
-            let music_time_label = Label {
-                text: music_time_string,
-                position: [music_time_x, self.time_y],
-            };
+            let music_time_label =
+                Label::new([music_time_x, self.time_y], music_time_string, renderer);
             renderer.text(&music_time_label, &Renderer::get_key_color(focus));
         }
         renderer.text(
@@ -413,10 +403,7 @@ impl Drawable for PianoRollPanel {
         let dt_x = panel.background.grid_rect.position[0] + panel.background.grid_rect.size[0]
             - dt_string.chars().count() as u32
             - 1;
-        let dt_label = Label {
-            text: dt_string,
-            position: [dt_x, self.time_y],
-        };
+        let dt_label = Label::new([dt_x, self.time_y], dt_string, renderer);
         renderer.text(&dt_label, &Renderer::get_key_color(focus));
 
         if !state.view.single_track {

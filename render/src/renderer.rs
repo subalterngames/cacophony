@@ -194,7 +194,7 @@ impl Renderer {
     ///
     /// - `rectangle` The position and size of the bordered area.
     /// - `focus` If true, the panel has focus. This determines the color of the corners.
-    pub(crate) fn corners(&self, rect: &Rectangle, focus: bool) {
+    pub(crate) fn corners(&self, rect: &RectanglePixel, focus: bool) {
         // Get the color.
         let color = self.colors[&if focus {
             ColorKey::FocusDefault
@@ -202,77 +202,76 @@ impl Renderer {
             ColorKey::NoFocus
         }];
         // Top-left.
-        let mut p = self.grid_to_pixel(rect.position);
         draw_line(
-            p[0] - self.half_line_width,
-            p[1],
-            p[0] + self.corner_line_length,
-            p[1],
+            rect.position[0] - self.half_line_width,
+            rect.position[1],
+            rect.position[0] + self.corner_line_length,
+            rect.position[1],
             self.line_width,
             color,
         );
         draw_line(
-            p[0],
-            p[1],
-            p[0],
-            p[1] + self.corner_line_length,
+            rect.position[0],
+            rect.position[1],
+            rect.position[0],
+            rect.position[1] + self.corner_line_length,
             self.line_width,
             color,
         );
         // Top-right.
-        p = self.grid_to_pixel([rect.position[0] + rect.size[0], rect.position[1]]);
+        let position = [rect.position[0] + rect.size[0], rect.position[1]];
         draw_line(
-            p[0] - self.corner_line_length,
-            p[1],
-            p[0] + self.half_line_width,
-            p[1],
+            position[0] - self.corner_line_length,
+            position[1],
+            position[0] + self.half_line_width,
+            position[1],
             self.line_width,
             color,
         );
         draw_line(
-            p[0],
-            p[1],
-            p[0],
-            p[1] + self.corner_line_length,
+            position[0],
+            position[1],
+            position[0],
+            position[1] + self.corner_line_length,
             self.line_width,
             color,
         );
         // Bottom-right.
-        p = self.grid_to_pixel([
+        let position = [
             rect.position[0] + rect.size[0],
             rect.position[1] + rect.size[1],
-        ]);
+        ];
         draw_line(
-            p[0] - self.corner_line_length,
-            p[1],
-            p[0] + self.half_line_width,
-            p[1],
+            position[0] - self.corner_line_length,
+            position[1],
+            position[0] + self.half_line_width,
+            position[1],
             self.line_width,
             color,
         );
         draw_line(
-            p[0],
-            p[1] - self.corner_line_length,
-            p[0],
-            p[1],
+            position[0],
+            position[1] - self.corner_line_length,
+            position[0],
+            position[1],
             self.line_width,
             color,
         );
         // Bottom-left.
-        p = self.grid_to_pixel([rect.position[0], rect.position[1] + rect.size[1]]);
+        let position = [rect.position[0], rect.position[1] + rect.size[1]];
         draw_line(
-            p[0] - self.half_line_width,
-            p[1],
-            p[0] + self.corner_line_length,
-            p[1],
+            position[0] - self.half_line_width,
+            position[1],
+            position[0] + self.corner_line_length,
+            position[1],
             self.line_width,
             color,
         );
         draw_line(
-            p[0],
-            p[1] - self.corner_line_length,
-            p[0],
-            p[1],
+            position[0],
+            position[1] - self.corner_line_length,
+            position[0],
+            position[1],
             self.line_width,
             color,
         );
@@ -379,10 +378,7 @@ impl Renderer {
                 &Rectangle::new(self.subtitle_position, [width, 1]),
                 &ColorKey::SubtitleBackground,
             );
-            self.text_sub(&Label {
-                position: self.subtitle_position,
-                text: text.to_string(),
-            });
+            self.text_sub(&Label::new(self.subtitle_position, text.to_string(), self));
         }
         // Multi-row.
         else {
@@ -421,10 +417,7 @@ impl Renderer {
                     ),
                     &ColorKey::SubtitleBackground,
                 );
-                self.text_sub(&Label {
-                    position: [self.subtitle_position[0], y],
-                    text: row,
-                });
+                self.text_sub(&Label::new([self.subtitle_position[0], y], row, self));
                 y += 1;
             }
         }
@@ -497,7 +490,7 @@ impl Renderer {
             self.text(&list.right_arrow, &arrow_color);
         }
         // Get the label.
-        let value = list.get_value(text);
+        let value = list.get_value(text, self);
         // Draw the value.
         self.text_ref(&value, &Self::get_value_color(focus));
     }
@@ -509,7 +502,7 @@ impl Renderer {
     /// - `colors` The key and value colors.
     pub(crate) fn key_value(&self, text: &str, kv: &KeyWidth, colors: [&ColorKey; 2]) {
         self.text(&kv.key, colors[0]);
-        self.text_ref(&kv.get_value(text), colors[1]);
+        self.text_ref(&kv.get_value(text, self), colors[1]);
     }
 
     /// Draw a key-input pair.
@@ -530,7 +523,11 @@ impl Renderer {
             self.corners(&ki.corners_rect, focus[0]);
             // Draw a rectangle for input.
             if alphanumeric_input {
-                self.rectangle(&ki.input_rect, &ColorKey::TextFieldBG);
+                self.rectangle_pixel(
+                    ki.input_rect.position,
+                    ki.input_rect.size,
+                    &ColorKey::TextFieldBG,
+                );
             }
         }
         let key_color = &Self::get_key_color(focus[0]);
@@ -635,6 +632,25 @@ impl Renderer {
         RectanglePixel::new(position, size)
     }
 
+    pub(crate) fn get_label_position(&self, position: [u32; 2], text: &str) -> [f32; 2] {
+        self.get_text_position(position, text, &self.font)
+    }
+
+    /// Draw text.
+    ///
+    /// - `position` The position of the text in pixels.
+    /// - `text` The text.
+    /// - `color` A `ColorKey` for the rectangle.
+    /// - `font` The font.
+    /// - `font_size` The font size.
+    fn get_text_position(&self, position: [u32; 2], text: &str, font: &Font) -> [f32; 2] {
+        let font = Some(font);
+        let dim = measure_text(text, font, self.font_size, 1.0);
+        let mut position = self.grid_to_pixel(position);
+        position[1] = position[1] + self.cell_size[1] - dim.offset_y / 3.0;
+        position
+    }
+
     /// Parse a serialized 3-element array as an RGBA color.
     fn parse_color(value: &str) -> Color {
         let c: Result<[u8; 3], serde_json::Error> = serde_json::from_str(value);
@@ -682,23 +698,20 @@ impl Renderer {
 
     /// Draw text.
     ///
-    /// - `position` The position of the text.
+    /// - `position` The position of the text in pixels.
     /// - `text` The text.
     /// - `color` A `ColorKey` for the rectangle.
     /// - `font` The font.
     /// - `font_size` The font size.
     fn text_ex(
         &self,
-        position: [u32; 2],
+        position: [f32; 2],
         text: &str,
         text_color: &ColorKey,
         font: &Font,
         font_size: u16,
     ) {
         let font = Some(font);
-        let mut xy = self.grid_to_pixel(position);
-        let dim = measure_text(text, font, font_size, 1.0);
-        xy[1] += self.cell_size[1] - dim.offset_y / 3.0;
         let color = self.colors[text_color];
         let text_params = TextParams {
             font,
@@ -708,6 +721,6 @@ impl Renderer {
             rotation: 0.0,
             color,
         };
-        draw_text_ex(text, xy[0], xy[1], text_params);
+        draw_text_ex(text, position[0], position[1], text_params);
     }
 }

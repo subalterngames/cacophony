@@ -88,17 +88,18 @@ impl MainMenu {
             let update = text.get_with_values("MAIN_MENU_UPDATE", &[&remote_version]);
             panel.title.label.text.push_str("   ");
             panel.title.label.text.push_str(&update);
-            panel.title.rect.size[0] += update.chars().count() as u32 + 3;
+            panel.title.rect.size[0] += (update.chars().count() + 3) as f32 * renderer.cell_size[0];
         }
         let title_changes = LabelRectangle::new(
-            panel.title.label.position,
+            [position[0] + 2, position[1]],
             format!("*{}", panel.title.label.text),
+            renderer,
         );
 
         // Get the fields.
         let mut x = position[0] + 2;
         let y = position[1] + 1;
-        let help = Self::label_from_key("MAIN_MENU_HELP", &mut x, y, text);
+        let help = Self::label_from_key("MAIN_MENU_HELP", &mut x, y, renderer, text);
         x += 4;
         let mut tooltips = Tooltips::default();
         let status = Self::tooltip(
@@ -107,6 +108,7 @@ impl MainMenu {
             InputEvent::StatusTTS,
             &mut x,
             y,
+            renderer,
             input,
             text,
         );
@@ -116,6 +118,7 @@ impl MainMenu {
             InputEvent::InputTTS,
             &mut x,
             y,
+            renderer,
             input,
             text,
         );
@@ -125,6 +128,7 @@ impl MainMenu {
             InputEvent::AppTTS,
             &mut x,
             y,
+            renderer,
             input,
             text,
         );
@@ -134,6 +138,7 @@ impl MainMenu {
             InputEvent::FileTTS,
             &mut x,
             y,
+            renderer,
             input,
             text,
         );
@@ -143,6 +148,7 @@ impl MainMenu {
             InputEvent::StopTTS,
             &mut x,
             y,
+            renderer,
             input,
             text,
         );
@@ -156,6 +162,7 @@ impl MainMenu {
             InputEvent::EnableLinksPanel,
             &mut x,
             y,
+            renderer,
             input,
             text,
         );
@@ -191,23 +198,25 @@ impl MainMenu {
         }
     }
 
-    fn label(key: String, x: &mut u32, y: u32) -> Label {
+    fn label(key: String, x: &mut u32, y: u32, renderer: &Renderer) -> Label {
         let width = key.chars().count() as u32;
         let position = [*x, y];
         *x += width;
-        Label::new(position, key)
+        Label::new(position, key, renderer)
     }
 
-    fn label_from_key(key: &str, x: &mut u32, y: u32, text: &Text) -> Label {
-        Self::label(text.get(key), x, y)
+    fn label_from_key(key: &str, x: &mut u32, y: u32, renderer: &Renderer, text: &Text) -> Label {
+        Self::label(text.get(key), x, y, renderer)
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn tooltip(
         tooltips: &mut Tooltips,
         key: &str,
         event: InputEvent,
         x: &mut u32,
         y: u32,
+        renderer: &Renderer,
         input: &Input,
         text: &Text,
     ) -> Label {
@@ -215,7 +224,7 @@ impl MainMenu {
         let width = key.chars().count() as u32;
         let position = [*x, y];
         *x += width;
-        Label::new(position, tooltip)
+        Label::new(position, tooltip, renderer)
     }
 
     /// Returns a tuple: The power bar texture and a rectangle around it.
@@ -297,7 +306,11 @@ impl Drawable for MainMenu {
     fn update(&self, renderer: &Renderer, state: &State, _: &Conn, _: &Text, _: &PathsState) {
         self.panel.update_ex(&COLOR, renderer);
         if state.unsaved_changes {
-            renderer.rectangle(&self.title_changes.rect, &ColorKey::Background);
+            renderer.rectangle_pixel(
+                self.title_changes.rect.position,
+                self.title_changes.rect.size,
+                &ColorKey::Background,
+            );
             renderer.text(&self.title_changes.label, &COLOR);
         }
         for label in self.labels.iter() {

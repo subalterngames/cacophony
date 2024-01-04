@@ -61,10 +61,11 @@ impl MultiTrack {
         for _ in 0..PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH as usize + 1 {
             arrow_text.push('=');
         }
-        let arrow = Label {
-            position: [piano_roll_panel_position[0] - 1, position[1]],
-            text: arrow_text,
-        };
+        let arrow = Label::new(
+            [piano_roll_panel_position[0] - 1, position[1]],
+            arrow_text,
+            renderer,
+        );
         Self {
             rect,
             rect_f,
@@ -102,7 +103,7 @@ impl MultiTrack {
             if let Some(selected) = state.music.selected {
                 if selected == i {
                     let mut arrow = self.arrow.clone();
-                    arrow.position[1] = y + *height / 2;
+                    arrow.position[1] = (y + *height / 2) as f32 * renderer.cell_size[1];
                     renderer.text(&arrow, &color);
                 }
             }

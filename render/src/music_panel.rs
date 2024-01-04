@@ -8,15 +8,15 @@ pub(crate) struct MusicPanel {
     /// The name field.
     name: Width,
     /// The total span of the name field, including where the corners are renderered.
-    name_rect: Rectangle,
+    name_rect: RectanglePixel,
     /// The rectangle of the backround of the namefield.
-    name_input_rect: Rectangle,
+    name_input_rect: RectanglePixel,
     /// The BPM field.
     bpm: KeyInput,
     /// The gain field.
     gain: KeyList,
     /// The rectangle of the background of the name field.
-    gain_rect: Rectangle,
+    gain_rect: RectanglePixel,
 }
 
 impl MusicPanel {
@@ -41,14 +41,16 @@ impl MusicPanel {
 
         // Set the fields.
         let name = Width::new([x + 1, y], w_usize - 2);
-        let name_rect = Rectangle::new([x, y], [width, 1]);
-        let name_input_rect = Rectangle::new(name.position, [name.width_u32, 1]);
+        let name_rect = RectanglePixel::new_from_u([x, y], [width, 1], renderer);
+        let name_input_rect =
+            RectanglePixel::new_from_u(name.position, [name.width_u32, 1], renderer);
         y += 1;
-        let bpm = KeyInput::new_from_value_width(text.get_ref("TITLE_BPM"), [x, y], width, 4);
+        let bpm =
+            KeyInput::new_from_value_width(text.get_ref("TITLE_BPM"), [x, y], width, 4, renderer);
         // Move the position of the value to align it with the gain field.
         y += 1;
-        let gain = KeyList::new(text.get("TITLE_GAIN"), [x + 1, y], width - 2, 3);
-        let gain_rect = Rectangle::new([x, y], [width, 1]);
+        let gain = KeyList::new(text.get("TITLE_GAIN"), [x + 1, y], width - 2, 3, renderer);
+        let gain_rect = RectanglePixel::new_from_u([x, y], [width, 1], renderer);
 
         // Return.
         Self {
@@ -81,12 +83,16 @@ impl Drawable for MusicPanel {
             renderer.corners(&self.name_rect, focus);
             // Draw a rectangle for input.
             if state.input.alphanumeric_input {
-                renderer.rectangle(&self.name_input_rect, &ColorKey::TextFieldBG);
+                renderer.rectangle_pixel(
+                    self.name_input_rect.position,
+                    self.name_input_rect.size,
+                    &ColorKey::TextFieldBG,
+                );
             }
         }
         // Draw the name.
         renderer.text_ref(
-            &self.name.to_label(&conn.exporter.metadata.title),
+            &self.name.to_label(&conn.exporter.metadata.title, renderer),
             &Renderer::get_value_color([focus, name_focus]),
         );
 
@@ -97,7 +103,11 @@ impl Drawable for MusicPanel {
             renderer.corners(&self.bpm.corners_rect, focus);
             // Draw a rectangle for input.
             if state.input.alphanumeric_input {
-                renderer.rectangle(&self.bpm.input_rect, &ColorKey::TextFieldBG);
+                renderer.rectangle_pixel(
+                    self.bpm.input_rect.position,
+                    self.bpm.input_rect.size,
+                    &ColorKey::TextFieldBG,
+                );
             }
         }
         // Draw the BPM.

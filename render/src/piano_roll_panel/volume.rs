@@ -11,7 +11,7 @@ pub(crate) struct Volume {
     /// The title label for the panel.
     title: Label,
     /// The position and size of the title in grid units.
-    title_rect: Rectangle,
+    title_rect: RectanglePixel,
     /// The top, bottom, and height of the line extents.
     line_extents: [f32; 3],
 }
@@ -29,11 +29,8 @@ impl Volume {
         let title_position = [position[0] + 2, position[1]];
         let title_text = text.get("PIANO_ROLL_PANEL_VOLUME_TITLE");
         let title_width = title_text.chars().count() as u32;
-        let title = Label {
-            text: title_text,
-            position: title_position,
-        };
-        let title_rect = Rectangle::new(title_position, [title_width, 1]);
+        let title = Label::new(title_position, title_text, renderer);
+        let title_rect = RectanglePixel::new_from_u(title_position, [title_width, 1], renderer);
 
         let position_f = renderer.grid_to_pixel([
             position[0] + 1 + PIANO_ROLL_PANEL_NOTE_NAMES_WIDTH,
@@ -70,7 +67,11 @@ impl Volume {
         };
         renderer.rectangle(&self.rect, &ColorKey::Background);
         renderer.border(&self.rect, &bg_color);
-        renderer.rectangle(&self.title_rect, &ColorKey::Background);
+        renderer.rectangle_pixel(
+            self.title_rect.position,
+            self.title_rect.size,
+            &ColorKey::Background,
+        );
         renderer.text(&self.title, &bg_color);
         // Render the lines in layers.
         // This forces selected notes and playing notes to render on top.

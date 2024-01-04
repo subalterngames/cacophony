@@ -32,7 +32,7 @@ pub(super) struct TopBar {
 }
 
 impl TopBar {
-    pub fn new(config: &Ini, text: &Text) -> Self {
+    pub fn new(config: &Ini, renderer: &Renderer, text: &Text) -> Self {
         let piano_roll_panel_size = get_piano_roll_panel_size(config);
         let size = [piano_roll_panel_size[0], PIANO_ROLL_PANEL_TOP_BAR_HEIGHT];
         let piano_roll_panel_position = get_piano_roll_panel_position(config);
@@ -44,18 +44,34 @@ impl TopBar {
         x += 1;
 
         // Get the fields.
-        let armed = Boolean::new(text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"), [x, y], text);
+        let armed = Boolean::new(
+            text.get("PIANO_ROLL_PANEL_TOP_BAR_ARMED"),
+            [x, y],
+            text,
+            renderer,
+        );
         x += armed.width + PADDING;
-        let beat = KeyWidth::new(text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"), [x, y], 4);
+        let beat = KeyWidth::new(
+            text.get("PIANO_ROLL_PANEL_TOP_BAR_BEAT"),
+            [x, y],
+            4,
+            renderer,
+        );
         // Only increment by 1 because beat has a long value space.
         x += beat.width + 1;
         let use_volume = Boolean::new(
             text.get("PIANO_ROLL_PANEL_TOP_BAR_USE_VOLUME"),
             [x, y],
             text,
+            renderer,
         );
         x += use_volume.width + PADDING;
-        let volume = KeyWidth::new(text.get("PIANO_ROLL_PANEL_TOP_BAR_VOLUME"), [x, y], 3);
+        let volume = KeyWidth::new(
+            text.get("PIANO_ROLL_PANEL_TOP_BAR_VOLUME"),
+            [x, y],
+            3,
+            renderer,
+        );
         x += volume.width + PADDING;
 
         // Get the separator position.
@@ -72,6 +88,7 @@ impl TopBar {
             PianoRollMode::Time,
             [x, y],
             &mut modes,
+            renderer,
             text,
         );
         x += dx;
@@ -80,6 +97,7 @@ impl TopBar {
             PianoRollMode::View,
             [x, y],
             &mut modes,
+            renderer,
             text,
         );
         x += dx;
@@ -88,6 +106,7 @@ impl TopBar {
             PianoRollMode::Select,
             [x, y],
             &mut modes,
+            renderer,
             text,
         );
         x += dx;
@@ -96,6 +115,7 @@ impl TopBar {
             PianoRollMode::Edit,
             [x, y],
             &mut modes,
+            renderer,
             text,
         );
         x += dx;
@@ -172,10 +192,7 @@ impl TopBar {
             PianoRollMode::Time => Self::get_edit_mode_text(&state.time.mode, text),
             PianoRollMode::View => Self::get_edit_mode_text(&state.view.mode, text),
         };
-        let edit_mode = LabelRef {
-            text: edit_mode,
-            position: self.edit_mode_position,
-        };
+        let edit_mode = LabelRef::new(self.edit_mode_position, edit_mode, renderer);
         let edit_mode_color = if focus {
             ColorKey::Key
         } else {
@@ -210,12 +227,10 @@ impl TopBar {
         mode: PianoRollMode,
         position: [u32; 2],
         modes: &mut ModesMap,
+        renderer: &Renderer,
         text: &Text,
     ) {
-        let label = Label {
-            text: text.get(key),
-            position,
-        };
+        let label = Label::new(position, text.get(key), renderer);
         let rect = Rectangle::new(position, [label.text.chars().count() as u32, 1]);
         modes.insert(mode, (label, rect));
     }

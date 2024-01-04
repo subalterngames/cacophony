@@ -38,7 +38,7 @@ impl Panel {
             PanelType::Links => text.get("TITLE_LINKS"),
         };
         let title_position = [position[0] + 2, position[1]];
-        let title = LabelRectangle::new(title_position, title);
+        let title = LabelRectangle::new(title_position, title, renderer);
         Self {
             panel_type,
             title,
@@ -64,7 +64,11 @@ impl Panel {
             &ColorKey::Background,
         );
         renderer.rectangle_lines(&self.background.border, color);
-        renderer.rectangle(&self.title.rect, &ColorKey::Background);
+        renderer.rectangle_pixel(
+            self.title.rect.position,
+            self.title.rect.size,
+            &ColorKey::Background,
+        );
         renderer.text(&self.title.label, color);
     }
 
