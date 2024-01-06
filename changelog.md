@@ -12,6 +12,10 @@ These are the optimizations:
 
 This update doesn't have any new features or bug fixes. In the future, I'm going to reserve major releases (0.x.0) for big new features, but I had to rewrite so much of Cacophony's code, and the results are such a big improvement, that I'm making this a major release anyway.
 
+## 0.2.1
+
+I replaced the default qwerty bindings for note input with a more "standard" layout. This information is stored in config.ini, so if you want the update, make sure to delete Documents/cacophony/config.ini if it exists (Cacophony will use the default data/config.ini instead).
+
 # 0.1.x
 
 ## 0.1.4
