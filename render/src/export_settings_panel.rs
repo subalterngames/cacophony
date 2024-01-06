@@ -387,11 +387,7 @@ impl Drawable for ExportSettingsPanel {
             ColorKey::NoFocus
         };
         let background = &self.backgrounds[&conn.exporter.export_type.get()];
-        renderer.rectangle_pixel(
-            background.background.position,
-            background.background.size,
-            &color,
-        );
+        renderer.rectangle_pixel(&background.background, &color);
         renderer.rectangle_lines(&background.border, &color);
         renderer.rectangle(&self.title_rect, &ColorKey::Background);
         renderer.text(&self.title, &color);

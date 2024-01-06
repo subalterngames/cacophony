@@ -58,17 +58,9 @@ impl Panel {
 
     /// Draw an empty panel. The border and title text will be an explicitly defined color.
     pub fn update_ex(&self, color: &ColorKey, renderer: &Renderer) {
-        renderer.rectangle_pixel(
-            self.background.background.position,
-            self.background.background.size,
-            &ColorKey::Background,
-        );
+        renderer.rectangle_pixel(&self.background.background, &ColorKey::Background);
         renderer.rectangle_lines(&self.background.border, color);
-        renderer.rectangle_pixel(
-            self.title.rect.position,
-            self.title.rect.size,
-            &ColorKey::Background,
-        );
+        renderer.rectangle_pixel(&self.title.rect, &ColorKey::Background);
         renderer.text(&self.title.label, color);
     }
 

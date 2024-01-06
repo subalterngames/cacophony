@@ -279,7 +279,7 @@ impl MainMenu {
         let position = [x, rect[0][1]];
         let size = [w, rect[1][1]];
         // Draw the mask.
-        renderer.rectangle_pixel(position, size, &ColorKey::Background);
+        renderer.rectangle_note(position, size, &ColorKey::Background);
     }
 
     /// Set the lerp target of power bar.
@@ -306,11 +306,7 @@ impl Drawable for MainMenu {
     fn update(&self, renderer: &Renderer, state: &State, _: &Conn, _: &Text, _: &PathsState) {
         self.panel.update_ex(&COLOR, renderer);
         if state.unsaved_changes {
-            renderer.rectangle_pixel(
-                self.title_changes.rect.position,
-                self.title_changes.rect.size,
-                &ColorKey::Background,
-            );
+            renderer.rectangle_pixel(&self.title_changes.rect, &ColorKey::Background);
             renderer.text(&self.title_changes.label, &COLOR);
         }
         for label in self.labels.iter() {

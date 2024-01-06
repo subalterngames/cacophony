@@ -255,7 +255,7 @@ impl Drawable for PianoRollPanel {
                         self.piano_roll_rows_rect[0],
                         &dt,
                     );
-                    renderer.rectangle_pixel(
+                    renderer.rectangle_note(
                         [select_0.x, self.piano_roll_rows_rect[1]],
                         [x1 - select_0.x, self.piano_roll_rows_rect[3]],
                         &color,
@@ -278,7 +278,7 @@ impl Drawable for PianoRollPanel {
                 // Get the y value from the pitch.
                 let y = self.piano_roll_rows_rect[1]
                     + ((state.view.dn[0] - note.note.note) as f32) * self.cell_size[1];
-                renderer.rectangle_pixel([note.x, y], [w, self.cell_size[1]], &note.color)
+                renderer.rectangle_note([note.x, y], [w, self.cell_size[1]], &note.color)
             }
             // Volume.
             self.volume.update(&notes, renderer, state);

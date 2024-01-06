@@ -83,11 +83,7 @@ impl Drawable for MusicPanel {
             renderer.corners(&self.name_rect, focus);
             // Draw a rectangle for input.
             if state.input.alphanumeric_input {
-                renderer.rectangle_pixel(
-                    self.name_input_rect.position,
-                    self.name_input_rect.size,
-                    &ColorKey::TextFieldBG,
-                );
+                renderer.rectangle_pixel(&self.name_input_rect, &ColorKey::TextFieldBG);
             }
         }
         // Draw the name.
@@ -103,11 +99,7 @@ impl Drawable for MusicPanel {
             renderer.corners(&self.bpm.corners_rect, focus);
             // Draw a rectangle for input.
             if state.input.alphanumeric_input {
-                renderer.rectangle_pixel(
-                    self.bpm.input_rect.position,
-                    self.bpm.input_rect.size,
-                    &ColorKey::TextFieldBG,
-                );
+                renderer.rectangle_pixel(&self.bpm.input_rect, &ColorKey::TextFieldBG);
             }
         }
         // Draw the BPM.

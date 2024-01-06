@@ -182,15 +182,11 @@ impl Drawable for OpenFilePanel {
             ColorKey::NoFocus
         };
         // Draw the panel background.
-        renderer.rectangle_pixel(
-            self.panel.background.background.position,
-            self.panel.background.background.size,
-            &ColorKey::Background,
-        );
+        renderer.rectangle_pixel(&self.panel.background.background, &ColorKey::Background);
         renderer.rectangle_lines(&self.panel.background.border, &focus_color);
         // Draw the title.
         let title = &self.titles[&paths_state.open_file_type];
-        renderer.rectangle_pixel(title.rect.position, title.rect.size, &ColorKey::Background);
+        renderer.rectangle_pixel(&title.rect, &ColorKey::Background);
         renderer.text(&title.label, &focus_color);
         // Draw the working directory.
         let mut x = self.panel.background.grid_rect.position[0] + 1;
@@ -256,11 +252,7 @@ impl Drawable for OpenFilePanel {
         // Possibly show the input dialogue.
         if let Some(filename) = &paths_state.get_filename() {
             // Draw the background of the prompt.
-            renderer.rectangle_pixel(
-                self.prompt.background.position,
-                self.prompt.background.size,
-                &ColorKey::Background,
-            );
+            renderer.rectangle_pixel(&self.prompt.background, &ColorKey::Background);
             renderer.rectangle_lines(
                 &self.prompt.border,
                 &if focus {

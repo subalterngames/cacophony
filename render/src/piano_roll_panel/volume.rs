@@ -67,11 +67,7 @@ impl Volume {
         };
         renderer.rectangle(&self.rect, &ColorKey::Background);
         renderer.border(&self.rect, &bg_color);
-        renderer.rectangle_pixel(
-            self.title_rect.position,
-            self.title_rect.size,
-            &ColorKey::Background,
-        );
+        renderer.rectangle_pixel(&self.title_rect, &ColorKey::Background);
         renderer.text(&self.title, &bg_color);
         // Render the lines in layers.
         // This forces selected notes and playing notes to render on top.

@@ -153,7 +153,7 @@ impl MultiTrack {
                         &dt,
                     )
                     .clamp(self.rect_f[0], x1);
-                    renderer.rectangle_pixel([select_0.x, note_y], [x1 - select_0.x, h], &color)
+                    renderer.rectangle_note([select_0.x, note_y], [x1 - select_0.x, h], &color)
                 }
             }
             // Draw some notes.
@@ -166,7 +166,7 @@ impl MultiTrack {
                 if note_x1 > x1 {
                     note_w = x1 - note_x0;
                 }
-                renderer.rectangle_pixel(
+                renderer.rectangle_note(
                     [note_x0, note_y],
                     [note_w, self.note_height],
                     &ColorKey::Background,

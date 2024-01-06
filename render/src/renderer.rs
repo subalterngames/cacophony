@@ -124,12 +124,26 @@ impl Renderer {
     }
 
     /// Draw a rectangle using pixel coordinates instead of grid coordinates.
+    ///
+    /// - `rect` The rectangle.
+    /// - `color` A `ColorKey` for the rectangle.
+    pub(crate) fn rectangle_pixel(&self, rect: &RectanglePixel, color: &ColorKey) {
+        draw_rectangle(
+            rect.position[0],
+            rect.position[1],
+            rect.size[0],
+            rect.size[1],
+            self.colors[color],
+        )
+    }
+
+    /// Draw a rectangle using pixel coordinates instead of grid coordinates.
     /// This is used to draw notes.
     ///
     /// - `position` The top-left position in pixel coordinates.
     /// - `size` The width-height in pixel coordinates.
     /// - `color` A `ColorKey` for the rectangle.
-    pub(crate) fn rectangle_pixel(&self, position: [f32; 2], size: [f32; 2], color: &ColorKey) {
+    pub(crate) fn rectangle_note(&self, position: [f32; 2], size: [f32; 2], color: &ColorKey) {
         draw_rectangle(
             position[0],
             position[1],
@@ -523,11 +537,7 @@ impl Renderer {
             self.corners(&ki.corners_rect, focus[0]);
             // Draw a rectangle for input.
             if alphanumeric_input {
-                self.rectangle_pixel(
-                    ki.input_rect.position,
-                    ki.input_rect.size,
-                    &ColorKey::TextFieldBG,
-                );
+                self.rectangle_pixel(&ki.input_rect, &ColorKey::TextFieldBG);
             }
         }
         let key_color = &Self::get_key_color(focus[0]);
