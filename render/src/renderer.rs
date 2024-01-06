@@ -333,23 +333,34 @@ impl Renderer {
         draw_line(x, top, x, bottom, self.line_width, self.colors[color]);
     }
 
-    /// Draw a a vertical line with fixed offsets that can be used as a separator between rows.
+    /// Draw a line from top to bottom.
     ///
-    /// - `position` The top position in grid coordinates.
+    /// - `line` The vertical line.
     /// - `color` A `ColorKey` for the line.
-    pub fn vertical_line_separator(&self, position: [u32; 2], color: &ColorKey) {
-        self.vertical_line(
-            position[0],
-            0.5,
-            position[1],
-            position[1] + 1,
-            [-0.6, 0.4],
-            color,
+    pub(crate) fn vertical_line(&self, line: &Line, color: &ColorKey) {
+        draw_line(
+            line.b,
+            line.a0,
+            line.b,
+            line.a1,
+            self.half_line_width,
+            self.colors[color],
         );
     }
 
+    /// Draw a line from left to right.
+    ///
+    /// - `line` The vertical line.
+    /// - `color` A `ColorKey` for the line.
     pub(crate) fn horizontal_line(&self, line: &Line, color: &ColorKey) {
-        draw_line(line.a0, line.b, line.a1, line.b, self.half_line_width, self.colors[color]);
+        draw_line(
+            line.a0,
+            line.b,
+            line.a1,
+            line.b,
+            self.half_line_width,
+            self.colors[color],
+        );
     }
 
     /// Draw a line from left to right.
@@ -360,7 +371,7 @@ impl Renderer {
     /// - `y` The y grid coordinate.
     /// - `y_offset` A float between 0.0 and 1.0 to offset `y` in pixel coordinates. 0.5 will put the y coordinate at the mid-point of the grid cell.
     /// - `color` A `ColorKey` for the rectangle.
-    pub(crate) fn horizontal_line_u(
+    pub(crate) fn horizontal_line_grid(
         &self,
         left: u32,
         right: u32,
@@ -685,29 +696,6 @@ impl Renderer {
             &self.subtitle_font,
             self.font_size,
         );
-    }
-
-    /// Draw a line from top to bottom.
-    ///
-    /// - `x` The x grid coordinate.
-    /// - `x_offset` A float between 0.0 and 1.0 to offset `x` in pixel coordinates. 0.5 will put the x coordinate at the mid-point of the grid cell.
-    /// - `top` The top y grid coordinate.
-    /// - `bottom` The bottom y grid coordinate.
-    /// - `y_offsets` Two floats between 0.0 and 1.0 to offset `top` and `bottom` in pixel coordinates. 0.5 will put the y coordinate at the mid-point of the grid cell.
-    /// - `color` A `ColorKey` for the line.
-    fn vertical_line(
-        &self,
-        x: u32,
-        x_offset: f32,
-        top: u32,
-        bottom: u32,
-        y_offsets: [f32; 2],
-        color: &ColorKey,
-    ) {
-        let x = x as f32 * self.cell_size[0] + x_offset * self.cell_size[0];
-        let top = top as f32 * self.cell_size[1] + y_offsets[0] * self.cell_size[1];
-        let bottom = bottom as f32 * self.cell_size[1] + y_offsets[1] * self.cell_size[1];
-        draw_line(x, top, x, bottom, self.line_width, self.colors[color]);
     }
 
     /// Draw text.

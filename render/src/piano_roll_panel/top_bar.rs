@@ -17,10 +17,10 @@ pub(super) struct TopBar {
     use_volume: Boolean,
     /// The input volume value.
     volume: KeyWidth,
-    /// The position of the vertical separator line to the right of the inputs.
-    inputs_separator_position: [u32; 2],
-    /// The position of the vertical separator line to the right of the modes.
-    modes_separator_position: [u32; 2],
+    /// The vertical separator line to the right of the inputs.
+    inputs_separator: Line,
+    /// The vertical separator line to the right of the modes.
+    modes_separator: Line,
     /// The piano roll mode labels.
     modes: ModesMap,
     /// The position of the sub-mode label.
@@ -72,7 +72,7 @@ impl TopBar {
         x += volume.width + PADDING;
 
         // Get the separator position.
-        let inputs_separator_position = [x, y];
+        let inputs_separator = Line::vertical_line_separator([x, y], renderer);
 
         x += PADDING + 3;
 
@@ -118,7 +118,7 @@ impl TopBar {
         x += dx;
 
         // Get the separator position.
-        let modes_separator_position = [x, y];
+        let modes_separator = Line::vertical_line_separator([x, y], renderer);
 
         x += 2;
 
@@ -128,10 +128,15 @@ impl TopBar {
 
         // Define the horizontal line.
         let mut horizontal_line_pos = renderer.grid_to_pixel([x, y + 1]);
-        let horizontal_line_pos_x1 = (x + width + 2) as f32 * renderer.cell_size[0] - 0.45 * renderer.cell_size[0];
+        let horizontal_line_pos_x1 =
+            (x + width + 2) as f32 * renderer.cell_size[0] - 0.45 * renderer.cell_size[0];
         horizontal_line_pos[0] -= 0.45 * renderer.cell_size[0];
         horizontal_line_pos[1] += 0.6 * renderer.cell_size[1];
-        let horizontal_line = Line::horizontal(horizontal_line_pos[0], horizontal_line_pos_x1, horizontal_line_pos[1]);
+        let horizontal_line = Line::horizontal(
+            horizontal_line_pos[0],
+            horizontal_line_pos_x1,
+            horizontal_line_pos[1],
+        );
 
         Self {
             armed,
@@ -139,10 +144,10 @@ impl TopBar {
             use_volume,
             volume,
             modes,
-            inputs_separator_position,
-            modes_separator_position,
+            inputs_separator,
+            modes_separator,
             edit_mode_position,
-            horizontal_line
+            horizontal_line,
         }
     }
 
@@ -163,7 +168,7 @@ impl TopBar {
         } else {
             &ColorKey::NoFocus
         };
-        renderer.vertical_line_separator(self.inputs_separator_position, line_color);
+        renderer.vertical_line(&self.inputs_separator, line_color);
 
         // Draw the modes.
         for mode in self.modes.iter() {
@@ -184,7 +189,7 @@ impl TopBar {
         }
 
         // Separator.
-        renderer.vertical_line_separator(self.modes_separator_position, line_color);
+        renderer.vertical_line(&self.modes_separator, line_color);
 
         // Edit mode.
         let edit_mode = match state.piano_roll_mode {
@@ -205,9 +210,7 @@ impl TopBar {
         renderer.text_ref(&edit_mode, &edit_mode_color);
 
         // Horizontal line.
-        renderer.horizontal_line(&self.horizontal_line,
-            line_color,
-        );
+        renderer.horizontal_line(&self.horizontal_line, line_color);
     }
 
     /// Returns the string corresponding to the edit mode.

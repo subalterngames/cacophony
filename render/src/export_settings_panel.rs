@@ -36,7 +36,7 @@ pub(crate) struct ExportSettingsPanel {
     multi_file_suffixes: ValueMap<MultiFileSuffix>,
     /// Panel background sizes per export type.
     backgrounds: HashMap<ExportType, PanelBackground>,
-    separator_lines: SeparatorLines
+    separator_lines: SeparatorLines,
 }
 
 impl ExportSettingsPanel {
@@ -77,10 +77,12 @@ impl ExportSettingsPanel {
             renderer,
         );
 
-        let separator_lines = SeparatorLines { framerate: Self::get_separator([x, framerate.y + 1], width, renderer),
-        mp3_bit_rate: Self::get_separator([x, mp3_bit_rate.y + 1], width, renderer),
-    ogg_quality: Self::get_separator([x, quality.y + 1], width, renderer),
-title: Self::get_separator([x, y + 1], width, renderer) };
+        let separator_lines = SeparatorLines {
+            framerate: Self::get_separator([x, framerate.y + 1], width, renderer),
+            mp3_bit_rate: Self::get_separator([x, mp3_bit_rate.y + 1], width, renderer),
+            ogg_quality: Self::get_separator([x, quality.y + 1], width, renderer),
+            title: Self::get_separator([x, y + 1], width, renderer),
+        };
 
         let multi_file_suffixes = ValueMap::new(
             [
@@ -149,7 +151,7 @@ title: Self::get_separator([x, y + 1], width, renderer) };
             quality,
             multi_file_suffixes,
             backgrounds,
-            separator_lines
+            separator_lines,
         }
     }
 

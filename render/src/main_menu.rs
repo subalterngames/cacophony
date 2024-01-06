@@ -50,8 +50,8 @@ pub(crate) struct MainMenu {
     title_changes: LabelRectangle,
     /// The field labels and the version label.
     labels: [Label; 7],
-    /// The positions of the separator lines.
-    separator_positions: [[u32; 2]; 2],
+    /// The separator lines.
+    separators: [Line; 2],
     /// The power bar texture.
     power_bar_texture: Texture2D,
     /// The rectangles of the power bars per sample.
@@ -169,7 +169,6 @@ impl MainMenu {
         x = x0 + links.text.chars().count() as u32 + 1;
         let separator_links = [x, y];
         let fields = [help, status, input_field, app, file, stop, links];
-        let separator_positions = [separator_help, separator_links];
         x += 1;
         let window_grid_size = get_window_grid_size(config);
         let w = window_grid_size[0] - x - 2;
@@ -186,11 +185,15 @@ impl MainMenu {
         power_bar_position_right[0][1] -= power_bar_position_right[1][1];
         let power_bar_rects = [power_bar_position_left, power_bar_position_right];
         let power_bar_lerps = [Lerp::default(), Lerp::default()];
+        let separators = [
+            Line::vertical_line_separator(separator_help, renderer),
+            Line::vertical_line_separator(separator_links, renderer),
+        ];
         Self {
             panel,
             labels: fields,
             title_changes,
-            separator_positions,
+            separators,
             power_bar_texture,
             power_bar_rects,
             power_bar_lerps,
@@ -312,8 +315,8 @@ impl Drawable for MainMenu {
         for label in self.labels.iter() {
             renderer.text(label, &COLOR)
         }
-        for position in self.separator_positions {
-            renderer.vertical_line_separator(position, &COLOR)
+        for separator in self.separators.iter() {
+            renderer.vertical_line(separator, &COLOR)
         }
     }
 }
