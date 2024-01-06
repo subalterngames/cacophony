@@ -189,7 +189,7 @@ impl Drawable for TracksPanel {
                     renderer.text_ref(&file_label, &file_color);
                     y += 1;
                     // Draw a line separator.
-                    renderer.horizontal_line(
+                    renderer.horizontal_line_u(
                         x,
                         x + self.field_width,
                         [0.0, 0.0],

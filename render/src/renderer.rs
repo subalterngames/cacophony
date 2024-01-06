@@ -348,6 +348,10 @@ impl Renderer {
         );
     }
 
+    pub(crate) fn horizontal_line(&self, line: &Line, color: &ColorKey) {
+        draw_line(line.a0, line.b, line.a1, line.b, self.half_line_width, self.colors[color]);
+    }
+
     /// Draw a line from left to right.
     ///
     /// - `left` The left grid coordinate.
@@ -356,7 +360,7 @@ impl Renderer {
     /// - `y` The y grid coordinate.
     /// - `y_offset` A float between 0.0 and 1.0 to offset `y` in pixel coordinates. 0.5 will put the y coordinate at the mid-point of the grid cell.
     /// - `color` A `ColorKey` for the rectangle.
-    pub(crate) fn horizontal_line(
+    pub(crate) fn horizontal_line_u(
         &self,
         left: u32,
         right: u32,

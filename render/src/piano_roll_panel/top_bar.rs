@@ -9,10 +9,6 @@ type ModesMap = HashMap<PianoRollMode, (Label, Rectangle)>;
 
 /// Render the top bar.
 pub(super) struct TopBar {
-    /// The top-left position.
-    position: [u32; 2],
-    /// The width of the bar.
-    width: u32,
     /// The armed toggle.
     armed: Boolean,
     /// The input beat value.
@@ -29,6 +25,8 @@ pub(super) struct TopBar {
     modes: ModesMap,
     /// The position of the sub-mode label.
     edit_mode_position: [u32; 2],
+    /// The bar's horizontal line.
+    horizontal_line: Line,
 }
 
 impl TopBar {
@@ -39,7 +37,6 @@ impl TopBar {
         let mut x = piano_roll_panel_position[0];
         let x0 = x;
         let y = piano_roll_panel_position[1] + 1;
-        let position = [x, piano_roll_panel_position[1]];
 
         x += 1;
 
@@ -128,9 +125,15 @@ impl TopBar {
         let edit_mode_position = [x, y];
 
         let width = size[0] - 2;
+
+        // Define the horizontal line.
+        let mut horizontal_line_pos = renderer.grid_to_pixel([x, y + 1]);
+        let horizontal_line_pos_x1 = (x + width + 2) as f32 * renderer.cell_size[0] - 0.45 * renderer.cell_size[0];
+        horizontal_line_pos[0] -= 0.45 * renderer.cell_size[0];
+        horizontal_line_pos[1] += 0.6 * renderer.cell_size[1];
+        let horizontal_line = Line::horizontal(horizontal_line_pos[0], horizontal_line_pos_x1, horizontal_line_pos[1]);
+
         Self {
-            position,
-            width,
             armed,
             beat,
             use_volume,
@@ -139,6 +142,7 @@ impl TopBar {
             inputs_separator_position,
             modes_separator_position,
             edit_mode_position,
+            horizontal_line
         }
     }
 
@@ -201,12 +205,7 @@ impl TopBar {
         renderer.text_ref(&edit_mode, &edit_mode_color);
 
         // Horizontal line.
-        renderer.horizontal_line(
-            self.position[0],
-            self.position[0] + self.width + 2,
-            [0.45, -0.45],
-            self.position[1] + 2,
-            0.6,
+        renderer.horizontal_line(&self.horizontal_line,
             line_color,
         );
     }
