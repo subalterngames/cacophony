@@ -372,7 +372,7 @@ impl Drawable for ExportSettingsPanel {
         renderer.rectangle_pixel(
             background.background.position,
             background.background.size,
-            &color,
+            &ColorKey::Background,
         );
         renderer.rectangle_lines(&background.border, &color);
         renderer.rectangle(&self.title_rect, &ColorKey::Background);
