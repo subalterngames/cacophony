@@ -283,7 +283,14 @@ impl IO {
         // New file.
         if input.happened(&InputEvent::NewFile) {
             paths_state.saves.filename = None;
+            // Stop playing music.
+            conn.on_new_file(state);
+            // Reset the music.
             state.music = Music::default();
+            // Reset the view.
+            state.view.reset();
+            // Reset the time.
+            state.time.reset();
         }
         // Open file.
         else if input.happened(&InputEvent::OpenFile) {
@@ -416,7 +423,7 @@ impl IO {
         false
     }
 
-    /// Open a save file from a path.
+    /// Open a save file from a path. This is called from main.rs
     pub fn load_save(
         &self,
         save_path: &Path,

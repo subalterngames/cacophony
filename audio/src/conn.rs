@@ -228,6 +228,14 @@ impl Conn {
         *self.export_state.lock() != ExportState::NotExporting
     }
 
+    /// When a new save file is loaded or a new file is opened, stop playing music if any music is playing.
+    pub fn on_new_file(&mut self, state: &State) {
+        let play_state = *self.play_state.lock();
+        if let PlayState::Playing(_) = play_state {
+            self.stop_music(&state.music);
+        }
+    }
+
     /// Schedule MIDI events and start to play music.
     fn start_music(&mut self, state: &State) {
         // Get the start time.
