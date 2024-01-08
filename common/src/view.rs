@@ -187,6 +187,8 @@ impl View {
         self.dt = [0, dt];
         // Reset the notes.
         self.dn = self.initial_dn;
+        // Single track view.
+        self.single_track = true;
     }
 
     /// Returns the note delta.
