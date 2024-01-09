@@ -1,5 +1,9 @@
 # 0.2.x
 
+## 0.2.2
+
+- There was an input bug where the play/start key (spacebar) was sometimes unresponsive for the first few presses. This is because audio was still decaying from a previous play, meaning that technically the previous play was still ongoing. I fixed it.
+
 ## 0.2.1
 
 - I replaced the default qwerty bindings for note input with a more "standard" layout. This information is stored in config.ini, so if you want the update, make sure to delete Documents/cacophony/config.ini if it exists (Cacophony will use the default data/config.ini instead).
