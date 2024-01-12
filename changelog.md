@@ -2,7 +2,8 @@
 
 ## 0.2.2
 
-- There was an input bug where the play/start key (spacebar) was sometimes unresponsive for the first few presses. This is because audio was still decaying from a previous play, meaning that technically the previous play was still ongoing. I fixed it.
+- Fixed: There was an input bug where the play/start key (spacebar) was sometimes unresponsive for the first few presses. This is because audio was still decaying from a previous play, meaning that technically the previous play was still ongoing.
+- Fixed: When a new file is created or when a new save file loaded, the app didn't reset correctly.
 
 ## 0.2.1
 
