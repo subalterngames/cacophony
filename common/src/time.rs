@@ -47,6 +47,11 @@ impl Time {
     pub fn samples_to_ppq(&self, samples: u64, framerate: f32) -> u64 {
         ((self.bpm.get_f() * samples as f32) / (BPM_TO_SECONDS * framerate) * PPQ_F) as u64
     }
+
+    pub fn reset(&mut self) {
+        self.cursor = 0;
+        self.playback = 0;
+    }
 }
 
 impl Default for Time {

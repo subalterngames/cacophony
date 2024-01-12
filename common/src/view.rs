@@ -29,6 +29,8 @@ pub struct View {
     zoom_increments: HashMap<EditMode, usize>,
     /// The default zoom index.
     initial_zoom_index: usize,
+    #[serde(skip)]
+    initial_dn: [u8; 2],
 }
 
 impl View {
@@ -95,6 +97,7 @@ impl View {
             zoom_index,
             zoom_increments,
             initial_zoom_index,
+            initial_dn: dn,
         }
     }
 
@@ -172,7 +175,20 @@ impl View {
         }
         // Get the time delta.
         let dt = self.zoom_levels[self.zoom_index.get()];
-        self.dt = [self.dt[0], dt];
+        self.dt = [self.dt[0], self.dt[0] + dt];
+    }
+
+    /// Reset the view.
+    pub fn reset(&mut self) {
+        // Reset the zoom.
+        self.zoom_index.set(self.initial_zoom_index);
+        // Reset the time.
+        let dt = self.zoom_levels[self.initial_zoom_index];
+        self.dt = [0, dt];
+        // Reset the notes.
+        self.dn = self.initial_dn;
+        // Single track view.
+        self.single_track = true;
     }
 
     /// Returns the note delta.

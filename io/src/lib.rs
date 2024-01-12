@@ -282,8 +282,22 @@ impl IO {
         }
         // New file.
         if input.happened(&InputEvent::NewFile) {
+            // This prevents the previous file from being overwritten.
             paths_state.saves.filename = None;
+            // Stop playing music.
+            conn.on_new_file(state);
+            // Reset the music.
             state.music = Music::default();
+            // Clear the selection.
+            state.select_mode = SelectMode::Single(None);
+            // Reset the view.
+            state.view.reset();
+            // Reset the time.
+            state.time.reset();
+            // Clear the undo/redo stacks.
+            self.undo.clear();
+            self.redo.clear();
+            state.unsaved_changes = false;
         }
         // Open file.
         else if input.happened(&InputEvent::OpenFile) {
@@ -416,7 +430,7 @@ impl IO {
         false
     }
 
-    /// Open a save file from a path.
+    /// Open a save file from a path. This is called from main.rs
     pub fn load_save(
         &self,
         save_path: &Path,
