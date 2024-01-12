@@ -37,6 +37,19 @@ impl TopBar {
         let mut x = piano_roll_panel_position[0];
         let x0 = x;
         let y = piano_roll_panel_position[1] + 1;
+        let width = size[0] - 2;
+
+        // Define the horizontal line.
+        let mut horizontal_line_pos = renderer.grid_to_pixel([x + 1, y + 1]);
+        let horizontal_line_pos_x1 =
+            (x + width + 2) as f32 * renderer.cell_size[0] - 0.45 * renderer.cell_size[0];
+        horizontal_line_pos[0] -= 0.45 * renderer.cell_size[0];
+        horizontal_line_pos[1] += 0.6 * renderer.cell_size[1];
+        let horizontal_line = Line::horizontal(
+            horizontal_line_pos[0],
+            horizontal_line_pos_x1,
+            horizontal_line_pos[1],
+        );
 
         x += 1;
 
@@ -123,20 +136,6 @@ impl TopBar {
         x += 2;
 
         let edit_mode_position = [x, y];
-
-        let width = size[0] - 2;
-
-        // Define the horizontal line.
-        let mut horizontal_line_pos = renderer.grid_to_pixel([x, y + 1]);
-        let horizontal_line_pos_x1 =
-            (x + width + 2) as f32 * renderer.cell_size[0] - 0.45 * renderer.cell_size[0];
-        horizontal_line_pos[0] -= 0.45 * renderer.cell_size[0];
-        horizontal_line_pos[1] += 0.6 * renderer.cell_size[1];
-        let horizontal_line = Line::horizontal(
-            horizontal_line_pos[0],
-            horizontal_line_pos_x1,
-            horizontal_line_pos[1],
-        );
 
         Self {
             armed,
