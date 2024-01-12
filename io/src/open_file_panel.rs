@@ -279,6 +279,8 @@ impl Panel for OpenFilePanel {
                     if let Some(selected) = paths_state.children.selected {
                         // Disable the panel.
                         self.disable(state);
+                        // Stop the music.
+                        conn.on_new_file(state);
                         // Get the path.
                         let path = paths_state.children.children[selected].path.clone();
                         // Read the save file.

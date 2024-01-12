@@ -1,5 +1,15 @@
 # 0.2.x
 
+## 0.2.2
+
+- Fixed: There was an input bug where the play/start key (spacebar) was sometimes unresponsive for the first few presses. This is because audio was still decaying from a previous play, meaning that technically the previous play was still ongoing.
+- Fixed: When a new file is created or when a new save file loaded, the app didn't reset correctly.
+
+## 0.2.1
+
+- I replaced the default qwerty bindings for note input with a more "standard" layout. This information is stored in config.ini, so if you want the update, make sure to delete Documents/cacophony/config.ini if it exists (Cacophony will use the default data/config.ini instead).
+- The background of the export settings panel was the same color as the text, so that it just looked like a weird gray rectangle. I fixed it.
+
 ## 0.2.0
 
 Cacophony uses a lot of CPU resources even when it's idle. It shouldn't do that! I reduced Cacophony's CPU usage by around 50%; the exact percentage varies depending on the CPU and the OS. This update is the first big CPU optimization, and probably the most significant.
