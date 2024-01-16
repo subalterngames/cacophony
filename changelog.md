@@ -1,5 +1,9 @@
 # 0.2.x
 
+## 0.2.3
+
+- Optimized text and rectangle rendering, which reduces CPU usage by around 5%.
+
 ## 0.2.2
 
 - Fixed: There was an input bug where the play/start key (spacebar) was sometimes unresponsive for the first few presses. This is because audio was still decaying from a previous play, meaning that technically the previous play was still ongoing.
