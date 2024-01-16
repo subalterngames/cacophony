@@ -39,4 +39,9 @@ impl MidiEventQueue {
         }
         midi_events
     }
+
+    /// Clear the queue.
+    pub(crate) fn clear(&mut self) {
+        self.events.clear()
+    }
 }

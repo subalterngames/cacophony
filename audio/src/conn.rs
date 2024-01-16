@@ -248,8 +248,10 @@ impl Conn {
         synth.set_sample_rate(self.framerate);
         drop(synth);
 
-        // Enqueue note events.
         let mut midi_event_queue = self.midi_event_queue.lock();
+        // Clear the queue before adding new events.
+        midi_event_queue.clear();
+        // Enqueue note events.
         for track in state.music.get_playable_tracks().iter() {
             for note in track.get_playback_notes(state.time.playback) {
                 // Note-on event.
