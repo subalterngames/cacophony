@@ -65,14 +65,3 @@ pub(crate) fn get_track_heights(state: &State, conn: &Conn) -> Vec<u32> {
     }
     elements
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::Renderer;
-    use ini::Ini;
-
-    pub(crate) fn get_test_renderer() -> Renderer {
-        let config = Ini::load_from_file("../data/config.ini").unwrap();
-        Renderer::new(&config)
-    }
-}

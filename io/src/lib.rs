@@ -423,7 +423,15 @@ impl IO {
         // Get the focused panel.
         let panel = self.get_panel(&state.panels[state.focus.get()]);
         // Play music.
-        if panel.allow_play_music() && input.happened(&InputEvent::PlayStop) {
+        if input.happened(&InputEvent::PlayStop)
+            && panel.allow_play_music()
+            && !state.music.midi_tracks.is_empty()
+            && state
+                .music
+                .get_playable_tracks()
+                .iter()
+                .any(|t| !t.get_playback_notes(state.time.playback).is_empty())
+        {
             conn.set_music(state);
         }
         // We're not done yet.

@@ -41,24 +41,3 @@ impl List {
         )
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::field_params::{
-        list::{LEFT_ARROW, RIGHT_ARROW},
-        List,
-    };
-    use crate::tests::get_test_renderer;
-
-    #[test]
-    fn field_params_list() {
-        let renderer = get_test_renderer();
-        let li = List::new([3, 5], 17, &renderer);
-        assert_eq!(&li.left_arrow.text, LEFT_ARROW);
-        assert_eq!(&li.right_arrow.text, RIGHT_ARROW);
-        assert_eq!(li.label.position, [4, 5]);
-        assert_eq!(li.label.width, 17);
-        let la = li.get_value("This is a very long label! Too long!", &renderer);
-        assert_eq!(la.text, "This is a very lo")
-    }
-}

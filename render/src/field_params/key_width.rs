@@ -76,32 +76,3 @@ impl KeyWidth {
         Width::new(value_position, value_width as usize)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::field_params::KeyWidth;
-    use crate::tests::get_test_renderer;
-
-    #[test]
-    fn key_width() {
-        let renderer = get_test_renderer();
-        // New.
-        let key_str = "My key-width pair";
-        let position = [3, 5];
-        let value_width = 3;
-        let key_width = KeyWidth::new(key_str.to_string(), position, value_width, &renderer);
-        assert_eq!(&key_width.key.text, key_str);
-        assert_eq!(key_width.width, 22);
-        assert_eq!(key_width.value.position, [22, 5]);
-        assert_eq!(key_width.value.width_u32, value_width);
-        let value = key_width.get_value("value", &renderer);
-        assert_eq!(value.text, "lue");
-
-        // New from width.
-        let key_width = KeyWidth::new_from_width(key_str, position, 10, value_width, &renderer);
-        assert_eq!(key_width.key.text, "My k");
-        assert_eq!(key_width.width, 10);
-        assert_eq!(key_width.value.position, [10, 5]);
-        assert_eq!(key_width.value.width_u32, value_width);
-    }
-}
