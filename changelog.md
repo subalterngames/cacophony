@@ -4,6 +4,8 @@
 
 - Fixed: There was an input bug where the play/start key (spacebar) was sometimes unresponsive for the first few presses. This is because audio was still decaying from a previous play, meaning that technically the previous play was still ongoing.
 - Fixed: When a new file is created or when a new save file loaded, the app didn't reset correctly.
+- Fixed: If you try to play music and there are no tracks or no playable notes, the app starts playing music and then immediately stops.
+- Fixed: If you're playing music and then load a save file, the save file can't play music because the synthesizer still has MIDI events from the previous music.
 
 ## 0.2.1
 
