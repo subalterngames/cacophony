@@ -199,10 +199,7 @@ impl View {
 
 #[cfg(test)]
 mod tests {
-    use crate::time::PPQ_U;
-    use crate::view::View;
-    use crate::EditMode;
-    use ini::Ini;
+    use crate::{get_test_config, EditMode, View, PPQ_U};
 
     const VIEW_T1: u64 = PPQ_U * 133;
 
@@ -250,6 +247,6 @@ mod tests {
     }
 
     fn get_new_view() -> View {
-        View::new(&Ini::load_from_file("../data/config.ini").unwrap())
+        View::new(&get_test_config())
     }
 }

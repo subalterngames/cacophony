@@ -148,12 +148,10 @@ const KEYCODE_LOOKUPS: [&str; 121] = [
     "Unknown",
 ];
 
-type TextMap = HashMap<String, String>;
-
 /// Localized text lookup.
 pub struct Text {
     /// The text key-value map.
-    text: TextMap,
+    text: HashMap<String, String>,
     /// A map of key codes to spoken text.
     keycodes_spoken: HashMap<KeyCode, String>,
     /// A map of key codes to seen text.
