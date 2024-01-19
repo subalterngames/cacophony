@@ -438,3 +438,37 @@ pub fn get_file_name_no_ex(path: &Path) -> &str {
         None => panic!("Not a file: {:?}", path),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+    use crate::{get_file_name, get_file_name_no_ex, truncate, ppq_to_string};
+
+    #[test]
+    fn file_name() {
+        const FILE_PATH: &str = "/home/users/username/Documents/cacophony/music.cac";
+        let path = PathBuf::from(FILE_PATH);
+        assert_eq!(get_file_name(&path), "music.cac");
+        assert_eq!(get_file_name_no_ex(&path), "music");
+    }
+
+    #[test]
+    fn truncate_test() {
+        const STRING: &str = "This is a moderately long string!";
+        assert_eq!(truncate(STRING, 4, false), "This");
+        assert_eq!(truncate(STRING, 4, true), "ing!");
+        assert_eq!(truncate(STRING, STRING.len(), true), STRING);
+        assert_eq!(truncate(STRING, 0, true), "");
+        assert_eq!(truncate(STRING, 0, false), "");
+        assert_eq!(truncate(STRING, STRING.len() + 1, false), STRING);
+        assert_eq!(truncate(STRING, STRING.len() + 1, true), STRING);
+    }
+
+    #[test]
+    fn ppq_fraction() {
+        assert_eq!(ppq_to_string(192), "1");
+        assert_eq!(ppq_to_string(288), "3/2");
+        assert_eq!(ppq_to_string(3), "0.02");
+        assert_eq!(ppq_to_string(0), "0");
+    }
+}
