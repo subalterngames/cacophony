@@ -1,4 +1,5 @@
 use super::LabelRef;
+use crate::Renderer;
 use text::truncate;
 
 /// Not a label... but the IDEA of a label.
@@ -22,7 +23,7 @@ impl Width {
     }
 
     /// Converts this `Width` into a `Label` with truncated text.
-    pub fn to_label<'t>(&self, value: &'t str) -> LabelRef<'t> {
-        LabelRef::new(self.position, truncate(value, self.width, true))
+    pub fn to_label<'t>(&self, value: &'t str, renderer: &Renderer) -> LabelRef<'t> {
+        LabelRef::new(self.position, truncate(value, self.width, true), renderer)
     }
 }

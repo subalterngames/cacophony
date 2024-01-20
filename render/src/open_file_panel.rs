@@ -51,39 +51,45 @@ impl OpenFilePanel {
 
         // Define the titles.
         let mut titles = HashMap::new();
+        let title_position = [position[0] + 2, position[1]];
         titles.insert(
             OpenFileType::SoundFont,
             LabelRectangle::new(
-                panel.title.label.position,
+                title_position,
                 text.get("OPEN_FILE_PANEL_TITLE_SOUNDFONT"),
+                renderer,
             ),
         );
         titles.insert(
             OpenFileType::ReadSave,
             LabelRectangle::new(
-                panel.title.label.position,
+                title_position,
                 text.get("OPEN_FILE_PANEL_TITLE_READ_SAVE"),
+                renderer,
             ),
         );
         titles.insert(
             OpenFileType::WriteSave,
             LabelRectangle::new(
-                panel.title.label.position,
+                title_position,
                 text.get("OPEN_FILE_PANEL_TITLE_WRITE_SAVE"),
+                renderer,
             ),
         );
         titles.insert(
             OpenFileType::Export,
             LabelRectangle::new(
-                panel.title.label.position,
+                title_position,
                 text.get("OPEN_FILE_PANEL_TITLE_EXPORT"),
+                renderer,
             ),
         );
         titles.insert(
             OpenFileType::ImportMidi,
             LabelRectangle::new(
-                panel.title.label.position,
+                title_position,
                 text.get("OPEN_FILE_PANEL_TITLE_IMPORT_MIDI"),
+                renderer,
             ),
         );
 
@@ -94,15 +100,36 @@ impl OpenFilePanel {
         let label_y = position[1] + size[1] - 2;
         scroll_labels.insert(
             PagePosition::First,
-            Self::get_scroll_label("OPEN_FILE_PANEL_DOWN", text, panel_x, panel_w, label_y),
+            Self::get_scroll_label(
+                "OPEN_FILE_PANEL_DOWN",
+                text,
+                panel_x,
+                panel_w,
+                label_y,
+                renderer,
+            ),
         );
         scroll_labels.insert(
             PagePosition::Mid,
-            Self::get_scroll_label("OPEN_FILE_PANEL_UP_DOWN", text, panel_x, panel_w, label_y),
+            Self::get_scroll_label(
+                "OPEN_FILE_PANEL_UP_DOWN",
+                text,
+                panel_x,
+                panel_w,
+                label_y,
+                renderer,
+            ),
         );
         scroll_labels.insert(
             PagePosition::Last,
-            Self::get_scroll_label("OPEN_FILE_PANEL_UP", text, panel_x, panel_w, label_y),
+            Self::get_scroll_label(
+                "OPEN_FILE_PANEL_UP",
+                text,
+                panel_x,
+                panel_w,
+                label_y,
+                renderer,
+            ),
         );
         Self {
             panel,
@@ -123,10 +150,18 @@ impl OpenFilePanel {
     /// - `panel_x` The x coordinate of the panel.
     /// - `panel_w` The width of the panel.
     /// - `label_y` the y coordinate of the label (the x coordinate varies).
-    fn get_scroll_label(key: &str, text: &Text, panel_x: u32, panel_w: u32, label_y: u32) -> Label {
+    /// - `renderer` The renderer.
+    fn get_scroll_label(
+        key: &str,
+        text: &Text,
+        panel_x: u32,
+        panel_w: u32,
+        label_y: u32,
+        renderer: &Renderer,
+    ) -> Label {
         let string = text.get(key);
         let x = panel_x + panel_w - (string.chars().count() as u32 + 2);
-        Label::new([x, label_y], string)
+        Label::new([x, label_y], string, renderer)
     }
 }
 
@@ -147,15 +182,11 @@ impl Drawable for OpenFilePanel {
             ColorKey::NoFocus
         };
         // Draw the panel background.
-        renderer.rectangle_pixel(
-            self.panel.background.background.position,
-            self.panel.background.background.size,
-            &ColorKey::Background,
-        );
+        renderer.rectangle_pixel(&self.panel.background.background, &ColorKey::Background);
         renderer.rectangle_lines(&self.panel.background.border, &focus_color);
         // Draw the title.
         let title = &self.titles[&paths_state.open_file_type];
-        renderer.rectangle(&title.rect, &ColorKey::Background);
+        renderer.rectangle_pixel(&title.rect, &ColorKey::Background);
         renderer.text(&title.label, &focus_color);
         // Draw the working directory.
         let mut x = self.panel.background.grid_rect.position[0] + 1;
@@ -163,16 +194,9 @@ impl Drawable for OpenFilePanel {
         let mut length = (self.panel.background.grid_rect.size[0] - 2) as usize;
 
         // Show the current directory.
-        let cwd = Label {
-            position: [x, y],
-            text: truncate(
-                &format!("{}/", paths_state.get_directory().stem),
-                length,
-                true,
-            )
-            .to_string(),
-        };
-        renderer.text(&cwd, &Renderer::get_key_color(focus));
+        let path_string = format!("{}/", paths_state.get_directory().stem);
+        let cwd = LabelRef::new([x, y], truncate(&path_string, length, true), renderer);
+        renderer.text_ref(&cwd, &Renderer::get_key_color(focus));
 
         // Prepare to show the children.
         x += 1;
@@ -220,7 +244,7 @@ impl Drawable for OpenFilePanel {
             } else {
                 path.path.to_str().unwrap()
             };
-            let p = LabelRef::new(position, s);
+            let p = LabelRef::new(position, s, renderer);
             renderer.text_ref(&p, &text_color);
             y += 1;
         }
@@ -228,11 +252,7 @@ impl Drawable for OpenFilePanel {
         // Possibly show the input dialogue.
         if let Some(filename) = &paths_state.get_filename() {
             // Draw the background of the prompt.
-            renderer.rectangle_pixel(
-                self.prompt.background.position,
-                self.prompt.background.size,
-                &ColorKey::Background,
-            );
+            renderer.rectangle_pixel(&self.prompt.background, &ColorKey::Background);
             renderer.rectangle_lines(
                 &self.prompt.border,
                 &if focus {
@@ -252,7 +272,7 @@ impl Drawable for OpenFilePanel {
             };
             extension.push_str(ext.to_str(true));
             renderer.text_ref(
-                &self.extension.to_label(&extension),
+                &self.extension.to_label(&extension, renderer),
                 &if focus {
                     ColorKey::Arrow
                 } else {
@@ -267,7 +287,7 @@ impl Drawable for OpenFilePanel {
 
             // Draw the input text.
             renderer.text_ref(
-                &self.input.to_label(filename),
+                &self.input.to_label(filename, renderer),
                 &if focus {
                     ColorKey::Key
                 } else {

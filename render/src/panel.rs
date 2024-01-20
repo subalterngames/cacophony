@@ -38,7 +38,7 @@ impl Panel {
             PanelType::Links => text.get("TITLE_LINKS"),
         };
         let title_position = [position[0] + 2, position[1]];
-        let title = LabelRectangle::new(title_position, title);
+        let title = LabelRectangle::new(title_position, title, renderer);
         Self {
             panel_type,
             title,
@@ -58,13 +58,9 @@ impl Panel {
 
     /// Draw an empty panel. The border and title text will be an explicitly defined color.
     pub fn update_ex(&self, color: &ColorKey, renderer: &Renderer) {
-        renderer.rectangle_pixel(
-            self.background.background.position,
-            self.background.background.size,
-            &ColorKey::Background,
-        );
+        renderer.rectangle_pixel(&self.background.background, &ColorKey::Background);
         renderer.rectangle_lines(&self.background.border, color);
-        renderer.rectangle(&self.title.rect, &ColorKey::Background);
+        renderer.rectangle_pixel(&self.title.rect, &ColorKey::Background);
         renderer.text(&self.title.label, color);
     }
 

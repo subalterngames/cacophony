@@ -124,12 +124,26 @@ impl Renderer {
     }
 
     /// Draw a rectangle using pixel coordinates instead of grid coordinates.
+    ///
+    /// - `rect` The rectangle.
+    /// - `color` A `ColorKey` for the rectangle.
+    pub(crate) fn rectangle_pixel(&self, rect: &RectanglePixel, color: &ColorKey) {
+        draw_rectangle(
+            rect.position[0],
+            rect.position[1],
+            rect.size[0],
+            rect.size[1],
+            self.colors[color],
+        )
+    }
+
+    /// Draw a rectangle using pixel coordinates instead of grid coordinates.
     /// This is used to draw notes.
     ///
     /// - `position` The top-left position in pixel coordinates.
     /// - `size` The width-height in pixel coordinates.
     /// - `color` A `ColorKey` for the rectangle.
-    pub(crate) fn rectangle_pixel(&self, position: [f32; 2], size: [f32; 2], color: &ColorKey) {
+    pub(crate) fn rectangle_note(&self, position: [f32; 2], size: [f32; 2], color: &ColorKey) {
         draw_rectangle(
             position[0],
             position[1],
@@ -194,7 +208,7 @@ impl Renderer {
     ///
     /// - `rectangle` The position and size of the bordered area.
     /// - `focus` If true, the panel has focus. This determines the color of the corners.
-    pub(crate) fn corners(&self, rect: &Rectangle, focus: bool) {
+    pub(crate) fn corners(&self, rect: &RectanglePixel, focus: bool) {
         // Get the color.
         let color = self.colors[&if focus {
             ColorKey::FocusDefault
@@ -202,77 +216,76 @@ impl Renderer {
             ColorKey::NoFocus
         }];
         // Top-left.
-        let mut p = self.grid_to_pixel(rect.position);
         draw_line(
-            p[0] - self.half_line_width,
-            p[1],
-            p[0] + self.corner_line_length,
-            p[1],
+            rect.position[0] - self.half_line_width,
+            rect.position[1],
+            rect.position[0] + self.corner_line_length,
+            rect.position[1],
             self.line_width,
             color,
         );
         draw_line(
-            p[0],
-            p[1],
-            p[0],
-            p[1] + self.corner_line_length,
+            rect.position[0],
+            rect.position[1],
+            rect.position[0],
+            rect.position[1] + self.corner_line_length,
             self.line_width,
             color,
         );
         // Top-right.
-        p = self.grid_to_pixel([rect.position[0] + rect.size[0], rect.position[1]]);
+        let position = [rect.position[0] + rect.size[0], rect.position[1]];
         draw_line(
-            p[0] - self.corner_line_length,
-            p[1],
-            p[0] + self.half_line_width,
-            p[1],
+            position[0] - self.corner_line_length,
+            position[1],
+            position[0] + self.half_line_width,
+            position[1],
             self.line_width,
             color,
         );
         draw_line(
-            p[0],
-            p[1],
-            p[0],
-            p[1] + self.corner_line_length,
+            position[0],
+            position[1],
+            position[0],
+            position[1] + self.corner_line_length,
             self.line_width,
             color,
         );
         // Bottom-right.
-        p = self.grid_to_pixel([
+        let position = [
             rect.position[0] + rect.size[0],
             rect.position[1] + rect.size[1],
-        ]);
+        ];
         draw_line(
-            p[0] - self.corner_line_length,
-            p[1],
-            p[0] + self.half_line_width,
-            p[1],
+            position[0] - self.corner_line_length,
+            position[1],
+            position[0] + self.half_line_width,
+            position[1],
             self.line_width,
             color,
         );
         draw_line(
-            p[0],
-            p[1] - self.corner_line_length,
-            p[0],
-            p[1],
+            position[0],
+            position[1] - self.corner_line_length,
+            position[0],
+            position[1],
             self.line_width,
             color,
         );
         // Bottom-left.
-        p = self.grid_to_pixel([rect.position[0], rect.position[1] + rect.size[1]]);
+        let position = [rect.position[0], rect.position[1] + rect.size[1]];
         draw_line(
-            p[0] - self.half_line_width,
-            p[1],
-            p[0] + self.corner_line_length,
-            p[1],
+            position[0] - self.half_line_width,
+            position[1],
+            position[0] + self.corner_line_length,
+            position[1],
             self.line_width,
             color,
         );
         draw_line(
-            p[0],
-            p[1] - self.corner_line_length,
-            p[0],
-            p[1],
+            position[0],
+            position[1] - self.corner_line_length,
+            position[0],
+            position[1],
             self.line_width,
             color,
         );
@@ -320,18 +333,33 @@ impl Renderer {
         draw_line(x, top, x, bottom, self.line_width, self.colors[color]);
     }
 
-    /// Draw a a vertical line with fixed offsets that can be used as a separator between rows.
+    /// Draw a line from top to bottom.
     ///
-    /// - `position` The top position in grid coordinates.
+    /// - `line` The vertical line.
     /// - `color` A `ColorKey` for the line.
-    pub fn vertical_line_separator(&self, position: [u32; 2], color: &ColorKey) {
-        self.vertical_line(
-            position[0],
-            0.5,
-            position[1],
-            position[1] + 1,
-            [-0.6, 0.4],
-            color,
+    pub(crate) fn vertical_line(&self, line: &Line, color: &ColorKey) {
+        draw_line(
+            line.b,
+            line.a0,
+            line.b,
+            line.a1,
+            self.half_line_width,
+            self.colors[color],
+        );
+    }
+
+    /// Draw a line from left to right.
+    ///
+    /// - `line` The vertical line.
+    /// - `color` A `ColorKey` for the line.
+    pub(crate) fn horizontal_line(&self, line: &Line, color: &ColorKey) {
+        draw_line(
+            line.a0,
+            line.b,
+            line.a1,
+            line.b,
+            self.half_line_width,
+            self.colors[color],
         );
     }
 
@@ -343,7 +371,7 @@ impl Renderer {
     /// - `y` The y grid coordinate.
     /// - `y_offset` A float between 0.0 and 1.0 to offset `y` in pixel coordinates. 0.5 will put the y coordinate at the mid-point of the grid cell.
     /// - `color` A `ColorKey` for the rectangle.
-    pub(crate) fn horizontal_line(
+    pub(crate) fn horizontal_line_grid(
         &self,
         left: u32,
         right: u32,
@@ -379,10 +407,7 @@ impl Renderer {
                 &Rectangle::new(self.subtitle_position, [width, 1]),
                 &ColorKey::SubtitleBackground,
             );
-            self.text_sub(&Label {
-                position: self.subtitle_position,
-                text: text.to_string(),
-            });
+            self.text_sub(&Label::new(self.subtitle_position, text.to_string(), self));
         }
         // Multi-row.
         else {
@@ -421,10 +446,7 @@ impl Renderer {
                     ),
                     &ColorKey::SubtitleBackground,
                 );
-                self.text_sub(&Label {
-                    position: [self.subtitle_position[0], y],
-                    text: row,
-                });
+                self.text_sub(&Label::new([self.subtitle_position[0], y], row, self));
                 y += 1;
             }
         }
@@ -497,7 +519,7 @@ impl Renderer {
             self.text(&list.right_arrow, &arrow_color);
         }
         // Get the label.
-        let value = list.get_value(text);
+        let value = list.get_value(text, self);
         // Draw the value.
         self.text_ref(&value, &Self::get_value_color(focus));
     }
@@ -509,7 +531,7 @@ impl Renderer {
     /// - `colors` The key and value colors.
     pub(crate) fn key_value(&self, text: &str, kv: &KeyWidth, colors: [&ColorKey; 2]) {
         self.text(&kv.key, colors[0]);
-        self.text_ref(&kv.get_value(text), colors[1]);
+        self.text_ref(&kv.get_value(text, self), colors[1]);
     }
 
     /// Draw a key-input pair.
@@ -530,7 +552,7 @@ impl Renderer {
             self.corners(&ki.corners_rect, focus[0]);
             // Draw a rectangle for input.
             if alphanumeric_input {
-                self.rectangle(&ki.input_rect, &ColorKey::TextFieldBG);
+                self.rectangle_pixel(&ki.input_rect, &ColorKey::TextFieldBG);
             }
         }
         let key_color = &Self::get_key_color(focus[0]);
@@ -635,6 +657,25 @@ impl Renderer {
         RectanglePixel::new(position, size)
     }
 
+    pub(crate) fn get_label_position(&self, position: [u32; 2], text: &str) -> [f32; 2] {
+        self.get_text_position(position, text, &self.font)
+    }
+
+    /// Draw text.
+    ///
+    /// - `position` The position of the text in pixels.
+    /// - `text` The text.
+    /// - `color` A `ColorKey` for the rectangle.
+    /// - `font` The font.
+    /// - `font_size` The font size.
+    fn get_text_position(&self, position: [u32; 2], text: &str, font: &Font) -> [f32; 2] {
+        let font = Some(font);
+        let dim = measure_text(text, font, self.font_size, 1.0);
+        let mut position = self.grid_to_pixel(position);
+        position[1] = position[1] + self.cell_size[1] - dim.offset_y / 3.0;
+        position
+    }
+
     /// Parse a serialized 3-element array as an RGBA color.
     fn parse_color(value: &str) -> Color {
         let c: Result<[u8; 3], serde_json::Error> = serde_json::from_str(value);
@@ -657,48 +698,22 @@ impl Renderer {
         );
     }
 
-    /// Draw a line from top to bottom.
-    ///
-    /// - `x` The x grid coordinate.
-    /// - `x_offset` A float between 0.0 and 1.0 to offset `x` in pixel coordinates. 0.5 will put the x coordinate at the mid-point of the grid cell.
-    /// - `top` The top y grid coordinate.
-    /// - `bottom` The bottom y grid coordinate.
-    /// - `y_offsets` Two floats between 0.0 and 1.0 to offset `top` and `bottom` in pixel coordinates. 0.5 will put the y coordinate at the mid-point of the grid cell.
-    /// - `color` A `ColorKey` for the line.
-    fn vertical_line(
-        &self,
-        x: u32,
-        x_offset: f32,
-        top: u32,
-        bottom: u32,
-        y_offsets: [f32; 2],
-        color: &ColorKey,
-    ) {
-        let x = x as f32 * self.cell_size[0] + x_offset * self.cell_size[0];
-        let top = top as f32 * self.cell_size[1] + y_offsets[0] * self.cell_size[1];
-        let bottom = bottom as f32 * self.cell_size[1] + y_offsets[1] * self.cell_size[1];
-        draw_line(x, top, x, bottom, self.line_width, self.colors[color]);
-    }
-
     /// Draw text.
     ///
-    /// - `position` The position of the text.
+    /// - `position` The position of the text in pixels.
     /// - `text` The text.
     /// - `color` A `ColorKey` for the rectangle.
     /// - `font` The font.
     /// - `font_size` The font size.
     fn text_ex(
         &self,
-        position: [u32; 2],
+        position: [f32; 2],
         text: &str,
         text_color: &ColorKey,
         font: &Font,
         font_size: u16,
     ) {
         let font = Some(font);
-        let mut xy = self.grid_to_pixel(position);
-        let dim = measure_text(text, font, font_size, 1.0);
-        xy[1] += self.cell_size[1] - dim.offset_y / 3.0;
         let color = self.colors[text_color];
         let text_params = TextParams {
             font,
@@ -708,6 +723,6 @@ impl Renderer {
             rotation: 0.0,
             color,
         };
-        draw_text_ex(text, xy[0], xy[1], text_params);
+        draw_text_ex(text, position[0], position[1], text_params);
     }
 }

@@ -26,6 +26,7 @@ impl LinksPanel {
             &mut y,
             "LINKS_PANEL_WEBSITE",
             InputEvent::WebsiteUrl,
+            renderer,
             text,
             input,
         );
@@ -34,6 +35,7 @@ impl LinksPanel {
             &mut y,
             "LINKS_PANEL_DISCORD",
             InputEvent::DiscordUrl,
+            renderer,
             text,
             input,
         );
@@ -42,6 +44,7 @@ impl LinksPanel {
             &mut y,
             "LINKS_PANEL_GITHUB",
             InputEvent::GitHubUrl,
+            renderer,
             text,
             input,
         );
@@ -65,7 +68,7 @@ impl LinksPanel {
         let h = y - MAIN_MENU_HEIGHT;
         y = MAIN_MENU_HEIGHT;
         // Set the x coordinates.
-        let label_x = x + 1;
+        let label_x = (x + 1) as f32 * renderer.cell_size[0];
         website.position[0] = label_x;
         discord.position[0] = label_x;
         github.position[0] = label_x;
@@ -86,12 +89,14 @@ impl LinksPanel {
         y: &mut u32,
         key: &str,
         event: InputEvent,
+        renderer: &Renderer,
         text: &Text,
         input: &Input,
     ) -> Label {
         let label = Label::new(
             [0, *y],
             tooltips.get_tooltip(key, &[event], input, text).seen,
+            renderer,
         );
         *y += 2;
         label

@@ -31,6 +31,7 @@ impl ExportPanel {
                 position[1] + 1,
             ],
             decaying,
+            renderer,
         );
         let writing = text.get("EXPORT_PANEL_WRITING");
         let writing_label = Label::new(
@@ -39,6 +40,7 @@ impl ExportPanel {
                 position[1] + 1,
             ],
             writing,
+            renderer,
         );
         Self {
             panel,
@@ -67,10 +69,7 @@ impl Drawable for ExportPanel {
                     + self.panel.background.grid_rect.size[0] / 2
                     - w / 2;
                 let y = self.panel.background.grid_rect.position[1] + 1;
-                let label = Label {
-                    position: [x, y],
-                    text: samples,
-                };
+                let label = Label::new([x, y], samples, renderer);
                 renderer.text(&label, &ColorKey::FocusDefault);
             }
             ExportState::AppendingDecay => {

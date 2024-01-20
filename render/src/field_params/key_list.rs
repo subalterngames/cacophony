@@ -1,4 +1,5 @@
 use super::{Label, List};
+use crate::Renderer;
 
 /// A key `Label` on the left and a `List` on the right.
 pub(crate) struct KeyList {
@@ -11,12 +12,18 @@ pub(crate) struct KeyList {
 impl KeyList {
     /// - The key will be at `position` and won't be truncated.
     /// - The value will at position [`position[0] + width - value_width - 2]` and truncated to `value_width`.
-    pub fn new(key: String, position: [u32; 2], width: u32, value_width: u32) -> Self {
-        let key = Label::new(position, key);
+    pub fn new(
+        key: String,
+        position: [u32; 2],
+        width: u32,
+        value_width: u32,
+        renderer: &Renderer,
+    ) -> Self {
+        let key = Label::new(position, key, renderer);
         let mut x = position[0] + width;
         x = x.checked_sub(value_width).unwrap_or(x);
         let value_position = [x.checked_sub(2).unwrap_or(x), position[1]];
-        let value = List::new(value_position, value_width);
+        let value = List::new(value_position, value_width, renderer);
         Self { key, value }
     }
 }

@@ -74,3 +74,8 @@ pub fn get_bytes(path: &Path) -> Vec<u8> {
 pub fn get_default_data_folder() -> PathBuf {
     current_dir().unwrap().join("data")
 }
+
+#[cfg(debug_assertions)]
+pub fn get_test_config() -> ini::Ini {
+    ini::Ini::load_from_file("../data/config.ini").unwrap()
+}

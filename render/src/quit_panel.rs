@@ -35,8 +35,10 @@ impl QuitPanel {
         // Define the panel.
         let panel = Panel::new(PanelType::Quit, [x, y], [w, h], renderer, text);
         // Define the labels.
-        let yes = Label::new([x + 2, y + 1], yes);
-        let no = Label::new([yes.position[0] + yes_w, yes.position[1]], no);
+        let yes_x = x + 2;
+        let yes_y = y + 1;
+        let yes = Label::new([yes_x, yes_y], yes, renderer);
+        let no = Label::new([yes_x + yes_w, yes_y], no, renderer);
         let labels = [yes, no];
         let popup = Popup::new(PanelType::Quit);
         Self {

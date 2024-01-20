@@ -9,6 +9,13 @@ use serde::Serialize;
 use text::ValueMap;
 use util::KV_PADDING;
 
+struct SeparatorLines {
+    framerate: Line,
+    mp3_bit_rate: Line,
+    ogg_quality: Line,
+    title: Line,
+}
+
 /// Export settings panel.
 pub(crate) struct ExportSettingsPanel {
     /// The panel position.
@@ -29,6 +36,7 @@ pub(crate) struct ExportSettingsPanel {
     multi_file_suffixes: ValueMap<MultiFileSuffix>,
     /// Panel background sizes per export type.
     backgrounds: HashMap<ExportType, PanelBackground>,
+    separator_lines: SeparatorLines,
 }
 
 impl ExportSettingsPanel {
@@ -42,24 +50,39 @@ impl ExportSettingsPanel {
         let title = text.get("TITLE_EXPORT_SETTINGS");
         let title_position = [position[0] + 2, position[1]];
         let title_width = title.chars().count() as u32;
-        let title = Label {
-            position: title_position,
-            text: title,
-        };
+        let title = Label::new(title_position, title, renderer);
         let title_rect = Rectangle::new(title_position, [title_width, 1]);
         let x = position[0] + 1;
         let y = position[1] + 1;
         let w = width - 2;
-        let framerate =
-            KeyListCorners::new(text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"), [x, y], w, 5);
-        let quality =
-            KeyListCorners::new(text.get("EXPORT_SETTINGS_PANEL_QUALITY"), [x, y + 1], w, 1);
+        let framerate = KeyListCorners::new(
+            text.get("EXPORT_SETTINGS_PANEL_FRAMERATE"),
+            [x, y],
+            w,
+            5,
+            renderer,
+        );
+        let quality = KeyListCorners::new(
+            text.get("EXPORT_SETTINGS_PANEL_QUALITY"),
+            [x, y + 1],
+            w,
+            1,
+            renderer,
+        );
         let mp3_bit_rate = KeyListCorners::new(
             text.get("EXPORT_SETTINGS_PANEL_MP3_BIT_RATE"),
             [x, y + 2],
             w,
             6,
+            renderer,
         );
+
+        let separator_lines = SeparatorLines {
+            framerate: Self::get_separator([x, framerate.y + 1], width, renderer),
+            mp3_bit_rate: Self::get_separator([x, mp3_bit_rate.y + 1], width, renderer),
+            ogg_quality: Self::get_separator([x, quality.y + 1], width, renderer),
+            title: Self::get_separator([x, y + 1], width, renderer),
+        };
 
         let multi_file_suffixes = ValueMap::new(
             [
@@ -128,6 +151,7 @@ impl ExportSettingsPanel {
             quality,
             multi_file_suffixes,
             backgrounds,
+            separator_lines,
         }
     }
 
@@ -168,9 +192,10 @@ impl ExportSettingsPanel {
                         setting_focus,
                     );
                     // For .wav and .flac files, draw a separator here.
+                    y = self.framerate.y + 1;
                     if export_type == ExportType::Wav || export_type == ExportType::Flac {
-                        y = self.framerate.key_list.key.position[1] + 1;
-                        self.draw_separator((x, &mut y), renderer, &line_color);
+                        renderer.horizontal_line(&self.separator_lines.framerate, &line_color);
+                        y += 1;
                     }
                 }
                 ExportSetting::Mp3BitRate => {
@@ -180,8 +205,8 @@ impl ExportSettingsPanel {
                         &self.mp3_bit_rate,
                         setting_focus,
                     );
-                    y = self.mp3_bit_rate.key_list.key.position[1] + 1;
-                    self.draw_separator((x, &mut y), renderer, &line_color);
+                    renderer.horizontal_line(&self.separator_lines.mp3_bit_rate, &line_color);
+                    y = self.mp3_bit_rate.y + 2;
                 }
                 ExportSetting::Mp3Quality => renderer.key_list_corners(
                     &exporter.mp3_quality.get().to_string(),
@@ -194,8 +219,8 @@ impl ExportSettingsPanel {
                         &self.quality,
                         setting_focus,
                     );
-                    y = self.quality.key_list.key.position[1] + 1;
-                    self.draw_separator((x, &mut y), renderer, &line_color);
+                    renderer.horizontal_line(&self.separator_lines.ogg_quality, &line_color);
+                    y = self.quality.y + 2;
                 }
                 ExportSetting::Title => {
                     let key_input = KeyInput::new_from_padding(
@@ -204,6 +229,7 @@ impl ExportSettingsPanel {
                         [x, y],
                         self.width - 2,
                         KV_PADDING,
+                        renderer,
                     );
                     renderer.key_input(
                         &exporter.metadata.title,
@@ -214,7 +240,8 @@ impl ExportSettingsPanel {
                     y += 1;
                     // For .wav files, draw a separator here.
                     if export_type == ExportType::Wav {
-                        self.draw_separator((x, &mut y), renderer, &line_color);
+                        renderer.horizontal_line(&self.separator_lines.title, &line_color);
+                        y += 1;
                     }
                 }
                 ExportSetting::Artist => self.draw_optional_input(
@@ -255,6 +282,7 @@ impl ExportSettingsPanel {
                         [x, y],
                         self.width - 2,
                         value_width,
+                        renderer,
                     );
                     renderer.key_list_corners(&value, &key_list, setting_focus);
                     y += 1;
@@ -277,7 +305,9 @@ impl ExportSettingsPanel {
                         setting_focus,
                     );
                     // This is always the last of the metadata. Draw a line.
-                    self.draw_separator((x, &mut y), renderer, &line_color);
+                    let separator = Self::get_separator([x, y], self.width, renderer);
+                    renderer.horizontal_line(&separator, &line_color);
+                    y += 1;
                 }
                 ExportSetting::MultiFile => self.draw_boolean(
                     text.get("EXPORT_SETTINGS_PANEL_MULTI_FILE"),
@@ -296,6 +326,7 @@ impl ExportSettingsPanel {
                         [x, y],
                         self.width - 2,
                         self.multi_file_suffixes.max_length,
+                        renderer,
                     );
                     renderer.key_list_corners(value, &key_list, setting_focus);
                     y += 1;
@@ -304,17 +335,12 @@ impl ExportSettingsPanel {
         }
     }
 
-    /// Draw a separator line after a section.
-    fn draw_separator(&self, position: (u32, &mut u32), renderer: &Renderer, color: &ColorKey) {
-        renderer.horizontal_line(
-            position.0,
-            position.0 + self.width - 2,
-            [0.0, 0.0],
-            *position.1,
-            0.5,
-            color,
-        );
-        *position.1 += 1;
+    fn get_separator(position: [u32; 2], width: u32, renderer: &Renderer) -> Line {
+        let mut position = renderer.grid_to_pixel(position);
+        // Apply an offset to the y value.
+        position[1] += 0.5 * renderer.cell_size[1];
+        let x1 = position[0] + (width - 2) as f32 * renderer.cell_size[0];
+        Line::horizontal(position[0], x1, position[1])
     }
 
     /// Draw an input with optional text.
@@ -337,6 +363,7 @@ impl ExportSettingsPanel {
             [position.0, *position.1],
             self.width - 2,
             KV_PADDING,
+            renderer,
         );
         renderer.key_input(value, &key_input, state.input.alphanumeric_input, focus);
         *position.1 += 1;
@@ -352,7 +379,13 @@ impl ExportSettingsPanel {
         text: &Text,
         focus: Focus,
     ) {
-        let boolean = BooleanCorners::new(key, [position.0, *position.1], self.width - 2, text);
+        let boolean = BooleanCorners::new(
+            key,
+            [position.0, *position.1],
+            self.width - 2,
+            text,
+            renderer,
+        );
         renderer.boolean_corners(value, &boolean, focus);
         *position.1 += 1;
     }
@@ -369,11 +402,7 @@ impl Drawable for ExportSettingsPanel {
             ColorKey::NoFocus
         };
         let background = &self.backgrounds[&conn.exporter.export_type.get()];
-        renderer.rectangle_pixel(
-            background.background.position,
-            background.background.size,
-            &ColorKey::Background,
-        );
+        renderer.rectangle_pixel(&background.background, &ColorKey::Background);
         renderer.rectangle_lines(&background.border, &color);
         renderer.rectangle(&self.title_rect, &ColorKey::Background);
         renderer.text(&self.title, &color);

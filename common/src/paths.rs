@@ -38,6 +38,17 @@ impl Paths {
     /// Setup the paths, needs to be be called at least once.
     pub fn init(data_directory_from_cli: &Path) {
         let data_directory = get_data_directory(data_directory_from_cli);
+        PATHS.set(Self::new(&data_directory)).unwrap();
+    }
+
+    /// Returns a new `Paths` that can be used for testing.
+    #[cfg(debug_assertions)]
+    pub fn get_test_paths() -> Self {
+        Self::new(&PathBuf::from("../data"))
+    }
+
+    /// Returns a new `Paths` object.
+    fn new(data_directory: &Path) -> Self {
         let user_directory = match UserDirs::new() {
             Some(user_dirs) => match user_dirs.document_dir() {
                 Some(documents) => documents.join("cacophony"),
@@ -60,20 +71,18 @@ impl Paths {
         let export_directory = get_directory("exports", &user_directory);
         let splash_path = data_directory.join("splash.png");
         let default_soundfont_path = data_directory.join("CT1MBGMRSV1.06.sf2");
-        PATHS
-            .set(Self {
-                default_ini_path,
-                user_directory,
-                user_ini_path,
-                text_path,
-                soundfonts_directory,
-                saves_directory,
-                export_directory,
-                splash_path,
-                default_soundfont_path,
-                data_directory,
-            })
-            .unwrap();
+        Self {
+            default_ini_path,
+            user_directory,
+            user_ini_path,
+            text_path,
+            soundfonts_directory,
+            saves_directory,
+            export_directory,
+            splash_path,
+            default_soundfont_path,
+            data_directory: data_directory.to_path_buf(),
+        }
     }
 
     /// Get a reference to the paths, panics when not initialized.

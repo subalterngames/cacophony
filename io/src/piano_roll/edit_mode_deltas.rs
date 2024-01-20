@@ -77,12 +77,11 @@ impl EditModeDeltas {
 #[cfg(test)]
 mod tests {
     use super::EditModeDeltas;
-    use common::PPQ_U;
-    use ini::Ini;
+    use common::{get_test_config, PPQ_U};
 
     #[test]
     fn edit_mode_deltas() {
-        let e = EditModeDeltas::new(&Ini::load_from_file("../data/config.ini").unwrap());
+        let e = EditModeDeltas::new(&get_test_config());
         assert_eq!(e.quick_time_factor, 4, "{}", e.quick_time_factor);
         assert_eq!(e.precise_time, PPQ_U / 32, "{}", e.precise_time);
         assert_eq!(e.normal_note, 1, "{}", e.normal_note);
