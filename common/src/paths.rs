@@ -38,9 +38,7 @@ impl Paths {
     /// Setup the paths, needs to be be called at least once.
     pub fn init(data_directory_from_cli: &Path) {
         let data_directory = get_data_directory(data_directory_from_cli);
-        PATHS
-            .set(Self::new(&data_directory))
-            .unwrap();
+        PATHS.set(Self::new(&data_directory)).unwrap();
     }
 
     /// Returns a new `Paths` that can be used for testing.

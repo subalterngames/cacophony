@@ -439,8 +439,8 @@ pub fn get_file_name_no_ex(path: &Path) -> &str {
 
 #[cfg(test)]
 mod tests {
+    use crate::{get_file_name, get_file_name_no_ex, ppq_to_string, truncate};
     use std::path::PathBuf;
-    use crate::{get_file_name, get_file_name_no_ex, truncate, ppq_to_string};
 
     #[test]
     fn file_name() {
