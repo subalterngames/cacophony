@@ -12,7 +12,7 @@ edition = "2021"
 serde_json = "1.0"
 rust-ini = "0.18"
 directories = "5.0.1"
-midir = "0.9.1"
+midir = "0.10.0"
 csv = "1.2.1"
 cpal = "0.13.1"
 hound = "3.5.0"
@@ -83,6 +83,7 @@ branch = "speech_dispatcher_voices_panic"
 [features]
 speech_dispatcher_0_11 = ["text/speech_dispatcher_0_11"]
 speech_dispatcher_0_9 = ["text/speech_dispatcher_0_9"]
+jack = ["input/jack"]
 
 [package]
 name = "cacophony"
