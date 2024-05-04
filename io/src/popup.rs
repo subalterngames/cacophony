@@ -13,14 +13,14 @@ impl Popup {
     /// Enable the panel. Store the state of the active panels. Set the state's active panels.
     pub fn enable(&mut self, state: &mut State, panels: Vec<PanelType>) {
         self.focus = state.focus.get();
-        self.panels = state.panels.clone();
+        self.panels.clone_from(&state.panels);
         state.panels = panels;
         state.focus = Index::new(0, state.panels.len());
     }
 
     /// Disable the panel. Set the state's active panels.
     pub fn disable(&self, state: &mut State) {
-        state.panels = self.panels.clone();
+        state.panels.clone_from(&self.panels);
         state.focus = Index::new(self.focus, self.panels.len());
     }
 }

@@ -360,9 +360,9 @@ PIANO_ROLL_PANEL_INPUT_TTS_TIME_7,\0 to set the playback time to the cursor.
 PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_0,"\0, \1, \2, and \3 to move the view."
 PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_1,\0 and \1 to set the view to the start and end. 
 PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACk_2,\0 and \1 to zoom in and out. 
-PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_3,\0 to reset the zoom level."
+PIANO_ROLL_PANEL_INPUT_TTS_VIEW_SINGLE_TRACK_3,\0 to reset the zoom level.
 PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK_0,\0 and \1 to move the view.
-PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK_1,\0 and \1 to set the view to the start and end."
+PIANO_ROLL_PANEL_INPUT_TTS_VIEW_MULTI_TRACK_1,\0 and \1 to set the view to the start and end.
 PIANO_ROLL_MODE_TIME,Time
 PIANO_ROLL_MODE_VIEW,View
 PIANO_ROLL_MODE_SELECT,Select

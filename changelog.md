@@ -1,5 +1,11 @@
 # 0.2.x
 
+## 0.2.4
+
+- Added an optional `jack` feature so that Cacophony can be built on Open/Free/etcBSD: `cargo build --release --features jack` 
+- Fixed some incorrectly-formatted rows in text.csv
+- Fixed some clippy warnings
+
 ## 0.2.3
 
 - Optimized text and rectangle rendering, which reduces CPU usage by around 5%.

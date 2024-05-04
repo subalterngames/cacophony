@@ -20,3 +20,6 @@ clap = { workspace = true }
 
 [dependencies.common]
 path = "../common"
+
+[features]
+jack = ["midir/jack"]

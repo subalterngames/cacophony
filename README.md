@@ -71,6 +71,11 @@ Windows:
 
 1. `cargo build --release`
 
+### OpenBSD
+
+1. Install and configure jack
+1. `cargo build --release --features jack
+
 ## Tests
 
 To test, just `cargo test --all`.
