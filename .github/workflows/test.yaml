@@ -2,8 +2,6 @@ name: test
 
 on:
   push:
-    branches-ignore:
-      - main
     paths-ignore:
       - "doc/**"
       - ".vscode/**"

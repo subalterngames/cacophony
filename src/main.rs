@@ -22,11 +22,6 @@ async fn main() {
     // Parse and load the command line arguments.
     let args = Args::parse();
 
-    // Immediately quit.
-    if args.quit {
-        return;
-    }
-
     // Get the paths, initialized in loading the window configuration.
     let paths = Paths::get();
 

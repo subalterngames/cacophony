@@ -3,7 +3,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 /// Command-line arguments.
-#[derive(Parser, Debug)]
+#[derive(Parser)]
 #[command(author, version, about)]
 pub struct Args {
     /// Open the project from disk.
@@ -26,7 +26,4 @@ pub struct Args {
     /// This is meant to be used for debugging.
     #[arg(short, long)]
     pub events: Option<PathBuf>,
-    /// If included, immediately quit. This is useful for debugging.
-    #[arg(short, long)]
-    pub quit: bool
 }
