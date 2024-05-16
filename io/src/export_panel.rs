@@ -34,7 +34,7 @@ impl Panel for ExportPanel {
         // We're done.
         let export_state = conn.export_state.lock();
         if *export_state == ExportState::NotExporting {
-            state.panels = self.panels.clone();
+            state.panels.clone_from(&self.panels);
             state.focus.set(self.focus);
         }
         None
