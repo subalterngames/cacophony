@@ -1,5 +1,9 @@
 # 0.2.x
 
+## 0.2.4
+
+- Fixed: If note is played via a qwerty key press, and then an octave is changed via a qwerty key press, there won't be a note-off event.
+
 ## 0.2.3
 
 - Optimized text and rectangle rendering, which reduces CPU usage by around 5%.
