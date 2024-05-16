@@ -1,6 +1,6 @@
 use serde::de::{Error, Visitor};
 use serde::{Deserialize, Serialize};
-use std::fmt;
+use std::fmt::{self, Display};
 
 /// A value that is expressed as a u64 or an f32.
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
@@ -46,9 +46,9 @@ impl From<f32> for U64orF32 {
     }
 }
 
-impl ToString for U64orF32 {
-    fn to_string(&self) -> String {
-        self.u.to_string()
+impl Display for U64orF32 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.u)
     }
 }
 

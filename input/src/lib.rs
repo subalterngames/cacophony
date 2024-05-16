@@ -316,7 +316,7 @@ impl Input {
                 .iter()
                 .filter(|c| Self::is_valid_char(c))
                 .copied()
-                .collect(),
+                .collect::<Vec<char>>(),
         )
     }
 
@@ -329,7 +329,7 @@ impl Input {
                 .iter()
                 .filter(|c| Self::is_valid_char(c) && !ILLEGAL_FILENAME_CHARACTERS.contains(c))
                 .copied()
-                .collect(),
+                .collect::<Vec<char>>(),
         )
     }
 
@@ -358,7 +358,7 @@ impl Input {
                 .iter()
                 .filter(|c| c.is_ascii_digit())
                 .copied()
-                .collect(),
+                .collect::<Vec<char>>(),
         );
         // Try to get a value.
         match T::from_str(string.as_str()) {
@@ -369,7 +369,7 @@ impl Input {
     }
 
     /// Modify a string with qwerty input from this frame.
-    fn modify_string(&self, string: &mut String, chars: &Vec<char>) -> bool {
+    fn modify_string(&self, string: &mut String, chars: &[char]) -> bool {
         // Delete the last character.
         if self.backspace {
             string.pop().is_some()
