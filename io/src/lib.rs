@@ -325,7 +325,7 @@ impl IO {
             // We aren't exporting already.
             if export_state == ExportState::NotExporting {
                 self.pre_export_focus = state.focus.get();
-                self.pre_export_panels = state.panels.clone();
+                self.pre_export_panels.clone_from(&state.panels);
                 self.open_file_panel.export(state, paths_state, conn)
             }
         } else if input.happened(&InputEvent::ImportMidi) {
