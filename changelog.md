@@ -1,5 +1,9 @@
 # 0.2.x
 
+## 0.2.4
+
+- Fixed: Cacophony can't found files (saves, soundfonts, etc.) if the file extension contains uppercase characters.
+
 ## 0.2.3
 
 - Optimized text and rectangle rendering, which reduces CPU usage by around 5%.
