@@ -70,9 +70,9 @@ pub struct Input {
     events: Vec<InputEvent>,
     /// The MIDI connection.
     midi_conn: Option<MidiConn>,
-    // Note-on MIDI messages. These will be sent immediately to the synthesizer to be played.
+    /// Note-on MIDI messages. These will be sent immediately to the synthesizer to be played.
     pub note_on_messages: Vec<[u8; 3]>,
-    // Note-off MIDI messages. These will be sent immediately to the synthesizer.
+    /// Note-off MIDI messages. These will be sent immediately to the synthesizer.
     pub note_off_keys: Vec<u8>,
     /// Note-on events that don't have corresponding off events.
     note_on_events: Vec<NoteOn>,
@@ -206,10 +206,12 @@ impl Input {
         }
         // Octave up.
         if events.contains(&InputEvent::OctaveUp) && self.qwerty_octave < MAX_OCTAVE {
+            self.clear_notes_on_qwerty_octave();
             self.qwerty_octave += 1;
         }
         // Octave down.
         if events.contains(&InputEvent::OctaveDown) && self.qwerty_octave > 0 {
+            self.clear_notes_on_qwerty_octave();
             self.qwerty_octave -= 1;
         }
         // Qwerty note-off.
@@ -418,6 +420,14 @@ impl Input {
     /// Converts the note index to a MIDI note value.
     fn get_pitch(&self, note: u8) -> u8 {
         (9 - self.qwerty_octave) * 12 + note
+    }
+
+    /// When a qwerty note is pressed, followed by an octave change, clear all note-on events.
+    fn clear_notes_on_qwerty_octave(&mut self) {
+        // Qwerty note-off.
+        for (_, qwerty_note_off) in QWERTY_NOTE_EVENTS.iter() {
+            self.note_off_keys.push(self.get_pitch(*qwerty_note_off));
+        }
     }
 
     #[cfg(debug_assertions)]
