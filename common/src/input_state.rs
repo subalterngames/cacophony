@@ -14,6 +14,9 @@ pub struct InputState {
     pub use_volume: bool,
     /// The input beat in PPQ.
     pub beat: U64orF32,
+    /// If true, music is playing or exporting.
+    #[serde(skip)]
+    pub is_playing: bool,
 }
 
 impl Default for InputState {
@@ -24,6 +27,7 @@ impl Default for InputState {
             volume: Index::new(MAX_VOLUME, MAX_VOLUME + 1),
             use_volume: true,
             beat: U64orF32::from(PPQ_U),
+            is_playing: false,
         }
     }
 }

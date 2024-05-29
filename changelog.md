@@ -5,6 +5,7 @@
 - Fixed: If note is played via a qwerty key press, and then an octave is changed via a qwerty key press, there won't be a note-off event.
 - Fixed: Cacophony can't found files (saves, soundfonts, etc.) if the file extension contains uppercase characters.
 - Fixed: ChildPaths sometimes doesn't set the correct directory when moving up a directory.
+- Fixed: It's possible to add notes while the music is playing.
 - (Backend) Fixed clippy warnings for Rust 1.78
 - (Backend) The GitHub workflow for building Cacophony now uses the latest version of Rust.
 - (Backend) Added tests for ChildPaths.
