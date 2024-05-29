@@ -91,3 +91,29 @@ impl ChildPaths {
         paths
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use crate::open_file::Extension;
+    use super::ChildPaths;
+
+    #[test]
+    fn test_child_paths() {
+        // SoundFont.
+        let sf_directory = PathBuf::from("../data");
+        assert!(sf_directory.exists());
+        let mut child_paths = ChildPaths::default();
+        child_paths.set(&sf_directory, &Extension::Sf2, None);
+        assert_eq!(child_paths.children.len(), 1);
+        let f = &child_paths.children[0];
+        assert!(f.is_file);
+        assert_eq!(f.stem, "CT1MBGMRSV1.06.sf2");
+        assert!(child_paths.selected.is_some());
+        assert!(child_paths.selected.unwrap() == 0);
+        // Anything else.
+        
+    }
+}
