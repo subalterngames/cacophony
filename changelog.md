@@ -2,6 +2,7 @@
 
 ## 0.2.4
 
+- Fixed: Cacophony can't found files (saves, soundfonts, etc.) if the file extension contains uppercase characters.
 - Fixed clippy warnings for Rust 1.78
 - The GitHub workflow for building Cacophony now uses the latest version of Rust.
 

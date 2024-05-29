@@ -76,7 +76,8 @@ impl ChildPaths {
             .filter(|p| {
                 p.is_file()
                     && p.extension().is_some()
-                    && extension.to_str(false) == p.extension().unwrap().to_str().unwrap()
+                    && extension.to_str(false)
+                        == p.extension().unwrap().to_str().unwrap().to_lowercase()
             })
             .collect();
         files.sort();
