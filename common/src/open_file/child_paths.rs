@@ -33,7 +33,7 @@ impl ChildPaths {
             self.selected = children
                 .iter()
                 .enumerate()
-                .filter(|p| p.1.path == previous_directory)
+                .filter(|p| p.1.stem == previous_directory.components().last().unwrap().as_os_str().to_str().unwrap())
                 .map(|p| p.0)
                 .next();
         }
@@ -95,9 +95,9 @@ impl ChildPaths {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
+    use std::{fs::canonicalize, path::PathBuf};
 
-    use crate::open_file::Extension;
+    use crate::open_file::{Extension, FileOrDirectory};
     use super::ChildPaths;
 
     #[test]
@@ -112,8 +112,30 @@ mod tests {
         assert!(f.is_file);
         assert_eq!(f.stem, "CT1MBGMRSV1.06.sf2");
         assert!(child_paths.selected.is_some());
-        assert!(child_paths.selected.unwrap() == 0);
-        // Anything else.
-        
+        assert_eq!(child_paths.selected.unwrap(), 0);
+        // There shouldn't be any save files.
+        child_paths.set(&sf_directory, &Extension::Cac, None);
+        assert!(child_paths.children.is_empty());
+        assert!(child_paths.selected.is_some());
+        assert_eq!(child_paths.selected.unwrap(), 0);
+        let parent_directory = canonicalize(sf_directory.parent().unwrap()).unwrap();
+        assert_eq!(parent_directory.components().last().unwrap().as_os_str().to_str().unwrap(), "cacophony");
+        // Set a different directory.
+        child_paths.set(&parent_directory, &Extension::Sf2, None);
+        assert!(!child_paths.children.is_empty());
+        assert!(child_paths.children.iter().filter(|c| c.is_file).collect::<Vec<&FileOrDirectory>>().is_empty());
+        // Ignore any folders that have names beginning with a period because they won't all appear in the GitHub workflow.
+        child_paths.children.retain(|f| {
+            match f.stem.chars().next() {
+                Some(ch) => ch != '.',
+                None => false
+            }
+        });
+        debug_assert_eq!(child_paths.children.len(), 13, "{:?}", &child_paths.children);
+        assert!(child_paths.selected.is_some());
+        assert_eq!(child_paths.selected.unwrap(), 0);
+        // Go "up" a directory.
+        child_paths.set(&parent_directory, &Extension::Sf2, Some(sf_directory.clone()));
+        assert_eq!(child_paths.children[child_paths.selected.unwrap()].stem, "data");
     }
 }
