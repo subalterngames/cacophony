@@ -152,7 +152,7 @@ mod tests {
                 Some(ch) => ch != '.',
                 None => false,
             });
-        assert_eq!(child_paths.children.len(), 14);
+        assert_eq!(child_paths.children.len(), 15);
         assert!(child_paths.selected.is_some());
         assert_eq!(child_paths.selected.unwrap(), 0);
         // Go "up" a directory.

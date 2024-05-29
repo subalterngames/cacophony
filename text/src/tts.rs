@@ -255,3 +255,28 @@ fn on_utterance_end(_: UtteranceId) {
     let mut u = UTTERANCE_ID.lock();
     *u = None;
 }
+
+#[cfg(test)]
+mod tests {
+    use common::get_test_config;
+    use crate::Enqueable;
+
+    use super::TTS;
+
+    #[test]
+    fn test_tts() {
+        const TTS_STRING: &str = "Hello world!";
+        
+        let config = get_test_config();
+        let mut tts = TTS::new(&config);
+        assert!(tts.tts.is_some());
+        tts.enqueue(TTS_STRING);
+        assert_eq!(tts.speech.len(), 1);
+        assert!(tts.show_subtitles);
+        assert_eq!(tts.get_subtitles().unwrap(), TTS_STRING);
+        tts.update();
+        assert!(tts.is_speaking());
+        tts.stop();
+        tts.update();
+    }
+}

@@ -28,4 +28,4 @@ COPY text/ text/
 
 RUN pacman -Syu --noconfirm clang make pkgconfig rust speech-dispatcher alsa-lib openssl
 
-RUN cargo build --features speech_dispatcher_0_11
+RUN cargo test --all --features speech_dispatcher_0_11
