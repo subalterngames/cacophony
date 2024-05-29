@@ -2,7 +2,7 @@ FROM archlinux:latest
 
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-MKDIR cacophony
+RUN mkdir cacophony
 
 WORKDIR $HOME/cacophony
 
@@ -23,6 +23,8 @@ COPY io/ io/
 COPY render/ render/
 
 COPY src/ src/
+
+COPY test_files/ test_files/
 
 COPY text/ text/
 
