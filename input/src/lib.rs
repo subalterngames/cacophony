@@ -264,16 +264,18 @@ impl Input {
                         *midi
                     };
                     // Remember the note-on for piano roll input.
-                    if state.input.armed {
-                        self.note_on_events.push(NoteOn::new(&midi));
+                    if !state.input.is_playing {
+                        if state.input.armed {
+                            self.note_on_events.push(NoteOn::new(&midi));
+                        }
+                        // Copy this note to the immediate note-on array.
+                        self.note_on_messages.push(midi);
                     }
-                    // Copy this note to the immediate note-on array.
-                    self.note_on_messages.push(midi);
                 }
                 // Note-off.
                 if midi[0] >= 128 && midi[0] <= 143 {
                     self.note_off_keys.push(midi[1]);
-                    if state.input.armed {
+                    if state.input.armed && !state.input.is_playing {
                         // Find the corresponding note.
                         for note_on in self.note_on_events.iter_mut() {
                             // Same key. Note-off.
@@ -410,11 +412,13 @@ impl Input {
 
     /// Push a new note from qwerty input.
     fn qwerty_note(&mut self, note: u8, state: &State) {
-        let note: [u8; 3] = [144, self.get_pitch(note), state.input.volume.get()];
-        if state.input.armed {
-            self.new_notes.push(note);
+        if !state.input.is_playing {
+            let note: [u8; 3] = [144, self.get_pitch(note), state.input.volume.get()];
+            if state.input.armed {
+                self.new_notes.push(note);
+            }
+            self.note_on_messages.push(note);
         }
-        self.note_on_messages.push(note);
     }
 
     /// Converts the note index to a MIDI note value.

@@ -16,6 +16,7 @@
 //! Each panel implements the `Panel` trait.
 
 use audio::export::ExportState;
+use audio::play_state::PlayState;
 use audio::Conn;
 use common::{InputState, Music, PanelType, Paths, PathsState, SelectMode, State};
 use edit::edit_file;
@@ -432,6 +433,12 @@ impl IO {
                 .iter()
                 .any(|t| !t.get_playback_notes(state.time.playback).is_empty())
         {
+            // Toggle whether music is playing.
+            state.input.is_playing = matches!(
+                *conn.play_state.lock(),
+                PlayState::NotPlaying | PlayState::Decaying
+            );
+            // Start to play music.
             conn.set_music(state);
         }
         // We're not done yet.
