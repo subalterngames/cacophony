@@ -2,7 +2,7 @@ FROM archlinux:latest
 
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-RUN mkdir cacophony
+MKDIR cacophony
 
 WORKDIR $HOME/cacophony
 

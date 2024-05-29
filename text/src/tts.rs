@@ -258,15 +258,15 @@ fn on_utterance_end(_: UtteranceId) {
 
 #[cfg(test)]
 mod tests {
-    use common::get_test_config;
     use crate::Enqueable;
+    use common::get_test_config;
 
     use super::TTS;
 
     #[test]
     fn test_tts() {
         const TTS_STRING: &str = "Hello world!";
-        
+
         let config = get_test_config();
         let mut tts = TTS::new(&config);
         assert!(tts.tts.is_some());
