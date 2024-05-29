@@ -37,15 +37,14 @@ Windows:
 
 ### Linux
 
-#### Debian 11
+```bash
+./build_linux.sh
+```
 
-1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev librust-alsa-sys-dev`
-2. `cargo build --release --features speech_dispatcher_0_9`
+Currently, `build_linux.sh` works for the following distros:
 
-#### Debian 12
-
-1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev librust-alsa-sys-dev`
-2. `cargo build --release --features speech_dispatcher_0_11`
+- Debian 11
+- Debian 12
 
 #### Ubuntu 18
 
@@ -64,12 +63,14 @@ Windows:
 
 ### MacOS
 
-1. `cargo install cargo-bundle`
+1. `cargo install cargo-bundle` (You only need to do this once)
 2. `cargo bundle --release`
 
 ### Windows
 
-1. `cargo build --release`
+```powershell
+cargo build --release
+```
 
 ## Tests
 
