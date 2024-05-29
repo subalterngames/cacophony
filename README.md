@@ -12,64 +12,130 @@
 
 ## How to compile
 
-I compile Cacophony with Rust 1.74.0 for Linux, MacOS, or Windows. Below is a list of operating systems I've tested:
-
-Linux:
-
-- Ubuntu 18.04 i386 with X11
-- Ubuntu 18.04 x64 with X11
-- Ubuntu 20.04 x64 with X11
-- Ubuntu 22.04 x64 with X11
-
-MacOS:
-
-- Catalina 10.15.7 x64
-- Ventura 13.2.1 Apple Silicon
-
-Windows:
-
-- Windows 10 x64
-
-### All platforms
+### 1. General setup (all platforms)
 
 1. Install Rust (stable)
 2. Clone this repo
 
+### 2. Install libraries
+
+Debian 11 and 12:
+
+```bash
+sudo apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev librust-alsa-sys-dev
+```
+
+Ubuntu 20 and 22:
+
+```bash
+apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
+```
+
+Ubuntu 18:
+
+```bash
+sudo apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa
+```
+
+MacOS (any):
+
+```bash
+cargo install cargo-bundle
+```
+
+### 3. Compile
+
+`cargo` is a tool that is bundled with most Rust installs. It can compile a library or application via `cargo build` or compile and then immediately run via `cargo run`. In either case, you can add the `--release` flag to optimize for speed. Most of the code snippets below all use `build --release` but you could swap that for `build`, `run`, or `run --release`.
+
+Debian 12:
+
+```bash
+cargo build --release --features speech_dispatcher_0_11
+```
+
+Debian 11:
+
+```bash
+cargo build --release --features speech_dispatcher_0_9
+```
+
+Ubuntu 22:
+
+```bash
+cargo build --release --features speech_dispatcher_0_11
+```
+
+Ubuntu 18 and 20:
+
+```bash
+cargo build --release --features speech_dispatcher_0_9
+```
+
+MacOS:
+
+```bash
+# You can use `cargo build` and `cargo run` on MacOS,
+# but they won't create a .app application.
+# `cargo bundle` will create a .app but won't run it.
+# The `--release` flag is, as always, optional.
+cargo bundle --release
+```
+
+Windows:
+
+```bash
+cargo build --release
+```
+
+## How to run without `cargo`
+
+`cargo run` is a convenient shortcut and is *not* required for running Cacophony.
+
+These instructions will refer to the "target directory", which is where the compiled executable actually is. If you added the `--release` flag, the target directory is: `target/release/`. Otherwise, the target directory is: `target/debug/`.
+
+ To run Cacophony as a typical compiled executable:
+
 ### Linux
 
-#### Debian 11
+Copy + paste `data/` into the target directory:
 
-1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev librust-alsa-sys-dev`
-2. `cargo build --release --features speech_dispatcher_0_9`
+```
+cacophony/
+....target/
+........<debug or release>/
+............Cacophony
+............data/
+```
 
-#### Debian 12
+You can move `Cacophony` out of the target directory but it must be in the same folder as `data/`.
 
-1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev librust-alsa-sys-dev`
-2. `cargo build --release --features speech_dispatcher_0_11`
+To launch the application:
 
-#### Ubuntu 18
+```bash
+./Cacophony
+```
 
-1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa`
-2. `cargo build --release --features speech_dispatcher_0_9`
-
-#### Ubuntu 20
-
-1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
-2. `cargo build --release --features speech_dispatcher_0_9`
-
-#### Ubuntu 22
-
-1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
-2. `cargo build --release --features speech_dispatcher_0_11`
+(Sorry, but double-clicking doesn't work. I don't know why.)
 
 ### MacOS
 
-1. `cargo install cargo-bundle`
-2. `cargo bundle --release`
+Navigate to the target directory and double-click Cacophony.app
 
 ### Windows
 
-1. `cargo build --release`
+Copy + paste `data/` into the target directory:
+
+```
+cacophony/
+....target/
+........<debug or release>/
+............Cacophony.exe
+............data/
+```
+
+You can move `Cacophony.exe` out of the target directory but it must be in the same folder as `data/`.
+
+To launch the application, double-click `Cacophony.exe`
 
 ## Tests
 
@@ -86,30 +152,25 @@ EnableSoundFontPanel
 SelectFile
 ```
 
-## How to run
+## Known success stories
 
-You can run Cacophony like any other application or you can use Rust's `cargo run` to compile and execute.
+I've been able to run Cacophony on:
 
-### Linux
+Linux:
 
-There are two ways to run Cacophony:
+- Ubuntu 18.04 i386 with X11
+- Ubuntu 18.04 x64 with X11
+- Ubuntu 20.04 x64 with X11
+- Ubuntu 22.04 x64 with X11
 
-1. Copy + paste `data/` into the output directory (`target/release/`). Open a terminal in `release/` and run `./Cacophony` .
-2. Instead of `cargo build --release`, run `cargo run --release` Include the `--features` listed above, for example `cargo build --release --features speech_dispatcher_0_11` on Ubuntu 22
+MacOS:
 
-### MacOS
+- Catalina 10.15.7 x64
+- Ventura 13.2.1 Apple Silicon
 
-There are two ways to run Cacophony:
+Windows:
 
-1. After compiling, double-click `Cacophony.app` (located in `./target/release/`)
-2. `cargo run --release` This will compile and launch the application but it won't create a .app
-
-### Windows
-
-There are two ways to run Cacophony:
-
-1. Copy + paste `data/` into the output directory (`target/release/`) and double-click `Cacophony.exe` (located in `release/`)
-2. Instead of `cargo build --release`, run `cargo run --release`
+- Windows 10 x64
 
 ## Upload
 
