@@ -101,8 +101,7 @@ mod tests {
     use super::ChildPaths;
 
     #[test]
-    fn test_child_paths() {
-        // SoundFont.
+    fn test_sf2_child_paths() {
         let sf_directory = PathBuf::from("../data");
         assert!(sf_directory.exists());
         let mut child_paths = ChildPaths::default();
@@ -131,11 +130,30 @@ mod tests {
                 None => false
             }
         });
-        debug_assert_eq!(child_paths.children.len(), 13, "{:?}", &child_paths.children);
+        assert_eq!(child_paths.children.len(), 14);
         assert!(child_paths.selected.is_some());
         assert_eq!(child_paths.selected.unwrap(), 0);
         // Go "up" a directory.
         child_paths.set(&parent_directory, &Extension::Sf2, Some(sf_directory.clone()));
+        // Test the selection.
         assert_eq!(child_paths.children[child_paths.selected.unwrap()].stem, "data");
+    }
+
+    #[test]
+    fn test_cac_child_paths() {
+        let cac_directory = PathBuf::from("../test_files/child_paths");
+        assert!(cac_directory.exists());
+        let mut child_paths = ChildPaths::default();
+        child_paths.set(&cac_directory, &Extension::Cac, None);
+        assert_eq!(child_paths.children.len(), 3);
+        test_cac_file(&child_paths, child_paths.selected.unwrap(), "test_0.cac");
+        test_cac_file(&child_paths, 1, "test_1.cac");
+        test_cac_file(&child_paths, 2, "test_2.CAC");
+    }
+
+    fn test_cac_file(child_paths: &ChildPaths, index: usize, filename: &str) {
+        let f = &child_paths.children[index];
+        assert!(f.is_file);
+        assert_eq!(f.stem, filename);
     }
 }

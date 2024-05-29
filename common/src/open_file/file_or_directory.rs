@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 /// Cached data for a file or directory because is_file() is a little too slow for my taste.
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Default, Deserialize, Serialize)]
 pub struct FileOrDirectory {
     /// The file.
     pub path: PathBuf,
