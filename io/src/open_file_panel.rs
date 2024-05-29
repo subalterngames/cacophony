@@ -53,9 +53,6 @@ impl OpenFilePanel {
     /// Enable the panel for setting the save path to be written to.
     pub fn write_save(&mut self, state: &mut State, paths_state: &mut PathsState) {
         self.enable_as_save(OpenFileType::WriteSave, state, paths_state);
-        paths_state
-            .children
-            .set(&paths_state.midis.directory.path, &Extension::Cac, None);
     }
 
     /// Enable a panel for setting the export path.
