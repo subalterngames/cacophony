@@ -18,5 +18,8 @@ midir = { workspace = true }
 parking_lot = { workspace = true }
 clap = { workspace = true }
 
+[dev-dependencies]
+midly = { workspace = true }
+
 [dependencies.common]
 path = "../common"
