@@ -2,7 +2,8 @@ FROM archlinux:latest
 
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-RUN mkdir cacophony
+RUN mkdir cacophony && \
+pacman -Syu --noconfirm clang make pkgconfig rust speech-dispatcher alsa-lib openssl alsa-utils
 
 WORKDIR $HOME/cacophony
 
@@ -28,6 +29,4 @@ COPY test_files/ test_files/
 
 COPY text/ text/
 
-RUN pacman -Syu --noconfirm clang make pkgconfig rust speech-dispatcher alsa-lib openssl
-
-RUN cargo test --all --features speech_dispatcher_0_11
+ENTRYPOINT cargo test --all --features speech_dispatcher_0_11
