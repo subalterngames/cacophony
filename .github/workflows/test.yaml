@@ -72,7 +72,7 @@ jobs:
       # Test for Ubuntu 20.04
       - name: Test
         run: |
-          speech-dispatcher -d
+          speech-dispatcher -d &
           cargo test --all --features speech_dispatcher_0_9
         if: matrix.os == 'ubuntu-20.04'
 
