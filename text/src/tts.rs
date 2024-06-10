@@ -100,7 +100,7 @@ impl TTS {
             Err(error) => {
                 println!("{}", error);
                 (None, false)
-            },
+            }
         };
         Self {
             show_subtitles,
