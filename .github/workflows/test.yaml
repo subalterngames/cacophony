@@ -72,8 +72,8 @@ jobs:
       # Test for Ubuntu 20.04
       - name: Test
         run: |
-          systemctl start speech-dispatcher
-          cargo test --all --features speech_dispatcher_0_9
+          speech-dispatcher -d & 
+          cargo test --all --features speech_dispatcher_0_11
         if: matrix.os == 'ubuntu-20.04'
 
       # Test for Ubuntu 22.04
