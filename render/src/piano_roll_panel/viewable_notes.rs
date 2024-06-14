@@ -83,10 +83,10 @@ impl<'a> ViewableNotes<'a> {
         };
 
         // Get the selected notes.
-        let selected = match state.select_mode.get_notes(&state.music) {
-            Some(selected) => selected,
-            None => vec![],
-        };
+        let selected = state
+            .select_mode
+            .get_notes(&state.music)
+            .unwrap_or_default();
         let mut notes = vec![];
         for note in track.notes.iter() {
             // Is the note in view?
