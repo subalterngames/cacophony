@@ -68,9 +68,72 @@ impl MidiConn {
 
     /// The MIDI callback function. Send the message out of the thread.
     fn midi_callback(_: u64, message: &[u8], sender: &mut MidiBuffer) {
-        let mut m = [0u8; 3];
-        m.copy_from_slice(&message[0..3]);
+        const LEN: usize = 3;
+
+        // There are a few 2-byte MIDI messages that need to be ignored.
+        if message.len() != LEN {
+            return;
+        }
+        let mut m = [0u8; LEN];
+        m.copy_from_slice(message);
         let mut buffer = sender.lock();
         buffer.push(m);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use super::MidiConn;
+
+    use midly::{live::LiveEvent, MidiMessage};
+    use parking_lot::Mutex;
+
+    #[test]
+    fn midi_test() {
+        // These messages should be ready.
+        for midi_message in [
+            MidiMessage::NoteOn {
+                key: 60.into(),
+                vel: 120.into(),
+            },
+            MidiMessage::NoteOff {
+                key: 60.into(),
+                vel: 120.into(),
+            },
+        ]
+        .iter()
+        .zip([144, 128])
+        {
+            let message = LiveEvent::Midi {
+                channel: 0.into(),
+                message: midi_message.0.clone(),
+            };
+            let mut buffer_conn = Arc::new(Mutex::new(Vec::new()));
+            let mut buffer_message = Vec::new();
+            message.write(&mut buffer_message).unwrap();
+            MidiConn::midi_callback(0, &buffer_message, &mut buffer_conn);
+            // The message was ready.
+            let b = buffer_conn.lock();
+            assert_eq!(b.len(), 1);
+            assert_eq!(b[0], [midi_message.1, 60, 120]);
+        }
+        // These messages should be ignored.
+        for ignore_message in [
+            MidiMessage::ChannelAftertouch { vel: 5.into() },
+            MidiMessage::ProgramChange { program: 0.into() },
+        ] {
+            let message = LiveEvent::Midi {
+                channel: 0.into(),
+                message: ignore_message,
+            };
+            let mut buffer_conn = Arc::new(Mutex::new(Vec::new()));
+            let mut buffer_message = Vec::new();
+            message.write(&mut buffer_message).unwrap();
+            MidiConn::midi_callback(0, &buffer_message, &mut buffer_conn);
+            // The message was ignored.
+            assert_eq!(buffer_conn.lock().len(), 0);
+        }
     }
 }
