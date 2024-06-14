@@ -75,10 +75,8 @@ git = "https://github.com/subalterngames/OxiSynth.git"
 branch = "midi_event_copy_clone"
 
 [workspace.dependencies.tts]
-version = "0.25.6"
+version = "0.26.1"
 default-features = false
-git = "https://github.com/subalterngames/tts-rs.git"
-branch = "speech_dispatcher_voices_panic"
 
 [features]
 speech_dispatcher_0_11 = ["text/speech_dispatcher_0_11"]
