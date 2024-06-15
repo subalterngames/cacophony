@@ -5,6 +5,7 @@
 - Fixed: Crash if a Channel Pressure or Program Change message is sent from a MIDI controller.
 - (Backend) Added some more tests
 - (Backend) Bumped ureq version (fixes a security warning)
+- (Backend) Added tests for TTS
 
 ## 0.2.4
 

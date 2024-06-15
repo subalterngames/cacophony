@@ -97,7 +97,10 @@ impl TTS {
                 let _ = tts.set_rate(parse(section, rate_key));
                 (Some(tts), callbacks)
             }
-            Err(_) => (None, false),
+            Err(error) => {
+                println!("{}", error);
+                (None, false)
+            }
         };
         Self {
             show_subtitles,
@@ -254,4 +257,29 @@ fn on_utterance_begin(utterance: UtteranceId) {
 fn on_utterance_end(_: UtteranceId) {
     let mut u = UTTERANCE_ID.lock();
     *u = None;
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Enqueable;
+    use common::get_test_config;
+
+    use super::TTS;
+
+    #[test]
+    fn test_tts() {
+        const TTS_STRING: &str = "Hello world!";
+
+        let config = get_test_config();
+        let mut tts = TTS::new(&config);
+        assert!(tts.tts.is_some());
+        tts.enqueue(TTS_STRING);
+        assert_eq!(tts.speech.len(), 1);
+        assert!(tts.show_subtitles);
+        assert_eq!(tts.get_subtitles().unwrap(), TTS_STRING);
+        tts.update();
+        assert!(tts.is_speaking());
+        tts.stop();
+        tts.update();
+    }
 }

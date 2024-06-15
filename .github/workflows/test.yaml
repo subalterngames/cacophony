@@ -35,7 +35,7 @@ jobs:
 
       # Install the required dependencies
       - name: Install test dependencies
-        run: sudo apt-get install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
+        run: sudo apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev -y
 
       # Cargo fmt
       - uses: actions-rs/cargo@v1
@@ -68,12 +68,14 @@ jobs:
 
       # Install the required dependencies on Ubuntu
       - name: Install test dependencies
-        run: sudo apt-get install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
+        run: sudo apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev -y
         if: ${{ contains(matrix.os, 'ubuntu') }}
 
-      # Test for Ubuntu 20.04
+      # Test for Ubuntu 20.04. Copy a valid speechd.conf file and then test.
       - name: Test
-        run: cargo test --all --features speech_dispatcher_0_9
+        run: |
+          sudo cp test_files/ubuntu20.04/speechd.conf /etc/speech-dispatcher/speechd.conf
+          cargo test --all --features speech_dispatcher_0_9
         if: matrix.os == 'ubuntu-20.04'
 
       # Test for Ubuntu 22.04
