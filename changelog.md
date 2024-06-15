@@ -1,5 +1,11 @@
 # 0.2.x
 
+## 0.2.5
+
+- Fixed: Crash if a Channel Pressure or Program Change message is sent from a MIDI controller.
+- (Backend) Added some more tests
+- (Backend) Bumped ureq version (fixes a security warning)
+
 ## 0.2.4
 
 - Fixed: If note is played via a qwerty key press, and then an octave is changed via a qwerty key press, there won't be a note-off event.
