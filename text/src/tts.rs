@@ -117,6 +117,9 @@ impl TTS {
                 let _ = tts.stop().is_ok();
             }
             self.speech.clear();
+            if self.callbacks {
+                *UTTERANCE_ID.lock() = None;
+            }
         }
     }
 
@@ -147,8 +150,7 @@ impl TTS {
         match &self.tts {
             Some(tts) => {
                 if self.callbacks {
-                    let u = UTTERANCE_ID.lock();
-                    u.is_some()
+                    UTTERANCE_ID.lock().is_some()
                 } else {
                     tts.is_speaking().unwrap_or(false)
                 }
@@ -174,8 +176,7 @@ impl TTS {
     #[cfg(not(target_os = "macos"))]
     fn on_utter(&self, utterance: Option<UtteranceId>) {
         if self.callbacks {
-            let mut u = UTTERANCE_ID.lock();
-            *u = utterance;
+            *UTTERANCE_ID.lock() = utterance;
         }
     }
 }
