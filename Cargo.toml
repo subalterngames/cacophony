@@ -2,7 +2,7 @@
 members = ["audio", "common", "input", "io", "render", "text"]
 
 [workspace.package]
-version = "0.2.4"
+version = "0.2.5"
 authors = ["Esther Alter <subalterngames@gmail.com>"]
 description = "A minimalist and ergonomic MIDI sequencer"
 documentation = "https://github.com/subalterngames/cacophony"
@@ -48,7 +48,7 @@ default-features = false
 features = []
 
 [workspace.dependencies.ureq]
-version = "2.8.0"
+version = "2.9.7"
 default-features = false
 features = ["tls"]
 
@@ -84,7 +84,7 @@ speech_dispatcher_0_9 = ["text/speech_dispatcher_0_9"]
 
 [package]
 name = "cacophony"
-version = "0.2.4"
+version = "0.2.5"
 authors = ["Esther Alter <subalterngames@gmail.com>"]
 description = "A minimalist and ergonomic MIDI sequencer"
 documentation = "https://github.com/subalterngames/cacophony"
@@ -120,7 +120,7 @@ path = "text"
 name = "Cacophony"
 identifier = "com.subalterngames.cacophony"
 icon = ["icon/32.png", "icon/64.png", "icon/128.png", "icon/256.png"]
-version = "0.2.4"
+version = "0.2.5"
 resources = ["data/*"]
 copyright = "Copyright (c) Subaltern Games LLC 2023. All rights reserved."
 short_description = "A minimalist and ergonomic MIDI sequencer."
