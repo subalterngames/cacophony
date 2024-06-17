@@ -114,7 +114,7 @@ impl TTS {
     pub fn stop(&mut self) {
         if self.is_speaking() {
             if let Some(tts) = &mut self.tts {
-                if tts.stop().is_ok() {}
+                let _ = tts.stop().is_ok();
             }
             self.speech.clear();
         }
@@ -281,5 +281,6 @@ mod tests {
         assert!(tts.is_speaking());
         tts.stop();
         tts.update();
+        assert!(!tts.is_speaking());
     }
 }
