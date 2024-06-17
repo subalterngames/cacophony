@@ -3,7 +3,8 @@
 ## 0.2.5
 
 - Dropped MacOS 11 builds on itch because there isn't a GitHub workflow runner anymore.
-- Added MacOS 14 builds to itch.
+- Added MacOS 14 builds to tests and itch uploads.
+- Added Ubuntu 24.04 builds to tests and itch uploads.
 - Fixed: Crash if a Channel Pressure or Program Change message is sent from a MIDI controller.
 - (Backend) Added some more tests
 - (Backend) Bumped ureq version (fixes a security warning)
