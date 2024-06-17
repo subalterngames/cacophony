@@ -18,6 +18,9 @@ jobs:
           - os: ubuntu-22.04
             version: 22
             feature: speech_dispatcher_0_11
+          - os: ubuntu-24.04
+            version: 24
+            feature: speech_dispatcher_0_11
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
