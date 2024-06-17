@@ -259,6 +259,8 @@ fn on_utterance_end(_: UtteranceId) {
 
 #[cfg(test)]
 mod tests {
+    use std::{thread::sleep, time::Duration};
+
     use crate::Enqueable;
     use common::get_test_config;
 
@@ -279,6 +281,8 @@ mod tests {
         assert!(tts.is_speaking());
         tts.stop();
         tts.update();
+        // Let Casey finish speaking.
+        sleep(Duration::from_secs(1));
         assert!(!tts.is_speaking());
     }
 }
