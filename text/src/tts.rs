@@ -117,9 +117,6 @@ impl TTS {
                 let _ = tts.stop().is_ok();
             }
             self.speech.clear();
-            if self.callbacks {
-                *UTTERANCE_ID.lock() = None;
-            }
         }
     }
 
