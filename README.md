@@ -20,6 +20,7 @@ Linux:
 - Ubuntu 18.04 x64 with X11
 - Ubuntu 20.04 x64 with X11
 - Ubuntu 22.04 x64 with X11
+- Ubuntu 24.04 x64 with X11
 
 MacOS:
 
@@ -57,7 +58,7 @@ Windows:
 1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
 2. `cargo build --release --features speech_dispatcher_0_9`
 
-#### Ubuntu 22
+#### Ubuntu 22 and 24
 
 1. `apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev`
 2. `cargo build --release --features speech_dispatcher_0_11`
