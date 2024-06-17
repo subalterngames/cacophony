@@ -25,7 +25,7 @@ edit = "0.1.4"
 regex = "1.9.1"
 parking_lot = "0.12.1"
 num-traits = "0.2.16"
-webbrowser = "0.8.10"
+webbrowser = "1.0.1"
 lazy_static = "1.4.0"
 midly = "0.5.3"
 flacenc = "0.3.0"
@@ -75,10 +75,8 @@ git = "https://github.com/subalterngames/OxiSynth.git"
 branch = "midi_event_copy_clone"
 
 [workspace.dependencies.tts]
-version = "0.25.6"
+version = "0.26.1"
 default-features = false
-git = "https://github.com/subalterngames/tts-rs.git"
-branch = "speech_dispatcher_voices_panic"
 
 [features]
 speech_dispatcher_0_11 = ["text/speech_dispatcher_0_11"]
