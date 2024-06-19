@@ -2315,7 +2315,6 @@ dependencies = [
  "csv",
  "hashbrown 0.13.2",
  "input",
- "lazy_static",
  "macroquad",
  "parking_lot 0.12.3",
  "regex",

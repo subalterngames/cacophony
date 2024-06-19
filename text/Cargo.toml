@@ -13,7 +13,6 @@ csv = { workspace = true }
 hashbrown = { workspace = true }
 regex = { workspace = true }
 tts = { workspace = true }
-lazy_static = { workspace = true }
 parking_lot = { workspace = true }
 
 [dependencies.common]
