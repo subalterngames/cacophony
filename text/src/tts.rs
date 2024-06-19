@@ -114,7 +114,15 @@ impl TTS {
     pub fn stop(&mut self) {
         if self.is_speaking() {
             if let Some(tts) = &mut self.tts {
-                let _ = tts.stop().is_ok();
+                let _ = tts.stop();
+
+                // This fixes a race condition.
+                // Speech Dispatcher won't immediately stop.
+                if cfg!(unix) {
+                    if let Some(mut u) = UTTERANCE_ID.try_lock() {
+                        *u = None;
+                    }
+                }
             }
             self.speech.clear();
         }
@@ -147,7 +155,10 @@ impl TTS {
         match &self.tts {
             Some(tts) => {
                 if self.callbacks {
-                    UTTERANCE_ID.lock().is_some()
+                    match UTTERANCE_ID.try_lock() {
+                        Some(id) => id.is_some(),
+                        None => false,
+                    }
                 } else {
                     tts.is_speaking().unwrap_or(false)
                 }
@@ -247,18 +258,23 @@ pub trait Enqueable<T> {
 
 /// Invoked when an utterance begins.
 fn on_utterance_begin(utterance: UtteranceId) {
-    let mut u = UTTERANCE_ID.lock();
-    *u = Some(utterance);
+    // Use try_lock to handle situations in which Cacophony shuts down and drops tts.
+    if let Some(mut u) = UTTERANCE_ID.try_lock() {
+        *u = Some(utterance);
+    }
 }
 
 /// Invoked when an utterance ends.
 fn on_utterance_end(_: UtteranceId) {
-    let mut u = UTTERANCE_ID.lock();
-    *u = None;
+    // Use try_lock to handle situations in which Cacophony shuts down and drops tts.
+    if let Some(mut u) = UTTERANCE_ID.try_lock() {
+        *u = None;
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    #[cfg(unix)]
     use std::{thread::sleep, time::Duration};
 
     use crate::Enqueable;
@@ -281,8 +297,12 @@ mod tests {
         assert!(tts.is_speaking());
         tts.stop();
         tts.update();
-        // Let Casey finish speaking.
-        sleep(Duration::from_secs(1));
+        println!("stopped");
         assert!(!tts.is_speaking());
+
+        // This fixes a PoisonError.
+        // The race condition is somewhere in speech-dispatcher-sys.
+        #[cfg(unix)]
+        sleep(Duration::from_secs(2));
     }
 }
