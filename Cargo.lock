@@ -2316,7 +2316,6 @@ dependencies = [
  "hashbrown 0.13.2",
  "input",
  "macroquad",
- "parking_lot 0.12.3",
  "regex",
  "rust-ini",
  "tts",
