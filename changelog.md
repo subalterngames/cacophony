@@ -9,7 +9,8 @@
 - Fixed: Various TTS race conditions.
 - (Backend) Added some more tests
 - (Backend) Bumped ureq version (fixes a security warning)
-- (Backend) Bumped Cargo.lock versions (this should fix security warnings)
+- (Backend) Bumped Cargo.lock versions (fixes a security warning)
+- (Backend) Removed audio/Cargo.lock (fixes a spurious security warning)
 - (Backend) Added tests for TTS
 
 ## 0.2.4
