@@ -75,15 +75,15 @@ jobs:
       - name: Test
         run: |
           sudo cp test_files/ubuntu20.04/speechd.conf /etc/speech-dispatcher/speechd.conf
-          cargo test --all --features speech_dispatcher_0_9
+          cargo test --all --features speech_dispatcher_0_9 -- --nocapture
         if: matrix.os == 'ubuntu-20.04'
 
       # Test for Ubuntu 22.04
       - name: Test
-        run: cargo test --all --features speech_dispatcher_0_11
+        run: cargo test --all --features speech_dispatcher_0_11 -- --nocapture
         if: matrix.os == 'ubuntu-22.04' || matrix.os == 'ubuntu-24.04'
 
       # Test for windows and mac
       - name: Test
-        run: cargo test --all
+        run: cargo test --all -- --nocapture
         if: ${{ !contains(matrix.os, 'ubuntu') }}

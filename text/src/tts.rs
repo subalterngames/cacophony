@@ -1,13 +1,7 @@
 use crate::TtsString;
 use common::config::{parse, parse_bool};
 use ini::Ini;
-use lazy_static::lazy_static;
-use parking_lot::Mutex;
-use tts::{Gender, Tts, UtteranceId, Voice};
-
-lazy_static! {
-    static ref UTTERANCE_ID: Mutex<Option<UtteranceId>> = Mutex::new(None);
-}
+use tts::{Gender, Tts, Voice};
 
 /// Text-to-speech.
 pub struct TTS {
@@ -17,8 +11,8 @@ pub struct TTS {
     speech: Vec<TtsString>,
     /// If true, return subtitle text.
     pub show_subtitles: bool,
-    /// If true, callbacks are supported.
-    callbacks: bool,
+    /// If true, Casey is speaking.
+    pub speaking: bool,
 }
 
 impl TTS {
@@ -27,15 +21,8 @@ impl TTS {
         // Get subtitles.
         let show_subtitles = parse_bool(section, "subtitles");
         // Try to load the text-to-speech engine.
-        let (tts, callbacks) = match Tts::default() {
+        let tts = match Tts::default() {
             Ok(mut tts) => {
-                let callbacks =
-                    tts.supported_features().utterance_callbacks && !cfg!(target_os = "macos");
-                if callbacks {
-                    let _ = tts.on_utterance_begin(Some(Box::new(on_utterance_begin)));
-                    let _ = tts.on_utterance_end(Some(Box::new(on_utterance_end)));
-                    let _ = tts.on_utterance_stop(Some(Box::new(on_utterance_end)));
-                }
                 // Try to set the voice.
                 if let Ok(voices) = tts.voices() {
                     // Try to parse the voice ID as an index.
@@ -95,26 +82,27 @@ impl TTS {
                     "rate_linux"
                 };
                 let _ = tts.set_rate(parse(section, rate_key));
-                (Some(tts), callbacks)
+                Some(tts)
             }
             Err(error) => {
                 println!("{}", error);
-                (None, false)
+                None
             }
         };
         Self {
             show_subtitles,
             tts,
             speech: vec![],
-            callbacks,
+            speaking: false,
         }
     }
 
     /// Stop speaking.
     pub fn stop(&mut self) {
-        if self.is_speaking() {
+        if self.speaking {
             if let Some(tts) = &mut self.tts {
-                if tts.stop().is_ok() {}
+                let _ = tts.stop();
+                self.speaking = false;
             }
             self.speech.clear();
         }
@@ -123,7 +111,7 @@ impl TTS {
     /// Update the subtitle state.
     pub fn update(&mut self) {
         // We're done speaking but we have more to say.
-        if !self.speech.is_empty() && !self.is_speaking() {
+        if !self.speech.is_empty() && !self.speaking {
             // Remove the first element.
             self.speech.remove(0);
             // Start speaking the next element.
@@ -142,40 +130,12 @@ impl TTS {
         }
     }
 
-    /// Returns true if Casey is speaking.
-    fn is_speaking(&self) -> bool {
-        match &self.tts {
-            Some(tts) => {
-                if self.callbacks {
-                    let u = UTTERANCE_ID.lock();
-                    u.is_some()
-                } else {
-                    tts.is_speaking().unwrap_or(false)
-                }
-            }
-            None => false,
-        }
-    }
-
     /// Say something and show subtitles.
     fn say(&mut self, text: &str) {
         if let Some(tts) = &mut self.tts {
-            if let Ok(utterance) = tts.speak(text, true) {
-                self.on_utter(utterance);
+            if tts.speak(text, true).is_ok() {
+                self.speaking = true;
             }
-        }
-    }
-
-    /// Don't use utterances because we can't clone them.
-    #[cfg(target_os = "macos")]
-    fn on_utter(&self, _: Option<UtteranceId>) {}
-
-    /// Store the utterance.
-    #[cfg(not(target_os = "macos"))]
-    fn on_utter(&self, utterance: Option<UtteranceId>) {
-        if self.callbacks {
-            let mut u = UTTERANCE_ID.lock();
-            *u = utterance;
         }
     }
 }
@@ -183,7 +143,7 @@ impl TTS {
 impl Enqueable<TtsString> for TTS {
     fn enqueue(&mut self, text: TtsString) {
         // Start speaking the first element.
-        if !self.is_speaking() {
+        if !self.speaking {
             self.say(&text.spoken)
         }
         // Push this element. We need it for subtitles.
@@ -194,7 +154,7 @@ impl Enqueable<TtsString> for TTS {
 impl Enqueable<&TtsString> for TTS {
     fn enqueue(&mut self, text: &TtsString) {
         // Start speaking the first element.
-        if !self.is_speaking() {
+        if !self.speaking {
             self.say(&text.spoken)
         }
         // Push this element. We need it for subtitles.
@@ -220,7 +180,7 @@ impl Enqueable<Vec<TtsString>> for TTS {
             return;
         }
         // Start speaking the first element.
-        if !self.is_speaking() {
+        if !self.speaking {
             self.say(&text[0].spoken)
         }
         self.speech.extend(text);
@@ -233,7 +193,7 @@ impl Enqueable<Vec<&TtsString>> for TTS {
             return;
         }
         // Start speaking the first element.
-        if !self.is_speaking() {
+        if !self.speaking {
             self.say(&text[0].spoken)
         }
         self.speech
@@ -245,18 +205,6 @@ impl Enqueable<Vec<&TtsString>> for TTS {
 pub trait Enqueable<T> {
     /// Enqueue something to the text-to-speech strings.
     fn enqueue(&mut self, text: T);
-}
-
-/// Invoked when an utterance begins.
-fn on_utterance_begin(utterance: UtteranceId) {
-    let mut u = UTTERANCE_ID.lock();
-    *u = Some(utterance);
-}
-
-/// Invoked when an utterance ends.
-fn on_utterance_end(_: UtteranceId) {
-    let mut u = UTTERANCE_ID.lock();
-    *u = None;
 }
 
 #[cfg(test)]
@@ -278,8 +226,9 @@ mod tests {
         assert!(tts.show_subtitles);
         assert_eq!(tts.get_subtitles().unwrap(), TTS_STRING);
         tts.update();
-        assert!(tts.is_speaking());
+        assert!(tts.speaking);
         tts.stop();
         tts.update();
+        assert!(!tts.speaking);
     }
 }
