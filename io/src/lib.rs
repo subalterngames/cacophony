@@ -441,6 +441,15 @@ impl IO {
             // Start to play music.
             conn.set_music(state);
         }
+        // No music is playing.
+        if state.input.is_playing
+            && matches!(
+                *conn.play_state.lock(),
+                PlayState::NotPlaying | PlayState::Decaying
+            )
+        {
+            state.input.is_playing = false;
+        }
         // We're not done yet.
         false
     }

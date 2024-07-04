@@ -1,5 +1,9 @@
 # 0.2.x
 
+## 0.2.6
+
+- Fixed: If you let all notes in your music play (as opposed to stopping in the middle), it frequently becomes impossible to play or add new notes.
+
 ## 0.2.5
 
 - Dropped MacOS 11 builds on itch because there isn't a GitHub workflow runner anymore.
