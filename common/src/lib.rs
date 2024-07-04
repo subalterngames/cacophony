@@ -46,6 +46,7 @@ pub use piano_roll_mode::PianoRollMode;
 use std::env::current_dir;
 use std::fs::{metadata, File};
 use std::io::Read;
+use std::option_env;
 use std::path::{Path, PathBuf};
 pub mod font;
 pub mod open_file;
@@ -72,7 +73,10 @@ pub fn get_bytes(path: &Path) -> Vec<u8> {
 
 /// Default directory for looking at the 'data/' folder.
 pub fn get_default_data_folder() -> PathBuf {
-    current_dir().unwrap().join("data")
+    match option_env!("CACOPHONY_BUILD_DATA_DIR") {
+        Some(dir) => PathBuf::from(dir),
+        None => current_dir().unwrap().join("data"),
+    }
 }
 
 #[cfg(debug_assertions)]

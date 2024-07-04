@@ -3,6 +3,7 @@
 ## 0.2.6
 
 - Fixed: If you let all notes in your music play (as opposed to stopping in the middle), it frequently becomes impossible to play or add new notes.
+- Added a build env variable: Set `CACOPHONY_BUILD_DATA_DIR` to set the default path to the data directory.
 
 ## 0.2.5
 

@@ -72,6 +72,15 @@ Windows:
 
 1. `cargo build --release`
 
+## Set the `data` directory
+
+Cacophony's default data directory is located at `../data`. To set the default data directory at *compile time*, set the `CACOPHONY_BUILD_DATA_DIR` enviroment variable:
+
+```bash
+export CACOPHONY_BUILD_DATA_DIR=/usr/share/cacophony
+cargo build --release
+```
+
 ## Tests
 
 To test, just `cargo test --all`.
