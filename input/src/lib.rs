@@ -16,7 +16,7 @@ mod qwerty_binding;
 use common::args::Args;
 use common::{State, MAX_NOTE, MIN_NOTE};
 #[cfg(debug_assertions)]
-pub use debug_input_event::DebugInputEvent;
+use debug_input_event::DebugInputEvent;
 use hashbrown::HashMap;
 use ini::Ini;
 pub use input_event::InputEvent;
