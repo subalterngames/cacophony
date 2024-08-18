@@ -48,14 +48,15 @@ impl Decayer {
     }
 
     fn set_decaying(&mut self, len: usize) {
-        self.decaying = self.buffer[0..Self::get_len(len)].iter().any(|s| s.abs() > SILENCE);
+        self.decaying = self.buffer[0..Self::get_len(len)]
+            .iter()
+            .any(|s| s.abs() > SILENCE);
     }
 
     fn get_len(len: usize) -> usize {
         if len <= DECAY_CHUNK_SIZE {
             len
-        }
-        else {
+        } else {
             DECAY_CHUNK_SIZE
         }
     }
