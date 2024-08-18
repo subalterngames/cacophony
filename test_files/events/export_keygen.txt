@@ -1,0 +1,11 @@
+NextPanel
+AddTrack
+EnableSoundFontPanel
+SelectFile
+NextPanel
+Arm
+A
+NotesOff
+ExportFile
+a
+SelectFile

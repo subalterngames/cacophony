@@ -87,3 +87,13 @@ jobs:
       - name: Test
         run: cargo test --all -- --nocapture
         if: ${{ !contains(matrix.os, 'ubuntu') }}
+
+      - name: Test events
+        env:
+          SOUNDFONTS_DIRECTORY: $HOME/Documents/cacophony/soundfonts
+        run: |
+          mkdir -p ${{ env.SOUNDFONTS_DIRECTORY }}
+          cp -r test_files/soundfonts/* ${{ env.SOUNDFONTS_DIRECTORY }}
+          sudo apt install xvfb -y
+          for f in test_files/events/*.txt ; do echo "Quit\nQuitPanelYes" >> f && xvfb-run cargo run -- --events $f
+        if: matrix.os == 'ubuntu-24.04'
