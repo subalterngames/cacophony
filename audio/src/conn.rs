@@ -455,15 +455,18 @@ impl Conn {
             // Set the initial wav export state.
             Self::set_export_state_wav(exportable, &export_state, 0);
             let mut synth = synth.lock();
-            for t in 0..total_samples {
+            for t in 0..=total_samples {
                 // Get and send each event at this time.
                 for event in exportable.events.dequeue(t).iter() {
                     let _ = synth.send_event(*event);
                 }
                 // Set the export state.
                 Self::set_export_state_wav(exportable, &export_state, t);
-                let t = t as usize;
-                (left[t], right[t]) = synth.read_next();
+                // We are iterating to `total_samples` in order to get events at t=1.
+                if t < total_samples {
+                    let t = t as usize;
+                    (left[t], right[t]) = synth.read_next();
+                }
             }
             // Append decaying silence.
             Self::set_export_state(&export_state, ExportState::AppendingDecay);

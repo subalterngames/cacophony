@@ -26,7 +26,7 @@ impl Default for Decayer {
 
 impl Decayer {
     pub fn decay_shared(&mut self, synth: &SharedSynth, len: usize) {
-        for sample in self.buffer[0..len].chunks_mut(2) {
+        for sample in self.buffer[0..Self::get_len(len)].chunks_mut(2) {
             let mut synth = synth.lock();
             synth.write(sample);
         }
@@ -48,6 +48,15 @@ impl Decayer {
     }
 
     fn set_decaying(&mut self, len: usize) {
-        self.decaying = self.buffer[0..len].iter().any(|s| s.abs() > SILENCE);
+        self.decaying = self.buffer[0..Self::get_len(len)].iter().any(|s| s.abs() > SILENCE);
+    }
+
+    fn get_len(len: usize) -> usize {
+        if len <= DECAY_CHUNK_SIZE {
+            len
+        }
+        else {
+            DECAY_CHUNK_SIZE
+        }
     }
 }

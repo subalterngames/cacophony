@@ -2,6 +2,8 @@
 
 ## 0.2.7
 
+- Fixed: Note-off events at the end of a track are sometimes not detected during export
+- Fixed: Panic when decaying audio if the output buffer exceeds the length of the decay buffer.
 - Allow alphanumeric input in `--events events.txt`.
 
 ## 0.2.6
