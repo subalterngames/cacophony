@@ -3,14 +3,20 @@
 //! - `InputEvent` is an enum defining an event triggered by user input, e.g. a decrease in track volume.
 //! - `Input` maps raw qwerty keycode and raw MIDI messages (control bindings) to input events. It updates per frame, reading input and storing new events.
 
+#[cfg(debug_assertions)]
+mod debug_input_event;
+
 mod input_event;
 mod keys;
 mod midi_binding;
 mod midi_conn;
 mod note_on;
 mod qwerty_binding;
+
 use common::args::Args;
 use common::{State, MAX_NOTE, MIN_NOTE};
+#[cfg(debug_assertions)]
+use debug_input_event::DebugInputEvent;
 use hashbrown::HashMap;
 use ini::Ini;
 pub use input_event::InputEvent;
@@ -89,7 +95,8 @@ pub struct Input {
     /// Characters pressed on this frame.
     pub pressed_chars: Vec<char>,
     /// Debug input events.
-    debug_inputs: Vec<InputEvent>,
+    #[cfg(debug_assertions)]
+    debug_inputs: Vec<DebugInputEvent>,
     /// The MIDI time counter.
     time_counter: i16,
 }
@@ -126,8 +133,11 @@ impl Input {
                     let lines = s.split('\n');
                     for line in lines {
                         match line.trim().parse::<InputEvent>() {
-                            Ok(e) => debug_inputs.push(e),
-                            Err(_) => panic!("Failed to parse {}", line),
+                            Ok(e) => debug_inputs.push(DebugInputEvent::InputEvent(e)),
+                            Err(_) => line
+                                .trim()
+                                .chars()
+                                .for_each(|c| debug_inputs.push(DebugInputEvent::Alphanumeric(c))),
                         }
                     }
                 }
@@ -193,8 +203,12 @@ impl Input {
 
         // DEBUG.
         if cfg!(debug_assertions) && !&self.debug_inputs.is_empty() {
-            let e = self.debug_inputs.remove(0);
-            events.push(e);
+            match self.debug_inputs.remove(0) {
+                // Push an event.
+                DebugInputEvent::InputEvent(e) => events.push(e),
+                // Push a char.
+                DebugInputEvent::Alphanumeric(c) => self.pressed_chars.push(c),
+            }
         }
 
         // Qwerty note input.
