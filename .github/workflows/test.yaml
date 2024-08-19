@@ -93,7 +93,7 @@ jobs:
         env:
           SOUNDFONTS_DIRECTORY: $HOME/Documents/cacophony/soundfonts
         run: |
-          sudo modprobe snd-summy
+          sudo modprobe snd-dummy
           mkdir -p ${{ env.SOUNDFONTS_DIRECTORY }}
           cp -r test_files/soundfonts/* ${{ env.SOUNDFONTS_DIRECTORY }}
           sudo apt install alsa-utils xvfb -y
