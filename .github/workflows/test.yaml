@@ -18,24 +18,10 @@ env:
   RUSTFLAGS: "-Dwarnings"
 
 jobs:
-  apt:
-    name: ubuntu-latest apt install
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu-24.04, ubuntu-22.04, ubuntu-20.04]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev
-          version: 1.0
   # Check for formatting and clippy
   lint:
-    name: cargo fmt && cargo clippy
+    name: Lint
     runs-on: ubuntu-latest
-    needs: apt
     steps:
       - uses: actions/checkout@v4
 
@@ -46,6 +32,10 @@ jobs:
           toolchain: stable
           components: rustfmt
           override: true
+
+      # Install the required dependencies
+      - name: Install test dependencies
+        run: sudo apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev -y
 
       # Cargo fmt
       - uses: actions-rs/cargo@v1
@@ -59,20 +49,27 @@ jobs:
           command: clippy
           args: --all-targets --features speech_dispatcher_0_11
 
-  # Run test check on Linux, macOS, and Windows,
+  # Run test check on Linux, macOS, and Windows.
   test:
-    name: cargo test
-    needs: lint
+    name: Test
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     strategy:
       fail-fast: true
       matrix:
         os: [ubuntu-24.04, ubuntu-22.04, ubuntu-20.04, macOS-14, macOS-13, macOS-12, windows-latest]
     steps:
-      # Install rust stable
+      - uses: actions/checkout@v4
+
+      # Install Rust stable.
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
+
+      # Install the required dependencies on Ubuntu.
+      - name: Install test dependencies
+        run: sudo apt install clang cmake speech-dispatcher libspeechd-dev pkg-config libssl-dev alsa librust-alsa-sys-dev -y
+        if: ${{ contains(matrix.os, 'ubuntu') }}
 
       # Test for Ubuntu 20.04. Copy a valid speechd.conf file and then test.
       - name: Test
@@ -81,7 +78,7 @@ jobs:
           cargo test --all --features speech_dispatcher_0_9 -- --nocapture
         if: matrix.os == 'ubuntu-20.04'
 
-      # Test for Ubuntu 22.04
+      # Test for Ubuntu 22.04.
       - name: Test
         run: cargo test --all --features speech_dispatcher_0_11 -- --nocapture
         if: matrix.os == 'ubuntu-22.04' || matrix.os == 'ubuntu-24.04'
@@ -90,12 +87,8 @@ jobs:
       - name: Test
         run: cargo test --all -- --nocapture
         if: ${{ !contains(matrix.os, 'ubuntu') }}
-  # Run windowed tests.
-  windowed_test:
-    needs: test
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
+      
+      # Windowed application tests.
       - name: Test events
         env:
           SOUNDFONTS_DIRECTORY: $HOME/Documents/cacophony/soundfonts
@@ -103,4 +96,6 @@ jobs:
           mkdir -p ${{ env.SOUNDFONTS_DIRECTORY }}
           cp -r test_files/soundfonts/* ${{ env.SOUNDFONTS_DIRECTORY }}
           sudo apt install alsa-utils xvfb -y
+          sudo modprobe snd-dummy
           for f in test_files/events/*.txt ; do echo "Quit\nQuitPanelYes" >> $f && xvfb-run cargo run -- --events $f ; done
+          if: matrix.os == 'ubuntu-24.04'
