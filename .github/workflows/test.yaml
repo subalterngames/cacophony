@@ -92,12 +92,9 @@ jobs:
       - name: Test events
         env:
           SOUNDFONTS_DIRECTORY: $HOME/Documents/cacophony/soundfonts
-        # https://stackoverflow.com/a/72451446
         run: |
-          sudo apt install pulseaudio xvfb -y
-          pactl load-module module-null-sink sink_name=auto_null
-          pactl set-default-sink auto_null
-          pulseaudio --start
+          sudo apt install alsa-utils xvfb linux-modules-extra-$(uname -r) -y
+          sudo modprobe snd-dummy
           mkdir -p ${{ env.SOUNDFONTS_DIRECTORY }}
           cp -r test_files/soundfonts/* ${{ env.SOUNDFONTS_DIRECTORY }}
           for f in test_files/events/*.txt ; do echo "Quit\nQuitPanelYes" >> $f && xvfb-run cargo run -- --events $f ; done
