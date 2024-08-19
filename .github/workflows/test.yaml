@@ -97,4 +97,4 @@ jobs:
           cp -r test_files/soundfonts/* ${{ env.SOUNDFONTS_DIRECTORY }}
           sudo apt install alsa-utils xvfb -y
           for f in test_files/events/*.txt ; do echo "Quit\nQuitPanelYes" >> $f && xvfb-run cargo run -- --events $f ; done
-          if: matrix.os == 'ubuntu-24.04'
+        if: matrix.os == 'ubuntu-24.04'
