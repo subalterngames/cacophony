@@ -3,7 +3,6 @@
 //! - `InputEvent` is an enum defining an event triggered by user input, e.g. a decrease in track volume.
 //! - `Input` maps raw qwerty keycode and raw MIDI messages (control bindings) to input events. It updates per frame, reading input and storing new events.
 
-#[cfg(debug_assertions)]
 mod debug_input_event;
 
 mod input_event;
@@ -15,7 +14,6 @@ mod qwerty_binding;
 
 use common::args::Args;
 use common::{State, MAX_NOTE, MIN_NOTE};
-#[cfg(debug_assertions)]
 use debug_input_event::DebugInputEvent;
 use hashbrown::HashMap;
 use ini::Ini;
@@ -95,7 +93,6 @@ pub struct Input {
     /// Characters pressed on this frame.
     pub pressed_chars: Vec<char>,
     /// Debug input events.
-    #[cfg(debug_assertions)]
     debug_inputs: Vec<DebugInputEvent>,
     /// The MIDI time counter.
     time_counter: i16,
