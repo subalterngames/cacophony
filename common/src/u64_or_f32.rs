@@ -61,7 +61,7 @@ impl Serialize for U64orF32 {
     }
 }
 
-impl<'de> Visitor<'de> for U64orF32 {
+impl Visitor<'_> for U64orF32 {
     type Value = Self;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
