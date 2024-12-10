@@ -15,8 +15,6 @@ use render::{draw_subtitles, Panels, Renderer};
 use text::{Text, TTS};
 use ureq::get;
 
-const CLEAR_COLOR: macroquad::color::Color = macroquad::color::BLACK;
-
 #[macroquad::main(window_conf)]
 async fn main() {
     // Parse and load the command line arguments.
@@ -113,9 +111,6 @@ async fn main() {
     // Begin.
     let mut done: bool = false;
     while !done {
-        // Clear.
-        clear_background(CLEAR_COLOR);
-
         // Draw.
         panels.update(&renderer, &state, &conn, &text, &paths_state);
 
